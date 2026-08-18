@@ -236,6 +236,7 @@ export const useSubMaterialMaster = () => {
     loadSubMaterials(1, filters, sort, searchTerm || undefined);
 
   }, [filters, searchTerm]);
+  
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS

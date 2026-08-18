@@ -134,8 +134,7 @@ export const ViewVendor: React.FC = () => {
                           {editVendorMasterData?.VendorName}
                         </h1>
                         <span
-                          className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 border
-                                                                ${editVendorMasterData.VerifiedNonVerified === "Verified"
+                          className={`inline-flex items-center gap-1 px-2 py-1.5 rounded text-xs font-medium  ${editVendorMasterData.VerifiedNonVerified === "Verified"
                               ? "bg-green-50 text-green-700 border-green-200"
                               : "bg-red-50 text-red-700 border-red-200"
                             }`}
@@ -147,10 +146,29 @@ export const ViewVendor: React.FC = () => {
                                 ? "fill-green-500 text-green-500"
                                 : "fill-red-500 text-red-500"
                             }
+                            strokeWidth={1}
                           />
 
                           {editVendorMasterData.VerifiedNonVerified}
                         </span>
+
+                        {editVendorMasterData?.VendorType && (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+                            style={{
+                              backgroundColor: "#FFEDD5",
+                              color: " #C2410C",
+                            }}
+                          >
+                            <Circle
+                              size={8}
+                              fill={"#C2410C"}
+                              color={"#C2410C"}
+                              strokeWidth={1}
+                            />
+                            {editVendorMasterData?.VendorType || "-"}
+                          </span>
+                        )}
                       </div>
 
                       <p className="text-lg text-gray-500 mt-2">
@@ -305,11 +323,11 @@ export const ViewVendor: React.FC = () => {
                             </div>
 
                             <div className="min-w-0 flex-1">
-                              <h5 className="font-semibold text-gray-900 truncate">
+                              <h5 className="mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-pre-line min-w-0">
                                 {item.SubMaterialName}
                               </h5>
 
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="text-xs text-gray-500">
                                 {item.MaterialName}
                               </p>
                             </div>

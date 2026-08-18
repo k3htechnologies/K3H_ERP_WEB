@@ -3,6 +3,7 @@ import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type TaxTrackerListState = {
+
     page: number;
     pageSize: number;
     searchTerm: string;
@@ -14,6 +15,7 @@ export type TaxTrackerListState = {
     FinancialYear: string;
     NoticeSection: string;
     NoticeType: string;
+    GovernmentCompliance: string;
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER;
@@ -33,6 +35,7 @@ const getInitialState = (): TaxTrackerListState => {
                 FinancialYear: parsed.FinancialYear || "",
                 NoticeSection: parsed.NoticeSection || "",
                 NoticeType: parsed.NoticeType || "",
+                GovernmentCompliance: parsed.GovernmentCompliance || "",
             };
         }
     } catch (error) {
@@ -51,6 +54,7 @@ const getInitialState = (): TaxTrackerListState => {
         FinancialYear: '',
         NoticeSection: '',
         NoticeType: '',
+        GovernmentCompliance: '',
     };
 };
 
@@ -102,6 +106,7 @@ export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode 
             FinancialYear: '',
             NoticeSection: '',
             NoticeType: '',
+            GovernmentCompliance: '',
         };
         setListState(defaultState);
     }, []);
@@ -114,6 +119,8 @@ export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode 
             CompanyName: '',
             FinancialYear: '',
             NoticeSection: '',
+            NoticeType: '',
+            GovernmentCompliance: '',
         }));
     }, []);
 

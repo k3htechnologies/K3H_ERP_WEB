@@ -27,7 +27,10 @@ import type {
     TermSheetFinalApprovalResponse,
     DeleteTermSheetRepayLedgerRequest,
     AddUpdateTermSheetRepayLedgerRequest,
-    TermSheetRepayLedgerSaveResponse
+    TermSheetRepayLedgerSaveResponse,
+    TermSheetDebtServiceReserveAccountSaveResponse,
+    AddUpdateTermSheetDebtServiceReserveAccountRequest,
+    DeleteTermSheetDebtServiceReserveAccountRequest
 
 } from '@/features/termSheet/models/TermSheetModel'
 
@@ -53,6 +56,10 @@ export abstract class TermSheetDatasource {
     abstract addUpdateTermSheetDirectSellingAgent(params: AddUpdateTermSheetDirectSellingAgentRequest): Promise<TermSheetDirectSellingAgentSaveResponse>
 
     abstract deleteTermSheetDirectSellingAgent(params: DeleteTermSheetDirectSellingAgentRequest): Promise<TermSheetDeleteResponse>
+
+    abstract addUpdateTermSheetDebtServiceReserveAccount(params: AddUpdateTermSheetDebtServiceReserveAccountRequest): Promise<TermSheetDebtServiceReserveAccountSaveResponse>
+
+    abstract deleteTermSheetDebtServiceReserveAccount(params: DeleteTermSheetDebtServiceReserveAccountRequest): Promise<TermSheetDeleteResponse>
 
     abstract finalizeTermSheetDetails(params: FinalizeTermSheetDetails): Promise<TermSheetFinalApprovalResponse>
 }
@@ -359,6 +366,56 @@ export class TermSheetDatasourceImpl implements TermSheetDatasource {
             if (error instanceof TokenExpiredException) {
                 
                 return await this.deleteTermSheetRepayLedger(params)
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateTermSheetDebtServiceReserveAccount(params: AddUpdateTermSheetDebtServiceReserveAccountRequest): Promise<TermSheetDebtServiceReserveAccountSaveResponse> {
+
+        try {
+
+            return await this.k3hHttpClient.postRequestWithAuthentication(TermSheetApi.ADD_UPDATE_DEBT_SERVICE_RESERVE_ACCOUNT, params);
+
+        } catch (error: any) {
+
+            console.error('ERROR: ADD UPDATE DEBT SERVICE RESERVE ACCOUNT:', error)
+
+            if (error instanceof TokenExpiredException) {
+                
+                return await this.addUpdateTermSheetDebtServiceReserveAccount(params)
+            }
+
+            throw error
+        }
+    }
+
+
+    async deleteTermSheetDebtServiceReserveAccount(params: DeleteTermSheetDebtServiceReserveAccountRequest): Promise<TermSheetDeleteResponse> {
+
+        try {
+
+            const queryParams = new URLSearchParams({
+
+                TermSheetDebtServiceReserveAccountId: (params.TermSheetDebtServiceReserveAccountId ?? 0).toString(),
+
+                TermSheetId: (params.TermSheetId ?? 0).toString(),
+
+                TermSheetDetailsId: params.TermSheetDetailsId.toString(),
+
+                ProjectId: (params.ProjectId ?? 0).toString()
+            })
+
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(`${TermSheetApi.DELETE_DEBT_SERVICE_RESERVE_ACCOUNT}?${queryParams.toString()}`);
+
+        } catch (error: any) {
+
+            console.error('ERROR: DELETE DEBT SERVICE RESERVE ACCOUNT:', error)
+
+            if (error instanceof TokenExpiredException) {
+                
+                return await this.deleteTermSheetDebtServiceReserveAccount(params)
             }
 
             throw error

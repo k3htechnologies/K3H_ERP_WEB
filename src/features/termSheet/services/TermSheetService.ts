@@ -28,7 +28,10 @@ import type {
     TermSheetFinalApprovalResponse,
     TermSheetRepayLedgerSaveResponse,
     AddUpdateTermSheetRepayLedgerRequest,
-    DeleteTermSheetRepayLedgerRequest
+    DeleteTermSheetRepayLedgerRequest,
+    DeleteTermSheetDebtServiceReserveAccountRequest,
+    TermSheetDebtServiceReserveAccountSaveResponse,
+    AddUpdateTermSheetDebtServiceReserveAccountRequest
 
 } from '@/features/termSheet/models/TermSheetModel'
 
@@ -184,6 +187,29 @@ export const termSheetService = {
         try {
 
             return E.right(await termSheetDatasource.deleteTermSheetRepayLedger(params))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+    apiCallAddUpdateTermSheetDebtServiceReserveAccount: async (params: AddUpdateTermSheetDebtServiceReserveAccountRequest): Promise<E.Either<Failure, TermSheetDebtServiceReserveAccountSaveResponse>> => {
+
+        try {
+
+            return E.right(await termSheetDatasource.addUpdateTermSheetDebtServiceReserveAccount(params))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallDeleteTermSheetDebtServiceReserveAccount: async (params: DeleteTermSheetDebtServiceReserveAccountRequest): Promise<E.Either<Failure, TermSheetDeleteResponse>> => {
+
+        try {
+
+            return E.right(await termSheetDatasource.deleteTermSheetDebtServiceReserveAccount(params))
 
         } catch (error: any) {
 

@@ -225,8 +225,19 @@ export const TermSheet: React.FC = () => {
   );
 
   const handleAddTermSheet = useCallback(() => {
+    updateListState({
+
+        TermSheetId: 0,
+        TermSheetDetailsId: 0,
+        ProjectId: 0,
+        NameOfInstitutionBankNBFC:  "",
+        ProjectName:  "",
+        ApprovalStatus:  "",
+        uniquekey: ""
+      });
     navigate("/termSheet/add");
-  }, [navigate]);
+
+  }, [navigate,updateListState]);
 
   const handleCompareTermSheetDocument = useCallback(
     (row: TermSheetData) => {
@@ -350,7 +361,16 @@ export const TermSheet: React.FC = () => {
         ),
       },
       {
-        key: "TermSheetSanctionDate",
+        key: "TermSheetDate",
+        label: "Term Sheet Date",
+        width: "12",
+        sortable: false,
+        align: "center",
+        render: (value?: string) =>
+          value ? formatDate_dd_MonthName_yy(value) : "-",
+      },
+      {
+        key: "SanctionDate",
         label: "Sanction Date",
         width: "12",
         sortable: false,

@@ -1490,6 +1490,29 @@ export const LocalStorageHelper = {
     return null
   },
 
+   // ACCOUNT
+  getTaxTrackerTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading  Tax Tracker Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+
+  },
+
+  storeTaxTrackerTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Tax Tracker Columns Details:", error);
+    }
+  },
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
@@ -1583,6 +1606,8 @@ export const LocalStorageHelper = {
 
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS);
 
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
@@ -1606,6 +1631,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
 
 
     } catch (error) {

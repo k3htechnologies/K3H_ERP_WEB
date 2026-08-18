@@ -27,11 +27,14 @@ export interface TermSheetData {
     CompanyId: number
     CompanyName: string
     ApprovalStatus: string
+    ClosingDate: string | null;
+    ClosingRemark: string;
     TermSheetDetailsId: number
     LoanTakenBy: string
     NameOfInstitutionBankNBFC: string
     Type: string
-    TermSheetSanctionDate: string | null
+    TermSheetDate: string | null
+    SanctionDate: string | null
     FacilityAmount: number
     RateOfInterestInPercentage: number
     ProcessingFeesInPercentage: number
@@ -55,17 +58,17 @@ export interface TermSheetData {
     ModifiedDate: string | null
 }
 
-
 export interface TermSheetViewData {
 
     TermSheetId: number
     Uniquekey: string
-
     ProjectId: number
     ProjectName: string
     CompanyId: number
     CompanyName: string
-    ApprovalStatus: string     
+    ApprovalStatus: string
+    ClosingDate: string | null;
+    ClosingRemark: string;
     TermSheetDetailsData: TermSheetDetailsData[]
     IsClosed?: boolean
     CreatedById: number
@@ -89,26 +92,20 @@ export interface TermSheetDetailsData {
     NameOfInstitutionBankNBFC: string
     Type: string
 
-    TermSheetSanctionDate: string | null
-
+    TermSheetDate: string | null
+    SanctionDate: string | null
     FacilityAmount: number
     RateOfInterestInPercentage: number
     ProcessingFeesInPercentage: number
     LegalAndDoumentationFees: number
-
     MonotoriumPeriodInMonth: number
     LoanTenureInMonth: number
-
     MinimumSellingPrice: number
-
     OtherImportantTermsIfAny: string
     Remark: string
-
     LoanStartDate: string | null
     LoanEndDate: string | null
-
     EMIAmount: number
-
     TermSheetURL: string
 
     TermSheetDisbursedAmountDetailsData: TermSheetDisbursedAmountDetailsData[]
@@ -118,6 +115,8 @@ export interface TermSheetDetailsData {
     TermSheetDirectSellingAgentData: TermSheetDirectSellingAgentData[]
 
     TermSheetRepayLedgerData: TermSheetRepayLedgerData[]
+
+    TermSheetDebtServiceReserveAccountData: TermSheetDebtServiceReserveAccountData[]
 
     TotalDisbursedAmount: number
 
@@ -147,7 +146,7 @@ export interface TermSheetDisbursedAmountDetailsData {
 
     DisbursedAmount: number
     DisbursedDate: string | null
-
+    Remark: string
     CreatedById: number
     CreatedBy: string
     CreatedDate: string | null
@@ -170,7 +169,7 @@ export interface TermSheetSweepRadioDetailsData {
     OwnSweepRadioInPercentage?: number
     LenderSweepRadioInPercentage?: number
     Date: string | null
-
+    Remark: string
     CreatedById: number
     CreatedBy: string
     CreatedDate: string | null
@@ -193,7 +192,7 @@ export interface TermSheetDirectSellingAgentData {
     NameOfConsultant: string
     CommissionInPercentage: number
     PaymentDate: string | null
-
+    Remark: string
     CreatedById: number
     CreatedBy: string
     CreatedDate: string | null
@@ -213,6 +212,38 @@ export interface TermSheetRepayLedgerData {
 
     Amount: number
     PaymentDate: string | null
+    Remark: string
+    CreatedById: number
+    CreatedBy: string
+    CreatedDate: string | null
+
+    ModifiedById: number
+    ModifiedBy: string
+    ModifiedDate: string | null
+}
+
+export interface TermSheetDebtServiceReserveAccountData {
+    TermSheetDebtServiceReserveAccountId: number
+    Uniquekey: string
+
+    TermSheetId: number
+    TermSheetDetailsId: number
+    ProjectId: number
+
+    Term: string; // MF / FD
+    Unit: number; // MF
+    PerUnitRate: number; // MF
+    Amount: number; // MF / FD
+    Date: string | null; // MF / FD
+
+    RateOfInterestInPercentage: number; // FD
+    RedemptionValue: number; // FD
+    MaturityPeriod: number; // FD
+
+    WithdrawAmount: number; // MF / FD
+    WithdrawDate: string | null; // MF / FD
+
+    Remark: string; // MF / FD
 
     CreatedById: number
     CreatedBy: string
@@ -243,7 +274,8 @@ export interface AddUpdateTermSheetDetailsRequest {
     NameOfInstitutionBankNBFC?: string
     Type?: string
 
-    TermSheetSanctionDate?: string | null
+    TermSheetDate: string | null
+    SanctionDate: string | null
 
     FacilityAmount?: number
     RateOfInterestInPercentage?: number
@@ -287,6 +319,8 @@ export interface AddUpdateTermSheetDisbursedAmountDetailsRequest {
 
     DisbursedAmount?: number
     DisbursedDate?: string | null
+    Remark?: string
+
 }
 
 export interface DeleteTermSheetDisbursedAmountDetailsRequest {
@@ -310,6 +344,7 @@ export interface AddUpdateTermSheetSweepRadioDetailsRequest {
     OwnSweepRadioInPercentage?: number
     LenderSweepRadioInPercentage?: number
     Date?: string | null
+    Remark?: string
 }
 
 export interface DeleteTermSheetSweepRadioDetailsRequest {
@@ -333,6 +368,7 @@ export interface AddUpdateTermSheetDirectSellingAgentRequest {
     NameOfConsultant?: string
     CommissionInPercentage?: number
     PaymentDate?: string | null
+    Remark?: string
 }
 
 
@@ -355,11 +391,44 @@ export interface AddUpdateTermSheetRepayLedgerRequest {
 
     Amount?: number
     PaymentDate?: string | null
+    Remark?: string
 }
 
 export interface DeleteTermSheetRepayLedgerRequest {
 
     TermSheetRepayLedgerId?: number
+    TermSheetId?: number
+    TermSheetDetailsId: number
+    ProjectId?: number
+}
+export interface AddUpdateTermSheetDebtServiceReserveAccountRequest {
+
+    TermSheetDebtServiceReserveAccountId?: number
+    Uniquekey?: string
+
+    TermSheetId: number
+    TermSheetDetailsId: number
+    ProjectId?: number
+
+    Term: string; // MF / FD
+    Unit: number; // MF
+    PerUnitRate: number; // MF
+    Amount: number; // MF / FD
+    Date: string | null; // MF / FD
+
+    RateOfInterestInPercentage: number; // FD
+    RedemptionValue: number; // FD
+    MaturityPeriod: number; // FD
+
+    WithdrawAmount: number; // MF / FD
+    WithdrawDate: string | null; // MF / FD
+
+    Remark: string; // MF / FD
+}
+
+export interface DeleteTermSheetDebtServiceReserveAccountRequest {
+
+    TermSheetDebtServiceReserveAccountId?: number
     TermSheetId?: number
     TermSheetDetailsId: number
     ProjectId?: number
@@ -370,6 +439,8 @@ export interface FinalizeTermSheetDetails {
     TermSheetId?: number
     ProjectId?: number
     ActionType?: string
+    ClosingDate?: string | null;
+    ClosingRemark?: string;
 }
 
 
@@ -388,5 +459,7 @@ export type TermSheetSweepRadioSaveResponse = ApiResponse<TermSheetSweepRadioDet
 export type TermSheetDirectSellingAgentSaveResponse = ApiResponse<TermSheetDirectSellingAgentData[]>
 
 export type TermSheetRepayLedgerSaveResponse = ApiResponse<TermSheetRepayLedgerData[]>
+
+export type TermSheetDebtServiceReserveAccountSaveResponse = ApiResponse<TermSheetDebtServiceReserveAccountData[]>
 
 export type TermSheetFinalApprovalResponse = ApiResponse<TermSheetDetailsData[]>

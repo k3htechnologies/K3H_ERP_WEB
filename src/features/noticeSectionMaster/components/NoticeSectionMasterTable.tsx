@@ -39,7 +39,7 @@ export const NoticeSectionMasterTable: React.FC<NoticeSectionMasterTableProps> =
                     ...col,
                     render: (_value, row: NoticeSectionMasterData) => {
 
-                        const isDisabled = canAction;
+                        const isDisabled = !canAction;
 
                         return canAction ? (
                             <div className="flex items-center justify-center gap-2">

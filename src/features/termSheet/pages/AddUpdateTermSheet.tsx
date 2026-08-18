@@ -13,7 +13,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Button } from "@/ui/components/forms";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { Building2, Edit, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useTermSheetListState } from "@/features/termSheet/context/TermSheetListStateContext";
@@ -49,7 +49,8 @@ const initialFormStateTermSheetDetails = (): AddUpdateTermSheetDetailsRequest =>
     LoanTakenBy: "",
     NameOfInstitutionBankNBFC: "",
     Type: "",
-    TermSheetSanctionDate: null,
+    TermSheetDate: null,
+    SanctionDate: null,
     FacilityAmount: 0,
     RateOfInterestInPercentage: 0,
     ProcessingFeesInPercentage: 0,
@@ -196,14 +197,24 @@ const AddUpdateTermSheet: React.FC = () => {
             newErrors.ProjectId = 'Project is required';
         }
 
-        if (!formData.CompanyId || Number(formData.CompanyId) <= 0) {
+        else if (!formData.CompanyId || Number(formData.CompanyId) <= 0) {
             addToast({ type: "error", title: "Company is required" });
             return { isValid: false, errors: newErrors };
         }
 
-        if (termSheetDetailsList.length === 0) {
+        else if (termSheetDetailsList.length === 0) {
             addToast({ type: "error", title: "At least one term sheet is required" });
             return { isValid: false, errors: newErrors };
+        } else {
+            const institutionNames = termSheetDetailsList.map(x => x.NameOfInstitutionBankNBFC?.trim().toUpperCase()).filter(Boolean);
+
+            const hasDuplicateInstitution = institutionNames.length !== new Set(institutionNames).size;
+
+            if (hasDuplicateInstitution) {
+                addToast({ type: "error", title: "Name Of Institution / Bank / NBFC cannot be duplicate" });
+
+                return { isValid: false, errors: newErrors };
+            }
         }
 
 
@@ -281,7 +292,9 @@ const AddUpdateTermSheet: React.FC = () => {
 
             Type: row.Type ?? "",
 
-            TermSheetSanctionDate: row.TermSheetSanctionDate ?? "",
+            TermSheetDate: row.TermSheetDate ?? "",
+
+            SanctionDate: row.SanctionDate ?? "",
 
             FacilityAmount: row.FacilityAmount ?? 0,
 
@@ -369,8 +382,20 @@ const AddUpdateTermSheet: React.FC = () => {
             },
 
             {
-                key: 'TermSheetSanctionDate',
-                label: 'Term Sheet / Sanction Date',
+                key: 'TermSheetDate',
+                label: 'Term Sheet Date',
+                width: '15',
+                sortable: false,
+                align: 'center',
+                render: value =>
+                    value
+                        ? formatDate_dd_MonthName_yy(value)
+                        : '-'
+            },
+
+            {
+                key: 'SanctionDate',
+                label: 'Sanction Date',
                 width: '15',
                 sortable: false,
                 align: 'center',
@@ -589,138 +614,116 @@ const AddUpdateTermSheet: React.FC = () => {
                 align: 'right',
                 render: (value) => value || '-'
             },
-          {
-    key: 'actions',
-    label: 'Actions',
-    width: '12',
-    fixed: 'right',
-    align: 'center',
+            {
+                key: 'actions',
+                label: 'Actions',
+                width: '12',
+                fixed: 'right',
+                align: 'center',
 
-    render: (_value, row, index) => {
+                render: (_value, row, index) => {
 
-        const listApprovalStatus =
-            listState?.ApprovalStatus?.trim().toUpperCase() ?? "";
+                    const listApprovalStatus = listState?.ApprovalStatus?.trim().toUpperCase() ?? "";
 
-        const rowApprovalStatus =
-            row?.ApprovalStatus?.trim().toUpperCase() ?? "";
+                    const rowApprovalStatus = row?.ApprovalStatus?.trim().toUpperCase() ?? "";
 
-        // ================= EDIT =================
-        const canEdit =
-            canAction &&
-            (
-                // PENDING + PENDING → Edit ENABLE
-                (
-                    listApprovalStatus === "PENDING" &&
-                    rowApprovalStatus === "PENDING"
-                )
+                    // ================= EDIT =================
+                    const canEdit =
+                        canAction &&
+                        (
+                            // PENDING + PENDING → Edit ENABLE
+                            (
+                                listApprovalStatus === "PENDING" && rowApprovalStatus === "PENDING"
+                            )
 
-                ||
+                            ||
 
-                // APPROVED + PENDING → Edit ENABLE
-                (
-                    listApprovalStatus === "APPROVED" &&
-                    rowApprovalStatus === "PENDING"
-                )
+                            // APPROVED + PENDING → Edit ENABLE
+                            (
+                                listApprovalStatus === "APPROVED" && rowApprovalStatus === "PENDING"
+                            )
 
-                ||
+                            ||
 
-                // APPROVED + APPROVED → Edit ENABLE
-                (
-                    listApprovalStatus === "APPROVED" &&
-                    rowApprovalStatus === "APPROVED"
-                )
-            );
-
-        // ================= DELETE =================
-        const canDelete =
-            canAction &&
-            (
-                // PENDING + PENDING → Delete ENABLE
-                (
-                    listApprovalStatus === "PENDING" &&
-                    rowApprovalStatus === "PENDING"
-                )
-
-                ||
-
-                // APPROVED + PENDING → Delete ENABLE
-                (
-                    listApprovalStatus === "APPROVED" &&
-                    rowApprovalStatus === "PENDING"
-                )
-            );
-
-        return (
-            <div className="flex items-center justify-center gap-2">
-
-                {/* ================= EDIT ================= */}
-                <Button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        if (!canEdit) return;
-
-                        handleEditTermSheetDetails(row, index);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit Applicant"
-                    disabled={!canEdit}
-                    style={{
-                        color: canEdit
-                            ? "#0B3251"
-                            : "#9CA3AF",
-                        cursor: canEdit
-                            ? "pointer"
-                            : "not-allowed",
-                        opacity: canEdit
-                            ? 1
-                            : 0.5
-                    }}
-                    leftIcon={
-                        <Edit className="h-4 w-4" />
-                    }
-                />
-
-                {/* ================= DELETE ================= */}
-                <Button
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-
-                        if (!canDelete) return;
-
-                        handleConfirmationDialogBoxOpen(
-                            row,
-                            index
+                            // APPROVED + APPROVED → Edit ENABLE
+                            (
+                                listApprovalStatus === "APPROVED" && rowApprovalStatus === "APPROVED"
+                            )
                         );
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Delete"
-                    disabled={!canDelete}
-                    style={{
-                        color: canDelete
-                            ? "red"
-                            : "#9CA3AF",
-                        cursor: canDelete
-                            ? "pointer"
-                            : "not-allowed",
-                        opacity: canDelete
-                            ? 1
-                            : 0.5
-                    }}
-                >
-                    <Trash2 className="h-4 w-4" />
-                </Button>
 
-            </div>
-        );
-    }
-}
+                    // ================= DELETE =================
+                    const canDelete =
+                        canAction &&
+                        (
+                            // PENDING + PENDING → Delete ENABLE
+                            (
+                                listApprovalStatus === "PENDING" && rowApprovalStatus === "PENDING"
+                            )
+
+                            ||
+
+                            // APPROVED + PENDING → Delete ENABLE
+                            (
+                                listApprovalStatus === "APPROVED" && rowApprovalStatus === "PENDING"
+                            )
+                        );
+
+                    return (
+                        <div className="flex items-center justify-center gap-2">
+
+                            {/* ================= EDIT ================= */}
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    if (!canEdit) return;
+
+                                    handleEditTermSheetDetails(row, index);
+                                }}
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                title="Edit Applicant"
+                                disabled={!canEdit}
+                                style={{
+                                    color: canEdit ? "#0B3251" : "#9CA3AF",
+                                    cursor: canEdit ? "pointer" : "not-allowed",
+                                    opacity: canEdit ? 1 : 0.5
+                                }}
+                                leftIcon={
+                                    <Edit className="h-4 w-4" />
+                                }
+                            />
+
+                            {/* ================= DELETE ================= */}
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    if (!canDelete) return;
+
+                                    handleConfirmationDialogBoxOpen(row, index);
+                                }}
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                title="Delete"
+                                disabled={!canDelete}
+                                style={{
+                                    color: canDelete ? "red" : "#9CA3AF",
+                                    cursor: canDelete ? "pointer" : "not-allowed",
+                                    opacity: canDelete ? 1 : 0.5
+                                }}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+
+                        </div>
+                    );
+                }
+            }
 
         ],
         [handleEditTermSheetDetails, handleConfirmationDialogBoxOpen, termSheetDetailsList]
@@ -754,6 +757,9 @@ const AddUpdateTermSheet: React.FC = () => {
             newErrorsTermSheetDetails.Type = "Type is required";
         }
 
+        if (!formDataForTermSheetDetails.TermSheetDate) {
+            newErrorsTermSheetDetails.TermSheetDate = "Term Sheet Date is required";
+        }
 
         if (formDataForTermSheetDetails.FacilityAmount === undefined || formDataForTermSheetDetails.FacilityAmount === null || Number(formDataForTermSheetDetails.FacilityAmount) <= 0) {
             newErrorsTermSheetDetails.FacilityAmount = "Facility Amount is required";
@@ -783,16 +789,33 @@ const AddUpdateTermSheet: React.FC = () => {
             newErrorsTermSheetDetails.MinimumSellingPrice = "Minimum Selling Price is required";
         }
 
-        const termSheetSanctionDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formDataForTermSheetDetails.TermSheetSanctionDate ? new Date(formDataForTermSheetDetails.TermSheetSanctionDate) : undefined);
+        const termSheetDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formDataForTermSheetDetails.TermSheetDate ? new Date(formDataForTermSheetDetails.TermSheetDate) : undefined);
+        const sanctionDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formDataForTermSheetDetails.SanctionDate ? new Date(formDataForTermSheetDetails.SanctionDate) : undefined);
         const loanStartDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formDataForTermSheetDetails.LoanStartDate ? new Date(formDataForTermSheetDetails.LoanStartDate) : undefined);
         const loanEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formDataForTermSheetDetails.LoanEndDate ? new Date(formDataForTermSheetDetails.LoanEndDate) : undefined);
 
-        if (formDataForTermSheetDetails?.TermSheetSanctionDate && formDataForTermSheetDetails.LoanStartDate && !isToDateGreaterOrEqualFromDate(termSheetSanctionDate, loanStartDate)) {
-            newErrorsTermSheetDetails.LoanStartDate = "Loan Start Date must be greater than or equal to  Sanction Date";
+        if (formDataForTermSheetDetails?.SanctionDate && formDataForTermSheetDetails.TermSheetDate && !isToDateGreaterOrEqualFromDate(termSheetDate, sanctionDate)) {
+            newErrorsTermSheetDetails.SanctionDate = "Sanction Date must be greater than or equal to Term Sheet Date";
+        }
+
+        if (formDataForTermSheetDetails.LoanStartDate && !formDataForTermSheetDetails.SanctionDate) {
+            newErrorsTermSheetDetails.SanctionDate = "Sanction Date is required when Loan Start Date is entered";
+        }
+
+        if (formDataForTermSheetDetails.LoanEndDate && !formDataForTermSheetDetails.LoanStartDate) {
+            newErrorsTermSheetDetails.LoanStartDate = "Loan Start Date is required when Loan End Date is entered";
+        }
+
+        if (formDataForTermSheetDetails.LoanStartDate && !formDataForTermSheetDetails.LoanEndDate) {
+            newErrorsTermSheetDetails.LoanEndDate = "Loan End Date is required when Loan Start Date is entered";
+        }
+
+        if (formDataForTermSheetDetails?.SanctionDate && formDataForTermSheetDetails.LoanStartDate && !isToDateGreaterOrEqualFromDate(sanctionDate, loanStartDate)) {
+            newErrorsTermSheetDetails.LoanStartDate = "Loan Start Date must be greater than or equal to Sanction Date";
         }
 
         if (formDataForTermSheetDetails?.LoanStartDate && formDataForTermSheetDetails.LoanEndDate && !isToDateGreaterOrEqualFromDate(loanStartDate, loanEndDate)) {
-            newErrorsTermSheetDetails.LoanStartDate = "Loan Start Date must be greater than or equal to Loan End Date";
+            newErrorsTermSheetDetails.LoanEndDate = "Loan Start Date must be greater than or equal to Loan End Date";
         }
 
         const mergedTermSheetFiles = editingTermSheetDetailsData ? calculateMergedFiles(editingTermSheetDetailsData.row._termSheetFiles, termSheetFiles, removedTermSheetURLs) : termSheetFiles.slice();
@@ -847,7 +870,9 @@ const AddUpdateTermSheet: React.FC = () => {
 
             Type: formDataForTermSheetDetails.Type || "",
 
-            TermSheetSanctionDate: formDataForTermSheetDetails.TermSheetSanctionDate || null,
+            TermSheetDate: formDataForTermSheetDetails.TermSheetDate || null,
+
+            SanctionDate: formDataForTermSheetDetails.SanctionDate || null,
 
             FacilityAmount: formDataForTermSheetDetails.FacilityAmount ?? 0,
 
@@ -888,6 +913,8 @@ const AddUpdateTermSheet: React.FC = () => {
             TermSheetSweepRadioDetailsData: editingTermSheetDetailsData?.row.TermSheetSweepRadioDetailsData ?? [],
 
             TermSheetDirectSellingAgentData: editingTermSheetDetailsData?.row.TermSheetDirectSellingAgentData ?? [],
+
+            TermSheetDebtServiceReserveAccountData: editingTermSheetDetailsData?.row.TermSheetDebtServiceReserveAccountData ?? [],
 
             CreatedById: 0,
             CreatedBy: '',
@@ -996,7 +1023,9 @@ const AddUpdateTermSheet: React.FC = () => {
 
             fd.append(`${prefix}.Type`, app.Type ?? "");
 
-            fd.append(`${prefix}.TermSheetSanctionDate`, app.TermSheetSanctionDate ?? "");
+            fd.append(`${prefix}.TermSheetDate`, app.TermSheetDate ?? "");
+
+            fd.append(`${prefix}.SanctionDate`, app.SanctionDate ?? "");
 
             fd.append(`${prefix}.FacilityAmount`, String(app.FacilityAmount ?? 0));
 
@@ -1087,6 +1116,8 @@ const AddUpdateTermSheet: React.FC = () => {
 
     // ============================================================================================================================================================
 
+    const isAnyTermSheetApprovedOrPartialApproved =
+        termSheetDetailsList?.some(x => ["APPROVED", "PARTIAL APPROVED"].includes(x?.ApprovalStatus?.trim().toUpperCase() ?? "")) ?? false;
 
     return (
 
@@ -1116,6 +1147,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                     onChange={(value) => handleFieldChange("ProjectId", value)}
                                     placeholder="Select Project"
                                     error={errors.ProjectId}
+                                    disabled={isAnyTermSheetApprovedOrPartialApproved}
                                 />
                             </div>
                             <div className="pt-8">
@@ -1124,7 +1156,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        if (listState?.ApprovalStatus?.toUpperCase() === "APPROVED") return;
+                                        if (isAnyTermSheetApprovedOrPartialApproved) return;
                                         setEditingTermSheetDetailsData(null);
                                         setFormDataForTermSheetDetails(initialFormStateTermSheetDetails());
 
@@ -1135,7 +1167,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                         setIsAddUpdateTermSheetDetailsModalOpen(true);
 
                                     }}
-                                    disabled={listState?.ApprovalStatus?.toUpperCase() === "APPROVED"}
+                                    disabled={isAnyTermSheetApprovedOrPartialApproved}
                                     color="blue"
                                     variant="solid"
                                     colorMode="extraLight"
@@ -1154,23 +1186,34 @@ const AddUpdateTermSheet: React.FC = () => {
 
                                 companyMasterList.map((c, i) => (
 
-                                    <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 p-5">
+                                    <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200">
 
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            {c.CompanyName ?? "-"}
-                                        </h4>
+                                      <div className="p-4 bg-white">
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="w-5 h-5 text-[#135bec]" />
+                                        <FieldItem label="" value={c.CompanyName ?? "-"} />
+                                    </div>
+                                    <FieldItem label="City" value={c.CityName ?? "-"} />
+                                </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                             <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
                                             <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
                                             <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
                                             <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 pt-4">
                                             <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
                                             <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
                                             <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
                                             <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
-                                            <FieldItem label="City" value={c.CityName ?? "-"} />
+
                                         </div>
+
+                                    </div>
                                     </section>
                                 ))
                             ) : (
@@ -1271,12 +1314,16 @@ const AddUpdateTermSheet: React.FC = () => {
 
                         <div>
                             <DatePickerInput
-                                label="Term Sheet / Sanction Date"
-                                value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.TermSheetSanctionDate ?? "")}
-                                onChange={(val) => handleFieldChangeTenantApplicant("TermSheetSanctionDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                error={errorsTermSheetDetails.TermSheetSanctionDate}
+                                label="Term Sheet Date"
+                                value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.TermSheetDate ?? "")}
+                                onChange={(val) => handleFieldChangeTenantApplicant("TermSheetDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                error={errorsTermSheetDetails.TermSheetDate}
+                                disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
+                                required
                             />
                         </div>
+
+                        
 
                         <div>
                             <Input
@@ -1381,6 +1428,27 @@ const AddUpdateTermSheet: React.FC = () => {
                             />
                         </div>
 
+                         <div>
+                            <MultiFilePicker
+                                label="Term Sheet"
+                                required
+                                placeholder="Select Term Sheet"
+                                error={errorsTermSheetDetails.TermSheetURL}
+                                value={termSheetFiles}
+                                disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
+                                onChange={setTermSheetFiles}
+                                allowedTypes={['application/pdf']}
+                                onRemoveExisting={(url) => setRemovedTermSheetURLs((prev) => [...prev, url])}
+                            />
+                        </div>
+<div>
+                            <DatePickerInput
+                                label="Sanction Date"
+                                value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.SanctionDate ?? "")}
+                                onChange={(val) => handleFieldChangeTenantApplicant("SanctionDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                error={errorsTermSheetDetails.SanctionDate}
+                            />
+                        </div>
                         <div>
                             <Input
                                 value={formDataForTermSheetDetails.EMIAmount ?? ""}
@@ -1411,19 +1479,7 @@ const AddUpdateTermSheet: React.FC = () => {
                         </div>
 
 
-                        <div>
-                            <MultiFilePicker
-                                label="Term Sheet"
-                                required
-                                placeholder="Select Term Sheet"
-                                error={errorsTermSheetDetails.TermSheetURL}
-                                value={termSheetFiles}
-                                disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                onChange={setTermSheetFiles}
-                                allowedTypes={['application/pdf']}
-                                onRemoveExisting={(url) => setRemovedTermSheetURLs((prev) => [...prev, url])}
-                            />
-                        </div>
+                       
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">

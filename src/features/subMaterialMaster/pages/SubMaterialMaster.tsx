@@ -224,7 +224,7 @@ export const SubMaterialMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteSubMaterialMaster}
         loading={isLoading}
-        pageName='subMaterial'
+        pageName='Sub Material'
       />
 
       <ExportImport

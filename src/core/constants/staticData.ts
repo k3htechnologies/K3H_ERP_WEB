@@ -609,7 +609,7 @@ export const MASTER_DATA = {
 
   ibmObmReportStage: ["IBM", "OBM"],
 
-  noticeType: ['Income Tax', 'GST'],
+  noticeType: ['GST (Goverment Service Tax)', 'Income Tax', 'PF (Provident Fund)', 'ESIC (Employee State Insurance)', 'PT (Profession Tax)', 'Other'],
 
   budgetLevelType: ["L1", "L2", "L3"],
 
@@ -693,6 +693,12 @@ requestTypeOptions: ['Reply', 'Order', 'Notice', 'Close-Notice'],
 termSheetTypeOptions: ['Construction Finance (CF)', 'Loan Against Property (LAP)', 'Lease Rental Discounting (LRD)', 'Overdraft Facility (OD)'],
 
 termSheetApprovalStatus: ["Term Sheet", "Sanction" ,"Closed"],
+
+termSheetDSRATerm: ["MF", "FD"],
+
+noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
+
+vendorType: ["Vendor", "Contractor", "Both"]
 } as const;
 
 // ============================================================================
@@ -825,6 +831,9 @@ export const ORDER_STATUS_OPTIONS = toOptions(MASTER_DATA.orderStatusOptions);
 export const REQUEST_TYPE_OPTIONS = toOptions(MASTER_DATA.requestTypeOptions);
 export const TERM_SHEET_TYPE_OPTIONS = toOptions(MASTER_DATA.termSheetTypeOptions);
 export const TERM_SHEET_APPROVAL_OPTIONS = toOptions(MASTER_DATA.termSheetApprovalStatus);
+export const TERM_SHEET_DSRA_TERM_OPTIONS = toOptions(MASTER_DATA.termSheetDSRATerm);
+export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
+export const VENDOR_TYPE_OPTIONS = toOptions(MASTER_DATA.vendorType);
 
 
 // ============================================================================

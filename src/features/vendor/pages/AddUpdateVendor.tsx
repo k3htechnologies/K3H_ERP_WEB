@@ -12,7 +12,7 @@ import { technicalService } from "@/features/technical/services/TechnicalService
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
 import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import { FIRMS_TYPE_OPTIONS } from "@/core/constants/staticData";
+import { FIRMS_TYPE_OPTIONS, VENDOR_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
 import * as E from "fp-ts/Either";
@@ -29,6 +29,7 @@ import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 const initialFormState = (): AddUpdateVendorRequest => ({
   VendorId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  VendorType: '',
   CompanyName: "",
   CompanyType: "",
   VendorName: "",
@@ -182,6 +183,7 @@ export const AddUpdateVendor: React.FC = () => {
               ...prev,
               VendorId: row.VendorId ?? prev.VendorId,
               Uniquekey: row.Uniquekey ?? prev.Uniquekey,
+              VendorType: row.VendorType ?? prev.VendorType,
               CompanyName: row.CompanyName ?? prev.CompanyName,
               CompanyType: row.CompanyType ?? prev.CompanyType,
               VendorName: row.VendorName ?? prev.VendorName,
@@ -291,6 +293,10 @@ export const AddUpdateVendor: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {};
 
+    if (!formData.VendorType?.trim()) {
+      newErrors.VendorType = "Vendor Type is required";
+    }
+
     if (!formData.VendorName?.trim()) {
       newErrors.VendorName = "Vendor name is required";
     }
@@ -385,6 +391,7 @@ export const AddUpdateVendor: React.FC = () => {
 
     fd.append('VendorId', String(formData.VendorId ?? 0));
     fd.append('Uniquekey', formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6');
+    fd.append('VendorType', formData.VendorType?.trim() || '');
     fd.append('CompanyName', formData.CompanyName?.trim() || '');
     fd.append('CompanyType', formData.CompanyType?.trim() || '');
     fd.append('VendorName', formData.VendorName?.trim() || '');
@@ -399,7 +406,7 @@ export const AddUpdateVendor: React.FC = () => {
     fd.append('StateMasterId', String(formData.StateMasterId ?? 0));
     fd.append('DistrictMasterId', String(formData.DistrictMasterId ?? 0));
     fd.append('CityMasterId', String(formData.CityMasterId ?? 0));
-    fd.append('AvailableMaterialList', materialIds || formData.AvailableMaterialList || '');
+    fd.append('AvailableMaterialList', materialIds);
     fd.append('AvailableContractList', formData.AvailableContractList || '');
 
     aadharCardURLFiles.forEach((file) => {
@@ -478,7 +485,7 @@ export const AddUpdateVendor: React.FC = () => {
       return
     }
 
-    if (selectedMaterials.size === 0) {
+    if (formData.VendorType.toUpperCase() === "VENDOR" || formData.VendorType.toUpperCase() === "BOTH" && selectedMaterials.size === 0) {
       addToast({ type: "error", title: "Please select at least one material" });
       return;
     }
@@ -564,6 +571,18 @@ export const AddUpdateVendor: React.FC = () => {
             Basic Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <SinglePageSelection
+              label="Vendor Type"
+              placeholder="Select Vendor Type"
+              required
+              value={formData.VendorType}
+              onChange={(val) => handleFieldChange("VendorType", String(val))}
+              options={VENDOR_TYPE_OPTIONS.map((opt) => ({
+                label: opt.name,
+                value: opt.id,
+              }))}
+              error={errors.VendorType}
+            />
 
             <Input
               label="Vendor Name"

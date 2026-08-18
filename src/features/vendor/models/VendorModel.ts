@@ -6,6 +6,7 @@ export interface FilterWithPaginationVendorRequest {
     IsCheckPermission?: boolean
     VendorId?: number
     SystemGeneratedCode?: string
+    VendorType?:string | ''
     VendorName?: string
     CompanyName?: string
     CompanyType?: string
@@ -25,6 +26,7 @@ export interface VendorData {
     VerifiedNonVerified: string
     CompanyName: string | ''
     CompanyType: string | ''
+    VendorType:string | ''
     VendorName: string | ''
     MobileNumberCountryCode: string | ''
     MobileNumber: string | ''
@@ -73,9 +75,9 @@ export interface VendorData {
 export interface AddUpdateVendorRequest {
     VendorId: number | 0
     Uniquekey: string
-
     CompanyName: string | ''
     CompanyType: string | ''
+    VendorType:string | ''
     VendorName: string | ''
     MobileNumberCountryCode: string | ''
     MobileNumber: string | ''

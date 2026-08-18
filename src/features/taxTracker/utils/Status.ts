@@ -32,7 +32,7 @@ const ORDER_STATUS_CONFIGS: Record<string, CardConfig> = {
         badgeColor: "border-blue-500 text-blue-600 hover:bg-blue-50"
     },
     "Favourable": {
-        title: "Order Passed",
+        title: "Order",
         bgColor: "bg-blue-600",
         textColor: "text-white",
         labelColor: "text-blue-200",
@@ -69,7 +69,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         title: "Notice Received"
     },
     "Reply": {
-        title: "Reply Prepared",
+        title: "Reply Submitted",
         bgColor: "bg-[#002060]",
         textColor: "text-white",
         labelColor: "text-gray-300",
@@ -79,7 +79,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         badgeColor: "border-white text-white hover:bg-white/10"
     },
     "Order": {
-        title: "Order Passed",
+        title: "Order",
         bgColor: "bg-[#1d4ed8]",
         textColor: "text-white",
         labelColor: "text-gray-300",
@@ -119,8 +119,9 @@ export const getNoticeStatusColor = (status: string = "") => {
         "Favourable": { bg: "#F3E8FF", text: "#7E22CE" },
         "Non-Favourable": { bg: "#FEE2E2", text: "#B91C1C" },
         "Appeal Pending": { bg: "#FEF9C3", text: "#A16207" },
-        "Appeal Filed": { bg: "#DBEAFE", text: "#1D4ED8" },
+        "AppealFiled": { bg: "#DBEAFE", text: "#1D4ED8" },
         "Closed": { bg: "#EBFFD5", text: "#2E844A" },
+        "Reopened": { bg: "#002060", text: "#ffffff" },
     };
 
     return map[status] ?? { bg: "#ffedd5", text: "#C2410C" };

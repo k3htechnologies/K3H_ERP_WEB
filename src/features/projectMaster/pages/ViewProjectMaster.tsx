@@ -601,8 +601,7 @@ export const ViewProjectMaster: React.FC = () => {
                                                     {editProjectData?.ProjectName ?? "-"}
                                                 </span>
 
-                                                <span
-                                                    className={`inline-block px-2 py-1 rounded text-xs font-medium ${editProjectData?.Category?.toLowerCase() === "tender"
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${editProjectData?.Category?.toLowerCase() === "tender"
                                                         ? "bg-[#4346551F] text-[#434655]"
                                                         : "bg-green-100 text-green-700"
                                                         }`}

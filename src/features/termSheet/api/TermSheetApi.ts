@@ -24,6 +24,10 @@ export const TermSheetApi = {
 
     DELETE_REPAY_LEDGER: '/TermSheet/DeleteTermSheetRepayLedger',
 
+    ADD_UPDATE_DEBT_SERVICE_RESERVE_ACCOUNT:  '/TermSheet/AddUpdateTermSheetDebtServiceReserveAccount',
+
+    DELETE_DEBT_SERVICE_RESERVE_ACCOUNT: '/TermSheet/DeleteTermSheetDebtServiceReserveAccount',
+
     FINALIZE_TERM_SHEET: '/TermSheet/FinalizeTermSheetDetails',
 
     PULL_TERM_SHEET_DOCUMENT: '/TermSheetDocument/PullTermSheetDocument',

@@ -113,6 +113,9 @@ export const LOCAL_STORAGE_KEYS = {
      //TERM SHEET
     TERM_SHEET_SELECTED_COLUMNS: 'termSheet.selectedColumns',
 
+    //TAX TRACKER
+    TAX_TRACKER_SELECTED_COLUMNS: 'taxTracker.selectedColumns',
+
 
 
 } as const

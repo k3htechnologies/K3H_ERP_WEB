@@ -23,6 +23,7 @@ import { projectMasterService } from "@/features/projectMaster/services/ProjectM
 import type { CompanyMasterData } from "@/features/companyMaster/models/CompanyMasterModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { Building2 } from "lucide-react";
 
 const CompareTermSheet: React.FC = () => {
     const { listState } = useTermSheetListState();
@@ -163,7 +164,7 @@ const CompareTermSheet: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+            approvalActionType === "approve" ? "Approving Term Sheet" : "Rejecting Term Sheet"
         );
     };
 
@@ -285,7 +286,7 @@ const CompareTermSheet: React.FC = () => {
                 const payload: FinalizeTermSheetDetails = {
                     TermSheetId: listState.TermSheetId ?? 0,
                     ProjectId: listState.ProjectId ?? 0,
-                    ActionType:"FINAL APPROVAL"
+                    ActionType: "FINAL APPROVAL"
                 };
 
                 const response = await termSheetService.apiCallFinalizeTermSheetDetails(payload);
@@ -373,23 +374,35 @@ const CompareTermSheet: React.FC = () => {
 
                     companyMasterList.map((c, i) => (
 
-                        <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                        <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-sm">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                {c.CompanyName ?? "-"}
-                            </h4>
+                            <div className="p-4 bg-white">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
-                                <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
-                                <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
-                                <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
-                                <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
-                                <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
-                                <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
-                                <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
-                                <FieldItem label="City" value={c.CityName ?? "-"} />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <div className="flex items-center gap-2">
+                                        <Building2 className="w-5 h-5 text-[#135bec]" />
+                                        <FieldItem label="" value={c.CompanyName ?? "-"} />
+                                    </div>
+                                    <FieldItem label="City" value={c.CityName ?? "-"} />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                    <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
+                                    <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
+                                    <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
+                                    <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 pt-4">
+                                    <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
+                                    <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
+                                    <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
+                                    <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
+
+                                </div>
+
                             </div>
+
                         </section>
                     ))
                 ) : (

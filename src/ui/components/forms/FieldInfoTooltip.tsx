@@ -6,11 +6,15 @@ import { createPortal } from "react-dom";
 interface FieldInfoTooltipProps {
   value?: string | null;
   size?: number;
+  label?: string | null;
+  isRow?: boolean;
 }
 
 const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
   value,
   size = 16,
+  label,
+
 }) => {
   const [show, setShow] = useState(false);
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -28,13 +32,27 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
 
   return (
     <>
-      <span
-        className="inline-flex cursor-pointer"
-        onMouseEnter={onEnter}
-        onMouseLeave={() => setShow(false)}
-      >
-        <Info size={size} color={COLORS.primary1} />
-      </span>
+      <div className="flex flex-col items-start gap-1">
+        {label?.trim() && (
+          <label className="text-sm font-medium text-gray-700">
+            {label}
+          </label>
+        )}
+        <span
+          className="inline-flex cursor-pointer"
+          onMouseEnter={onEnter}
+          onMouseLeave={() => setShow(false)}
+        >
+          <Info
+            size={size}
+            color={COLORS.primary1}
+          />
+        </span>
+
+
+      </div>
+
+
 
       {show &&
         createPortal(

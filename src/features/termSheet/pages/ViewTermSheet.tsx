@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Fragment, useEffect, useState } from "react";
@@ -14,10 +14,10 @@ import { useTermSheetListState } from "@/features/termSheet/context/TermSheetLis
 import Tabs from "@/ui/components/Tab/Tab";
 import { termSheetService } from "@/features/termSheet/services/TermSheetService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import type { AddUpdateTermSheetDirectSellingAgentRequest, AddUpdateTermSheetDisbursedAmountDetailsRequest, AddUpdateTermSheetRepayLedgerRequest, AddUpdateTermSheetSweepRadioDetailsRequest, DeleteTermSheetRepayLedgerRequest, FinalizeTermSheetDetails, TermSheetDetailsData, TermSheetDirectSellingAgentData, TermSheetDisbursedAmountDetailsData, TermSheetRepayLedgerData, TermSheetSweepRadioDetailsData, TermSheetViewData } from "@/features/termSheet/models/TermSheetModel";
+import type { AddUpdateTermSheetDebtServiceReserveAccountRequest, AddUpdateTermSheetDirectSellingAgentRequest, AddUpdateTermSheetDisbursedAmountDetailsRequest, AddUpdateTermSheetRepayLedgerRequest, AddUpdateTermSheetSweepRadioDetailsRequest, DeleteTermSheetDebtServiceReserveAccountRequest, DeleteTermSheetRepayLedgerRequest, FinalizeTermSheetDetails, TermSheetDebtServiceReserveAccountData, TermSheetDetailsData, TermSheetDirectSellingAgentData, TermSheetDisbursedAmountDetailsData, TermSheetRepayLedgerData, TermSheetSweepRadioDetailsData, TermSheetViewData } from "@/features/termSheet/models/TermSheetModel";
 import type { FilterWithPaginationTermSheetDocumentRequest, TermSheetDocumentData } from "@/features/termSheet/models/TermSheetDocumentModel";
 import { termSheetDocumentService } from "@/features/termSheet/services/TermSheetDocumentService";
-import { formatCurrency } from "@/core/utils/comman";
+import { formatCurrency, formatToKLCr, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
@@ -29,9 +29,14 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Input } from "@/ui/components/forms";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
-import { Edit, Trash2 } from "lucide-react";
+import { Building2, Edit, Trash2 } from "lucide-react";
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import type { CompanyMasterData } from "@/features/companyMaster/models/CompanyMasterModel";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import { TERM_SHEET_DSRA_TERM_OPTIONS } from "@/core/constants";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 const ViewTermSheet: React.FC = () => {
     const { listState } = useTermSheetListState();
@@ -57,13 +62,29 @@ const ViewTermSheet: React.FC = () => {
     const termSheetTabList = [
 
         { id: "Overview", label: "Overview" },
+        ...(["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") ? [{ id: "Disbursement", label: "Disbursement" }] : []),
+        ...(["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") ? [{ id: "Sweep Ratio", label: "Sweep Ratio" }] : []),
+        ...(["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") ? [{ id: "DSA", label: "DSA" }] : []),
+        ...(["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") ? [{ id: "Repayment", label: "Repayment" }] : []),
+        ...(["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") ? [{ id: "DSRA", label: "DSRA" }] : []),
         ...(["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") ? [{ id: "Document", label: "Document" }] : []),
     ];
 
     const [activeTab, setActiveTab] = useState<string>(termSheetTabList[0].id);
     const [companyMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-    const [finalizeTermSheetDetailsData, setFinalizeTermSheetDetailsData] = useState<{ TermSheetId: number; ProjectId: number } | null>(null);
+    const [finalizeTermSheetDetailsData, setFinalizeTermSheetDetailsData] = useState<FinalizeTermSheetDetails | null>(null);;
+    const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
+
+    const [closingFormData, setClosingFormData] = useState({
+        ClosingDate: "",
+        ClosingRemark: "",
+    });
+
+    const [closingErrors, setClosingErrors] = useState<{
+        ClosingDate?: string;
+        ClosingRemark?: string;
+    }>({});
     // =======================================================================================================================================
 
     const [isDisbursedAmountModalOpen, setIsDisbursedAmountModalOpen] = useState(false);
@@ -80,6 +101,7 @@ const ViewTermSheet: React.FC = () => {
         ProjectId: Number(listState.ProjectId),
         DisbursedAmount: 0,
         DisbursedDate: "",
+        Remark: "",
     });
 
     const [disbursedAmountFormData, setDisbursedAmountFormData] = useState<AddUpdateTermSheetDisbursedAmountDetailsRequest>(initialDisbursedAmountFormData());
@@ -103,6 +125,7 @@ const ViewTermSheet: React.FC = () => {
         OwnSweepRadioInPercentage: 0,
         LenderSweepRadioInPercentage: 0,
         Date: "",
+        Remark: "",
     });
     const [sweepRadioFormData, setSweepRadioFormData] = useState<AddUpdateTermSheetSweepRadioDetailsRequest>(initialSweepRadioFormData());
 
@@ -128,6 +151,7 @@ const ViewTermSheet: React.FC = () => {
         NameOfConsultant: "",
         CommissionInPercentage: 0,
         PaymentDate: "",
+        Remark: "",
     });
 
     const [directSellingAgentFormData, setDirectSellingAgentFormData] = useState<AddUpdateTermSheetDirectSellingAgentRequest>(initialDirectSellingAgentFormData());
@@ -150,11 +174,51 @@ const ViewTermSheet: React.FC = () => {
         ProjectId: Number(listState.ProjectId),
         Amount: 0,
         PaymentDate: "",
+        Remark: "",
     });
 
     const [repayLedgerFormData, setRepayLedgerFormData] = useState<AddUpdateTermSheetRepayLedgerRequest>(initialRepayLedgerFormData());
 
     const [errorsRepayLedger, setErrorsRepayLedger] = useState<{ [key: string]: string }>({});
+
+    // ============================================================================================================================================================
+    // DSRA
+    // ============================================================================================================================================================
+
+    const [isDebtServiceReserveAccountModalOpen, setIsDebtServiceReserveAccountModalOpen] = useState(false);
+
+    const [isDeleteDebtServiceReserveAccountDialogOpen, setIsDeleteDebtServiceReserveAccountDialogOpen] = useState(false);
+
+    const [selectedDebtServiceReserveAccountItem, setSelectedDebtServiceReserveAccountItem] = useState<TermSheetDebtServiceReserveAccountData | null>(null);
+
+    const initialDebtServiceReserveAccountFormData = (): AddUpdateTermSheetDebtServiceReserveAccountRequest => ({
+        TermSheetDebtServiceReserveAccountId: 0,
+        Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+
+        TermSheetId: Number(listState.TermSheetId),
+        TermSheetDetailsId: Number(listState.TermSheetDetailsId),
+        ProjectId: Number(listState.ProjectId),
+
+        Term: "",
+        Unit: 0,
+        PerUnitRate: 0,
+        Amount: 0,
+        Date: "",
+
+        RateOfInterestInPercentage: 0,
+        RedemptionValue: 0,
+        MaturityPeriod: 0,
+
+        WithdrawAmount: 0,
+        WithdrawDate: "",
+
+        Remark: ""
+
+    });
+
+    const [debtServiceReserveAccountFormData, setDebtServiceReserveAccountFormData] = useState<AddUpdateTermSheetDebtServiceReserveAccountRequest>(initialDebtServiceReserveAccountFormData());
+
+    const [errorsDebtServiceReserveAccount, setErrorsDebtServiceReserveAccount] = useState<{ [key: string]: string }>({});
     // =======================================================================================================================================
     useEffect(() => {
 
@@ -309,15 +373,30 @@ const ViewTermSheet: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+            approvalActionType === "approve" ? "Approving Term Sheet" : "Rejecting Term Sheet"
         );
     };
 
 
     const handleFinalizeConfirmation = () => {
+
+        if (isClosedFlag) {
+
+            setClosingFormData({
+                ClosingDate: "",
+                ClosingRemark: "",
+            });
+
+            setClosingErrors({});
+            setIsClosingModalOpen(true);
+
+            return;
+        }
+
         setFinalizeTermSheetDetailsData({
             TermSheetId: listState.TermSheetId ?? 0,
             ProjectId: listState.ProjectId ?? 0,
+            ActionType: "FINAL APPROVAL",
         });
 
         setIsConfirmationDialogBoxOpen(true);
@@ -327,17 +406,31 @@ const ViewTermSheet: React.FC = () => {
 
         if (!finalizeTermSheetDetailsData) return;
 
+        if (isClosedFlag) {
+
+            if (!finalizeTermSheetDetailsData.ClosingDate?.trim()) {
+                addToast({ type: "error", title: "Closing Date is required." });
+                return;
+            }
+
+            if (!finalizeTermSheetDetailsData.ClosingRemark?.trim()) {
+                addToast({ type: "error", title: "Closing Remarks is required." });
+                return;
+            }
+        }
+
         await runApiWithLoader(
             setIsLoading,
-
             setLoadingMessage,
             async () => {
+
                 const payload: FinalizeTermSheetDetails = {
                     TermSheetId: listState.TermSheetId ?? 0,
                     ProjectId: listState.ProjectId ?? 0,
-                    ActionType: isClosedFlag ? "CLOSED" : "FINAL APPROVAL"
+                    ActionType: isClosedFlag ? "CLOSED" : "FINAL APPROVAL",
+                    ClosingDate: isClosedFlag ? finalizeTermSheetDetailsData.ClosingDate : null,
+                    ClosingRemark: isClosedFlag ? finalizeTermSheetDetailsData.ClosingRemark : "",
                 };
-
 
                 const response = await termSheetService.apiCallFinalizeTermSheetDetails(payload);
 
@@ -346,14 +439,15 @@ const ViewTermSheet: React.FC = () => {
                     addToast({ type: "success", title: response.right?.SuccessMessage[0] });
 
                     setIsConfirmationDialogBoxOpen(false);
-
                     setFinalizeTermSheetDetailsData(null);
 
-
                     navigate("/termSheet");
+
                 } else {
+
                     addToast({ type: "error", title: response.left?.message });
                 }
+
                 return response;
             },
             undefined,
@@ -361,8 +455,71 @@ const ViewTermSheet: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
+            "Finalize Term Sheet"
+        );
+    };
 
-            "Finalize Term Sheet",
+    const handleSubmitFinalizeTermSheetClosing = async (e: React.FormEvent) => {
+
+        e.preventDefault();
+
+        const errors: { ClosingDate?: string; ClosingRemark?: string; } = {};
+
+        if (!closingFormData.ClosingDate?.trim()) {
+            errors.ClosingDate = "Closing Date is required.";
+        }
+
+        if (!closingFormData.ClosingRemark?.trim()) {
+            errors.ClosingRemark = "Closing Remarks is required.";
+        }
+
+        if (Object.keys(errors).length > 0) {
+            setClosingErrors(errors);
+            return;
+        }
+
+        setClosingErrors({});
+
+        const payload: FinalizeTermSheetDetails = {
+            TermSheetId: listState.TermSheetId ?? 0,
+            ProjectId: listState.ProjectId ?? 0,
+            ActionType: "CLOSED",
+            ClosingDate: closingFormData.ClosingDate,
+            ClosingRemark: closingFormData.ClosingRemark.trim(),
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await termSheetService.apiCallFinalizeTermSheetDetails(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right?.SuccessMessage?.[0], });
+
+                    setIsClosingModalOpen(false);
+
+                    setClosingFormData({ ClosingDate: "", ClosingRemark: "", });
+
+                    setClosingErrors({});
+
+                    navigate("/termSheet");
+
+                } else {
+
+                    addToast({ type: "error", title: response.left?.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Closing Term Sheet"
         );
     };
 
@@ -391,6 +548,9 @@ const ViewTermSheet: React.FC = () => {
                 DisbursedAmount: item.DisbursedAmount ?? 0,
 
                 DisbursedDate: item.DisbursedDate || "",
+
+                Remark: item.Remark || "",
+
             });
         } else {
             setErrorsDisbursedAmount({});
@@ -420,6 +580,45 @@ const ViewTermSheet: React.FC = () => {
     const validateDisbursedAmountForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
 
         const newErrors: { [key: string]: string } = {};
+
+        const details = termSheetViewData?.TermSheetDetailsData ?? [];
+
+        if (details.length === 0) {
+            addToast({ type: "error", title: "At least one Term Sheet Details is required." });
+            return { isValid: false, errors: newErrors };
+        }
+
+        for (const item of details) {
+
+            if (!item.SanctionDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanStartDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanEndDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
+                break;
+
+            }
+
+            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
+                break;
+
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            return { isValid: false, errors: newErrors };
+        }
+
 
         if (disbursedAmountFormData.DisbursedAmount === undefined || disbursedAmountFormData.DisbursedAmount === null || Number(disbursedAmountFormData.DisbursedAmount) <= 0) {
             newErrors.DisbursedAmount = "Disbursed Amount is required.";
@@ -486,6 +685,8 @@ const ViewTermSheet: React.FC = () => {
                     DisbursedAmount: Number(disbursedAmountFormData.DisbursedAmount),
 
                     DisbursedDate: disbursedAmountFormData.DisbursedDate || null,
+
+                    Remark: disbursedAmountFormData.Remark || "",
                 };
 
                 const response = await termSheetService.apiCallAddUpdateTermSheetDisbursedAmountDetails(payload);
@@ -568,6 +769,7 @@ const ViewTermSheet: React.FC = () => {
             "Deleting Disbursed Amount Details"
         );
     };
+
     // ============================================================================================================================================================
 
     const handleOpenSweepRadioModal = (item?: Partial<TermSheetSweepRadioDetailsData>) => {
@@ -591,6 +793,8 @@ const ViewTermSheet: React.FC = () => {
                 LenderSweepRadioInPercentage: item.LenderSweepRadioInPercentage ?? 0,
 
                 Date: item.Date || "",
+
+                Remark: item.Remark || "",
             });
         } else {
             setSweepRadioFormData(initialSweepRadioFormData());
@@ -624,6 +828,45 @@ const ViewTermSheet: React.FC = () => {
     const validateSweepRadioForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
 
         const newErrors: { [key: string]: string } = {};
+
+        const details = termSheetViewData?.TermSheetDetailsData ?? [];
+
+        if (details.length === 0) {
+            addToast({ type: "error", title: "At least one Term Sheet Details is required." });
+            return { isValid: false, errors: newErrors };
+        }
+
+        for (const item of details) {
+
+            if (!item.SanctionDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanStartDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanEndDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
+                break;
+
+            }
+
+            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
+                break;
+
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            return { isValid: false, errors: newErrors };
+        }
+
 
         if (!sweepRadioFormData.Date?.trim()) {
             newErrors.Date = "Date is required.";
@@ -701,6 +944,8 @@ const ViewTermSheet: React.FC = () => {
                     LenderSweepRadioInPercentage: Number(sweepRadioFormData.LenderSweepRadioInPercentage ?? 0),
 
                     Date: sweepRadioFormData.Date || null,
+
+                    Remark: sweepRadioFormData.Remark || "",
                 };
 
                 const response = await termSheetService.apiCallAddUpdateTermSheetSweepRadioDetails(payload);
@@ -727,10 +972,7 @@ const ViewTermSheet: React.FC = () => {
             undefined,
 
             (error: any) => {
-                addToast({
-                    type: "error",
-                    title: error.message,
-                });
+                addToast({ type: "error", title: error.message, });
             },
 
             undefined,
@@ -824,6 +1066,8 @@ const ViewTermSheet: React.FC = () => {
                 CommissionInPercentage: item.CommissionInPercentage ?? 0,
 
                 PaymentDate: item.PaymentDate || "",
+
+                Remark: item.Remark || "",
             });
 
         } else {
@@ -858,6 +1102,44 @@ const ViewTermSheet: React.FC = () => {
         const newErrors: {
             [key: string]: string;
         } = {};
+
+        const details = termSheetViewData?.TermSheetDetailsData ?? [];
+
+        if (details.length === 0) {
+            addToast({ type: "error", title: "At least one Term Sheet Details is required." });
+            return { isValid: false, errors: newErrors };
+        }
+
+        for (const item of details) {
+
+            if (!item.SanctionDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanStartDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanEndDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
+                break;
+
+            }
+
+            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
+                break;
+
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            return { isValid: false, errors: newErrors };
+        }
 
         if (!directSellingAgentFormData.NameOfConsultant?.trim()) {
             newErrors.NameOfConsultant = "Name Of Consultant is required.";
@@ -921,6 +1203,8 @@ const ViewTermSheet: React.FC = () => {
                     CommissionInPercentage: Number(directSellingAgentFormData.CommissionInPercentage ?? 0),
 
                     PaymentDate: directSellingAgentFormData.PaymentDate || null,
+
+                    Remark: directSellingAgentFormData.Remark || "",
                 };
 
                 const response = await termSheetService.apiCallAddUpdateTermSheetDirectSellingAgent(payload);
@@ -1028,6 +1312,7 @@ const ViewTermSheet: React.FC = () => {
                 ProjectId: Number(listState.ProjectId),
                 Amount: item.Amount ?? 0,
                 PaymentDate: item.PaymentDate || "",
+                Remark: item.Remark || "",
             });
         } else {
             setRepayLedgerFormData(initialRepayLedgerFormData());
@@ -1053,6 +1338,44 @@ const ViewTermSheet: React.FC = () => {
     const validateRepayLedgerForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
 
         const newErrors: { [key: string]: string } = {};
+
+        const details = termSheetViewData?.TermSheetDetailsData ?? [];
+
+        if (details.length === 0) {
+            addToast({ type: "error", title: "At least one Term Sheet Details is required." });
+            return { isValid: false, errors: newErrors };
+        }
+
+        for (const item of details) {
+
+            if (!item.SanctionDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanStartDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanEndDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
+                break;
+
+            }
+
+            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
+                break;
+
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            return { isValid: false, errors: newErrors };
+        }
 
         if (repayLedgerFormData.Amount === undefined || repayLedgerFormData.Amount === null || Number(repayLedgerFormData.Amount) <= 0) {
             newErrors.Amount = "Amount is required.";
@@ -1119,6 +1442,8 @@ const ViewTermSheet: React.FC = () => {
                     Amount: Number(repayLedgerFormData.Amount ?? 0),
 
                     PaymentDate: repayLedgerFormData.PaymentDate || null,
+
+                    Remark: repayLedgerFormData.Remark || "",
                 };
 
                 const response = await termSheetService.apiCallAddUpdateTermSheetRepayLedger(payload);
@@ -1203,6 +1528,321 @@ const ViewTermSheet: React.FC = () => {
 
     // ============================================================================================================================================================
 
+    const handleOpenDebtServiceReserveAccountModal = (item?: Partial<TermSheetDebtServiceReserveAccountData>) => {
+        setErrorsDebtServiceReserveAccount({});
+
+        if (item) {
+            setDebtServiceReserveAccountFormData({
+                TermSheetDebtServiceReserveAccountId: item.TermSheetDebtServiceReserveAccountId ?? 0,
+
+                Uniquekey: item.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+
+                TermSheetId: Number(listState.TermSheetId),
+
+                TermSheetDetailsId: Number(item.TermSheetDetailsId ?? listState.TermSheetDetailsId),
+
+                ProjectId: Number(listState.ProjectId),
+
+                Term: item.Term ?? "",
+
+                Unit: item.Unit ?? 0,
+
+                PerUnitRate: item.PerUnitRate ?? 0,
+
+                Amount: item.Amount ?? 0,
+
+                Date: item.Date || "",
+
+                RateOfInterestInPercentage: item.RateOfInterestInPercentage ?? 0,
+
+                RedemptionValue: item.RedemptionValue ?? 0,
+
+                MaturityPeriod: item.MaturityPeriod ?? 0,
+
+                WithdrawAmount: item.WithdrawAmount ?? 0,
+
+                WithdrawDate: item.WithdrawDate || "",
+
+                Remark: item.Remark ?? ""
+            });
+        } else {
+            setDebtServiceReserveAccountFormData(initialDebtServiceReserveAccountFormData());
+        }
+
+        setIsDebtServiceReserveAccountModalOpen(true);
+    };
+
+    const handleDebtServiceReserveAccountModal = () => {
+        setIsDebtServiceReserveAccountModalOpen(false);
+
+        setDebtServiceReserveAccountFormData(initialDebtServiceReserveAccountFormData());
+
+        setErrorsDebtServiceReserveAccount({});
+    };
+
+    const handleDebtServiceReserveAccountFieldChange = (field: keyof AddUpdateTermSheetDebtServiceReserveAccountRequest, value: any) => {
+        setDebtServiceReserveAccountFormData((prev) => ({ ...prev, [field]: value }));
+
+        if (errorsDebtServiceReserveAccount[field]) {
+            setErrorsDebtServiceReserveAccount((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const validateDebtServiceReserveAccountForm = (): { isValid: boolean; errors: { [key: string]: string }; } => {
+        const newErrors: { [key: string]: string } = {};
+
+        const details = termSheetViewData?.TermSheetDetailsData ?? [];
+
+        if (details.length === 0) {
+            addToast({ type: "error", title: "At least one Term Sheet Details is required." });
+            return { isValid: false, errors: newErrors };
+        }
+
+        for (const item of details) {
+
+            if (!item.SanctionDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanStartDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
+                break;
+
+            }
+
+            if (!item.LoanEndDate?.trim()) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
+                break;
+
+            }
+
+            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+                addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
+                break;
+
+            }
+        }
+
+        if (Object.keys(newErrors).length > 0) {
+            return { isValid: false, errors: newErrors };
+        }
+
+        if (!debtServiceReserveAccountFormData.Term?.trim()) {
+            newErrors.Term = "Term is required.";
+        }
+
+        if (debtServiceReserveAccountFormData.Term !== "MF" && Number(debtServiceReserveAccountFormData.Amount ?? 0) <= 0) {
+            newErrors.Amount = "Amount is required.";
+        }
+
+        if (!debtServiceReserveAccountFormData.Date?.trim()) {
+            newErrors.Date = "Date is required.";
+        }
+
+        // MF Validation
+        if (debtServiceReserveAccountFormData.Term === "MF") {
+
+            if (debtServiceReserveAccountFormData.Unit === undefined || debtServiceReserveAccountFormData.Unit === null || Number(debtServiceReserveAccountFormData.Unit) <= 0) {
+                newErrors.Unit = "Unit is required.";
+            }
+
+            if (debtServiceReserveAccountFormData.PerUnitRate === undefined || debtServiceReserveAccountFormData.PerUnitRate === null || Number(debtServiceReserveAccountFormData.PerUnitRate) <= 0) {
+                newErrors.PerUnitRate = "Per Unit Rate is required.";
+            }
+        }
+
+        // FD Validation
+        if (debtServiceReserveAccountFormData.Term === "FD") {
+
+            if (debtServiceReserveAccountFormData.RateOfInterestInPercentage === undefined || debtServiceReserveAccountFormData.RateOfInterestInPercentage === null || Number(debtServiceReserveAccountFormData.RateOfInterestInPercentage) <= 0) {
+                newErrors.RateOfInterestInPercentage = "Rate Of Interest is required.";
+            }
+
+            if (
+                debtServiceReserveAccountFormData.RedemptionValue === undefined ||
+                debtServiceReserveAccountFormData.RedemptionValue === null ||
+                Number(debtServiceReserveAccountFormData.RedemptionValue) <= 0
+            ) {
+                newErrors.RedemptionValue =
+                    "Redemption Value is required.";
+            }
+
+            if (
+                debtServiceReserveAccountFormData.MaturityPeriod === undefined ||
+                debtServiceReserveAccountFormData.MaturityPeriod === null ||
+                Number(debtServiceReserveAccountFormData.MaturityPeriod) <= 0
+            ) {
+                newErrors.MaturityPeriod =
+                    "Maturity Period is required.";
+            }
+        }
+
+        const date = convert_date_yy_mm_dd_To_dd_mm_yyyy(debtServiceReserveAccountFormData.Date ? new Date(debtServiceReserveAccountFormData.Date) : undefined);
+        const withdrawDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(debtServiceReserveAccountFormData.WithdrawDate ? new Date(debtServiceReserveAccountFormData.WithdrawDate) : undefined);
+
+        if (debtServiceReserveAccountFormData?.Date && debtServiceReserveAccountFormData.WithdrawDate && !isToDateGreaterOrEqualFromDate(date, withdrawDate)) {
+            newErrors.WithdrawDate = "Withdraw Date must be greater than or equal to Date";
+        }
+
+
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors
+        };
+    };
+
+    const handleAddUpdateDebtServiceReserveAccount = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        setErrorsDebtServiceReserveAccount({});
+
+        const validation = validateDebtServiceReserveAccountForm();
+
+        if (!validation.isValid) {
+            setErrorsDebtServiceReserveAccount(validation.errors);
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: AddUpdateTermSheetDebtServiceReserveAccountRequest = {
+
+                    TermSheetDebtServiceReserveAccountId: debtServiceReserveAccountFormData.TermSheetDebtServiceReserveAccountId ?? 0,
+
+                    Uniquekey: debtServiceReserveAccountFormData.Uniquekey ?? "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+
+                    TermSheetId: Number(listState.TermSheetId),
+
+                    TermSheetDetailsId: Number(listState.TermSheetDetailsId),
+
+                    ProjectId: Number(listState.ProjectId),
+
+                    Term: debtServiceReserveAccountFormData.Term ?? "",
+
+                    Unit: Number(debtServiceReserveAccountFormData.Unit ?? 0),
+
+                    PerUnitRate: Number(debtServiceReserveAccountFormData.PerUnitRate ?? 0),
+
+                    Amount: debtServiceReserveAccountFormData.Term === "MF" && !isClosed
+                        ? (
+                            (Number(debtServiceReserveAccountFormData.Unit) || 0) *
+                            (Number(debtServiceReserveAccountFormData.PerUnitRate) || 0)
+                        )
+                        : Number(debtServiceReserveAccountFormData.Amount ?? 0),
+
+
+                    Date: debtServiceReserveAccountFormData.Date || null,
+
+                    RateOfInterestInPercentage: Number(debtServiceReserveAccountFormData.RateOfInterestInPercentage ?? 0),
+
+                    RedemptionValue: Number(debtServiceReserveAccountFormData.RedemptionValue ?? 0),
+
+                    MaturityPeriod: Number(debtServiceReserveAccountFormData.MaturityPeriod ?? 0),
+
+                    WithdrawAmount: Number(debtServiceReserveAccountFormData.WithdrawAmount ?? 0),
+
+                    WithdrawDate: debtServiceReserveAccountFormData.WithdrawDate || null,
+
+                    Remark: debtServiceReserveAccountFormData.Remark ?? ""
+                };
+
+                const response = await termSheetService.apiCallAddUpdateTermSheetDebtServiceReserveAccount(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsDebtServiceReserveAccountModalOpen(false);
+
+                    setDebtServiceReserveAccountFormData(initialDebtServiceReserveAccountFormData());
+
+                    await fetchTermSheetDetails();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+
+            undefined,
+
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+
+            undefined,
+
+            debtServiceReserveAccountFormData.TermSheetDebtServiceReserveAccountId ? "Updating Debt Service Reserve Account" : "Adding Debt Service Reserve Account"
+        );
+    };
+
+    const handleConfirmDeleteDebtServiceReserveAccount = (item: TermSheetDebtServiceReserveAccountData) => {
+        setSelectedDebtServiceReserveAccountItem(item);
+
+        setIsDeleteDebtServiceReserveAccountDialogOpen(true);
+    };
+
+    const handleDeleteDebtServiceReserveAccount = async () => {
+
+        if (!selectedDebtServiceReserveAccountItem)
+            return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: DeleteTermSheetDebtServiceReserveAccountRequest = {
+
+                    TermSheetDebtServiceReserveAccountId: selectedDebtServiceReserveAccountItem.TermSheetDebtServiceReserveAccountId ?? 0,
+
+                    TermSheetId: Number(listState.TermSheetId),
+
+                    TermSheetDetailsId: Number(listState.TermSheetDetailsId),
+
+                    ProjectId: Number(listState.ProjectId)
+                };
+
+                const response = await termSheetService.apiCallDeleteTermSheetDebtServiceReserveAccount(params);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsDeleteDebtServiceReserveAccountDialogOpen(false);
+
+                    setSelectedDebtServiceReserveAccountItem(null);
+
+                    await fetchTermSheetDetails();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+
+            undefined,
+
+            (error: any) =>
+                addToast({ type: "error", title: error.message }),
+
+            undefined,
+
+            "Deleting Debt Service Reserve Account"
+        );
+    };
+
+    // ============================================================================================================================================================
     const loadProjectMasterWithCompany = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -1285,7 +1925,8 @@ const ViewTermSheet: React.FC = () => {
                 <Tabs
                     tabs={termSheetTabList}
                     defaultActive={activeTab}
-                    islarge={true}
+                    islarge={false}
+                    isChips
                     onTabChange={(t) => {
                         setActiveTab(t.id);
 
@@ -1306,22 +1947,33 @@ const ViewTermSheet: React.FC = () => {
 
                             companyMasterList.map((c, i) => (
 
-                                <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
+                                <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200">
 
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        {c.CompanyName ?? "-"}
-                                    </h4>
+                                    <div className="p-4 bg-white">
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
-                                        <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
-                                        <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
-                                        <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
-                                        <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
-                                        <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
-                                        <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
-                                        <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
-                                        <FieldItem label="City" value={c.CityName ?? "-"} />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                            <div className="flex items-center gap-2">
+                                                <Building2 className="w-5 h-5 text-[#135bec]" />
+                                                <FieldItem label="" value={c.CompanyName ?? "-"} />
+                                            </div>
+                                            <FieldItem label="City" value={c.CityName ?? "-"} />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                            <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
+                                            <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
+                                            <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
+                                            <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 pt-4">
+                                            <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
+                                            <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
+                                            <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
+                                            <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
+
+                                        </div>
+
                                     </div>
                                 </section>
                             ))
@@ -1332,6 +1984,8 @@ const ViewTermSheet: React.FC = () => {
                         )}
 
                     </div>
+
+
                     <div className="space-y-3 pt-5">
 
                         {termSheetViewData?.TermSheetDetailsData?.length ? (
@@ -1340,30 +1994,15 @@ const ViewTermSheet: React.FC = () => {
 
                                 <Fragment key={i}>
 
-                                    <section className="relative bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+                                    <section className="relative bg-white rounded-2xl border border-gray-200 mb-5 overflow-hidden">
 
-                                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#2563EB]" />
-
-                                        <div className="flex items-center w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+                                        <div className="flex items-center w-full bg-[#E7F2FF]  border-b border-gray-200 px-3 py-2">
 
                                             <div className="flex items-center gap-4 min-w-0">
 
-                                                <h4 className="text-lg font-semibold text-gray-900 whitespace-nowrap">
+                                                <h4 className="text-md font-semibold text-[#1D4ED8] whitespace-nowrap">
                                                     {b.NameOfInstitutionBankNBFC}
                                                 </h4>
-
-                                                {b.TermSheetURL && (
-                                                    <div className="inline-flex items-center gap-1 px-2 py-1 border border-blue-500 text-blue-600 rounded text-sm font-medium hover:bg-blue-50 transition">
-                                                        <span>Term Sheet</span>
-
-                                                        <MultiImageViewer
-                                                            images={parseDocumentUrls(b.TermSheetURL)}
-                                                            title={`Term Sheet - ${b.NameOfInstitutionBankNBFC ?? ""}`}
-                                                            isIcon={false}
-                                                            triggerLabel="Document"
-                                                        />
-                                                    </div>
-                                                )}
 
                                             </div>
 
@@ -1381,43 +2020,155 @@ const ViewTermSheet: React.FC = () => {
                                         </div>
 
                                         <div className="p-5">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                                <div>
-                                                    <p className="text-sm font-medium text-[#1D1D1D80] pb-1">
-                                                        Loan Taken By
-                                                    </p>
+                                            <div className="space-y-3">
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
 
-                                                    <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-[#EFF6FF] text-[#1D4ED8]">
-                                                        {b.LoanTakenBy ?? "-"}
-                                                    </span>
+                                                    <div className="bg-white border border-gray-100 rounded-lg px-3 py-3">
+                                                        <div className="text-md text-gray-500 mb-2">
+                                                            Facility (₹)
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {formatToKLCr(b.FacilityAmount ?? "-")}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-white border border-gray-100 rounded-lg px-3 py-3">
+                                                        <div className="text-md text-gray-500 mb-2">
+                                                            Disbursed (₹)
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {formatToKLCr(b.TotalDisbursedAmount ?? 0)}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-white border border-gray-100 rounded-lg px-3 py-3">
+                                                        <div className="text-md text-gray-500 mb-2">
+                                                            Repaid (₹)
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {formatToKLCr(b.TotalRepayLedgerAmount ?? 0)}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-white border border-gray-100 rounded-lg px-3 py-3">
+                                                        <div className="text-md text-gray-500 mb-2">
+                                                            Outstanding (₹)
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {formatToKLCr(b.FacilityAmount - b.TotalDisbursedAmount)}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-white border border-gray-100 rounded-lg px-3 py-3">
+                                                        <div className="text-md text-gray-500 mb-2">
+                                                            Rate Of Interest
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {`${b.RateOfInterestInPercentage ?? 0} %`}
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="bg-white border border-gray-100 rounded-lg px-3 py-3">
+                                                        <div className="text-md text-gray-500 mb-2">
+                                                            Loan Tenure
+                                                        </div>
+                                                        <div className="text-sm font-semibold text-gray-900">
+                                                            {`${b.LoanTenureInMonth ?? 0} Months`}
+                                                        </div>
+                                                    </div>
+
                                                 </div>
-
-                                                <FieldItem label="Type" value={b.Type ?? "-"} />
-                                                <FieldItem label="Term Sheet / Sanction Date" value={b.TermSheetSanctionDate ? formatDate_dd_MonthName_yy(b.TermSheetSanctionDate) : ""} />
-                                                <FieldItem label="Facility Amount" value={formatCurrency(b.FacilityAmount ?? "-")} />
-                                                <FieldItem label="Rate Of Interest (%)" value={`${b.RateOfInterestInPercentage ?? 0} %`} />
-                                                <FieldItem label="Processing Fees (%)" value={`${b.ProcessingFeesInPercentage ?? 0} %`} />
-                                                <FieldItem label="Legal & Doumentation (₹)" value={formatCurrency(b.LegalAndDoumentationFees ?? 0)} />
-                                                <FieldItem label="Monotorium Period (Months)" value={b.MonotoriumPeriodInMonth ?? 0} />
-                                                <FieldItem label="Loan Tenure (Months)" value={b.LoanTenureInMonth ?? 0} />
-                                                <FieldItem label="Minimum Selling Price MSP (₹)" value={formatCurrency(b.MinimumSellingPrice ?? 0)} />
-                                                <FieldItem label="Start Date" value={b.LoanStartDate ? formatDate_dd_MonthName_yy(b.LoanStartDate) : ""} />
-                                                <FieldItem label="End Date" value={b.LoanEndDate ? formatDate_dd_MonthName_yy(b.LoanEndDate) : ""} />
-                                                <FieldItem label="Total Disbursed Amount (₹)" value={formatCurrency(b.TotalDisbursedAmount ?? 0)} />
-                                                <FieldItem label="Total Repay Ledger Amount (₹)" value={formatCurrency(b.TotalRepayLedgerAmount ?? 0)} />
-
                                             </div>
 
-                                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-5">
-                                                <FieldItem label="Other Important Terms If Any" value={b.OtherImportantTermsIfAny ?? "-"} />
-                                                <FieldItem label="Remark" value={b.Remark ?? "-"} />
+                                            <div className="bg-white">
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pt-5 pb-4">
+                                                    <div>
+                                                        <p className="text-sm font-medium text-[#1D1D1D80] pb-1">
+                                                            Loan Taken By
+                                                        </p>
+
+                                                        <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-[#EFF6FF] text-[#1D4ED8]">
+                                                            {b.LoanTakenBy ?? "-"}
+                                                        </span>
+                                                    </div>
+                                                    <FieldItem label="Type" value={b.Type ?? "-"} />
+
+                                                    <FieldItem label="Term Sheet Date" value={b.TermSheetDate ? formatDate_dd_MonthName_yy(b.TermSheetDate) : ""} />
+
+                                                    <FieldItem label="Term Sheet Document" value=" " urls={b.TermSheetURL} />
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                                    <FieldItem label="Processing Fees (%)" value={`${b.ProcessingFeesInPercentage ?? 0} %`} />
+                                                    <FieldItem label="Legal & Doumentation (₹)" value={formatCurrency(b.LegalAndDoumentationFees ?? 0)} />
+                                                    <FieldItem label="Monotorium Period (Months)" value={b.MonotoriumPeriodInMonth ?? 0} />
+                                                    <FieldItem label="Minimum Selling Price MSP (₹)" value={formatCurrency(b.MinimumSellingPrice ?? 0)} />
+
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+
+                                                    <FieldItem label="Sanction Date" value={b.SanctionDate ? formatDate_dd_MonthName_yy(b.SanctionDate) : ""} />
+                                                    <FieldItem label="Loan Start Date" value={b.LoanStartDate ? formatDate_dd_MonthName_yy(b.LoanStartDate) : ""} />
+                                                    <FieldItem label="Loan End Date" value={b.LoanEndDate ? formatDate_dd_MonthName_yy(b.LoanEndDate) : ""} />
+                                                    <FieldItem label="EMI" value={formatCurrency(b.EMIAmount ?? "-")} />
+                                                </div>
+
+
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                                    <FieldItem label="Created By" value={b?.CreatedBy} />
+                                                    <FieldItem label="Created Date" value={b?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(b?.CreatedDate) : ""} />
+                                                    {b?.ModifiedBy && (
+                                                        <>
+                                                            <FieldItem label="Modified By" value={b?.ModifiedBy} />
+                                                            <FieldItem label="Modified Date" value={b?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(b?.ModifiedDate) : ""} />
+                                                        </>
+                                                    )}
+                                                </div>
+
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-1 pt-4">
+                                                    <FieldItem label="Other Important Terms If Any" value={b.OtherImportantTermsIfAny ?? "-"} />
+                                                    <FieldItem label="Remark" value={b.Remark ?? "-"} />
+
+                                                </div>
 
                                             </div>
                                         </div>
                                     </section>
 
-                                    {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
+                                    {
+                                        isClosed && (
+                                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                                <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                                    <h4 className="text-sm font-semibold text-[#333333]">
+                                                        Closing Details
+                                                    </h4>
+                                                </div>
+                                                <div className="p-4 bg-white">
+
+
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                        <FieldItem label="Closing Remark" value={(termSheetViewData.ClosingRemark)} />
+                                                        <FieldItem
+                                                            label="Closing Date"
+                                                            value={
+                                                                termSheetViewData.ClosingDate
+                                                                    ? formatDate_dd_MonthName_yy_hh_mm(termSheetViewData.ClosingDate)
+                                                                    : '-'
+                                                            }
+                                                        />
+                                                    </div>
+
+
+                                                </div>
+                                            </section>
+                                        )}
+
+                                    {/* {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
                                         <>
                                             <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
 
@@ -1465,6 +2216,7 @@ const ViewTermSheet: React.FC = () => {
 
                                                                     <FieldItem label="Disbursed Amount" value={formatCurrency(d.DisbursedAmount ?? 0)} />
 
+
                                                                     <FieldItem label="Disbursed Date" value={d.DisbursedDate ? formatDate_dd_MonthName_yy(d.DisbursedDate) : "-"} />
 
                                                                     <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
@@ -1478,6 +2230,11 @@ const ViewTermSheet: React.FC = () => {
                                                                         }
 
                                                                     />
+                                                                    <div className="md:col-span-3">
+                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                    </div>
+
+
                                                                     {index === b.TermSheetDisbursedAmountDetailsData.length - 1 && !isClosed && (
                                                                         <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
                                                                             <Button
@@ -1578,6 +2335,10 @@ const ViewTermSheet: React.FC = () => {
                                                                     <FieldItem label="Own Sweep Radio (%)" value={`${d.OwnSweepRadioInPercentage ?? 0} %`} />
                                                                     <FieldItem label="Lender Sweep Radio (%)" value={`${d.LenderSweepRadioInPercentage ?? 0} %`} />
                                                                     <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
+                                                                    <div className="md:col-span-3">
+                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                    </div>
+
                                                                     <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
 
                                                                     <FieldItem
@@ -1686,12 +2447,15 @@ const ViewTermSheet: React.FC = () => {
 
                                                             {b.TermSheetDirectSellingAgentData.map(
                                                                 (d, index) => (
-                                                                    <div key={d.TermSheetDirectSellingAgentId} className={`relative grid  grid-cols-1 md:grid-cols-3 gap-4  p-3 md:pr-24 ${index !== b.TermSheetDirectSellingAgentData.length - 1 ? "border-b border-gray-200" : ""}`} >
+                                                                    <div key={d.TermSheetDirectSellingAgentId} className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 md:pr-24 ${index !== b.TermSheetDirectSellingAgentData.length - 1 ? "border-b border-gray-200" : ""}`} >
 
                                                                         <FieldItem label="Name of Consultant" value={d.NameOfConsultant ?? "-"} />
                                                                         <FieldItem label="Commission (%)" value={`${d.CommissionInPercentage ?? 0} %`} />
                                                                         <FieldItem label="Amount (₹)" value={formatCurrency(d.Amount ?? 0)} />
                                                                         <FieldItem label="Payment Date" value={d.PaymentDate ? formatDate_dd_MonthName_yy(d.PaymentDate) : "-"} />
+                                                                        <div className="md:col-span-3">
+                                                                            <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                        </div>
                                                                         <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
 
                                                                         <FieldItem
@@ -1814,6 +2578,10 @@ const ViewTermSheet: React.FC = () => {
 
                                                                     <FieldItem label="Payment Date" value={d.PaymentDate ? formatDate_dd_MonthName_yy(d.PaymentDate) : "-"} />
 
+                                                                    <div className="md:col-span-3">
+                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                    </div>
+
                                                                     <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
 
                                                                     <FieldItem
@@ -1887,8 +2655,186 @@ const ViewTermSheet: React.FC = () => {
                                                 </div>
 
                                             </section>
+
+                                            <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+                                                    <div>
+                                                        <h4 className="text-lg font-semibold text-gray-900">Debt Service Reserve Account (DSRA) Details</h4>
+
+                                                        <div className="mt-1 text-sm font-medium text-gray-600">
+                                                            Total DSRA Amount:
+                                                            <span className="ml-2 text-base font-bold text-gray-900">
+                                                                {formatCurrency(
+                                                                    b.TermSheetDebtServiceReserveAccountData?.reduce((total, item) => total + Number(item.Amount ?? 0), 0) ??
+                                                                    0,
+                                                                )}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="w-full sm:w-auto">
+                                                        <Button
+                                                            color="blue"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                if (!canAction || isClosed) return;
+
+                                                                handleOpenDebtServiceReserveAccountModal();
+                                                            }}
+                                                            disabled={!canAction || isClosed}
+                                                        >
+                                                            Add
+                                                        </Button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="p-5">
+                                                    {b.TermSheetDebtServiceReserveAccountData?.length > 0 ? (
+                                                        <div className="space-y-3">
+                                                            {b.TermSheetDebtServiceReserveAccountData.map((d, index) => (
+                                                                <div
+                                                                    key={d.TermSheetDebtServiceReserveAccountId}
+                                                                    className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 pr-24 ${index !== b.TermSheetDebtServiceReserveAccountData.length - 1 ? "border-b border-gray-200" : ""
+                                                                        }`}
+                                                                >
+                                                                    <FieldItem label="Term" value={d.Term ?? "-"} />
+
+                                                                    {d.Term === "MF" && (
+                                                                        <>
+                                                                            <FieldItem label="Unit" value={d.Unit ?? 0} />
+
+                                                                            <FieldItem label="Per Unit Rate" value={formatCurrency(d.PerUnitRate ?? 0)} />
+                                                                        </>
+                                                                    )}
+
+                                                                    <FieldItem label="Amount" value={formatCurrency(d.Amount ?? 0)} />
+
+                                                                    <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
+
+                                                                    {d.Term === "FD" && (
+                                                                        <>
+                                                                            <FieldItem label="Rate Of Interest (%)" value={`${d.RateOfInterestInPercentage ?? 0} %`} />
+
+                                                                            <FieldItem label="Redemption Value" value={formatCurrency(d.RedemptionValue ?? 0)} />
+
+                                                                            <FieldItem label="Maturity Period" value={`${d.MaturityPeriod ?? 0}`} />
+                                                                        </>
+                                                                    )}
+
+                                                                    <FieldItem label="Withdraw Amount" value={formatCurrency(d.WithdrawAmount ?? 0)} />
+
+                                                                    <FieldItem
+                                                                        label="Withdraw Date"
+                                                                        value={d.WithdrawDate ? formatDate_dd_MonthName_yy(d.WithdrawDate) : "-"}
+                                                                    />
+
+                                                                    <div className="md:col-span-3">
+                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                    </div>
+
+                                                                    <FieldItem label="Last Modified By" value={d.ModifiedBy === "" ? d.CreatedBy : d.ModifiedBy} />
+
+                                                                    <FieldItem
+                                                                        label="Last Modified Date"
+                                                                        value={
+                                                                            d.ModifiedBy === ""
+                                                                                ? d.CreatedDate
+                                                                                    ? formatDate_dd_MonthName_yy_hh_mm(d.CreatedDate)
+                                                                                    : "-"
+                                                                                : d.ModifiedDate
+                                                                                    ? formatDate_dd_MonthName_yy_hh_mm(d.ModifiedDate)
+                                                                                    : "-"
+                                                                        }
+                                                                    />
+
+                                                                    {index === b.TermSheetDebtServiceReserveAccountData.length - 1 && !isClosed && (
+                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
+                                                                            <Button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    e.stopPropagation();
+
+                                                                                    if (!canAction || isClosed) return;
+
+                                                                                    handleOpenDebtServiceReserveAccountModal(d);
+                                                                                }}
+                                                                                color="transparent"
+                                                                                isborderRadius
+                                                                                disabled={!canAction || isClosed}
+                                                                                size="sm"
+                                                                                title="Edit"
+                                                                                style={{
+                                                                                    color: canAction && !isClosed ? "" : "#9CA3AF",
+                                                                                    cursor: canAction && !isClosed ? "pointer" : "not-allowed",
+                                                                                    opacity: canAction && !isClosed ? 1 : 0.5,
+                                                                                }}
+                                                                            >
+                                                                                <Edit className="h-4 w-4" />
+                                                                            </Button>
+                                                                            {!isClosed && (
+                                                                                <Button
+                                                                                    onClick={(e) => {
+                                                                                        e.preventDefault();
+                                                                                        e.stopPropagation();
+
+                                                                                        if (!canAction) return;
+
+                                                                                        handleConfirmDeleteDebtServiceReserveAccount(d);
+                                                                                    }}
+                                                                                    color="transparent"
+                                                                                    isborderRadius
+                                                                                    disabled={!canAction}
+                                                                                    size="sm"
+                                                                                    title="Delete"
+                                                                                    style={{
+                                                                                        color: canAction && !isClosed ? "red" : "#9CA3AF",
+                                                                                        cursor: canAction && !isClosed ? "pointer" : "not-allowed",
+                                                                                        opacity: canAction && !isClosed ? 1 : 0.5,
+                                                                                    }}
+                                                                                >
+                                                                                    <Trash2 className="h-4 w-4" />
+                                                                                </Button>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+
+                                                                    {isClosed && (
+                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
+                                                                            <Button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    e.stopPropagation();
+
+                                                                                    if (!canAction) return;
+
+                                                                                    handleOpenDebtServiceReserveAccountModal(d);
+                                                                                }}
+                                                                                color="transparent"
+                                                                                isborderRadius
+                                                                                disabled={!canAction}
+                                                                                size="sm"
+                                                                                title="Edit"
+                                                                                style={{
+                                                                                    color: canAction ? "" : "#9CA3AF",
+                                                                                    cursor: canAction ? "pointer" : "not-allowed",
+                                                                                    opacity: canAction ? 1 : 0.5,
+                                                                                }}
+                                                                            >
+                                                                                <Edit className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </div>
+                                                                    )}
+
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <NoDataView message="No Debt Service Reserve Account Details Found" />
+                                                    )}
+                                                </div>
+                                            </section>
                                         </>
-                                    )}
+                                    )} */}
                                 </Fragment>
                             ))
                         ) : (
@@ -1924,6 +2870,812 @@ const ViewTermSheet: React.FC = () => {
                 </>
             )}
 
+            {activeTab === "Disbursement" && (
+                <div className="space-y-3 pt-5">
+
+                    {termSheetViewData?.TermSheetDetailsData?.length ? (
+
+                        termSheetViewData.TermSheetDetailsData.map((b, i) => (
+
+                            <Fragment key={i}>
+                                {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
+                                    <>
+                                        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-gray-900">
+                                                        Disbursed Amount Details
+                                                    </h4>
+
+                                                    <div className="mt-1 text-sm font-small text-gray-600">
+                                                        Total Disbursed Amount:
+                                                        <span className="ml-2 text-base font-bold text-gray-900">
+                                                            {formatCurrency(b.TermSheetDisbursedAmountDetailsData?.reduce((total, item) => total + Number(item.DisbursedAmount ?? 0), 0) ?? 0)}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full sm:w-auto">
+                                                    <Button
+                                                        color="blue"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (!canAction || isClosed) return;
+                                                            handleOpenDisbursedAmountModal();
+                                                        }}
+                                                        disabled={isLoading || !canAction || isClosed || Number(b.FacilityAmount ?? 0) <= Number(b.TotalDisbursedAmount ?? 0)} >
+                                                        Add
+                                                    </Button>
+                                                </div>
+
+                                            </div>
+
+                                            <div className="p-5">
+
+                                                {b.TermSheetDisbursedAmountDetailsData?.length > 0 ? (
+                                                    <div className="space-y-3">
+
+                                                        {b.TermSheetDisbursedAmountDetailsData.map((d, index) => (
+                                                            <div key={d.TermSheetDisbursedAmountDetailsId}
+                                                                className={`relative grid grid-cols-1 md:grid-cols-5 gap-4 p-3 pr-24 ${index !== b.TermSheetDisbursedAmountDetailsData.length - 1
+                                                                    ? "border-b border-gray-200"
+                                                                    : ""
+                                                                    }`} >
+
+
+                                                                <FieldItem label="Disbursed Amount" value={formatCurrency(d.DisbursedAmount ?? 0)} />
+
+
+                                                                <FieldItem label="Disbursed Date" value={d.DisbursedDate ? formatDate_dd_MonthName_yy(d.DisbursedDate) : "-"} />
+
+                                                                <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
+
+                                                                <FieldItem
+                                                                    label="Last Modified Date"
+                                                                    value={d!.ModifiedBy === "" ?
+                                                                        d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
+                                                                        :
+                                                                        d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
+                                                                    }
+
+                                                                />
+
+                                                                {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
+                                                                    <FieldInfoTooltip label="Remark" value={d.Remark} isRow={false} />
+                                                                ) : (
+                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                )}
+                                                                {index === b.TermSheetDisbursedAmountDetailsData.length - 1 && !isClosed && (
+                                                                    <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                e.stopPropagation()
+                                                                                if (!canAction || isClosed) return;
+                                                                                handleOpenDisbursedAmountModal(d)
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction || isClosed}
+                                                                            size="sm"
+                                                                            title="Edit"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? '' : '#9CA3AF',
+                                                                                cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5
+                                                                            }}
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                e.stopPropagation()
+                                                                                if (!canAction) return;
+                                                                                handleConfirmDeleteDisbursedAmount(d)
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction}
+                                                                            size="sm"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? 'red' : '#9CA3AF',
+                                                                                cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5
+                                                                            }}
+                                                                            title="Delete"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        ))}
+
+                                                    </div>
+                                                ) : (
+                                                    <NoDataView message="No Disbursed Amount Details Found" />
+                                                )}
+
+                                            </div>
+
+                                        </section>
+
+                                    </>
+                                )}
+                            </Fragment>
+                        ))
+                    ) : (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
+                        </section>
+                    )}
+                </div>
+            )}
+
+            {activeTab === "Sweep Ratio" && (
+                <div className="space-y-3 pt-5">
+
+                    {termSheetViewData?.TermSheetDetailsData?.length ? (
+
+                        termSheetViewData.TermSheetDetailsData.map((b, i) => (
+
+                            <Fragment key={i}>
+
+
+
+                                {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
+                                    <>
+
+
+                                        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+
+
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+
+                                                <h4 className="text-lg font-semibold text-gray-900">
+                                                    Sweep Radio Details
+                                                </h4>
+
+                                                <div className="w-full sm:w-auto">
+
+                                                    <Button
+                                                        color="blue"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (!canAction || isClosed) return;
+                                                            handleOpenSweepRadioModal();
+                                                        }}
+                                                        disabled={!canAction || isClosed}
+                                                    >
+                                                        Add
+                                                    </Button>
+
+                                                </div>
+
+                                            </div>
+
+                                            <div className="p-5">
+
+                                                {b.TermSheetSweepRadioDetailsData?.length > 0 ? (
+
+                                                    <div className="space-y-3">
+
+                                                        {b.TermSheetSweepRadioDetailsData.map((d, index) => (
+                                                            <div key={d.TermSheetSweepRadioDetailsId}
+                                                                className={`relative grid grid-cols-1 md:grid-cols-6 gap-4 p-3 pr-24 ${index !== b.TermSheetSweepRadioDetailsData.length - 1
+                                                                    ? "border-b border-gray-200"
+                                                                    : ""
+                                                                    }`} >
+
+                                                                <FieldItem label="Own (%)" value={`${d.OwnSweepRadioInPercentage ?? 0} %`} />
+                                                                <FieldItem label="Lender (%)" value={`${d.LenderSweepRadioInPercentage ?? 0} %`} />
+                                                                <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
+                                                                {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
+                                                                    <FieldInfoTooltip label="Remark" value={d.Remark} />
+                                                                ) : (
+                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                )}
+                                                                <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
+
+                                                                <FieldItem
+                                                                    label="Last Modified Date"
+                                                                    value={d!.ModifiedBy === "" ?
+                                                                        d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
+                                                                        :
+                                                                        d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
+                                                                    }
+
+                                                                />
+
+
+
+                                                                {index === b.TermSheetSweepRadioDetailsData.length - 1 && !isClosed && (
+                                                                    <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
+
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                e.stopPropagation()
+                                                                                if (!canAction || isClosed) return;
+                                                                                handleOpenSweepRadioModal(d)
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction || isClosed}
+                                                                            size="sm"
+                                                                            title="Edit"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? '' : '#9CA3AF',
+                                                                                cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5
+                                                                            }}
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                e.stopPropagation()
+                                                                                if (!canAction) return;
+                                                                                handleConfirmDeleteSweepRadio(d)
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction}
+                                                                            size="sm"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? 'red' : '#9CA3AF',
+                                                                                cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5
+                                                                            }}
+                                                                            title="Delete"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                        )
+                                                        )}
+
+                                                    </div>
+
+                                                ) : (
+                                                    <NoDataView message="No Sweep Radio Details Found" />
+                                                )}
+
+                                            </div>
+
+                                        </section>
+
+
+                                    </>
+                                )}
+                            </Fragment>
+                        ))
+                    ) : (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
+                        </section>
+                    )}
+                </div>
+            )}
+
+            {activeTab === "DSA" && (
+                <div className="space-y-3 pt-5">
+
+                    {termSheetViewData?.TermSheetDetailsData?.length ? (
+
+                        termSheetViewData.TermSheetDetailsData.map((b, i) => (
+
+                            <Fragment key={i}>
+
+
+                                {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
+                                    <>
+
+
+                                        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+
+                                                <h4 className="text-lg font-semibold text-gray-900">
+                                                    Direct Selling Agent (DSA) Details
+                                                </h4>
+
+                                                <div className="w-full sm:w-auto">
+
+                                                    <Button
+                                                        color="blue"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (!canAction || isClosed) return;
+                                                            handleOpenDirectSellingAgentModal();
+                                                        }}
+                                                        disabled={!canAction || isClosed}
+                                                    >
+                                                        Add
+                                                    </Button>
+
+
+                                                </div>
+
+                                            </div>
+
+                                            <div className="p-5">
+
+                                                {b.TermSheetDirectSellingAgentData?.length > 0 ? (
+
+                                                    <div className="space-y-3">
+
+                                                        {b.TermSheetDirectSellingAgentData.map(
+                                                            (d, index) => (
+
+                                                                <div key={d.TermSheetDirectSellingAgentId} className={`relative grid grid-cols-1 md:grid-cols-7 gap-4 p-3 md:pr-24 ${index !== b.TermSheetDirectSellingAgentData.length - 1 ? "border-b border-gray-200" : ""}`} >
+
+                                                                    <FieldItem label="Name of Consultant" value={d.NameOfConsultant ?? "-"} />
+                                                                    <FieldItem label="Commission (%)" value={`${d.CommissionInPercentage ?? 0} %`} />
+                                                                    <FieldItem label="Amount (₹)" value={formatCurrency(d.Amount ?? 0)} />
+                                                                    <FieldItem label="Payment Date" value={d.PaymentDate ? formatDate_dd_MonthName_yy(d.PaymentDate) : "-"} />
+                                                                    {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
+                                                                        <FieldInfoTooltip label="Remark" value={d.Remark} />
+                                                                    ) : (
+                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                    )}
+                                                                    <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
+
+                                                                    <FieldItem
+                                                                        label="Last Modified Date"
+                                                                        value={d!.ModifiedBy === "" ?
+                                                                            d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
+                                                                            :
+                                                                            d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
+                                                                        }
+
+                                                                    />
+
+
+
+                                                                    {index === b.TermSheetDirectSellingAgentData.length - 1 && !isClosed && (
+                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
+
+                                                                            <Button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault()
+                                                                                    e.stopPropagation()
+                                                                                    if (!canAction || isClosed) return;
+                                                                                    handleOpenDirectSellingAgentModal(d)
+                                                                                }}
+                                                                                color="transparent"
+                                                                                isborderRadius
+                                                                                disabled={!canAction || isClosed}
+                                                                                size="sm"
+                                                                                title="Edit"
+                                                                                style={{
+                                                                                    color: canAction && !isClosed ? '' : '#9CA3AF',
+                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
+                                                                                }}
+                                                                            >
+                                                                                <Edit className="h-4 w-4" />
+                                                                            </Button>
+
+                                                                            <Button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault()
+                                                                                    e.stopPropagation()
+                                                                                    if (!canAction) return;
+                                                                                    handleConfirmDeleteDirectSellingAgent(d)
+                                                                                }}
+                                                                                color="transparent"
+                                                                                isborderRadius
+                                                                                disabled={!canAction}
+                                                                                size="sm"
+                                                                                style={{
+                                                                                    color: canAction && !isClosed ? 'red' : '#9CA3AF',
+                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
+                                                                                }}
+                                                                                title="Delete"
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </Button>
+
+                                                                        </div>
+                                                                    )}
+
+                                                                </div>
+
+                                                            )
+                                                        )}
+
+                                                    </div>
+
+                                                ) : (
+
+                                                    <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
+
+                                                )}
+
+                                            </div>
+
+                                        </section>
+
+
+                                    </>
+                                )}
+                            </Fragment>
+                        ))
+                    ) : (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
+                        </section>
+                    )}
+                </div>
+            )}
+
+            {activeTab === "Repayment" && (
+                <div className="space-y-3 pt-5">
+
+                    {termSheetViewData?.TermSheetDetailsData?.length ? (
+
+                        termSheetViewData.TermSheetDetailsData.map((b, i) => (
+
+                            <Fragment key={i}>
+
+
+                                {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
+                                    <>
+                                        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-gray-900">
+                                                        Repay Ledger Details
+                                                    </h4>
+
+                                                    <div className="mt-1 text-sm font-medium text-gray-600">
+                                                        Total Repay Amount:
+                                                        <span className="ml-2 text-base font-bold text-gray-900">
+                                                            {formatCurrency(
+                                                                b.TermSheetRepayLedgerData?.reduce((total, item) => total + Number(item.Amount ?? 0), 0) ?? 0
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full sm:w-auto">
+                                                    <Button
+                                                        color="blue"
+                                                        size="sm"
+                                                        onClick={() => handleOpenRepayLedgerModal()}
+                                                        disabled={isLoading || !canAction || isClosed || Number(b.FacilityAmount ?? 0) <= Number(b.TotalRepayLedgerAmount ?? 0)} >
+                                                        Add
+                                                    </Button>
+                                                </div>
+
+                                            </div>
+
+                                            <div className="p-5">
+
+                                                {b.TermSheetRepayLedgerData?.length > 0 ? (
+
+                                                    <div className="space-y-3">
+
+                                                        {b.TermSheetRepayLedgerData.map((d, index) => (
+
+                                                            <div key={d.TermSheetRepayLedgerId} className={`relative grid grid-cols-1 md:grid-cols-5 gap-4 p-3 pr-24 ${index !== b.TermSheetRepayLedgerData.length - 1 ? "border-b border-gray-200" : ""}`} >
+
+                                                                <FieldItem label="Amount" value={formatCurrency(d.Amount ?? 0)} />
+
+                                                                <FieldItem label="Payment Date" value={d.PaymentDate ? formatDate_dd_MonthName_yy(d.PaymentDate) : "-"} />
+
+                                                                {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
+                                                                    <FieldInfoTooltip label="Remark" value={d.Remark} />
+                                                                ) : (
+                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                )}
+
+                                                                <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
+
+                                                                <FieldItem
+                                                                    label="Last Modified Date"
+                                                                    value={d!.ModifiedBy === "" ?
+                                                                        d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
+                                                                        :
+                                                                        d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
+                                                                    }
+
+                                                                />
+
+
+                                                                {index === b.TermSheetRepayLedgerData.length - 1 && !isClosed && (
+
+                                                                    <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 w-full md:w-auto justify-end mt-3 md:mt-0">
+
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                e.stopPropagation()
+                                                                                if (!canAction || isClosed) return;
+                                                                                handleOpenRepayLedgerModal(d)
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction || isClosed}
+                                                                            size="sm"
+                                                                            title="Edit"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? '' : '#9CA3AF',
+                                                                                cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5
+                                                                            }}
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault()
+                                                                                e.stopPropagation()
+                                                                                if (!canAction) return;
+                                                                                handleConfirmDeleteRepayLedger(d)
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction}
+                                                                            size="sm"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? 'red' : '#9CA3AF',
+                                                                                cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5
+                                                                            }}
+                                                                            title="Delete"
+                                                                        >
+                                                                            <Trash2 className="h-4 w-4" />
+                                                                        </Button>
+
+
+                                                                    </div>
+                                                                )}
+
+                                                            </div>
+                                                        ))}
+
+                                                    </div>
+
+                                                ) : (
+                                                    <NoDataView message="No Repay Ledger Details Found" />
+                                                )}
+
+                                            </div>
+
+                                        </section>
+
+
+                                    </>
+                                )}
+                            </Fragment>
+                        ))
+                    ) : (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
+                        </section>
+                    )}
+                </div>
+            )}
+
+            {activeTab === "DSRA" && (
+                <div className="space-y-3 pt-5">
+
+                    {termSheetViewData?.TermSheetDetailsData?.length ? (
+
+                        termSheetViewData.TermSheetDetailsData.map((b, i) => (
+
+                            <Fragment key={i}>
+
+
+                                {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
+                                    <>
+                                        <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
+                                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
+                                                <div>
+                                                    <h4 className="text-lg font-semibold text-gray-900">Debt Service Reserve Account (DSRA) Details</h4>
+
+                                                    <div className="mt-1 text-sm font-medium text-gray-600">
+                                                        Total DSRA Amount:
+                                                        <span className="ml-2 text-base font-bold text-gray-900">
+                                                            {formatCurrency(
+                                                                b.TermSheetDebtServiceReserveAccountData?.reduce((total, item) => total + Number(item.Amount ?? 0), 0) ??
+                                                                0,
+                                                            )}
+                                                        </span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full sm:w-auto">
+                                                    <Button
+                                                        color="blue"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (!canAction || isClosed) return;
+
+                                                            handleOpenDebtServiceReserveAccountModal();
+                                                        }}
+                                                        disabled={!canAction || isClosed}
+                                                    >
+                                                        Add
+                                                    </Button>
+                                                </div>
+                                            </div>
+
+                                            <div className="p-5">
+                                                {b.TermSheetDebtServiceReserveAccountData?.length > 0 ? (
+                                                    <div className="space-y-3">
+                                                        {b.TermSheetDebtServiceReserveAccountData.map((d, index) => (
+                                                            <div
+                                                                key={d.TermSheetDebtServiceReserveAccountId}
+                                                                className={`relative grid grid-cols-1 md:grid-cols-4 gap-4 p-3 pr-24 ${index !== b.TermSheetDebtServiceReserveAccountData.length - 1 ? "border-b border-gray-200" : ""
+                                                                    }`}
+                                                            >
+                                                                <FieldItem label="Term" value={d.Term ?? "-"} />
+
+                                                                {d.Term === "MF" && (
+                                                                    <>
+                                                                        <FieldItem label="Unit" value={d.Unit ?? 0} />
+
+                                                                        <FieldItem label="Per Unit Rate" value={formatCurrency(d.PerUnitRate ?? 0)} />
+                                                                    </>
+                                                                )}
+
+                                                                <FieldItem label="Amount" value={formatCurrency(d.Amount ?? 0)} />
+
+                                                                <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
+
+                                                                {d.Term === "FD" && (
+                                                                    <>
+                                                                        <FieldItem label="Rate Of Interest (%)" value={`${d.RateOfInterestInPercentage ?? 0} %`} />
+
+                                                                        <FieldItem label="Redemption Value" value={formatCurrency(d.RedemptionValue ?? 0)} />
+
+                                                                        <FieldItem label="Maturity Period" value={`${d.MaturityPeriod ?? 0}`} />
+                                                                    </>
+                                                                )}
+
+                                                                <FieldItem label="Last Modified By" value={d.ModifiedBy === "" ? d.CreatedBy : d.ModifiedBy} />
+
+                                                                <FieldItem
+                                                                    label="Last Modified Date"
+                                                                    value={
+                                                                        d.ModifiedBy === ""
+                                                                            ? d.CreatedDate
+                                                                                ? formatDate_dd_MonthName_yy_hh_mm(d.CreatedDate)
+                                                                                : "-"
+                                                                            : d.ModifiedDate
+                                                                                ? formatDate_dd_MonthName_yy_hh_mm(d.ModifiedDate)
+                                                                                : "-"
+                                                                    }
+                                                                />
+
+                                                                <FieldItem label="Withdraw Amount" value={formatCurrency(d.WithdrawAmount ?? 0)} />
+
+                                                                <FieldItem
+                                                                    label="Withdraw Date"
+                                                                    value={d.WithdrawDate ? formatDate_dd_MonthName_yy(d.WithdrawDate) : "-"}
+                                                                />
+
+                                                                <div className="md:col-span-4">
+                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                </div>
+
+
+
+                                                                {index === b.TermSheetDebtServiceReserveAccountData.length - 1 && !isClosed && (
+                                                                    <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+
+                                                                                if (!canAction || isClosed) return;
+
+                                                                                handleOpenDebtServiceReserveAccountModal(d);
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction || isClosed}
+                                                                            size="sm"
+                                                                            title="Edit"
+                                                                            style={{
+                                                                                color: canAction && !isClosed ? "" : "#9CA3AF",
+                                                                                cursor: canAction && !isClosed ? "pointer" : "not-allowed",
+                                                                                opacity: canAction && !isClosed ? 1 : 0.5,
+                                                                            }}
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+                                                                        {!isClosed && (
+                                                                            <Button
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    e.stopPropagation();
+
+                                                                                    if (!canAction) return;
+
+                                                                                    handleConfirmDeleteDebtServiceReserveAccount(d);
+                                                                                }}
+                                                                                color="transparent"
+                                                                                isborderRadius
+                                                                                disabled={!canAction}
+                                                                                size="sm"
+                                                                                title="Delete"
+                                                                                style={{
+                                                                                    color: canAction && !isClosed ? "red" : "#9CA3AF",
+                                                                                    cursor: canAction && !isClosed ? "pointer" : "not-allowed",
+                                                                                    opacity: canAction && !isClosed ? 1 : 0.5,
+                                                                                }}
+                                                                            >
+                                                                                <Trash2 className="h-4 w-4" />
+                                                                            </Button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {isClosed && (
+                                                                    <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
+                                                                        <Button
+                                                                            onClick={(e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+
+                                                                                if (!canAction) return;
+
+                                                                                handleOpenDebtServiceReserveAccountModal(d);
+                                                                            }}
+                                                                            color="transparent"
+                                                                            isborderRadius
+                                                                            disabled={!canAction}
+                                                                            size="sm"
+                                                                            title="Edit"
+                                                                            style={{
+                                                                                color: canAction ? "" : "#9CA3AF",
+                                                                                cursor: canAction ? "pointer" : "not-allowed",
+                                                                                opacity: canAction ? 1 : 0.5,
+                                                                            }}
+                                                                        >
+                                                                            <Edit className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </div>
+                                                                )}
+
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <NoDataView message="No Debt Service Reserve Account Details Found" />
+                                                )}
+                                            </div>
+                                        </section>
+                                    </>
+                                )}
+                            </Fragment>
+                        ))
+                    ) : (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
+                        </section>
+                    )}
+                </div>
+            )}
+
             {activeTab === "Document" && (
                 <div className="pt-5">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -1950,7 +3702,7 @@ const ViewTermSheet: React.FC = () => {
                                     <div className="p-2 mt-auto">
                                         <FieldItem label="Submitted Original" value={d.IsSubmittedOriginalDocument ? 'Yes' : 'No'} isRow={true} />
                                         <FieldItem label="Collected Original" value={d.IsCollectedOriginalDocument ? 'Yes' : 'No'} isRow={true} />
-                                         <FieldItem label="Collected Original Date"  value={`${d?.CollectedOriginalDocumentDate ? formatDate_dd_MonthName_yy_hh_mm(d?.CollectedOriginalDocumentDate) : "-"}`} isRow={true}/>
+                                        <FieldItem label="Collected Original Date" value={`${d?.CollectedOriginalDocumentDate ? formatDate_dd_MonthName_yy_hh_mm(d?.CollectedOriginalDocumentDate) : "-"}`} isRow={true} />
                                     </div>
 
                                     <div className="bg-gray-50 p-2 mt-auto">
@@ -2021,6 +3773,17 @@ const ViewTermSheet: React.FC = () => {
                             error={errorsDisbursedAmount.DisbursedDate}
                         />
                     </div>
+                    <div>
+                        <TextArea
+                            label="Remark"
+                            className='thin-scroll'
+
+                            value={disbursedAmountFormData.Remark ?? ""}
+                            placeholder="Enter Remark"
+                            onChange={(e) => handleDisbursedAmountFieldChange("Remark", e.target.value)}
+                            error={errorsDisbursedAmount.Remark}
+                        />
+                    </div>
                 </div>
             </Modal>
 
@@ -2087,6 +3850,16 @@ const ViewTermSheet: React.FC = () => {
                         onChange={(val) => handleSweepRadioFieldChange("Date", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                         required
                         error={errorsSweepRadio.Date}
+                    />
+
+                    <TextArea
+                        label="Remark"
+                        className='thin-scroll'
+
+                        value={sweepRadioFormData.Remark ?? ""}
+                        placeholder="Enter Remark"
+                        onChange={(e) => handleSweepRadioFieldChange("Remark", e.target.value)}
+                        error={errorsSweepRadio.Remark}
                     />
 
                 </div>
@@ -2160,6 +3933,16 @@ const ViewTermSheet: React.FC = () => {
                         required
                         error={errorsDirectSellingAgent.PaymentDate}
                     />
+
+                    <TextArea
+                        label="Remark"
+                        className='thin-scroll'
+
+                        value={directSellingAgentFormData.Remark ?? ""}
+                        placeholder="Enter Remark"
+                        onChange={(e) => handleDirectSellingAgentFieldChange("Remark", e.target.value)}
+                        error={errorsDirectSellingAgent.Remark}
+                    />
                 </div>
             </Modal>
 
@@ -2201,6 +3984,16 @@ const ViewTermSheet: React.FC = () => {
                         required
                         error={errorsRepayLedger.PaymentDate}
                     />
+
+                    <TextArea
+                        label="Remark"
+                        className='thin-scroll'
+
+                        value={repayLedgerFormData.Remark ?? ""}
+                        placeholder="Enter Remark"
+                        onChange={(e) => handleRepayLedgerFieldChange("Remark", e.target.value)}
+                        error={errorsRepayLedger.Remark}
+                    />
                 </div>
             </Modal>
 
@@ -2240,6 +4033,212 @@ const ViewTermSheet: React.FC = () => {
                         ? "Closed"
                         : "Final Approved"
                 }
+            />
+            <Modal
+                isOpen={isClosingModalOpen}
+                onClose={() => {
+                    setIsClosingModalOpen(false);
+                    setClosingFormData({ ClosingDate: "", ClosingRemark: "" });
+                    setClosingErrors({});
+                }}
+                onSubmit={handleSubmitFinalizeTermSheetClosing}
+                title="Close Term Sheet"
+                saveText={"Close"}
+                loading={isLoading}
+                size="lg"
+            >
+                <div className="space-y-4">
+
+                    <DatePickerInput
+                        label="Closing Date"
+                        required
+                        value={formatDate_dd_mm_yyyy(closingFormData.ClosingDate ?? "")}
+                        error={closingErrors.ClosingDate}
+                        onChange={(value) => {
+                            setClosingFormData((prev) => ({ ...prev, ClosingDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }));
+
+                            setClosingErrors((prev) => ({ ...prev, ClosingDate: "" }));
+                        }}
+                    />
+
+                    <TextArea
+                        label="Closing Remarks"
+                        required
+                        placeholder="Enter Closing Remarks"
+                        value={closingFormData.ClosingRemark}
+                        error={closingErrors.ClosingRemark}
+                        onChange={(e) => {
+                            setClosingFormData((prev) => ({ ...prev, ClosingRemark: e.target.value }));
+
+                            setClosingErrors((prev) => ({ ...prev, ClosingRemark: "" }));
+                        }}
+                    />
+
+
+
+                </div>
+            </Modal>
+            {/* ===========================================================================================================================  */}
+            <Modal
+                isOpen={isDebtServiceReserveAccountModalOpen}
+                title={
+                    debtServiceReserveAccountFormData.TermSheetDebtServiceReserveAccountId
+                        ? "Update Debt Service Reserve Account"
+                        : "Add Debt Service Reserve Account"
+                }
+                onClose={handleDebtServiceReserveAccountModal}
+                onSubmit={handleAddUpdateDebtServiceReserveAccount}
+                saveText={Number(debtServiceReserveAccountFormData.TermSheetDebtServiceReserveAccountId) > 0 ? "Update" : "Add"}
+                loading={isLoading}
+                size="lg"
+            >
+                <div className="space-y-6 p-6 bg-blue-100">
+
+                    <SinglePageSelection
+                        label="Term"
+                        placeholder="Select Term"
+                        required
+                        value={debtServiceReserveAccountFormData.Term}
+                        onChange={(e) => handleDebtServiceReserveAccountFieldChange('Term', String(e))}
+                        options={TERM_SHEET_DSRA_TERM_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                        error={errorsDebtServiceReserveAccount.Term}
+                        disabled={isClosed}
+                    />
+
+                    {debtServiceReserveAccountFormData.Term === "MF" && (
+                        <>
+                            <Input
+                                label="Unit"
+                                value={debtServiceReserveAccountFormData.Unit ?? ""}
+                                required
+                                error={errorsDebtServiceReserveAccount.Unit}
+                                placeholder="Enter Unit"
+                                onChange={(e) => handleDebtServiceReserveAccountFieldChange("Unit", filterNumbersWithDecimal(e.target.value) || 0)}
+                                disabled={isClosed}
+                            />
+
+                            <Input
+                                label="Per Unit Rate (₹)"
+                                value={debtServiceReserveAccountFormData.PerUnitRate ?? ""}
+                                required
+                                error={errorsDebtServiceReserveAccount.PerUnitRate}
+                                placeholder="Enter Per Unit Rate"
+                                onChange={(e) => handleDebtServiceReserveAccountFieldChange("PerUnitRate", filterNumbersWithDecimal(e.target.value) || 0)}
+                                rightIcon="₹"
+                                disabled={isClosed}
+                            />
+                        </>
+                    )}
+
+                    <Input
+                        label="Amount (₹)"
+                        value={
+                            debtServiceReserveAccountFormData.Term === "MF"
+                                ? (
+                                    (Number(debtServiceReserveAccountFormData.Unit) || 0) * (Number(debtServiceReserveAccountFormData.PerUnitRate) || 0)
+                                )
+                                : (debtServiceReserveAccountFormData.Amount ?? "")
+                        }
+                        required
+                        disabled={debtServiceReserveAccountFormData.Term === "MF" && !isClosed}
+                        error={errorsDebtServiceReserveAccount.Amount}
+                        placeholder="Enter Amount"
+                        onChange={(e) => handleDebtServiceReserveAccountFieldChange("Amount", filterNumbersWithDecimal(e.target.value) || 0)}
+                        rightIcon="₹"
+                    />
+
+                    <DatePickerInput
+                        label="Date"
+                        value={formatDate_dd_mm_yyyy(debtServiceReserveAccountFormData.Date ?? "")}
+                        onChange={(val) => handleDebtServiceReserveAccountFieldChange("Date", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                        required
+                        error={errorsDebtServiceReserveAccount.Date}
+                        disabled={isClosed}
+                    />
+
+
+                    {debtServiceReserveAccountFormData.Term === "FD" && (
+                        <>
+                            <Input
+                                label="Rate Of Interest (%)"
+                                value={debtServiceReserveAccountFormData.RateOfInterestInPercentage ?? ""}
+                                required
+                                error={errorsDebtServiceReserveAccount.RateOfInterestInPercentage}
+                                placeholder="Enter Rate Of Interest"
+                                onChange={(e) =>
+                                    handleDebtServiceReserveAccountFieldChange("RateOfInterestInPercentage", allowPercentage(e.target.value) || 0)
+                                }
+                                rightIcon="%"
+                                disabled={isClosed}
+                            />
+
+                            <Input
+                                label="Redemption Value (₹)"
+                                value={debtServiceReserveAccountFormData.RedemptionValue ?? ""}
+                                required
+                                error={errorsDebtServiceReserveAccount.RedemptionValue}
+                                placeholder="Enter Redemption Value"
+                                onChange={(e) =>
+                                    handleDebtServiceReserveAccountFieldChange("RedemptionValue", filterNumbersWithDecimal(e.target.value) || 0)
+                                }
+                                rightIcon="₹"
+                                disabled={isClosed}
+                            />
+
+                            <Input
+                                label="Maturity Period"
+                                value={debtServiceReserveAccountFormData.MaturityPeriod ?? ""}
+                                required
+                                error={errorsDebtServiceReserveAccount.MaturityPeriod}
+                                placeholder="Enter Maturity Period"
+                                onChange={(e) =>
+                                    handleDebtServiceReserveAccountFieldChange("MaturityPeriod", filterNumbersWithDecimal(e.target.value) || 0)
+                                }
+                                disabled={isClosed}
+                            />
+                        </>
+                    )}
+
+                    <Input
+                        label="Withdraw Amount (₹)"
+                        value={debtServiceReserveAccountFormData.WithdrawAmount ?? ""}
+                        error={errorsDebtServiceReserveAccount.WithdrawAmount}
+                        placeholder="Enter Withdraw Amount"
+                        onChange={(e) => handleDebtServiceReserveAccountFieldChange("WithdrawAmount", filterNumbersWithDecimal(e.target.value) || 0)}
+                        rightIcon="₹"
+                        disabled={!isClosed}
+                    />
+
+                    <DatePickerInput
+                        label="Withdraw Date"
+                        value={formatDate_dd_mm_yyyy(debtServiceReserveAccountFormData.WithdrawDate ?? "")}
+                        onChange={(val) => handleDebtServiceReserveAccountFieldChange("WithdrawDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                        error={errorsDebtServiceReserveAccount.WithdrawDate}
+                        disabled={!isClosed}
+
+                    />
+
+                    <TextArea
+                        label="Remark"
+                        className='thin-scroll'
+
+                        value={debtServiceReserveAccountFormData.Remark ?? ""}
+                        placeholder="Enter Remark"
+                        onChange={(e) => handleDebtServiceReserveAccountFieldChange("Remark", e.target.value)}
+                        error={errorsDebtServiceReserveAccount.Remark}
+
+                    />
+                </div>
+            </Modal>
+            <DeleteDialog
+                isOpen={isDeleteDebtServiceReserveAccountDialogOpen}
+                onClose={() => {
+                    setIsDeleteDebtServiceReserveAccountDialogOpen(false);
+                    setSelectedDebtServiceReserveAccountItem(null);
+                }}
+                onConfirm={handleDeleteDebtServiceReserveAccount}
+                loading={isLoading}
+                pageName="Term Sheet Debt Service Reserve Account"
             />
         </div>
     );

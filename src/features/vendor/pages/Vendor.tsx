@@ -28,7 +28,6 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
-import { isVendorComplete } from '@/features/vendor/utils/vendorUtils';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import { copyToClipboard } from '@/core/utils/comman';
 
@@ -97,6 +96,7 @@ export const Vendor: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
+          VendorType: filterParams.VendorType?.trim() || undefined,
           VendorId: filterParams.VendorId ? Number(filterParams.VendorId) : undefined,
           VendorName: searchtext ?? filterParams.VendorName?.trim() ?? undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
@@ -172,6 +172,7 @@ export const Vendor: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           IsCheckPermission: true,
+          VendorType: filters.VendorType?.trim() || undefined,
           VendorName: filters.VendorName?.trim() || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
           CompanyType: filters.CompanyType?.trim() || undefined,
@@ -304,7 +305,6 @@ export const Vendor: React.FC = () => {
         align: 'left',
 
         render: (value, row) => {
-          const complete = isVendorComplete(row);
 
           return (
             <div className="flex items-center justify-center gap-2">
@@ -316,15 +316,19 @@ export const Vendor: React.FC = () => {
                 onClick={() => handleViewVendorDetails(row)}
               />
 
-              {!complete && (
-                <span title="Vendor Profile Incomplete">
-                  <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
-                </span>
-              )}
+
 
             </div>
           );
         }
+      },
+      {
+        key: 'VendorType',
+        label: 'Vendor Type',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
       },
       {
         key: 'CompanyName',

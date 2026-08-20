@@ -65,6 +65,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         const buttonStyles: React.CSSProperties = {
             width: defineWidth ? currentSize.width : fullWidth ? '100%' : 'auto',
             height: currentSize.height,
+            boxSizing: 'border-box',
             padding: currentSize.padding,
             fontSize: currentSize.fontSize,
             fontWeight: currentSize.fontWeight,
@@ -79,7 +80,6 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                     : {}),
             cursor: disabled || loading ? 'not-allowed' : 'pointer',
             transition: theme.transitions.normal,
-            fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -143,7 +143,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
                         {isIconOnly
                             ? renderIconElement(React.Children.only(children), iconSizeNumber)
-                            : <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm }}>{children}</span>
+                            : <span style={{ display: 'inline-flex', width: fullWidth ? '100%' : undefined, alignItems: 'center', justifyContent: 'center', gap: theme.spacing.sm }}>{children}</span>
                         }
 
                         {centerIcon && <span >{renderIconElement(centerIcon)}</span>}

@@ -1,5 +1,5 @@
 import React from 'react'
-import { LogOut, Trash2, Unlock, Wand2, X } from 'lucide-react'
+import { Info, LogOut, Trash2, Unlock, Wand2, X } from 'lucide-react'
 
 export interface ConfirmationDialogBoxProps {
     isOpen: boolean
@@ -86,6 +86,9 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                         {variant === 'logout' ?
                             <LogOut className={`h-6 w-6 ${styles.icon}`} />
                             :
+                            variant === 'info' ?
+                                <Info className={`h-6 w-6 ${styles.icon}`} />
+                                :
                             variant === 'inactive' ?
                                 <Unlock className={`h-6 w-6 ${styles.icon}`} />
                                 :
@@ -131,7 +134,7 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                         disabled={loading}
                         className={`px-4 py-2 rounded-md transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${styles.confirmButton}`}
                     >
-                        {loading ? 'Processing...' : confirmText}
+                        {loading ? (variant === 'danger' ? 'Deleting...' : 'Processing...') : confirmText}
                     </button>
                 </div>
             </div>

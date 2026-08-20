@@ -182,6 +182,46 @@ export const MASTER_DATA = {
 
   conference_room_name: ["Room 1", "Room 2", "Room 3"],
 
+  workMode: ["On-site", "Hybrid", "Remote"],
+
+  employmentType: ["Full-Time", "Contract", "Internship"],
+
+  experienceYears: [
+    "1 Year",
+    "2 Years",
+    "3 Years",
+    "4 Years",
+    "5 Years",
+    "6 Years",
+    "7 Years",
+    "8 Years",
+    "9 Years",
+    "10 Years",
+  ],
+
+  experienceMonths: [
+    "1 Month",
+    "2 Months",
+    "3 Months",
+    "4 Months",
+    "5 Months",
+    "6 Months",
+    "7 Months",
+    "8 Months",
+    "9 Months",
+    "10 Months",
+    "11 Months",
+    "12 Months",
+  ],
+
+  jobOpeningLockedEditFields: [
+    "JobDescription",
+    "JobResponsibilities",
+    "JobRequirement",
+    "JobQualification",
+    "JobSkills",
+  ],
+
   occupationType: ["Business", "Homemaker", "Professional", "Salaried", "Retired"],
 
   budget: [
@@ -769,6 +809,17 @@ export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width);
 export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type);
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type);
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name);
+export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
+export const EMPLOYMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.employmentType);
+export const EXPERIENCE_YEAR_OPTIONS: Option[] = MASTER_DATA.experienceYears.map((name, index) => ({
+  id: String(index + 1),
+  name,
+}));
+export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.map((name, index) => ({
+  id: String(index + 1),
+  name,
+}));
+export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving);
 export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning);
 export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster);

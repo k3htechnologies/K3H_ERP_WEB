@@ -109,12 +109,6 @@ export const LOCAL_STORAGE_KEYS = {
 
      //ESTIMATION AND BUDGET
     BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
-    
-     //TERM SHEET
-    TERM_SHEET_SELECTED_COLUMNS: 'termSheet.selectedColumns',
-
-    //TAX TRACKER
-    TAX_TRACKER_SELECTED_COLUMNS: 'taxTracker.selectedColumns',
 
 
 
@@ -144,7 +138,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INWARD_OUTWARD: 'inwardOutward.listState',
     BOOKING_Brokerage: 'bookingBrokerage.listState',
     TICKET: 'ticket.listState',
-    TERM_SHEET: 'termSheet.listState',
-    TAX_TRACKER: 'taxTracker.listState',
+    JOB_ROLE_MASTER: 'jobRoleMaster.listState',
+    JOB_OPENING: 'jobOpening.listState',
 
 } as const

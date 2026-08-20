@@ -33,7 +33,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'outdoor'
         , 'profile'
         , 'dashboard'
-        , 'event'
+        // , 'event'
         , 'resignation'
         ,'channelPartner'
         ,'compOff'

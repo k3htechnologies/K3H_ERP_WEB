@@ -1,6 +1,7 @@
 import * as E from "fp-ts/Either";
 import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 import { ticketService } from "@/features/ticket/services/TicketService";
+import type { PullActiveTicketData } from "@/features/ticket/models/TicketModel";
 
 
 export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string; departmentName?: string }) => {
@@ -19,9 +20,10 @@ export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: {
 
     const apiResponse = responseEither.right;
 
-    const itemList = (apiResponse?.Data || []).map((d: any) => ({
+    const itemList = (apiResponse?.Data || []).map((d) => ({
       label: d.FullName,
       value: String(d.EmployeeId),
+      EmployeeCode: d.EmployeeCode,
       Department: d.Department,
       Designation: d.Designation,
       Branch: d.Branch,
@@ -55,7 +57,7 @@ export const fetchEmployeeMasterById = async (employeeId: number) => {
 };
 
 
-export const formatEmployeeLabelWithTickets = (d: any) => {
+export const formatEmployeeLabelWithTickets = (d: PullActiveTicketData) => {
   const name = d.EmployeeName;
   const ticketCount = d.ActiveTickets ?? 0;
 
@@ -79,7 +81,7 @@ export const fetchCollaboratorWithTicketsDropdown = async (pageNumber: number, p
 
     const apiResponse = responseEither.right;
 
-    const itemList = (apiResponse?.Data || []).map((d: any) => ({
+    const itemList = (apiResponse?.Data || []).map((d) => ({
       label: formatEmployeeLabelWithTickets(d),
       value: String(d.EmployeeId),
     }));

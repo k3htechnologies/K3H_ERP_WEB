@@ -1614,6 +1614,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MAPPING_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_ROLE_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.DEDUCTION_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);

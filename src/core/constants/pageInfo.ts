@@ -1,5 +1,5 @@
 export const getPageInfo = (path: string) => {
-    const [first, second] = path.split("/").filter(Boolean);
+    const [first, second, third] = path.split("/").filter(Boolean);
     path = first
 
     switch (path) {
@@ -326,10 +326,88 @@ export const getPageInfo = (path: string) => {
             }
 
         //COMMAN MODULES
-        case 'event':
+        // case 'event':
+        //     return {
+        //         title: 'Event',
+        //         description: 'Profile',
+        //     }
+
+        case 'jobRoleMaster':
+            if (second === 'add') {
+                return {
+                    title: 'Add Job Role',
+                    description: 'Create a job role for the selected department',
+                }
+            }
+            if (second === 'edit') {
+                return {
+                    title: 'Edit Job Role',
+                    description: 'Update job role details',
+                }
+            }
+            if (second === 'view') {
+                return {
+                    title: 'Job Role Details',
+                    description: 'View complete job role information',
+                }
+            }
             return {
-                title: 'Event',
-                description: 'Profile',
+                title: 'Job Role Master',
+                description: 'Manage department-wise job roles',
+            }
+
+        // case 'conference':
+        //     return {
+        //         title: 'Conference Room',
+        //         description: 'View room availability and manage conference bookings',
+        //     }
+
+        // case 'task':
+        //     return {
+        //         title: 'Task',
+        //         description: 'Manage and track assigned tasks',
+        //     }
+
+        // case 'meeting':
+        //     if (second === 'add') {
+        //         return {
+        //             title: 'Schedule Meeting',
+        //             description: 'Create and organize a new meeting',
+        //         }
+        //     }
+        //     if (second === 'edit') {
+        //         return {
+        //             title: 'Edit Meeting',
+        //             description: 'Update the selected meeting details',
+        //         }
+        //     }
+        //     if (third === 'mom') {
+        //         return {
+        //             title: 'Minutes Of Meeting',
+        //             description: 'Review meeting details and manage the agenda',
+        //         }
+        //     }
+        //     return {
+        //         title: 'Meeting',
+        //         description: 'Manage and organize company departments with complete CRUD operations',
+        //     }
+
+        case 'jobOpenings':
+            if (second === 'add') {
+                return {
+                    title: 'Add Job Opening',
+                    description: 'Create a new job opening for the selected department',
+                }
+            }
+            if (second === 'interviews') {
+                return {
+                    title: 'Schedule Interview',
+                    description: 'Schedule and manage candidate interviews',
+                }
+            }
+            return {
+                title: 'Job Openings',
+                description: 'Manage department-wise job openings and applications',
             }
 
         case 'inwardOutward':

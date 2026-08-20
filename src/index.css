@@ -62,6 +62,60 @@ path.recharts-rectangle{
   outline: none;
 }
 
+.rdp-root.event-mini-calendar {
+  --rdp-accent-color: #1558d6;
+  --rdp-day-height: 24px;
+  --rdp-day-width: 24px;
+  --rdp-day_button-height: 22px;
+  --rdp-day_button-width: 22px;
+  --rdp-nav-height: 24px;
+  --rdp-nav_button-height: 22px;
+  --rdp-nav_button-width: 22px;
+  --rdp-outside-opacity: 0.55;
+  --rdp-weekday-padding: 6px 0;
+  width: 100%;
+  margin: 0;
+  font-size: 10px;
+}
+
+.event-mini-calendar .rdp-months,
+.event-mini-calendar .rdp-month,
+.event-mini-calendar .rdp-month_grid {
+  width: 100%;
+}
+
+.event-mini-calendar .rdp-month_grid {
+  table-layout: fixed;
+}
+
+.event-mini-calendar .rdp-caption_label {
+  color: #202229;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.event-mini-calendar .rdp-chevron {
+  width: 12px;
+  height: 12px;
+}
+
+.event-mini-calendar .rdp-weekday {
+  color: #596170;
+  font-size: 9px;
+  font-weight: 500;
+}
+
+.event-mini-calendar .rdp-selected {
+  font-size: 10px;
+}
+
+.event-mini-calendar .rdp-selected .rdp-day_button {
+  border: 0;
+  background-color: #1558d6;
+  color: #ffffff;
+}
+
+
 
 
 

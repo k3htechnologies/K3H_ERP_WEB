@@ -52,7 +52,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/proposedoffer': '/proposedOffer',
         '/proposedplan': '/proposedPlan',
         '/rent': '/rent',
-        '/event': '/event',
+        // '/event': '/event',
+        // '/conference': '/conference',
         '/approvalcategory': '/approvalCategory',
         '/approvaldocument': '/approvalDocument',
 
@@ -117,9 +118,6 @@ export const mapPathToRoute = (apiPath: string): string => {
         //MORE
         '/inwardoutward': '/inwardOutward',
         '/ticket': '/ticket',
-        '/otplogs': '/otpLogs',
-        '/taxtracker': '/taxTracker',
-
 
         //SETTING EXTRA
         '/companypolicy': '/companyPolicy',
@@ -127,8 +125,9 @@ export const mapPathToRoute = (apiPath: string): string => {
         //TAX TRACKER
         '/noticesection': '/noticeSection',
 
-        //FINANCE
-        '/termsheet': '/termSheet',
+        // HIRE SPACE / JOB OPENING
+        '/jobrolemaster': '/jobRoleMaster',
+        '/jobopenings': '/jobOpenings',
     }
 
 

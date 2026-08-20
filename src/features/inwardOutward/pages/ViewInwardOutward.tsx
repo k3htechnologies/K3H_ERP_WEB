@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardDocumentHistory, InwardOutwardRevertHistory, } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardRevertHistory, } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
@@ -10,7 +10,6 @@ import { Tabs } from "@/ui/components/Tab/Tab";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { useInwardOutwardListState } from "@/features/inwardOutward/context/InwardOutwardListStateContext";
-import { getInwardOutwardStatusColor } from "@/features/inwardOutward/utils/Status";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
@@ -26,7 +25,6 @@ const ViewInwardOutward: React.FC = () => {
     const [inwardOutwardData, setInwardOutwardData] = useState<InwardAndOutWardData | null>(null);
     const [trackingList, setTrackingList] = useState<InwardAndOutWardData[]>([]);
     const [inwardOutwardRevertHistory, setInwardOutwardRevertHistory] = useState<InwardOutwardRevertHistory[]>([]);
-    const [inwardOutwardDocumentData, setInwardOutwardDocumentData] = useState<InwardOutwardDocumentHistory[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
@@ -34,6 +32,9 @@ const ViewInwardOutward: React.FC = () => {
     const { canAction } = useMenuPermissions("/inwardOutward");
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
     const { listState } = useInwardOutwardListState();
+
+    const { canAction: canActionAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
+    const { canAction: canActionAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
 
     const currentInwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : listState.InwardOutwardId;
 
@@ -93,7 +94,6 @@ const ViewInwardOutward: React.FC = () => {
 
                     setInwardOutwardRevertHistory(firstItem?.InwardOutwardRevertHistory ?? []);
 
-                    setInwardOutwardDocumentData(firstItem?.InwardOutwardDocumentHistory ?? []);
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -117,14 +117,6 @@ const ViewInwardOutward: React.FC = () => {
         navigate(`/inwardOutward/add/${row.InwardOutwardId}`);
     };
 
-    const trackingData = [
-        {
-            DeliveryStatus: inwardOutwardData?.DeliveryStatus,
-            DeliveryDate: inwardOutwardData?.CreatedDate,
-        },
-        ...(inwardOutwardDocumentData || []),
-    ].filter(item => item?.DeliveryStatus);
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
@@ -136,7 +128,7 @@ const ViewInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 onCancel={() => handleBackToInwardList()}
                 EditText="Edit"
-                canAction={((inwardOutwardData?.DeliveryStatus || "") === "" && canAction) ? true : false}
+                canAction={((inwardOutwardData?.DeliveryStatus || "") === "" && (canAction || canActionAdministrativeAccess || canActionAcknowledgement)) ? true : false}
                 onEdit={() => {
                     if (inwardOutwardData) {
                         handleEditInward(inwardOutwardData);
@@ -181,6 +173,8 @@ const ViewInwardOutward: React.FC = () => {
                                     <FieldItem label="Date" value={inwardOutwardData?.InwardOutwardDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InwardOutwardDate) : ""} />
                                     <FieldItem label="Invoice Number" value={inwardOutwardData?.InvoiceNumber} />
                                     <FieldItem label="Invoice Date" value={inwardOutwardData?.InvoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InvoiceDate) : ""} />
+                                    <FieldItem label="Cheque Number" value={inwardOutwardData?.ChequeNumber} />
+
 
                                 </div>
                             </section>
@@ -227,9 +221,12 @@ const ViewInwardOutward: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Cheque Number" value={inwardOutwardData?.ChequeNumber} />
-                                        <FieldItem label="Attachment" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />
-                                        <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount)} />
+
+                                        <FieldItem label="Acknowledgement Document" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />
+
+
+                                    </div>
+                                    <div className="mt-2">
                                         <FieldItem label="Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />
                                     </div>
                                 </div>
@@ -262,8 +259,12 @@ const ViewInwardOutward: React.FC = () => {
                                         <FieldItem label="Acknowledger's Signature" value={inwardOutwardData?.AcknowledgementSignatureURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementSignatureURL} isIcon />
                                         <FieldItem label="Acknowledge Document" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
                                         <FieldItem label="Handover To" value={inwardOutwardData?.HandOverTo} />
+                                        <FieldItem label="Handover Person Mobile Number" value={`${inwardOutwardData?.HandoverPersonMobileNumberCountryCode} ${inwardOutwardData?.HandoverPersonMobileNumber}`} />
                                         <FieldItem label="Handover Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.HandOverDate ?? '')} />
+                                    </div>
+                                    <div className="p-4 -mt-5">
                                         <FieldItem label="Remark" value={inwardOutwardData?.AcknowledgementRemark ?? ''} />
+
                                     </div>
                                 </div>
                             </section>
@@ -290,57 +291,8 @@ const ViewInwardOutward: React.FC = () => {
 
                     <div className="col-span-5">
                         <section className="border-[0.1px] border-[#33333321] rounded-xl overflow-hidden bg-white">
-
-                            <div className="bg-[#F3F0FE] px-3 py-2 border-b border-[#D0D7DE]">
-                                <h1 className="text-sm font-semibold text-[#6D28D9]">
-                                    Document Tracking
-                                </h1>
-                            </div>
-
-                            <div className="p-3">
-                                <div className="overflow-y-auto h-[240px] thin-scroll pr-2 pt-2">
-                                    {trackingData && trackingData.length > 0 ? (
-                                        trackingData.map((item, index) => {
-                                            const { bg, text } = getInwardOutwardStatusColor(item.DeliveryStatus || '');
-                                            const isLast = index === trackingData.length - 1;
-
-                                            return (
-                                                <div key={index} className="flex items-start gap-3">
-                                                    <div className="flex flex-col items-center self-stretch">
-                                                        <div className="w-3 h-3 rounded-full bg-blue-600 shrink-0" />
-                                                        {!isLast && (
-                                                            <div className="w-[3px] flex-1 bg-blue-300" />
-                                                        )}
-                                                    </div>
-
-                                                    <div className={`flex-1 ${!isLast ? 'pb-6' : 'pb-1'}`}>
-                                                        <p className="text-sm font-semibold text-gray-900 leading-tight">
-                                                            {item.DeliveryDate ? formatDate_dd_MonthName_yy(item.DeliveryDate) : '-'}
-                                                        </p>
-
-                                                        <span
-                                                            className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-medium"
-                                                            style={{ backgroundColor: bg, color: text }}
-                                                        >
-                                                            {item.DeliveryStatus || '-'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            );
-                                        })
-                                    ) : (
-                                        <div className="flex justify-center items-center h-full text-gray-500 text-sm">
-                                            <NoDataView message="No document tracking data found." />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </section>
-
-
-                        <section className="border-[0.1px] border-[#33333321] rounded-xl overflow-hidden bg-white mt-3">
                             <div className="bg-[#E6FFE6] px-3 py-2 border-b border-[#D0D7DE]">
-                                <h4 className="text-sm font-semibold text-[#00A800]">
+                                <h4 className="text-sm font-semibold text-[#00A800] ">
                                     Assigned Employees
                                 </h4>
                             </div>
@@ -414,7 +366,7 @@ const ViewInwardOutward: React.FC = () => {
                                                     <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded-[4px] mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                                         <p>Document</p>
                                                         <MultiImageViewer
-                                                            images={parseDocumentUrls(item.RevertDocumentURL)}
+                                                            images={parseDocumentUrls(item?.RevertDocumentURL)}
                                                             title="Revert Document"
                                                             isIcon={false}
                                                             triggerLabel="Document"

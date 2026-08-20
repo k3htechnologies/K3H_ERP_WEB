@@ -1099,7 +1099,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storeAchievementByChannelPartnerWalkinsRevisitTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS, columns);
@@ -1446,7 +1446,7 @@ export const LocalStorageHelper = {
   },
 
   //ESTIMATION AND BUDGET
-   storeBudgetTableColumns: (columns: string): void => {
+  storeBudgetTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
     } catch (error) {

@@ -3,8 +3,7 @@ import { Calendar, Edit } from "lucide-react";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import Tabs from "@/ui/components/Tab/Tab";
-import ActivityTimeline from "@/ui/components/Timeline/ActivityTimeline";
+import Tabs, { type TabItem } from "@/ui/components/Tab/Tab";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Button, Input } from "@/ui/components/forms";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -30,11 +29,11 @@ import {
   STAGE_OPTIONS,
 } from "@/features/jobOpening/utils/candidateApplication";
 
-const CANDIDATE_DETAILS_TABS = [
+const CANDIDATE_DETAILS_TABS: TabItem[] = [
   { id: "Overview", label: "Overview" },
   { id: "Remark", label: "Remark" },
   { id: "Timeline", label: "Timeline" },
-] as const;
+];
 
 interface CandidateDetailsPanelProps {
   candidate: CandidateData | null;
@@ -161,12 +160,11 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
               <div className="mt-[14px]">
                 <Tabs
                   tabs={CANDIDATE_DETAILS_TABS}
-                  activeTab={activeTab}
+                  defaultActive={activeTab}
+                  islarge
                   onTabChange={(tab) =>
                     onTabChange(tab.id as CandidateDetailsTab)
                   }
-                  ariaLabel="Candidate details"
-                  isButtonGrid
                 />
               </div>
             </div>
@@ -336,36 +334,57 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
                   </p>
                 ) : (
                   <div className="pt-1">
-                    <ActivityTimeline
-                      compact
-                      items={timeline}
-                      getKey={(item, index) =>
-                        `${item.Event || item.Description || item.ApplicantStatus}-${item.CreatedDate || item.ActivityDate}-${index}`
-                      }
-                      emptyState={<NoDataView message="No activity yet" />}
-                      showPending
-                      renderItem={(item, _index, isLast) => (
-                        <>
-                          <div className="flex items-start justify-between gap-3">
-                            <h4
-                              className={`text-base font-medium leading-6 ${
-                                isLast
-                                  ? "text-[#1D1D1D]"
-                                  : "text-[#505F76]"
-                              }`}
-                            >
-                              {item.Event || item.Description || item.ApplicantStatus || "Candidate application updated"}
-                            </h4>
-                            <span className="shrink-0 whitespace-nowrap text-sm font-normal leading-6 text-gray-400">
-                              {formatCandidateDate(item.ActivityDate || item.CreatedDate || item.ModifiedDate)}
-                            </span>
+                    {timeline.length > 0 ? (
+                      timeline.map((item, index) => {
+                        const isLast = index === timeline.length - 1;
+
+                        return (
+                          <div
+                            key={`${item.Event || item.Description || item.ApplicantStatus}-${item.CreatedDate || item.ActivityDate}-${index}`}
+                            className="grid grid-cols-[24px_1fr] gap-3"
+                          >
+                            <div className="flex flex-col items-center">
+                              <div className="h-4 w-4 rounded-full bg-blue-600" />
+                              {!isLast && (
+                                <div className="w-[3px] flex-1 bg-blue-600" />
+                              )}
+                            </div>
+                            <div className="pb-4">
+                              <div className="flex items-start justify-between gap-3">
+                                <h4
+                                  className={`text-base font-medium leading-6 ${
+                                    isLast
+                                      ? "text-[#1D1D1D]"
+                                      : "text-[#505F76]"
+                                  }`}
+                                >
+                                  {item.Event ||
+                                    item.Description ||
+                                    item.ApplicantStatus ||
+                                    "Candidate application updated"}
+                                </h4>
+                                <span className="shrink-0 whitespace-nowrap text-sm font-normal leading-6 text-gray-400">
+                                  {formatCandidateDate(
+                                    item.ActivityDate ||
+                                      item.CreatedDate ||
+                                      item.ModifiedDate,
+                                  )}
+                                </span>
+                              </div>
+                              <p className="mt-0.5 text-xs font-normal text-gray-500">
+                                By :{" "}
+                                {item.CreatedByName ||
+                                  item.ModifiedByName ||
+                                  item.EmployeeName ||
+                                  "System"}
+                              </p>
+                            </div>
                           </div>
-                          <p className="mt-0.5 text-xs font-normal text-gray-500">
-                            By : {item.CreatedByName || item.ModifiedByName || item.EmployeeName || "System"}
-                          </p>
-                        </>
-                      )}
-                    />
+                        );
+                      })
+                    ) : (
+                      <NoDataView message="No activity yet" />
+                    )}
                   </div>
                 ))}
             </div>

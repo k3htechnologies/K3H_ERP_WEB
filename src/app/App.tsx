@@ -101,7 +101,13 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
+import Event from '@/features/event/event/pages/Event';
+import Conference from '@/features/event/conference/pages/Conference';
+import AddUpdateConference from '@/features/event/conference/pages/AddUpdateConference';
+import Meeting from '@/features/event/meeting/pages/Meeting';
+import Task from '@/features/event/task/pages/Task';
+import AddUpdateMeeting from '@/features/event/meeting/pages/AddUpdateMeeting';
+import ViewMeeting from '@/features/event/meeting/pages/ViewMeeting';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -382,8 +388,16 @@ function App() {
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
-            {/* COMMAN */}
+            {/* COMMON MOM */}
             <Route path="event" element={<Event />} />
+            <Route path="conference" element={<Conference />} />
+            <Route path="conference/add" element={<AddUpdateConference />} />
+            <Route path="task" element={<Task />} />
+            <Route path="meeting" element={<Meeting />} />
+            <Route path="meeting/add" element={<AddUpdateMeeting />} />
+            <Route path="meeting/view/:eventId" element={<ViewMeeting />} />
+            <Route path="meeting/edit/:eventId" element={<AddUpdateMeeting />} />
+            <Route path="meeting/:eventId/mom" element={<AddUpdateMeeting />} />
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />

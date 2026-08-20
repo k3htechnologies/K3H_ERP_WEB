@@ -104,6 +104,9 @@ export const LOCAL_STORAGE_KEYS = {
     //TICKET MASTER
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
 
+    MEETING_SELECTED_COLUMNS: 'meeting.selectedColumns',
+    TASK_SELECTED_COLUMNS: 'task.selectedColumns',
+
     //TAX TRACKER
      NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
 

@@ -53,6 +53,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/proposedplan': '/proposedPlan',
         '/rent': '/rent',
         '/event': '/event',
+        '/conference': '/conference',
         '/approvalcategory': '/approvalCategory',
         '/approvaldocument': '/approvalDocument',
 

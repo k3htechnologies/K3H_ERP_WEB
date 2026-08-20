@@ -14,6 +14,7 @@ interface MultiSelectPaginationProps {
   selectedValues: (string | number)[];
   required?: boolean;
   onChange: (updatedSelectedValues: (string | number)[]) => void;
+  onSelectedOptionsChange?: (selectedOptions: DropdownOptions[]) => void;
   disabled?: boolean;
   style?: React.CSSProperties;
   size?: "sm" | "md" | "lg";
@@ -32,6 +33,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   selectedValues,
   required = false,
   onChange,
+  onSelectedOptionsChange,
   disabled = false,
   style,
   size = "md",
@@ -177,7 +179,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         });
       });
     }
-  }, [loading, options.length, totalRecords, fetchOptions, dataFetchCallBack]);
+  }, [loading, filteredOptions.length, totalRecords, fetchOptions, dataFetchCallBack]);
   // Add scroll event listener
   useEffect(() => {
     if (!isOpen || !dataFetchCallBack) return;
@@ -227,6 +229,11 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     const updated = isCurrentlySelected ? selectedValues.filter((v) => String(v) !== String(value)) : [...selectedValues, String(value)];
 
     onChange(updated);
+    onSelectedOptionsChange?.(
+      options.filter((option) =>
+        updated.some((selectedValue) => String(selectedValue) === String(option.value)),
+      ),
+    );
 
   };
 
@@ -453,7 +460,9 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             <span
               onClick={(e) => {
                 e.stopPropagation();
-                onChange(options.map((opt) => opt.value));
+                const values = options.map((opt) => opt.value);
+                onChange(values);
+                onSelectedOptionsChange?.(options);
               }}
               style={{
                 justifySelf: "start",
@@ -475,6 +484,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               onClick={(e) => {
                 e.stopPropagation();
                 onChange([]);
+                onSelectedOptionsChange?.([]);
               }}
               style={{
                 justifySelf: "end",

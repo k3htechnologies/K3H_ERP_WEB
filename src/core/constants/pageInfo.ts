@@ -332,6 +332,42 @@ export const getPageInfo = (path: string) => {
                 description: 'Profile',
             }
 
+        case 'conference':
+            return {
+                title: 'Conference Room',
+                description: 'View room availability and manage conference bookings',
+            }
+
+        case 'task':
+            return {
+                title: 'Task',
+                description: 'Manage and track assigned tasks',
+            }
+
+        case 'meeting':
+            if (second === 'add') {
+                return {
+                    title: 'Schedule Meeting',
+                    description: 'Create and organize a new meeting',
+                }
+            }
+            if (second === 'edit') {
+                return {
+                    title: 'Edit Meeting',
+                    description: 'Update the selected meeting details',
+                }
+            }
+            if (third === 'mom') {
+                return {
+                    title: 'Minutes Of Meeting',
+                    description: 'Review meeting details and manage the agenda',
+                }
+            }
+            return {
+                title: 'Meeting',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+
         case 'inwardOutward':
             return {
                 title: 'Inward Outward',

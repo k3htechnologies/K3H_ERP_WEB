@@ -6,6 +6,7 @@ import { runApiWithLoader } from '@/core/utils'
 import { Loader } from '@/core/utils/loader'
 import useToast from '@/core/hooks/useToast'
 import { ConferenceRoomView } from '@/features/event/conference/components/ConferenceRoomView'
+import { EventModuleTabs } from '@/features/event/event/components/EventModuleTabs'
 import { CONFERENCE_EVENT_TYPE, type ConferenceScheduleView } from '@/features/event/conference/constants/conferenceConstants'
 import type { EventData, FilterWithPaginationEventRequest } from '@/features/event/event/models/EventModel'
 import { EventService } from '@/features/event/event/services/EventService'
@@ -65,9 +66,31 @@ const Conference: React.FC = () => {
     setIsViewOpen(true)
   }
 
+  const handleViewTabChange = (tabId: string) => {
+    setIsViewOpen(false)
+    if (tabId === 'All') {
+      navigate('/event')
+      return
+    }
+    if (tabId === 'Task') {
+      navigate('/task')
+      return
+    }
+    if (tabId === 'Meeting') {
+      navigate('/meeting')
+      return
+    }
+    if (tabId === 'Conference') {
+      navigate('/conference')
+    }
+  }
+
   return (
     <div className="overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm lg:h-[calc(100dvh-78px)] lg:min-h-[640px]">
       <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
+      <div className="border-b border-gray-200 px-4 pt-4 sm:px-5">
+        <EventModuleTabs activeTab="Conference" />
+      </div>
       <ConferenceRoomView
         currentDate={currentDate}
         events={calendarEvents}
@@ -85,7 +108,7 @@ const Conference: React.FC = () => {
         viewActiveTab="Conference"
         events={conferenceList}
         onClose={() => setIsViewOpen(false)}
-        onTabChange={() => undefined}
+        onTabChange={handleViewTabChange}
         onSubmit={() => undefined}
       />
     </div>

@@ -18,6 +18,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import MeetingCard, {
   type MeetingCardField,
 } from '@/features/event/meeting/components/MeetingCard';
+import { EventModuleTabs } from '@/features/event/event/components/EventModuleTabs';
 import {
   getAllMeetingColumnKeys,
   getMeetingCardOptions,
@@ -314,6 +315,8 @@ export const Meeting: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
+
+      <EventModuleTabs activeTab="Meeting" />
 
       <TableActionToolbar
         isShowSearchBar

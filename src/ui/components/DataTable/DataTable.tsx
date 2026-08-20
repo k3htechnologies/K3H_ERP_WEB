@@ -15,6 +15,8 @@ export interface TableColumn {
   truncate?: boolean
   maxWidth?: string
   children?: TableColumn[]
+  headerClassName?: string
+  cellClassName?: string
 }
 
 export interface PaginationInfo {
@@ -47,9 +49,20 @@ interface DataTableProps {
   sortInfo?: SortInfo
   onSort?: (sortInfo: SortInfo) => void
   onRowSelect?: (rows: any[]) => void
+  onRowClick?: (row: unknown, index: number) => void
   rowKey?: string
   lastUpdatedRow?: string | number | null
   selectedRowKeys?: (string | number)[]
+  variant?: 'default' | 'minimal'
+  tableClassName?: string
+  scrollContainerClassName?: string
+  headerClassName?: string
+  headerRowClassName?: string
+  headerCellClassName?: string
+  bodyClassName?: string
+  rowClassName?: string
+  cellClassName?: string
+  emptyCellClassName?: string
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -65,10 +78,22 @@ export const DataTable: React.FC<DataTableProps> = ({
   sortInfo,
   onSort,
   onRowSelect,
+  onRowClick,
   rowKey = "id",
   lastUpdatedRow,
-  selectedRowKeys
+  selectedRowKeys,
+  variant = 'default',
+  tableClassName = '',
+  scrollContainerClassName = '',
+  headerClassName = '',
+  headerRowClassName = '',
+  headerCellClassName = '',
+  bodyClassName = '',
+  rowClassName = '',
+  cellClassName = '',
+  emptyCellClassName = '',
 }) => {
+  const isMinimal = variant === 'minimal'
   const scrollRef = useHorizontalScroll()
   const [selectedRows, setSelectedRows] = React.useState<(string | number)[]>([])
   const [tempHighlightRow, setTempHighlightRow] = React.useState<string | number | null>(null)
@@ -159,27 +184,30 @@ export const DataTable: React.FC<DataTableProps> = ({
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
+    <div className={`${isMinimal ? 'bg-white flex flex-col' : 'bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col'} ${fixedHeight ? 'h-full' : ''} ${className}`}>
 
       {/* Table Container with Fixed Height */}
-      <div ref={scrollRef} className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+      <div ref={scrollRef} className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''} ${scrollContainerClassName}`} style={fixedHeight ? {
         maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
       } : {}}>
-        <table className="min-w-full border-collapse">
+        <table className={`min-w-full ${isMinimal ? 'border-separate border-spacing-0' : 'border-collapse'} ${tableClassName}`}>
           <thead
-            className={`${fixedHeight ? 'sticky top-0 z-40' : ''} shadow-sm`}
+            className={`${fixedHeight ? 'sticky top-0 z-40' : ''} ${isMinimal ? '' : 'shadow-sm'} ${headerClassName}`}
             style={{
-              backgroundColor: '#E5E5E5',
+              ...(!isMinimal ? { backgroundColor: '#E5E5E5' } : {}),
               position: fixedHeight ? 'sticky' : 'static',
               top: 0,
               zIndex: 30,
             }}
           >
-            <tr className="h-10" style={{ fontSize: '14px', fontWeight: '500', lineHeight: '1.4', letterSpacing: '0%', paddingTop: '6px', paddingBottom: '6px' }}>
+            <tr
+              className={`${isMinimal ? 'h-9 bg-[#F1F1F1]' : 'h-10'} ${headerRowClassName}`}
+              style={!isMinimal ? { fontSize: '14px', fontWeight: '500', lineHeight: '1.4', letterSpacing: '0%', paddingTop: '6px', paddingBottom: '6px' } : undefined}
+            >
               {columns.map((column) => (
                 <th
                   key={column.key}
-                  className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
+                  className={`${isMinimal ? 'px-5 py-3 text-xs font-medium text-[#30323A]' : 'px-4 py-2 text-gray-800 tracking-wider'} whitespace-nowrap
                   ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                   ${column.width ? `w-${column.width}` : ''}
                   ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
@@ -189,17 +217,20 @@ export const DataTable: React.FC<DataTableProps> = ({
                         ? 'sticky right-0 z-35 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
                         : ''
                     }
+                  ${headerCellClassName}
+                  ${column.headerClassName ?? ''}
         `}
                   style={{
                     ...(column.width ? { width: column.width } : {}),
-
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.4',
-                    letterSpacing: '0%',
-                    backgroundColor: '#E4F0FF',
-                    borderBottom: '1px solid #D1D5DB',
-                    borderRight: '1px solid #D1D5DB',
+                    ...(!isMinimal ? {
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      lineHeight: '1.4',
+                      letterSpacing: '0%',
+                      backgroundColor: '#E4F0FF',
+                      borderBottom: '1px solid #D1D5DB',
+                      borderRight: '1px solid #D1D5DB',
+                    } : {}),
                   }}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
@@ -213,10 +244,10 @@ export const DataTable: React.FC<DataTableProps> = ({
             </tr>
           </thead>
 
-          <tbody className="bg-white">
+          <tbody className={`bg-white ${bodyClassName}`}>
             {!loading && data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-10">
+                <td colSpan={columns.length} className={`py-10 ${emptyCellClassName}`}>
                   <NoDataView message={emptyMessage} />
                 </td>
               </tr>
@@ -228,43 +259,61 @@ export const DataTable: React.FC<DataTableProps> = ({
                 return (
                   <tr
                     key={rowKeyValue}
-                    onClick={onRowSelect ? () => {
-                      const updatedSelection = isSelected
-                        ? selectedRows.filter((k) => k !== rowKeyValue)
-                        : [...selectedRows, rowKeyValue]
+                    onClick={() => {
+                      onRowClick?.(row, index)
 
-                      setSelectedRows(updatedSelection)
+                      if (onRowSelect) {
+                        const updatedSelection = isSelected
+                          ? selectedRows.filter((k) => k !== rowKeyValue)
+                          : [...selectedRows, rowKeyValue]
 
-                      const selectedData = data.filter((r) => updatedSelection.includes(r[rowKey]))
-                      onRowSelect(selectedData)
-                    } : undefined}
-                    className={`h-10 border-b border-gray-200 transition-all duration-700
-                               ${onRowSelect ? 'cursor-pointer' : ''}
+                        setSelectedRows(updatedSelection)
+
+                        const selectedData = data.filter((r) => updatedSelection.includes(r[rowKey]))
+                        onRowSelect(selectedData)
+                      }
+                    }}
+                    className={`${isMinimal ? 'border-b border-[#E5E7EB] transition-colors' : 'h-10 border-b border-gray-200 transition-all duration-700'}
+                               ${onRowSelect || onRowClick ? 'cursor-pointer' : ''}
                                ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
                                ${isTempHighlighted ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
-                               ${!isSelected && !isTempHighlighted && onRowSelect ? 'hover:bg-gray-50' : ''}
+                               ${!isSelected && !isTempHighlighted && (onRowSelect || onRowClick) ? 'hover:bg-gray-50' : ''}
+                               ${rowClassName}
                              `}
                   >
                     {columns.map((column) => {
                       const cellValue = column.render ? column.render(row[column.key], row, index) : row[column.key]
+                      const baseCellClassName = isMinimal
+                        ? 'px-5 py-3 text-[#30323A]'
+                        : `px-4 py-2 text-gray-900 border-r border-gray-100${!column.fixed ? ' border-r border-gray-200' : ''}`
+                      const fixedCellClassName = column.fixed === 'left'
+                        ? `sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r border-gray-100 ${
+                            isTempHighlighted || isSelected ? 'bg-blue-50' : 'bg-white'
+                          }`
+                        : column.fixed === 'right'
+                          ? `sticky right-0 z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l border-gray-100 ${
+                              isTempHighlighted || isSelected ? 'bg-blue-50' : 'bg-white'
+                            }`
+                          : ''
+
                       return (
                         <td
                           key={column.key}
-                          className={`px-4 py-2 text-gray-900 border-r border-gray-100${!column.fixed ? 'border-r border-gray-200' : ''}
+                          className={`${baseCellClassName}
                            ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
-                           ${column.fixed === 'left'
-                              ? `sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r border-gray-100
-                           ${isTempHighlighted || isSelected ? 'bg-blue-50' : 'bg-white'}` : column.fixed === 'right'
-                                ? `sticky right-0 z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l border-gray-100
-                            ${isTempHighlighted || isSelected ? 'bg-blue-50' : 'bg-white'}` : ''}`}
+                           ${fixedCellClassName}
+                           ${cellClassName}
+                           ${column.cellClassName ?? ''}
+                          `}
                           style={{
                             ...(column.width ? { width: column.width } : {}),
-
-                            fontSize: '14px',
-                            fontWeight: '400',
-                            lineHeight: '1.5',
-                            letterSpacing: '0%',
-                            minHeight: '40px',
+                            ...(!isMinimal ? {
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              lineHeight: '1.5',
+                              letterSpacing: '0%',
+                              minHeight: '40px',
+                            } : {}),
                             verticalAlign: 'middle'
                           }}
                           title=""

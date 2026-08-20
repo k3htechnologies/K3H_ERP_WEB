@@ -28,6 +28,7 @@ import {
 import type { EventData } from "@/features/event/event/models/EventModel";
 import { EventService } from "@/features/event/event/services/EventService";
 import { getApiMessage, getTaskPriorityClassName } from "@/features/event/event/utils/eventUtils";
+import { EventModuleTabs } from "@/features/event/event/components/EventModuleTabs";
 
 export const Task: React.FC = () => {
 
@@ -238,6 +239,8 @@ export const Task: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>
         <div />
       </Loader>
+
+      <EventModuleTabs activeTab="Task" />
 
       <TableActionToolbar
         searchTerm={searchTerm}

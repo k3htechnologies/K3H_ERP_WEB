@@ -16,7 +16,6 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
-import Tabs from "@/ui/components/Tab/Tab";
 import type { AddUpdateEventRequest } from "@/features/event/event/models/EventModel";
 import MeetingSection from "./MeetingSection";
 import type {
@@ -227,20 +226,27 @@ export const MeetingDetailsSection: React.FC<MeetingDetailsSectionProps> = ({
         title="Meeting Details"
         contentClassName="rounded-lg bg-white p-3"
       >
-          <Tabs
-            tabs={MEETING_TYPES.map((meetingType) => ({
-              id: meetingType.id,
-              label: meetingType.id,
-              description: meetingType.description,
-              disabled,
-            }))}
-            activeTab={metadata.MeetingType}
-            onTabChange={(tab) =>
-              onMetadataChange("MeetingType", tab.id as MeetingType)
+          <div className="flex flex-wrap gap-2">
+            {MEETING_TYPES.map((meetingType) => (
+              <RadioPill
+                key={meetingType.id}
+                name="MeetingType"
+                label={meetingType.id}
+                checked={metadata.MeetingType === meetingType.id}
+                disabled={disabled}
+                onChange={() =>
+                  onMetadataChange("MeetingType", meetingType.id)
+                }
+              />
+            ))}
+          </div>
+          <p className="mt-2 text-sm text-gray-500">
+            {
+              MEETING_TYPES.find(
+                (meetingType) => meetingType.id === metadata.MeetingType,
+              )?.description
             }
-            ariaLabel="Meeting type"
-            isDescriptionCards
-          />
+          </p>
 
           <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3">
             <Input

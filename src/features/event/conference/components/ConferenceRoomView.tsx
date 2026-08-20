@@ -48,9 +48,9 @@ export const ConferenceRoomView: React.FC<ConferenceRoomViewProps> = ({
           <h2 className="text-sm font-semibold text-[#202B3C]">Conference Rooms</h2>
           <Tabs
             tabs={[{ id: 'month', label: 'Month' }, { id: 'day', label: 'Day' }]}
-            activeTab={scheduleView}
-            isCalendarTabs
-            ariaLabel="Conference schedule view"
+            defaultActive={scheduleView}
+            islarge
+            istoggleTab
             onTabChange={(tab) => onScheduleViewChange(tab.id as ConferenceScheduleView)}
           />
         </div>

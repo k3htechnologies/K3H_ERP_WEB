@@ -34,9 +34,8 @@ export const EventCalendarHeader = React.memo<EventCalendarHeaderProps>(({
       </h1>
       <Tabs
         tabs={EVENT_TAB_LIST}
-        activeTab={activeTab}
-        isCalendarTabs
-        ariaLabel="Event type"
+        defaultActive={activeTab === '' ? '' : activeTab}
+        islarge
         onTabChange={(tab) => onTabChange(tab.id)}
       />
     </div>

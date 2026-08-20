@@ -260,10 +260,9 @@ export const Task: React.FC = () => {
       <div className="mb-4 w-[224px] max-w-full">
         <Tabs
           tabs={[...TASK_TABS]}
-          activeTab={activeTab}
+          defaultActive={activeTab}
+          islarge
           onTabChange={(tab) => setActiveTab(tab.id as TaskTab)}
-          isCalendarTabs
-          ariaLabel="Task type"
         />
       </div>
 

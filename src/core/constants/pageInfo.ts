@@ -1,5 +1,5 @@
 export const getPageInfo = (path: string) => {
-    const [first, second, third] = path.split("/").filter(Boolean);
+    const [first, second] = path.split("/").filter(Boolean);
     path = first
 
     switch (path) {

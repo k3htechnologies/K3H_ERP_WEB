@@ -210,6 +210,11 @@ import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker
 import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
+import TermSheetReport from '@/features/termSheetReport/pages/TermSheetReport';
+import TestDocumentCategoryMaster from '@/features/testDocumentCategory/pages/TestDocumentCategoryMaster';
+import TestDocument from '@/features/testDocument/pages/TestDocument';
+import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pages/DrawingDocumentCategoryMaster';
+import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -378,6 +383,10 @@ function App() {
             <Route path="approvalDocument" element={<ApprovalDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
+            <Route path="testCategory" element={<TestDocumentCategoryMaster />} />
+            <Route path="testDocument" element={<TestDocument />} />
+            <Route path="drawingCategory" element={<DrawingDocumentCategoryMaster />} />
+            <Route path="drawing" element={<DrawingDocument />} />
 
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
@@ -525,6 +534,7 @@ function App() {
             <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
+            <Route path='termSheetReport' element={<TermSheetReport />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

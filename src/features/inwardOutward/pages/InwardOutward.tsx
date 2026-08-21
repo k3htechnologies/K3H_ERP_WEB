@@ -9,7 +9,7 @@ import type { PaginationInfo } from "@/ui/components/DataTable/DataTableWithoutB
 import { Loader } from "@/core/utils/loader";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
-import type { AddRevertInwardOutwardData, DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { AddRevertInwardOutwardData, DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardRevertHistory } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useInwardOutwardListState } from "@/features/inwardOutward/context/InwardOutwardListStateContext";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -52,7 +52,11 @@ export const InwardOutward: React.FC = () => {
 
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddRevertInwardOutwardData>(() => initialFormState());
+
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
+    const [revertDocumentURL, setRevertDocumentURL] = useState<string>("");
+    const [removedRevertDocumentURLs, setRemovedRevertDocumentURLs] = useState<string[]>([]);
+
 
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
@@ -61,7 +65,13 @@ export const InwardOutward: React.FC = () => {
 
     const { addToast } = useToast();
 
-    const { canExport, canAction } = useMenuPermissions();
+    const { canExport: canExportInwardOutward } = useMenuPermissions("/inwardOutward");
+    const { canExport: canExportInwardOutwardAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
+    const { canExport: canExportInwardOutwardAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
+
+    const { canAction: canActionInwardOutward } = useMenuPermissions("/inwardOutward");
+    const { canAction: canActionAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
+    const { canAction: canActionAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
 
     const location = useLocation() as any;
 
@@ -86,18 +96,25 @@ export const InwardOutward: React.FC = () => {
     const { listState, updateListState } = useInwardOutwardListState();
     const { searchTerm, filters, sortInfo } = listState;
 
+    const [searchInputValue, setSearchInputValue] = useState<string>(searchTerm ?? '');
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchInwardOutward(value)
     }, 350);
 
+
+    const canRevert = canActionAcknowledgement || canActionAdministrativeAccess;
+
+    const canDelete = canActionInwardOutward || canActionAcknowledgement || canActionAdministrativeAccess;
+
     useEffect(() => {
         setPagination({ currentPage: listState.page });
-
-        if (listState.searchTerm && String(listState.searchTerm).trim()) {
-            loadInwardOutward(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
-        } else {
-            loadInwardOutward(listState.page, listState.filters, listState.sortInfo);
-        }
+        loadInwardOutward(
+            listState.page,
+            listState.filters,
+            listState.sortInfo,
+            listState.searchTerm ? String(listState.searchTerm).trim() : undefined
+        );
     }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
     useEffect(() => {
@@ -213,7 +230,13 @@ export const InwardOutward: React.FC = () => {
             if (file instanceof File) {
                 fd.append("RevertDocumentURL", file);
             }
-        })
+        });
+
+        const hasExistingFile = revertDocumentURL && revertDocumentURL.trim() !== "" && !removedRevertDocumentURLs.includes(revertDocumentURL);
+        if (hasExistingFile) {
+            fd.append('RevertDocumentURL', revertDocumentURL);
+        }
+
         return fd;
     };
 
@@ -231,7 +254,7 @@ export const InwardOutward: React.FC = () => {
             newErrors.RevertDate = "Revert Date is required";
         }
 
-        if (!hasAnyDocumentFile(revertDocumentURLFiles)) {
+        if (!hasAnyDocumentFile(revertDocumentURLFiles, revertDocumentURL, removedRevertDocumentURLs)) {
             newErrors.RevertDocumentURL = "File is required.";
         }
 
@@ -266,9 +289,36 @@ export const InwardOutward: React.FC = () => {
 
                     const newRecord = response.right.Data[0] as AddRevertInwardOutwardData;
 
+                    const newHistory: InwardOutwardRevertHistory = {
+                        InwardOutwardRevertId: newRecord.InwardOutwardRevertId,
+                        InwardOutwardId: newRecord.InwardOutwardId,
+                        UniqueKey: newRecord.UniqueKey,
+                        RevertDate: newRecord.RevertDate,
+                        RevertRemark: newRecord.RevertRemark,
+                        RevertDocumentURL: null,
+                    };
+
                     setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
 
+                    setInwardOutwardDataList(prev =>
+                        prev.map(item =>
+                            item.InwardOutwardId === newRecord.InwardOutwardId
+                                ? {
+                                    ...item,
+                                    InwardOutwardRevertHistory: [
+                                        newHistory,
+                                        ...(item.InwardOutwardRevertHistory || []),
+                                    ],
+                                }
+                                : item
+                        )
+                    );
+
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    setRevertDocumentURL("");
+                    setRevertDocumentURLFiles([]);
+                    setRemovedRevertDocumentURLs([]);
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -308,7 +358,7 @@ export const InwardOutward: React.FC = () => {
     const InwardOutwardDataColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'SystemGeneratedCode',
-            label: 'Document Id',
+            label: 'IO Code',
             width: '15',
             sortable: true,
             align: 'left',
@@ -441,7 +491,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'SenderMobileNumber',
-            label: 'Sender Mobile No',
+            label: 'Sender Mobile Number',
             width: '15',
             sortable: false,
             align: 'left',
@@ -486,7 +536,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'ReceiverMobileNumber',
-            label: 'Receiver Mobile No',
+            label: 'Receiver Mobile Number',
             width: '15',
             sortable: false,
             align: 'left',
@@ -532,7 +582,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'Amount',
-            label: 'Amount',
+            label: 'Amount  (₹)',
             width: '15',
             sortable: false,
             align: 'right',
@@ -564,7 +614,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'HandOverTo',
-            label: 'HandOver To',
+            label: 'Handover To',
             width: '15',
             sortable: false,
             align: 'left',
@@ -572,7 +622,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'HandOverDate',
-            label: 'HandOver Date',
+            label: 'Handover Date',
             width: '15',
             sortable: false,
             align: 'center',
@@ -587,7 +637,7 @@ export const InwardOutward: React.FC = () => {
             fixed: 'right',
             render: (_value, row) => {
 
-                const showDelete = ((row.DeliveryStatus || "") === "" && canAction) ? true : false;
+                const showDelete = (row.DeliveryStatus || "") === "" && canDelete;
                 return (
                     <div className="flex justify-between">
 
@@ -615,22 +665,31 @@ export const InwardOutward: React.FC = () => {
                         <Button
                             color="transparent"
                             size="sm"
-                            disabled={!canAction}
+                            disabled={!canRevert}
 
                             style={{
-                                color: canAction ? 'green' : '#9CA3AF',
-                                cursor: canAction ? 'pointer' : 'not-allowed',
-                                opacity: canAction ? 1 : 0.5
+                                color: canRevert ? 'green' : '#9CA3AF',
+                                cursor: canRevert ? 'pointer' : 'not-allowed',
+                                opacity: canRevert ? 1 : 0.5
                             }}
                             title="Revert Inward Outward"
 
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
-                                if (!canAction) return;
+                                if (!canRevert) return;
                                 handleRevert(row)
                             }}
-                            leftIcon={<RotateCw className="h-4 w-4" />}
+                            leftIcon={
+                                <div className="relative inline-flex">
+                                    <RotateCw />
+                                    {row.InwardOutwardRevertHistory?.length > 0 && (
+                                        <span className="absolute pt-0.5 -bottom-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                                            {row.InwardOutwardRevertHistory.length}
+                                        </span>
+                                    )}
+                                </div>
+                            }
                         />
                     </div>
                 );
@@ -686,6 +745,7 @@ export const InwardOutward: React.FC = () => {
 
     const searchInwardOutward = async (searchValue: string) => {
         updateListState({ searchTerm: searchValue, page: 1 });
+        setInwardOutwardDataList([]);
 
         if (searchValue.trim() === '') {
 
@@ -698,6 +758,7 @@ export const InwardOutward: React.FC = () => {
 
     const clearSearchInwardOutward = () => {
         debouncedSearch.cancel?.();
+        setSearchInputValue('');
         updateListState({ searchTerm: '', filters: {}, page: 1, sortInfo: undefined });
         setTempFilters({});
         loadInwardOutward(1, {}, undefined, undefined);
@@ -808,10 +869,10 @@ export const InwardOutward: React.FC = () => {
 
             <TableActionToolbar
                 isShowSearchBar
-                searchTerm={searchTerm}
-                searchPlaceholder="Search By Document Id"
+                searchTerm={searchInputValue}
+                searchPlaceholder="Search By IO Code"
                 onSearchChange={v => {
-                    updateListState({ searchTerm: v });
+                    setSearchInputValue(v);
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchInwardOutward}
@@ -824,11 +885,11 @@ export const InwardOutward: React.FC = () => {
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeInwardOutwardColumnsModal(true)}
 
-                isShowAddButton={canAction}
+                isShowAddButton={canActionInwardOutward || canActionAdministrativeAccess || canActionAcknowledgement}
                 addTitle="Add"
                 onAdd={handleAddInwardOutward}
 
-                isShowExportButton={canExport && inwardOutwardDataList.length > 0}
+                isShowExportButton={(canExportInwardOutward || canExportInwardOutwardAdministrativeAccess || canExportInwardOutwardAcknowledgement) && inwardOutwardDataList.length > 0}
                 onExportExcel={() => handleExportInwardOutward('Excel')}
                 onExportPdf={() => handleExportInwardOutward('PDF')}
             />
@@ -841,7 +902,14 @@ export const InwardOutward: React.FC = () => {
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id);
-                        loadInwardOutward(1, {}, sortInfo, searchTerm, toUpperCase(t.label) === "ALL" ? "" : t.label);
+
+                        debouncedSearch.cancel?.();
+
+                        setSearchInputValue('');
+                        setTempFilters({});
+                        updateListState({ searchTerm: '', filters: {}, page: 1 });
+
+                        loadInwardOutward(1, {}, sortInfo, undefined, toUpperCase(t.label) === "ALL" ? "" : t.label);
                     }}
                 />
 
@@ -908,11 +976,15 @@ export const InwardOutward: React.FC = () => {
                             <MultiFilePicker
                                 label="Upload Document"
                                 required
-                                placeholder="select file"
+                                placeholder="Select files"
                                 value={revertDocumentURLFiles}
                                 onChange={setRevertDocumentURLFiles}
+                                availableFilesURL={revertDocumentURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel"]}
                                 maxFiles={5}
+                                onRemoveExisting={(url) => {
+                                    setRemovedRevertDocumentURLs((prev) => [...prev, url]);
+                                }}
                                 error={errors.RevertDocumentURL}
                             />
                         </div>
@@ -947,10 +1019,10 @@ export const InwardOutward: React.FC = () => {
                 <div className="space-y-6">
                     <div>
                         <Input type="text"
-                            label='Document Id'
+                            label='IO Code'
                             value={tempFilters?.SystemGeneratedCode ?? ''}
                             onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
-                            placeholder="Enter Document Id" />
+                            placeholder="Enter IO Code" />
                     </div>
                     <div>
                         <Input type="text"

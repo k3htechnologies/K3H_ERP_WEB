@@ -38,7 +38,7 @@ export interface TermSheetData {
     FacilityAmount: number
     RateOfInterestInPercentage: number
     ProcessingFeesInPercentage: number
-    LegalAndDoumentationFees: number
+    LegalAndDocumentationFees: number
     MonotoriumPeriodInMonth: number
     LoanTenureInMonth: number
     MinimumSellingPrice: number
@@ -97,7 +97,7 @@ export interface TermSheetDetailsData {
     FacilityAmount: number
     RateOfInterestInPercentage: number
     ProcessingFeesInPercentage: number
-    LegalAndDoumentationFees: number
+    LegalAndDocumentationFees: number
     MonotoriumPeriodInMonth: number
     LoanTenureInMonth: number
     MinimumSellingPrice: number
@@ -110,7 +110,7 @@ export interface TermSheetDetailsData {
 
     TermSheetDisbursedAmountDetailsData: TermSheetDisbursedAmountDetailsData[]
 
-    TermSheetSweepRadioDetailsData: TermSheetSweepRadioDetailsData[]
+    TermSheetSweepRatioDetailsData: TermSheetSweepRatioDetailsData[]
 
     TermSheetDirectSellingAgentData: TermSheetDirectSellingAgentData[]
 
@@ -157,17 +157,17 @@ export interface TermSheetDisbursedAmountDetailsData {
 }
 
 
-export interface TermSheetSweepRadioDetailsData {
+export interface TermSheetSweepRatioDetailsData {
 
-    TermSheetSweepRadioDetailsId: number
+    TermSheetSweepRatioDetailsId: number
     Uniquekey: string
 
     TermSheetId: number
     TermSheetDetailsId: number
     ProjectId: number
 
-    OwnSweepRadioInPercentage?: number
-    LenderSweepRadioInPercentage?: number
+    OwnSweepRatioInPercentage?: number
+    LenderSweepRatioInPercentage?: number
     Date: string | null
     Remark: string
     CreatedById: number
@@ -280,7 +280,7 @@ export interface AddUpdateTermSheetDetailsRequest {
     FacilityAmount?: number
     RateOfInterestInPercentage?: number
     ProcessingFeesInPercentage?: number
-    LegalAndDoumentationFees?: number
+    LegalAndDocumentationFees?: number
 
     MonotoriumPeriodInMonth?: number
     LoanTenureInMonth?: number
@@ -332,24 +332,24 @@ export interface DeleteTermSheetDisbursedAmountDetailsRequest {
 }
 
 
-export interface AddUpdateTermSheetSweepRadioDetailsRequest {
+export interface AddUpdateTermSheetSweepRatioDetailsRequest {
 
-    TermSheetSweepRadioDetailsId?: number
+    TermSheetSweepRatioDetailsId?: number
     Uniquekey?: string
 
     TermSheetId: number
     TermSheetDetailsId: number
     ProjectId?: number
 
-    OwnSweepRadioInPercentage?: number
-    LenderSweepRadioInPercentage?: number
+    OwnSweepRatioInPercentage?: number
+    LenderSweepRatioInPercentage?: number
     Date?: string | null
     Remark?: string
 }
 
-export interface DeleteTermSheetSweepRadioDetailsRequest {
+export interface DeleteTermSheetSweepRatioDetailsRequest {
 
-    TermSheetSweepRadioDetailsId?: number
+    TermSheetSweepRatioDetailsId?: number
     TermSheetId?: number
     TermSheetDetailsId: number
     ProjectId?: number
@@ -454,7 +454,7 @@ export type TermSheetDeleteResponse = ApiResponse<number>
 
 export type TermSheetDisbursedAmountSaveResponse = ApiResponse<TermSheetDisbursedAmountDetailsData[]>
 
-export type TermSheetSweepRadioSaveResponse = ApiResponse<TermSheetSweepRadioDetailsData[]>
+export type TermSheetSweepRatioSaveResponse = ApiResponse<TermSheetSweepRatioDetailsData[]>
 
 export type TermSheetDirectSellingAgentSaveResponse = ApiResponse<TermSheetDirectSellingAgentData[]>
 

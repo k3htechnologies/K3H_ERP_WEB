@@ -37,6 +37,8 @@ import type {
     FilterPaginatedFlatsResponse,
     FilterWithPaginationProjectInventoryStructureRequest,
     ProjectInventoryStructureListResponse,
+    FilterPaginatedFloorRequest,
+    FilterPaginatedFloorResponse,
 } from "@/features/inventory/models/InventoryMasterModel";
 import type { Failure } from "@/core/api/FailureResponse";
 
@@ -71,6 +73,17 @@ export const inventoryService = {
         try {
 
             return E.right(await inventoryDatasource.pullPaginatedFlats(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
+
+    apiCallPullPaginatedFloor: async (params: FilterPaginatedFloorRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, FilterPaginatedFloorResponse>> => {
+        try {
+
+            return E.right(await inventoryDatasource.pullPaginatedFloor(params, options?.signal));
 
         } catch (error: any) {
 

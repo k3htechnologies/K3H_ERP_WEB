@@ -23,6 +23,8 @@ export const InventoryApis = {
     "Add_Inventory_FLOOR_PARKING_COUNT": "Inventory/AddUpdateInventoryFloorParkingCount",
 
     "PULL_PAGINATED_FLATS": "Inventory/PullPaginatedFlats",
+
+    "PULL_PAGINATED_FLOOR": "Inventory/PullPaginatedFloor",
     
     "PULL_INVENTORY_STRUCTURE": '/Inventory/PullProjectInventoryStructure',
 }

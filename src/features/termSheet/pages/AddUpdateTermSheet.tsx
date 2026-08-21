@@ -23,7 +23,7 @@ import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFil
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { formatCurrency, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { TERM_SHEET_TYPE_OPTIONS } from "@/core/constants";
@@ -54,7 +54,7 @@ const initialFormStateTermSheetDetails = (): AddUpdateTermSheetDetailsRequest =>
     FacilityAmount: 0,
     RateOfInterestInPercentage: 0,
     ProcessingFeesInPercentage: 0,
-    LegalAndDoumentationFees: 0,
+    LegalAndDocumentationFees: 0,
     MonotoriumPeriodInMonth: 0,
     LoanTenureInMonth: 0,
     MinimumSellingPrice: 0,
@@ -108,7 +108,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
     const [deleteTermSheetDetailsData, setDeleteTermSheetDetailsData] = useState<{ row: TermSheetDetailsWithFiles; index: number } | null>(null);
 
-    const { canAction } = useMenuPermissions('/tenant');
+    const { canAction } = useMenuPermissions('/termSheet');
 
     const handleFieldChange = (field: keyof AddUpdateTermSheetRequest, value: any) => {
 
@@ -122,11 +122,11 @@ const AddUpdateTermSheet: React.FC = () => {
     useEffect(() => {
 
         if (!isAddMode) {
-            fetchTenantDetails();
+            fetchTermSheetView();
         }
     }, [termSheetIdId]);
 
-    const fetchTenantDetails = async () => {
+    const fetchTermSheetView = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -252,6 +252,7 @@ const AddUpdateTermSheet: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                     navigate("/termSheet", {
+
                         state: { listState }
                     });
 
@@ -302,7 +303,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             ProcessingFeesInPercentage: row.ProcessingFeesInPercentage ?? 0,
 
-            LegalAndDoumentationFees: row.LegalAndDoumentationFees ?? 0,
+            LegalAndDocumentationFees: row.LegalAndDocumentationFees ?? 0,
 
             MonotoriumPeriodInMonth: row.MonotoriumPeriodInMonth ?? 0,
 
@@ -340,7 +341,7 @@ const AddUpdateTermSheet: React.FC = () => {
         setIsConfirmationDialogBoxOpen(true)
     }
 
-    const applicantColumns = useMemo<TableColumn[]>(
+    const termSheetColumns = useMemo<TableColumn[]>(
         () => [
             {
                 key: 'LoanTakenBy',
@@ -407,7 +408,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             {
                 key: 'FacilityAmount',
-                label: 'Facility Amount',
+                label: 'Facility Amount (₹)',
                 width: '15',
                 sortable: false,
                 align: 'right',
@@ -442,8 +443,8 @@ const AddUpdateTermSheet: React.FC = () => {
             },
 
             {
-                key: 'LegalAndDoumentationFees',
-                label: 'Legal & Documentation Fees',
+                key: 'LegalAndDocumentationFees',
+                label: 'Legal & Documentation Fees (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
@@ -455,7 +456,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             {
                 key: 'MonotoriumPeriodInMonth',
-                label: 'Moratorium Period (Month)',
+                label: 'Monotorium Period (Month)',
                 width: '15',
                 sortable: false,
                 align: 'center',
@@ -479,7 +480,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             {
                 key: 'MinimumSellingPrice',
-                label: 'Minimum Selling Price',
+                label: 'Minimum Selling Price (MSP) (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
@@ -545,7 +546,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             {
                 key: 'EMIAmount',
-                label: 'EMI Amount',
+                label: 'EMI Amount (₹)',
                 width: '15',
                 sortable: false,
                 align: 'right',
@@ -553,66 +554,6 @@ const AddUpdateTermSheet: React.FC = () => {
                     value != null
                         ? formatCurrency(value)
                         : '-'
-            },
-
-
-
-            {
-                key: 'CreatedBy',
-                label: 'Created By',
-                width: '15',
-                sortable: false,
-                align: 'left',
-                render: value => value || '-'
-            },
-
-            {
-                key: 'CreatedDate',
-                label: 'Created Date',
-                width: '18',
-                sortable: false,
-                align: 'center',
-                render: value =>
-                    value
-                        ? formatDate_dd_MonthName_yy_hh_mm(value)
-                        : '-'
-            },
-
-            {
-                key: 'ModifiedBy',
-                label: 'Last Modified By',
-                width: '15',
-                sortable: false,
-                align: 'left',
-                render: (_, row) =>
-                    row.ModifiedBy || row.CreatedBy || '-'
-            },
-
-            {
-                key: 'ModifiedDate',
-                label: 'Last Modified Date',
-                width: '18',
-                sortable: false,
-                align: 'center',
-                render: (_, row) => {
-
-                    const date =
-                        row.ModifiedBy
-                            ? row.ModifiedDate
-                            : row.CreatedDate;
-
-                    return date
-                        ? formatDate_dd_MonthName_yy_hh_mm(date)
-                        : '-';
-                }
-            },
-            {
-                key: 'ApprovalStatus',
-                label: 'Status',
-                width: '15',
-                sortable: false,
-                align: 'right',
-                render: (value) => value || '-'
             },
             {
                 key: 'actions',
@@ -623,9 +564,9 @@ const AddUpdateTermSheet: React.FC = () => {
 
                 render: (_value, row, index) => {
 
-                    const listApprovalStatus = listState?.ApprovalStatus?.trim().toUpperCase() ?? "";
+                    const listApprovalStatus = listState?.ApprovalStatus?.trim().toUpperCase() || "PENDING";
 
-                    const rowApprovalStatus = row?.ApprovalStatus?.trim().toUpperCase() ?? "";
+                    const rowApprovalStatus = row?.ApprovalStatus?.trim().toUpperCase() ?? "PENDING";
 
                     // ================= EDIT =================
                     const canEdit =
@@ -684,7 +625,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                 color="transparent"
                                 isborderRadius
                                 size="sm"
-                                title="Edit Applicant"
+                                title="Edit Term Sheet"
                                 disabled={!canEdit}
                                 style={{
                                     color: canEdit ? "#0B3251" : "#9CA3AF",
@@ -730,7 +671,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
     );
 
-    const handleFieldChangeTenantApplicant = (field: keyof AddUpdateTermSheetDetailsRequest, value: any) => {
+    const handleFieldChangeTermSheet = (field: keyof AddUpdateTermSheetDetailsRequest, value: any) => {
 
         setFormDataForTermSheetDetails((prev) => ({ ...prev, [field]: value }));
 
@@ -773,19 +714,19 @@ const AddUpdateTermSheet: React.FC = () => {
             newErrorsTermSheetDetails.ProcessingFeesInPercentage = "Processing Fees (%) is required";
         }
 
-        if (formDataForTermSheetDetails.LegalAndDoumentationFees === undefined || formDataForTermSheetDetails.LegalAndDoumentationFees === null || Number(formDataForTermSheetDetails.LegalAndDoumentationFees) <= 0) {
-            newErrorsTermSheetDetails.LegalAndDoumentationFees = "Legal & Documentation Fees is required";
+        if (formDataForTermSheetDetails.LegalAndDocumentationFees === undefined || formDataForTermSheetDetails.LegalAndDocumentationFees === null || Number(formDataForTermSheetDetails.LegalAndDocumentationFees) < 0) {
+            newErrorsTermSheetDetails.LegalAndDocumentationFees = "Legal & Documentation Fees is required";
         }
 
         if (formDataForTermSheetDetails.MonotoriumPeriodInMonth === undefined || formDataForTermSheetDetails.MonotoriumPeriodInMonth === null || Number(formDataForTermSheetDetails.MonotoriumPeriodInMonth) < 0) {
-            newErrorsTermSheetDetails.MonotoriumPeriodInMonth = "Moratorium Period is required";
+            newErrorsTermSheetDetails.MonotoriumPeriodInMonth = "Monotorium Period is required";
         }
 
         if (formDataForTermSheetDetails.LoanTenureInMonth === undefined || formDataForTermSheetDetails.LoanTenureInMonth === null || Number(formDataForTermSheetDetails.LoanTenureInMonth) <= 0) {
             newErrorsTermSheetDetails.LoanTenureInMonth = "Loan Tenure is required";
         }
 
-        if (formDataForTermSheetDetails.MinimumSellingPrice === undefined || formDataForTermSheetDetails.MinimumSellingPrice === null || Number(formDataForTermSheetDetails.MinimumSellingPrice) <= 0) {
+        if (formDataForTermSheetDetails.MinimumSellingPrice === undefined || formDataForTermSheetDetails.MinimumSellingPrice === null || Number(formDataForTermSheetDetails.MinimumSellingPrice) < 0) {
             newErrorsTermSheetDetails.MinimumSellingPrice = "Minimum Selling Price is required";
         }
 
@@ -880,7 +821,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             ProcessingFeesInPercentage: formDataForTermSheetDetails.ProcessingFeesInPercentage ?? 0,
 
-            LegalAndDoumentationFees: formDataForTermSheetDetails.LegalAndDoumentationFees ?? 0,
+            LegalAndDocumentationFees: formDataForTermSheetDetails.LegalAndDocumentationFees ?? 0,
 
             MonotoriumPeriodInMonth: formDataForTermSheetDetails.MonotoriumPeriodInMonth ?? 0,
 
@@ -897,8 +838,10 @@ const AddUpdateTermSheet: React.FC = () => {
             LoanEndDate: formDataForTermSheetDetails.LoanEndDate || null,
 
             EMIAmount: formDataForTermSheetDetails.EMIAmount ?? 0,
+
             IsApproval: false,
-            ApprovalStatus: "Pending",
+
+            ApprovalStatus: editingTermSheetDetailsData?.row.ApprovalStatus ??"Pending",
 
             TermSheetURL: createFileUrlString(mergedTermSheetFiles),
 
@@ -910,17 +853,22 @@ const AddUpdateTermSheet: React.FC = () => {
 
             TermSheetDisbursedAmountDetailsData: editingTermSheetDetailsData?.row.TermSheetDisbursedAmountDetailsData ?? [],
 
-            TermSheetSweepRadioDetailsData: editingTermSheetDetailsData?.row.TermSheetSweepRadioDetailsData ?? [],
+            TermSheetSweepRatioDetailsData: editingTermSheetDetailsData?.row.TermSheetSweepRatioDetailsData ?? [],
 
             TermSheetDirectSellingAgentData: editingTermSheetDetailsData?.row.TermSheetDirectSellingAgentData ?? [],
 
             TermSheetDebtServiceReserveAccountData: editingTermSheetDetailsData?.row.TermSheetDebtServiceReserveAccountData ?? [],
 
             CreatedById: 0,
+
             CreatedBy: '',
+
             CreatedDate: null,
+
             ModifiedById: 0,
+
             ModifiedBy: '',
+
             ModifiedDate: null,
 
             _termSheetFiles: mergedTermSheetFiles,
@@ -1033,7 +981,7 @@ const AddUpdateTermSheet: React.FC = () => {
 
             fd.append(`${prefix}.ProcessingFeesInPercentage`, String(app.ProcessingFeesInPercentage ?? 0));
 
-            fd.append(`${prefix}.LegalAndDoumentationFees`, String(app.LegalAndDoumentationFees ?? 0));
+            fd.append(`${prefix}.LegalAndDocumentationFees`, String(app.LegalAndDocumentationFees ?? 0));
 
             fd.append(`${prefix}.MonotoriumPeriodInMonth`, String(app.MonotoriumPeriodInMonth ?? 0));
 
@@ -1080,7 +1028,7 @@ const AddUpdateTermSheet: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(Number(projectId));
+                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(Number(projectId), false);
 
                 if (E.isRight(response)) {
 
@@ -1188,32 +1136,32 @@ const AddUpdateTermSheet: React.FC = () => {
 
                                     <section key={i} className="relative overflow-hidden bg-white rounded-2xl border border-gray-200">
 
-                                      <div className="p-4 bg-white">
+                                        <div className="p-4 bg-white">
 
-                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
-                                    <div className="flex items-center gap-2">
-                                        <Building2 className="w-5 h-5 text-[#135bec]" />
-                                        <FieldItem label="" value={c.CompanyName ?? "-"} />
-                                    </div>
-                                    <FieldItem label="City" value={c.CityName ?? "-"} />
-                                </div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                                <div className="flex items-center gap-2">
+                                                    <Building2 className="w-5 h-5 text-[#135bec]" />
+                                                    <FieldItem label="" value={c.CompanyName ?? "-"} />
+                                                </div>
+                                                <FieldItem label="City" value={c.CityName ?? "-"} />
+                                            </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
-                                            <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
-                                            <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
-                                            <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
-                                            <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                                <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
+                                                <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
+                                                <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
+                                                <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 pt-4">
+                                                <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
+                                                <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
+                                                <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
+                                                <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
+
+                                            </div>
+
                                         </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 pt-4">
-                                            <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
-                                            <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
-                                            <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
-                                            <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
-
-                                        </div>
-
-                                    </div>
                                     </section>
                                 ))
                             ) : (
@@ -1225,7 +1173,7 @@ const AddUpdateTermSheet: React.FC = () => {
                         </div>
                         <DataTable
                             data={termSheetDetailsList}
-                            columns={applicantColumns}
+                            columns={termSheetColumns}
                             emptyMessage="No term sheet details found"
                             fixedHeight={false}
                             recordsPerPage={20}
@@ -1278,9 +1226,9 @@ const AddUpdateTermSheet: React.FC = () => {
                                 label="Loan Taken By"
                                 error={errorsTermSheetDetails.LoanTakenBy}
                                 value={formDataForTermSheetDetails.LoanTakenBy ?? ""}
-                                maxLength={100}
+                                maxLength={50}
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                onChange={(e) => handleFieldChangeTenantApplicant("LoanTakenBy", filterLetters(e.target.value))}
+                                onChange={(e) => handleFieldChangeTermSheet("LoanTakenBy", filterLetters(e.target.value))}
                                 placeholder="Enter Loan Taken By"
                             />
                         </div>
@@ -1291,9 +1239,9 @@ const AddUpdateTermSheet: React.FC = () => {
                                 required
                                 error={errorsTermSheetDetails.NameOfInstitutionBankNBFC}
                                 value={formDataForTermSheetDetails.NameOfInstitutionBankNBFC ?? ""}
-                                maxLength={100}
+                                maxLength={50}
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                onChange={(e) => handleFieldChangeTenantApplicant("NameOfInstitutionBankNBFC", filterLetters(e.target.value))}
+                                onChange={(e) => handleFieldChangeTermSheet("NameOfInstitutionBankNBFC", e.target.value)}
                                 placeholder="Enter Name Of Institution / Bank / NBFC"
                             />
                         </div>
@@ -1306,7 +1254,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                 required
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
                                 value={formDataForTermSheetDetails?.Type ?? ""}
-                                onChange={(e) => handleFieldChangeTenantApplicant('Type', String(e))}
+                                onChange={(e) => handleFieldChangeTermSheet('Type', String(e))}
                                 options={TERM_SHEET_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                                 error={errorsTermSheetDetails.Type}
                             />
@@ -1316,14 +1264,14 @@ const AddUpdateTermSheet: React.FC = () => {
                             <DatePickerInput
                                 label="Term Sheet Date"
                                 value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.TermSheetDate ?? "")}
-                                onChange={(val) => handleFieldChangeTenantApplicant("TermSheetDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                onChange={(val) => handleFieldChangeTermSheet("TermSheetDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                 error={errorsTermSheetDetails.TermSheetDate}
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
                                 required
                             />
                         </div>
 
-                        
+
 
                         <div>
                             <Input
@@ -1333,7 +1281,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                 error={errorsTermSheetDetails.FacilityAmount}
                                 placeholder="Enter Facility Amount"
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                onChange={(e) => handleFieldChangeTenantApplicant("FacilityAmount", filterNumbersWithDecimal(e.target.value) || 0)}
+                                onChange={(e) => handleFieldChangeTermSheet("FacilityAmount", filterNumbersWithDecimal(e.target.value) || 0)}
                                 rightIcon="₹"
                             />
                         </div>
@@ -1348,7 +1296,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                 onChange={(e) => {
                                     const val = allowPercentage(e.target.value);
                                     if (val !== null) {
-                                        handleFieldChangeTenantApplicant("RateOfInterestInPercentage", filterNumbersWithDecimal(e.target.value));
+                                        handleFieldChangeTermSheet("RateOfInterestInPercentage", filterNumbersWithDecimal(e.target.value));
                                     }
                                 }}
 
@@ -1367,7 +1315,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                 onChange={(e) => {
                                     const val = allowPercentage(e.target.value);
                                     if (val !== null) {
-                                        handleFieldChangeTenantApplicant("ProcessingFeesInPercentage", filterNumbersWithDecimal(e.target.value));
+                                        handleFieldChangeTermSheet("ProcessingFeesInPercentage", filterNumbersWithDecimal(e.target.value));
                                     }
                                 }}
                                 rightIcon="%"
@@ -1376,14 +1324,13 @@ const AddUpdateTermSheet: React.FC = () => {
 
                         <div>
                             <Input
-                                value={formDataForTermSheetDetails.LegalAndDoumentationFees ?? ""}
+                                value={formDataForTermSheetDetails.LegalAndDocumentationFees ?? ""}
                                 label="Legal & Documentation Fees (₹)"
-                                required
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                error={errorsTermSheetDetails.LegalAndDoumentationFees}
+                                error={errorsTermSheetDetails.LegalAndDocumentationFees}
                                 placeholder="Enter Legal & Documentation Fees"
                                 onChange={(e) =>
-                                    handleFieldChangeTenantApplicant("LegalAndDoumentationFees", filterNumbersWithDecimal(e.target.value) || 0)
+                                    handleFieldChangeTermSheet("LegalAndDocumentationFees", filterNumbersWithDecimal(e.target.value) || 0)
                                 }
                                 rightIcon="₹"
                             />
@@ -1392,12 +1339,12 @@ const AddUpdateTermSheet: React.FC = () => {
                         <div>
                             <Input
                                 value={formDataForTermSheetDetails.MonotoriumPeriodInMonth ?? ""}
-                                label="Moratorium Period (In Month)"
+                                label="Monotorium Period (In Month)"
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                required
                                 error={errorsTermSheetDetails.MonotoriumPeriodInMonth}
-                                placeholder="Enter Moratorium Period"
-                                onChange={(e) => handleFieldChangeTenantApplicant("MonotoriumPeriodInMonth", filterNumbers(e.target.value) || 0)}
+                                placeholder="Enter Monotorium Period"
+                                maxLength={5}
+                                onChange={(e) => handleFieldChangeTermSheet("MonotoriumPeriodInMonth", filterNumbers(e.target.value) || 0)}
                                 rightIcon="Month"
                             />
                         </div>
@@ -1410,7 +1357,8 @@ const AddUpdateTermSheet: React.FC = () => {
                                 required
                                 error={errorsTermSheetDetails.LoanTenureInMonth}
                                 placeholder="Enter Loan Tenure"
-                                onChange={(e) => handleFieldChangeTenantApplicant("LoanTenureInMonth", filterNumbers(e.target.value) || 0)}
+                                maxLength={5}
+                                onChange={(e) => handleFieldChangeTermSheet("LoanTenureInMonth", filterNumbers(e.target.value) || 0)}
                                 rightIcon="Month"
                             />
                         </div>
@@ -1418,17 +1366,16 @@ const AddUpdateTermSheet: React.FC = () => {
                         <div>
                             <Input
                                 value={formDataForTermSheetDetails.MinimumSellingPrice ?? ""}
-                                label="Minimum Selling Price (₹)"
+                                label="Minimum Selling Price (MSP) (₹)"
                                 disabled={!isAddMode && listState?.ApprovalStatus.toUpperCase() === "APPROVED" ? true : false}
-                                required
                                 error={errorsTermSheetDetails.MinimumSellingPrice}
                                 placeholder="Enter Minimum Selling Price"
-                                onChange={(e) => handleFieldChangeTenantApplicant("MinimumSellingPrice", filterNumbersWithDecimal(e.target.value) || 0)}
+                                onChange={(e) => handleFieldChangeTermSheet("MinimumSellingPrice", filterNumbersWithDecimal(e.target.value) || 0)}
                                 rightIcon="₹"
                             />
                         </div>
 
-                         <div>
+                        <div>
                             <MultiFilePicker
                                 label="Term Sheet"
                                 required
@@ -1441,11 +1388,11 @@ const AddUpdateTermSheet: React.FC = () => {
                                 onRemoveExisting={(url) => setRemovedTermSheetURLs((prev) => [...prev, url])}
                             />
                         </div>
-<div>
+                        <div>
                             <DatePickerInput
                                 label="Sanction Date"
                                 value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.SanctionDate ?? "")}
-                                onChange={(val) => handleFieldChangeTenantApplicant("SanctionDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                onChange={(val) => handleFieldChangeTermSheet("SanctionDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                 error={errorsTermSheetDetails.SanctionDate}
                             />
                         </div>
@@ -1455,7 +1402,7 @@ const AddUpdateTermSheet: React.FC = () => {
                                 label="EMI Amount (₹)"
                                 error={errorsTermSheetDetails.EMIAmount}
                                 placeholder="Enter EMI Amount"
-                                onChange={(e) => handleFieldChangeTenantApplicant("EMIAmount", filterNumbersWithDecimal(e.target.value) || 0)}
+                                onChange={(e) => handleFieldChangeTermSheet("EMIAmount", filterNumbersWithDecimal(e.target.value) || 0)}
                                 rightIcon="₹"
                             />
                         </div>
@@ -1464,7 +1411,7 @@ const AddUpdateTermSheet: React.FC = () => {
                             <DatePickerInput
                                 label="Loan Start Date"
                                 value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.LoanStartDate ?? "")}
-                                onChange={(val) => handleFieldChangeTenantApplicant("LoanStartDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                onChange={(val) => handleFieldChangeTermSheet("LoanStartDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                 error={errorsTermSheetDetails.LoanStartDate}
                             />
                         </div>
@@ -1473,13 +1420,13 @@ const AddUpdateTermSheet: React.FC = () => {
                             <DatePickerInput
                                 label="Loan End Date"
                                 value={formatDate_dd_mm_yyyy(formDataForTermSheetDetails.LoanEndDate ?? "")}
-                                onChange={(val) => handleFieldChangeTenantApplicant("LoanEndDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                onChange={(val) => handleFieldChangeTermSheet("LoanEndDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                 error={errorsTermSheetDetails.LoanEndDate}
                             />
                         </div>
 
 
-                       
+
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
@@ -1488,7 +1435,7 @@ const AddUpdateTermSheet: React.FC = () => {
                             label="Other Important Terms If Any"
                             maxLength={500}
                             value={formDataForTermSheetDetails.OtherImportantTermsIfAny ?? ""}
-                            onChange={(e) => handleFieldChangeTenantApplicant("OtherImportantTermsIfAny", e.target.value)}
+                            onChange={(e) => handleFieldChangeTermSheet("OtherImportantTermsIfAny", e.target.value)}
                             placeholder="Enter Terms If Any"
                             error={errors.OtherImportantTermsIfAny} />
 
@@ -1496,7 +1443,7 @@ const AddUpdateTermSheet: React.FC = () => {
                             label="Remark"
                             maxLength={500}
                             value={formDataForTermSheetDetails.Remark ?? ""}
-                            onChange={(e) => handleFieldChangeTenantApplicant("Remark", e.target.value)}
+                            onChange={(e) => handleFieldChangeTermSheet("Remark", e.target.value)}
                             placeholder="Enter Remark"
                             error={errors.Remark} />
 

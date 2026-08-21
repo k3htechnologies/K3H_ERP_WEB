@@ -579,7 +579,7 @@ export const ProjectMaster: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Project Name..."
+        searchPlaceholder="Search By Project Name"
         onSearchChange={(v) => {
           updateListState({ searchTerm: v });
           debouncedSearch(v);

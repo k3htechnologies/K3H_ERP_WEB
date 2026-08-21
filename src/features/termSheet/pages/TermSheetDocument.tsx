@@ -418,7 +418,7 @@ export const TermSheetDocument: React.FC = () => {
       },
       {
         key: 'ModifiedBy',
-        label: 'Last Modified By',
+        label: 'Uploaded By',
         width: '33',
         sortable: false,
         align: 'left',
@@ -432,7 +432,7 @@ export const TermSheetDocument: React.FC = () => {
       },
       {
         key: 'ModifiedDate',
-        label: 'Last Modified Date',
+        label: 'Uploaded Date',
         width: '33',
         sortable: false,
         align: 'left',
@@ -837,6 +837,7 @@ export const TermSheetDocument: React.FC = () => {
                 placeholder="Enter Remark"
                 className='thin-scroll'
                 value={formData.DocumentRemark}
+                disabled={listState.ApprovalStatus.toUpperCase() === "CLOSED" && Number(formData.TermSheetDocumentId) > 0 ? true : false}
                 onChange={(e) => handleFieldChange("DocumentRemark", e.target.value)}
                 error={errors.DocumentRemark} />
             </div>

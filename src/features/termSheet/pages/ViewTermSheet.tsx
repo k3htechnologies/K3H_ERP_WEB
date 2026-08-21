@@ -14,7 +14,7 @@ import { useTermSheetListState } from "@/features/termSheet/context/TermSheetLis
 import Tabs from "@/ui/components/Tab/Tab";
 import { termSheetService } from "@/features/termSheet/services/TermSheetService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import type { AddUpdateTermSheetDebtServiceReserveAccountRequest, AddUpdateTermSheetDirectSellingAgentRequest, AddUpdateTermSheetDisbursedAmountDetailsRequest, AddUpdateTermSheetRepayLedgerRequest, AddUpdateTermSheetSweepRadioDetailsRequest, DeleteTermSheetDebtServiceReserveAccountRequest, DeleteTermSheetRepayLedgerRequest, FinalizeTermSheetDetails, TermSheetDebtServiceReserveAccountData, TermSheetDetailsData, TermSheetDirectSellingAgentData, TermSheetDisbursedAmountDetailsData, TermSheetRepayLedgerData, TermSheetSweepRadioDetailsData, TermSheetViewData } from "@/features/termSheet/models/TermSheetModel";
+import type { AddUpdateTermSheetDebtServiceReserveAccountRequest, AddUpdateTermSheetDirectSellingAgentRequest, AddUpdateTermSheetDisbursedAmountDetailsRequest, AddUpdateTermSheetRepayLedgerRequest, AddUpdateTermSheetSweepRatioDetailsRequest, DeleteTermSheetDebtServiceReserveAccountRequest, DeleteTermSheetRepayLedgerRequest, FinalizeTermSheetDetails, TermSheetDebtServiceReserveAccountData, TermSheetDetailsData, TermSheetDirectSellingAgentData, TermSheetDisbursedAmountDetailsData, TermSheetRepayLedgerData, TermSheetSweepRatioDetailsData, TermSheetViewData } from "@/features/termSheet/models/TermSheetModel";
 import type { FilterWithPaginationTermSheetDocumentRequest, TermSheetDocumentData } from "@/features/termSheet/models/TermSheetDocumentModel";
 import { termSheetDocumentService } from "@/features/termSheet/services/TermSheetDocumentService";
 import { formatCurrency, formatToKLCr, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
@@ -110,27 +110,27 @@ const ViewTermSheet: React.FC = () => {
 
     // =======================================================================================================================================
 
-    const [isSweepRadioModalOpen, setIsSweepRadioModalOpen] = useState(false);
+    const [isSweepRatioModalOpen, setIsSweepRatioModalOpen] = useState(false);
 
-    const [isDeleteSweepRadioDialogOpen, setIsDeleteSweepRadioDialogOpen] = useState(false);
+    const [isDeleteSweepRatioDialogOpen, setIsDeleteSweepRatioDialogOpen] = useState(false);
 
-    const [selectedSweepRadioItem, setSelectedSweepRadioItem] = useState<any | null>(null);
+    const [selectedSweepRatioItem, setSelectedSweepRatioItem] = useState<any | null>(null);
 
-    const initialSweepRadioFormData = (): AddUpdateTermSheetSweepRadioDetailsRequest => ({
-        TermSheetSweepRadioDetailsId: 0,
+    const initialSweepRatioFormData = (): AddUpdateTermSheetSweepRatioDetailsRequest => ({
+        TermSheetSweepRatioDetailsId: 0,
         Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         TermSheetId: Number(listState.TermSheetId),
         TermSheetDetailsId: Number(listState.TermSheetDetailsId),
         ProjectId: Number(listState.ProjectId),
-        OwnSweepRadioInPercentage: 0,
-        LenderSweepRadioInPercentage: 0,
+        OwnSweepRatioInPercentage: 0,
+        LenderSweepRatioInPercentage: 0,
         Date: "",
         Remark: "",
     });
-    const [sweepRadioFormData, setSweepRadioFormData] = useState<AddUpdateTermSheetSweepRadioDetailsRequest>(initialSweepRadioFormData());
+    const [sweepRatioFormData, setSweepRatioFormData] = useState<AddUpdateTermSheetSweepRatioDetailsRequest>(initialSweepRatioFormData());
 
 
-    const [errorsSweepRadio, setErrorsSweepRadio] = useState<{ [key: string]: string }>({});
+    const [errorsSweepRatio, setErrorsSweepRatio] = useState<{ [key: string]: string }>({});
 
     // =======================================================================================================================================
 
@@ -592,25 +592,25 @@ const ViewTermSheet: React.FC = () => {
 
             if (!item.SanctionDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanStartDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanEndDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
         }
@@ -643,8 +643,10 @@ const ViewTermSheet: React.FC = () => {
 
         const newTotalDisbursed = existingDisbursedAmount + Number(disbursedAmountFormData.DisbursedAmount ?? 0);
 
+        const remaingDisbursedAmount = Number(facilityAmount ?? 0) - existingDisbursedAmount;
+
         if (newTotalDisbursed > facilityAmount) {
-            newErrors.DisbursedAmount = `Total Disbursed Amount cannot be greater than Facility Amount (${formatCurrency(facilityAmount)}).`;
+            newErrors.DisbursedAmount = `Total Disbursed Amount cannot be greater than Facility Amount (${formatCurrency(remaingDisbursedAmount)}).`;
         }
 
         return {
@@ -772,13 +774,13 @@ const ViewTermSheet: React.FC = () => {
 
     // ============================================================================================================================================================
 
-    const handleOpenSweepRadioModal = (item?: Partial<TermSheetSweepRadioDetailsData>) => {
-        setErrorsSweepRadio({});
+    const handleOpenSweepRatioModal = (item?: Partial<TermSheetSweepRatioDetailsData>) => {
+        setErrorsSweepRatio({});
 
         if (item) {
 
-            setSweepRadioFormData({
-                TermSheetSweepRadioDetailsId: item.TermSheetSweepRadioDetailsId ?? 0,
+            setSweepRatioFormData({
+                TermSheetSweepRatioDetailsId: item.TermSheetSweepRatioDetailsId ?? 0,
 
                 Uniquekey: item.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 
@@ -788,44 +790,44 @@ const ViewTermSheet: React.FC = () => {
 
                 ProjectId: Number(listState.ProjectId),
 
-                OwnSweepRadioInPercentage: item.OwnSweepRadioInPercentage ?? 0,
+                OwnSweepRatioInPercentage: item.OwnSweepRatioInPercentage ?? 0,
 
-                LenderSweepRadioInPercentage: item.LenderSweepRadioInPercentage ?? 0,
+                LenderSweepRatioInPercentage: item.LenderSweepRatioInPercentage ?? 0,
 
                 Date: item.Date || "",
 
                 Remark: item.Remark || "",
             });
         } else {
-            setSweepRadioFormData(initialSweepRadioFormData());
+            setSweepRatioFormData(initialSweepRatioFormData());
         }
 
-        setIsSweepRadioModalOpen(true);
+        setIsSweepRatioModalOpen(true);
     };
 
-    const handleSweepRadioModal = () => {
-        setIsSweepRadioModalOpen(false);
+    const handleSweepRatioModal = () => {
+        setIsSweepRatioModalOpen(false);
 
-        setSweepRadioFormData(initialSweepRadioFormData());
+        setSweepRatioFormData(initialSweepRatioFormData());
 
-        setErrorsSweepRadio({});
+        setErrorsSweepRatio({});
     };
 
-    const handleSweepRadioFieldChange = (field: keyof AddUpdateTermSheetSweepRadioDetailsRequest, value: any) => {
-        setSweepRadioFormData((prev) => ({
+    const handleSweepRatioFieldChange = (field: keyof AddUpdateTermSheetSweepRatioDetailsRequest, value: any) => {
+        setSweepRatioFormData((prev) => ({
             ...prev,
             [field]: value,
         }));
 
-        if (errorsSweepRadio[field]) {
-            setErrorsSweepRadio((prev) => ({
+        if (errorsSweepRatio[field]) {
+            setErrorsSweepRatio((prev) => ({
                 ...prev,
                 [field]: "",
             }));
         }
     };
 
-    const validateSweepRadioForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+    const validateSweepRatioForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
 
         const newErrors: { [key: string]: string } = {};
 
@@ -840,25 +842,29 @@ const ViewTermSheet: React.FC = () => {
 
             if (!item.SanctionDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
+
 
             }
 
             if (!item.LoanStartDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
+
 
             }
 
             if (!item.LoanEndDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
+
 
             }
 
             if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
+
 
             }
         }
@@ -868,26 +874,26 @@ const ViewTermSheet: React.FC = () => {
         }
 
 
-        if (!sweepRadioFormData.Date?.trim()) {
+        if (!sweepRatioFormData.Date?.trim()) {
             newErrors.Date = "Date is required.";
         }
 
-        const ownSweep = Number(sweepRadioFormData.OwnSweepRadioInPercentage);
-        const lenderSweep = Number(sweepRadioFormData.LenderSweepRadioInPercentage);
+        const ownSweep = Number(sweepRatioFormData.OwnSweepRatioInPercentage);
+        const lenderSweep = Number(sweepRatioFormData.LenderSweepRatioInPercentage);
 
-        if (sweepRadioFormData.OwnSweepRadioInPercentage === undefined ||
-            sweepRadioFormData.OwnSweepRadioInPercentage === null ||
+        if (sweepRatioFormData.OwnSweepRatioInPercentage === undefined ||
+            sweepRatioFormData.OwnSweepRatioInPercentage === null ||
             ownSweep <= 0 ||
             ownSweep > 100
         ) {
-            newErrors.OwnSweepRadioInPercentage = "Own Sweep Radio must be between 1 and 100%.";
+            newErrors.OwnSweepRatioInPercentage = "Own Sweep Ratio must be between 1 and 100%.";
         }
 
-        if (sweepRadioFormData.LenderSweepRadioInPercentage === undefined ||
-            sweepRadioFormData.LenderSweepRadioInPercentage === null ||
+        if (sweepRatioFormData.LenderSweepRatioInPercentage === undefined ||
+            sweepRatioFormData.LenderSweepRatioInPercentage === null ||
             lenderSweep <= 0 ||
             lenderSweep > 100) {
-            newErrors.LenderSweepRadioInPercentage = "Lender Sweep Radio must be between 1 and 100%.";
+            newErrors.LenderSweepRatioInPercentage = "Lender Sweep Ratio must be between 1 and 100%.";
         }
 
         if (ownSweep > 0 &&
@@ -895,8 +901,8 @@ const ViewTermSheet: React.FC = () => {
             lenderSweep > 0 &&
             lenderSweep <= 100 &&
             ownSweep + lenderSweep !== 100) {
-            newErrors.OwnSweepRadioInPercentage = "Own Sweep Radio and Lender Sweep Radio together must total 100%.";
-            newErrors.LenderSweepRadioInPercentage = "Own Sweep Radio and Lender Sweep Radio together must total 100%.";
+            newErrors.OwnSweepRatioInPercentage = "Own Sweep Ratio and Lender Sweep Ratio together must total 100%.";
+            newErrors.LenderSweepRatioInPercentage = "Own Sweep Ratio and Lender Sweep Ratio together must total 100%.";
         }
 
         return {
@@ -905,18 +911,18 @@ const ViewTermSheet: React.FC = () => {
         };
     };
 
-    const handleAddUpdateSweepRadio = async (
+    const handleAddUpdateSweepRatio = async (
         e: React.FormEvent
     ) => {
 
         e.preventDefault();
 
-        setErrorsSweepRadio({});
+        setErrorsSweepRatio({});
 
-        const validation = validateSweepRadioForm();
+        const validation = validateSweepRatioForm();
 
         if (!validation.isValid) {
-            setErrorsSweepRadio(validation.errors);
+            setErrorsSweepRatio(validation.errors);
 
             return;
         }
@@ -927,11 +933,11 @@ const ViewTermSheet: React.FC = () => {
 
             async () => {
 
-                const payload: AddUpdateTermSheetSweepRadioDetailsRequest =
+                const payload: AddUpdateTermSheetSweepRatioDetailsRequest =
                 {
-                    TermSheetSweepRadioDetailsId: sweepRadioFormData.TermSheetSweepRadioDetailsId ?? 0,
+                    TermSheetSweepRatioDetailsId: sweepRatioFormData.TermSheetSweepRatioDetailsId ?? 0,
 
-                    Uniquekey: sweepRadioFormData.Uniquekey ?? "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+                    Uniquekey: sweepRatioFormData.Uniquekey ?? "3fa85f64-5717-4562-b3fc-2c963f66afa6",
 
                     TermSheetId: Number(listState.TermSheetId),
 
@@ -939,24 +945,24 @@ const ViewTermSheet: React.FC = () => {
 
                     ProjectId: Number(listState.ProjectId),
 
-                    OwnSweepRadioInPercentage: Number(sweepRadioFormData.OwnSweepRadioInPercentage ?? 0),
+                    OwnSweepRatioInPercentage: Number(sweepRatioFormData.OwnSweepRatioInPercentage ?? 0),
 
-                    LenderSweepRadioInPercentage: Number(sweepRadioFormData.LenderSweepRadioInPercentage ?? 0),
+                    LenderSweepRatioInPercentage: Number(sweepRatioFormData.LenderSweepRatioInPercentage ?? 0),
 
-                    Date: sweepRadioFormData.Date || null,
+                    Date: sweepRatioFormData.Date || null,
 
-                    Remark: sweepRadioFormData.Remark || "",
+                    Remark: sweepRatioFormData.Remark || "",
                 };
 
-                const response = await termSheetService.apiCallAddUpdateTermSheetSweepRadioDetails(payload);
+                const response = await termSheetService.apiCallAddUpdateTermSheetSweepRatioDetails(payload);
 
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
-                    setIsSweepRadioModalOpen(false);
+                    setIsSweepRatioModalOpen(false);
 
-                    setSweepRadioFormData(initialDisbursedAmountFormData());
+                    setSweepRatioFormData(initialDisbursedAmountFormData());
 
                     await fetchTermSheetDetails();
 
@@ -977,18 +983,18 @@ const ViewTermSheet: React.FC = () => {
 
             undefined,
 
-            sweepRadioFormData.TermSheetSweepRadioDetailsId ? "Updating Sweep Radio Details" : "Adding Sweep Radio Details"
+            sweepRatioFormData.TermSheetSweepRatioDetailsId ? "Updating Sweep Ratio Details" : "Adding Sweep Ratio Details"
         );
     };
 
-    const handleConfirmDeleteSweepRadio = (item: TermSheetSweepRadioDetailsData) => {
-        setSelectedSweepRadioItem(item);
-        setIsDeleteSweepRadioDialogOpen(true);
+    const handleConfirmDeleteSweepRatio = (item: TermSheetSweepRatioDetailsData) => {
+        setSelectedSweepRatioItem(item);
+        setIsDeleteSweepRatioDialogOpen(true);
     };
 
-    const handleDeleteSweepRadio = async () => {
+    const handleDeleteSweepRatio = async () => {
 
-        if (!selectedSweepRadioItem)
+        if (!selectedSweepRatioItem)
             return;
 
         await runApiWithLoader(
@@ -998,9 +1004,9 @@ const ViewTermSheet: React.FC = () => {
             async () => {
 
                 const params = {
-                    TermSheetSweepRadioDetailsId: selectedSweepRadioItem.TermSheetSweepRadioDetailsId ?? 0,
+                    TermSheetSweepRatioDetailsId: selectedSweepRatioItem.TermSheetSweepRatioDetailsId ?? 0,
 
-                    Uniquekey: selectedSweepRadioItem.Uniquekey ?? "",
+                    Uniquekey: selectedSweepRatioItem.Uniquekey ?? "",
 
                     TermSheetId: Number(listState.TermSheetId),
 
@@ -1009,15 +1015,15 @@ const ViewTermSheet: React.FC = () => {
                     ProjectId: Number(listState.ProjectId),
                 };
 
-                const response = await termSheetService.apiCallDeleteTermSheetSweepRadioDetails(params);
+                const response = await termSheetService.apiCallDeleteTermSheetSweepRatioDetails(params);
 
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
-                    setIsDeleteSweepRadioDialogOpen(false);
+                    setIsDeleteSweepRatioDialogOpen(false);
 
-                    setSelectedSweepRadioItem(null);
+                    setSelectedSweepRatioItem(null);
 
                     await fetchTermSheetDetails();
 
@@ -1038,7 +1044,7 @@ const ViewTermSheet: React.FC = () => {
 
             undefined,
 
-            "Deleting Sweep Radio Details"
+            "Deleting Sweep Ratio Details"
         );
     };
     // ============================================================================================================================================================
@@ -1114,25 +1120,25 @@ const ViewTermSheet: React.FC = () => {
 
             if (!item.SanctionDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanStartDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanEndDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
         }
@@ -1350,25 +1356,25 @@ const ViewTermSheet: React.FC = () => {
 
             if (!item.SanctionDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanStartDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanEndDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
         }
@@ -1389,6 +1395,11 @@ const ViewTermSheet: React.FC = () => {
 
         const termSheetDetails = termSheetViewData?.TermSheetDetailsData?.find(item => Number(item.TermSheetDetailsId) === Number(listState.TermSheetDetailsId));
 
+        const existingDisbursedAmount = termSheetDetails?.TermSheetDisbursedAmountDetailsData?.reduce((total, item) => {
+
+            return total + Number(item.DisbursedAmount ?? 0);
+        }, 0) ?? 0;
+
         const existingRepayAmount = termSheetDetails?.TermSheetRepayLedgerData?.reduce((total, item) => {
 
             if (Number(item.TermSheetRepayLedgerId) === Number(repayLedgerFormData.TermSheetRepayLedgerId)) {
@@ -1400,8 +1411,12 @@ const ViewTermSheet: React.FC = () => {
 
         const newTotalRepay = existingRepayAmount + Number(repayLedgerFormData.Amount ?? 0);
 
-        if (newTotalRepay > facilityAmount) {
-            newErrors.Amount = `Total Repay Amount cannot be greater than Facility Amount (${formatCurrency(facilityAmount)}).`;
+        if (Number(newTotalRepay) > Number(existingDisbursedAmount)) {
+            const remainingAmount = Number(existingDisbursedAmount) - Number(existingRepayAmount);
+            newErrors.Amount = `Total Repayment Amount cannot be greater than Disbursed Amount (${formatCurrency(remainingAmount)}).`;
+        }
+        else if (Number(newTotalRepay) > Number(facilityAmount)) {
+            newErrors.Amount = `Total Repayment Amount cannot be greater than Facility Amount (${formatCurrency(facilityAmount)}).`;
         }
 
         return {
@@ -1470,7 +1485,7 @@ const ViewTermSheet: React.FC = () => {
                 addToast({ type: "error", title: error.message, });
             },
             undefined,
-            repayLedgerFormData.TermSheetRepayLedgerId ? "Updating Repay Ledger" : "Adding Repay Ledger"
+            repayLedgerFormData.TermSheetRepayLedgerId ? "Updating Repayment" : "Adding Repayment"
         );
     };
 
@@ -1602,25 +1617,25 @@ const ViewTermSheet: React.FC = () => {
 
             if (!item.SanctionDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Sanction Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanStartDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan Start Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (!item.LoanEndDate?.trim()) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: Loan End Date is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
 
             if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
-                break;
+                return { isValid: false, errors: newErrors };
 
             }
         }
@@ -1633,7 +1648,7 @@ const ViewTermSheet: React.FC = () => {
             newErrors.Term = "Term is required.";
         }
 
-        if (debtServiceReserveAccountFormData.Term !== "MF" && Number(debtServiceReserveAccountFormData.Amount ?? 0) <= 0) {
+        if (debtServiceReserveAccountFormData.Term !== "Mutual Fund (MF)" && Number(debtServiceReserveAccountFormData.Amount ?? 0) <= 0) {
             newErrors.Amount = "Amount is required.";
         }
 
@@ -1641,8 +1656,8 @@ const ViewTermSheet: React.FC = () => {
             newErrors.Date = "Date is required.";
         }
 
-        // MF Validation
-        if (debtServiceReserveAccountFormData.Term === "MF") {
+        // Mutual Fund (MF) Validation
+        if (debtServiceReserveAccountFormData.Term === "Mutual Fund (MF)") {
 
             if (debtServiceReserveAccountFormData.Unit === undefined || debtServiceReserveAccountFormData.Unit === null || Number(debtServiceReserveAccountFormData.Unit) <= 0) {
                 newErrors.Unit = "Unit is required.";
@@ -1653,8 +1668,8 @@ const ViewTermSheet: React.FC = () => {
             }
         }
 
-        // FD Validation
-        if (debtServiceReserveAccountFormData.Term === "FD") {
+        // Fixed Deposit (FD) Validation
+        if (debtServiceReserveAccountFormData.Term === "Fixed Deposit (FD)") {
 
             if (debtServiceReserveAccountFormData.RateOfInterestInPercentage === undefined || debtServiceReserveAccountFormData.RateOfInterestInPercentage === null || Number(debtServiceReserveAccountFormData.RateOfInterestInPercentage) <= 0) {
                 newErrors.RateOfInterestInPercentage = "Rate Of Interest is required.";
@@ -1729,7 +1744,7 @@ const ViewTermSheet: React.FC = () => {
 
                     PerUnitRate: Number(debtServiceReserveAccountFormData.PerUnitRate ?? 0),
 
-                    Amount: debtServiceReserveAccountFormData.Term === "MF" && !isClosed
+                    Amount: debtServiceReserveAccountFormData.Term === "Mutual Fund (MF)" && !isClosed
                         ? (
                             (Number(debtServiceReserveAccountFormData.Unit) || 0) *
                             (Number(debtServiceReserveAccountFormData.PerUnitRate) || 0)
@@ -1849,7 +1864,7 @@ const ViewTermSheet: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(Number(listState.ProjectId));
+                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(Number(listState.ProjectId), false);
 
                 if (E.isRight(response)) {
 
@@ -2010,7 +2025,7 @@ const ViewTermSheet: React.FC = () => {
                                                 <ApprovalActions
                                                     approvalStatus={b.ApprovalStatus || "-"}
                                                     showApproval={b.IsApproval}
-                                                    isIcons={false}
+                                                    isIcons={true}
                                                     onHistory={() => handleApprovalLog(b)}
                                                     onApprove={() => handleApproveRejectDocument(b, "approve")}
                                                     onReject={() => handleApproveRejectDocument(b, "reject")}
@@ -2088,10 +2103,11 @@ const ViewTermSheet: React.FC = () => {
                                                         <p className="text-sm font-medium text-[#1D1D1D80] pb-1">
                                                             Loan Taken By
                                                         </p>
-
-                                                        <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-[#EFF6FF] text-[#1D4ED8]">
-                                                            {b.LoanTakenBy ?? "-"}
-                                                        </span>
+                                                        {b.LoanTakenBy ? (
+                                                            <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-[#EFF6FF] text-[#1D4ED8]">
+                                                                {b.LoanTakenBy ?? "-"}
+                                                            </span>
+                                                        ) : '-'}
                                                     </div>
                                                     <FieldItem label="Type" value={b.Type ?? "-"} />
 
@@ -2102,9 +2118,9 @@ const ViewTermSheet: React.FC = () => {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                                     <FieldItem label="Processing Fees (%)" value={`${b.ProcessingFeesInPercentage ?? 0} %`} />
-                                                    <FieldItem label="Legal & Doumentation (₹)" value={formatCurrency(b.LegalAndDoumentationFees ?? 0)} />
+                                                    <FieldItem label="Legal & Documentation (₹)" value={formatCurrency(b.LegalAndDocumentationFees ?? 0)} />
                                                     <FieldItem label="Monotorium Period (Months)" value={b.MonotoriumPeriodInMonth ?? 0} />
-                                                    <FieldItem label="Minimum Selling Price MSP (₹)" value={formatCurrency(b.MinimumSellingPrice ?? 0)} />
+                                                    <FieldItem label="Minimum Selling Price (MSP) (₹)" value={formatCurrency(b.MinimumSellingPrice ?? 0)} />
 
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
@@ -2115,9 +2131,14 @@ const ViewTermSheet: React.FC = () => {
                                                     <FieldItem label="EMI" value={formatCurrency(b.EMIAmount ?? "-")} />
                                                 </div>
 
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
 
+                                                    <FieldItem label="Other Important Terms If Any" value={b.OtherImportantTermsIfAny ?? "-"} />
+                                                    <FieldItem label="Remark" value={b.Remark ?? "-"} />
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-1 pt-4">
                                                     <FieldItem label="Created By" value={b?.CreatedBy} />
                                                     <FieldItem label="Created Date" value={b?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(b?.CreatedDate) : ""} />
                                                     {b?.ModifiedBy && (
@@ -2129,11 +2150,7 @@ const ViewTermSheet: React.FC = () => {
                                                 </div>
 
 
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-1 pt-4">
-                                                    <FieldItem label="Other Important Terms If Any" value={b.OtherImportantTermsIfAny ?? "-"} />
-                                                    <FieldItem label="Remark" value={b.Remark ?? "-"} />
 
-                                                </div>
 
                                             </div>
                                         </div>
@@ -2167,674 +2184,6 @@ const ViewTermSheet: React.FC = () => {
                                                 </div>
                                             </section>
                                         )}
-
-                                    {/* {["APPROVED", "CLOSED"].includes(listState?.ApprovalStatus?.toUpperCase() ?? "") && (
-                                        <>
-                                            <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
-
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
-
-                                                    <div>
-                                                        <h4 className="text-lg font-semibold text-gray-900">
-                                                            Disbursed Amount Details
-                                                        </h4>
-
-                                                        <div className="mt-1 text-sm font-small text-gray-600">
-                                                            Total Disbursed Amount:
-                                                            <span className="ml-2 text-base font-bold text-gray-900">
-                                                                {formatCurrency(b.TermSheetDisbursedAmountDetailsData?.reduce((total, item) => total + Number(item.DisbursedAmount ?? 0), 0) ?? 0)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="w-full sm:w-auto">
-                                                        <Button
-                                                            color="blue"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                if (!canAction || isClosed) return;
-                                                                handleOpenDisbursedAmountModal();
-                                                            }}
-                                                            disabled={isLoading || !canAction || isClosed || Number(b.FacilityAmount ?? 0) <= Number(b.TotalDisbursedAmount ?? 0)} >
-                                                            Add
-                                                        </Button>
-                                                    </div>
-
-                                                </div>
-
-                                                <div className="p-5">
-
-                                                    {b.TermSheetDisbursedAmountDetailsData?.length > 0 ? (
-                                                        <div className="space-y-3">
-
-                                                            {b.TermSheetDisbursedAmountDetailsData.map((d, index) => (
-                                                                <div key={d.TermSheetDisbursedAmountDetailsId}
-                                                                    className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 pr-24 ${index !== b.TermSheetDisbursedAmountDetailsData.length - 1
-                                                                        ? "border-b border-gray-200"
-                                                                        : ""
-                                                                        }`} >
-
-                                                                    <FieldItem label="Disbursed Amount" value={formatCurrency(d.DisbursedAmount ?? 0)} />
-
-
-                                                                    <FieldItem label="Disbursed Date" value={d.DisbursedDate ? formatDate_dd_MonthName_yy(d.DisbursedDate) : "-"} />
-
-                                                                    <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
-
-                                                                    <FieldItem
-                                                                        label="Last Modified Date"
-                                                                        value={d!.ModifiedBy === "" ?
-                                                                            d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
-                                                                            :
-                                                                            d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
-                                                                        }
-
-                                                                    />
-                                                                    <div className="md:col-span-3">
-                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                    </div>
-
-
-                                                                    {index === b.TermSheetDisbursedAmountDetailsData.length - 1 && !isClosed && (
-                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    e.stopPropagation()
-                                                                                    if (!canAction || isClosed) return;
-                                                                                    handleOpenDisbursedAmountModal(d)
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction || isClosed}
-                                                                                size="sm"
-                                                                                title="Edit"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? '' : '#9CA3AF',
-                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                }}
-                                                                            >
-                                                                                <Edit className="h-4 w-4" />
-                                                                            </Button>
-
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    e.stopPropagation()
-                                                                                    if (!canAction) return;
-                                                                                    handleConfirmDeleteDisbursedAmount(d)
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction}
-                                                                                size="sm"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? 'red' : '#9CA3AF',
-                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                }}
-                                                                                title="Delete"
-                                                                            >
-                                                                                <Trash2 className="h-4 w-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            ))}
-
-                                                        </div>
-                                                    ) : (
-                                                        <NoDataView message="No Disbursed Amount Details Found" />
-                                                    )}
-
-                                                </div>
-
-                                            </section>
-
-                                            <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
-
-
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
-
-                                                    <h4 className="text-lg font-semibold text-gray-900">
-                                                        Sweep Radio Details
-                                                    </h4>
-
-                                                    <div className="w-full sm:w-auto">
-
-                                                        <Button
-                                                            color="blue"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                if (!canAction || isClosed) return;
-                                                                handleOpenSweepRadioModal();
-                                                            }}
-                                                            disabled={!canAction || isClosed}
-                                                        >
-                                                            Add
-                                                        </Button>
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div className="p-5">
-
-                                                    {b.TermSheetSweepRadioDetailsData?.length > 0 ? (
-
-                                                        <div className="space-y-3">
-
-                                                            {b.TermSheetSweepRadioDetailsData.map((d, index) => (
-                                                                <div key={d.TermSheetSweepRadioDetailsId}
-                                                                    className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 pr-24 ${index !== b.TermSheetSweepRadioDetailsData.length - 1
-                                                                        ? "border-b border-gray-200"
-                                                                        : ""
-                                                                        }`} >
-
-                                                                    <FieldItem label="Own Sweep Radio (%)" value={`${d.OwnSweepRadioInPercentage ?? 0} %`} />
-                                                                    <FieldItem label="Lender Sweep Radio (%)" value={`${d.LenderSweepRadioInPercentage ?? 0} %`} />
-                                                                    <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
-                                                                    <div className="md:col-span-3">
-                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                    </div>
-
-                                                                    <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
-
-                                                                    <FieldItem
-                                                                        label="Last Modified Date"
-                                                                        value={d!.ModifiedBy === "" ?
-                                                                            d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
-                                                                            :
-                                                                            d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
-                                                                        }
-
-                                                                    />
-                                                                    {index === b.TermSheetSweepRadioDetailsData.length - 1 && !isClosed && (
-                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
-
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    e.stopPropagation()
-                                                                                    if (!canAction || isClosed) return;
-                                                                                    handleOpenSweepRadioModal(d)
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction || isClosed}
-                                                                                size="sm"
-                                                                                title="Edit"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? '' : '#9CA3AF',
-                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                }}
-                                                                            >
-                                                                                <Edit className="h-4 w-4" />
-                                                                            </Button>
-
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    e.stopPropagation()
-                                                                                    if (!canAction) return;
-                                                                                    handleConfirmDeleteSweepRadio(d)
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction}
-                                                                                size="sm"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? 'red' : '#9CA3AF',
-                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                }}
-                                                                                title="Delete"
-                                                                            >
-                                                                                <Trash2 className="h-4 w-4" />
-                                                                            </Button>
-
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-
-                                                            )
-                                                            )}
-
-                                                        </div>
-
-                                                    ) : (
-                                                        <NoDataView message="No Sweep Radio Details Found" />
-                                                    )}
-
-                                                </div>
-
-                                            </section>
-
-                                            <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
-
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
-
-                                                    <h4 className="text-lg font-semibold text-gray-900">
-                                                        Direct Selling Agent (DSA) Details
-                                                    </h4>
-
-                                                    <div className="w-full sm:w-auto">
-
-                                                        <Button
-                                                            color="blue"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                if (!canAction || isClosed) return;
-                                                                handleOpenDirectSellingAgentModal();
-                                                            }}
-                                                            disabled={!canAction || isClosed}
-                                                        >
-                                                            Add
-                                                        </Button>
-
-
-                                                    </div>
-
-                                                </div>
-
-                                                <div className="p-5">
-
-                                                    {b.TermSheetDirectSellingAgentData?.length > 0 ? (
-
-                                                        <div className="space-y-3">
-
-                                                            {b.TermSheetDirectSellingAgentData.map(
-                                                                (d, index) => (
-                                                                    <div key={d.TermSheetDirectSellingAgentId} className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 md:pr-24 ${index !== b.TermSheetDirectSellingAgentData.length - 1 ? "border-b border-gray-200" : ""}`} >
-
-                                                                        <FieldItem label="Name of Consultant" value={d.NameOfConsultant ?? "-"} />
-                                                                        <FieldItem label="Commission (%)" value={`${d.CommissionInPercentage ?? 0} %`} />
-                                                                        <FieldItem label="Amount (₹)" value={formatCurrency(d.Amount ?? 0)} />
-                                                                        <FieldItem label="Payment Date" value={d.PaymentDate ? formatDate_dd_MonthName_yy(d.PaymentDate) : "-"} />
-                                                                        <div className="md:col-span-3">
-                                                                            <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                        </div>
-                                                                        <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
-
-                                                                        <FieldItem
-                                                                            label="Last Modified Date"
-                                                                            value={d!.ModifiedBy === "" ?
-                                                                                d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
-                                                                                :
-                                                                                d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
-                                                                            }
-
-                                                                        />
-
-                                                                        {index === b.TermSheetDirectSellingAgentData.length - 1 && !isClosed && (
-                                                                            <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
-
-                                                                                <Button
-                                                                                    onClick={(e) => {
-                                                                                        e.preventDefault()
-                                                                                        e.stopPropagation()
-                                                                                        if (!canAction || isClosed) return;
-                                                                                        handleOpenDirectSellingAgentModal(d)
-                                                                                    }}
-                                                                                    color="transparent"
-                                                                                    isborderRadius
-                                                                                    disabled={!canAction || isClosed}
-                                                                                    size="sm"
-                                                                                    title="Edit"
-                                                                                    style={{
-                                                                                        color: canAction && !isClosed ? '' : '#9CA3AF',
-                                                                                        cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                        opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                    }}
-                                                                                >
-                                                                                    <Edit className="h-4 w-4" />
-                                                                                </Button>
-
-                                                                                <Button
-                                                                                    onClick={(e) => {
-                                                                                        e.preventDefault()
-                                                                                        e.stopPropagation()
-                                                                                        if (!canAction) return;
-                                                                                        handleConfirmDeleteDirectSellingAgent(d)
-                                                                                    }}
-                                                                                    color="transparent"
-                                                                                    isborderRadius
-                                                                                    disabled={!canAction}
-                                                                                    size="sm"
-                                                                                    style={{
-                                                                                        color: canAction && !isClosed ? 'red' : '#9CA3AF',
-                                                                                        cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                        opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                    }}
-                                                                                    title="Delete"
-                                                                                >
-                                                                                    <Trash2 className="h-4 w-4" />
-                                                                                </Button>
-
-                                                                            </div>
-                                                                        )}
-
-                                                                    </div>
-
-                                                                )
-                                                            )}
-
-                                                        </div>
-
-                                                    ) : (
-
-                                                        <NoDataView message="No Direct Selling Agent (DSA) Details Found" />
-
-                                                    )}
-
-                                                </div>
-
-                                            </section>
-
-                                            <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
-
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
-
-                                                    <div>
-                                                        <h4 className="text-lg font-semibold text-gray-900">
-                                                            Repay Ledger Details
-                                                        </h4>
-
-                                                        <div className="mt-1 text-sm font-medium text-gray-600">
-                                                            Total Repay Amount:
-                                                            <span className="ml-2 text-base font-bold text-gray-900">
-                                                                {formatCurrency(
-                                                                    b.TermSheetRepayLedgerData?.reduce((total, item) => total + Number(item.Amount ?? 0), 0) ?? 0
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="w-full sm:w-auto">
-                                                        <Button
-                                                            color="blue"
-                                                            size="sm"
-                                                            onClick={() => handleOpenRepayLedgerModal()}
-                                                            disabled={isLoading || !canAction || isClosed || Number(b.FacilityAmount ?? 0) <= Number(b.TotalRepayLedgerAmount ?? 0)} >
-                                                            Add
-                                                        </Button>
-                                                    </div>
-
-                                                </div>
-
-                                                <div className="p-5">
-
-                                                    {b.TermSheetRepayLedgerData?.length > 0 ? (
-
-                                                        <div className="space-y-3">
-
-                                                            {b.TermSheetRepayLedgerData.map((d, index) => (
-
-                                                                <div key={d.TermSheetRepayLedgerId} className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 pr-24 ${index !== b.TermSheetRepayLedgerData.length - 1 ? "border-b border-gray-200" : ""}`} >
-
-                                                                    <FieldItem label="Amount" value={formatCurrency(d.Amount ?? 0)} />
-
-                                                                    <FieldItem label="Payment Date" value={d.PaymentDate ? formatDate_dd_MonthName_yy(d.PaymentDate) : "-"} />
-
-                                                                    <div className="md:col-span-3">
-                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                    </div>
-
-                                                                    <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
-
-                                                                    <FieldItem
-                                                                        label="Last Modified Date"
-                                                                        value={d!.ModifiedBy === "" ?
-                                                                            d!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.CreatedDate) : "-"
-                                                                            :
-                                                                            d!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d!.ModifiedDate) : "-"
-                                                                        }
-
-                                                                    />
-                                                                    {index === b.TermSheetRepayLedgerData.length - 1 && !isClosed && (
-
-                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 w-full md:w-auto justify-end mt-3 md:mt-0">
-
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    e.stopPropagation()
-                                                                                    if (!canAction || isClosed) return;
-                                                                                    handleOpenRepayLedgerModal(d)
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction || isClosed}
-                                                                                size="sm"
-                                                                                title="Edit"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? '' : '#9CA3AF',
-                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                }}
-                                                                            >
-                                                                                <Edit className="h-4 w-4" />
-                                                                            </Button>
-
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault()
-                                                                                    e.stopPropagation()
-                                                                                    if (!canAction) return;
-                                                                                    handleConfirmDeleteRepayLedger(d)
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction}
-                                                                                size="sm"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? 'red' : '#9CA3AF',
-                                                                                    cursor: canAction && !isClosed ? 'pointer' : 'not-allowed',
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5
-                                                                                }}
-                                                                                title="Delete"
-                                                                            >
-                                                                                <Trash2 className="h-4 w-4" />
-                                                                            </Button>
-
-
-                                                                        </div>
-                                                                    )}
-
-                                                                </div>
-                                                            ))}
-
-                                                        </div>
-
-                                                    ) : (
-                                                        <NoDataView message="No Repay Ledger Details Found" />
-                                                    )}
-
-                                                </div>
-
-                                            </section>
-
-                                            <section className="bg-white rounded-2xl border border-gray-200 shadow-sm mb-5 overflow-hidden">
-                                                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
-                                                    <div>
-                                                        <h4 className="text-lg font-semibold text-gray-900">Debt Service Reserve Account (DSRA) Details</h4>
-
-                                                        <div className="mt-1 text-sm font-medium text-gray-600">
-                                                            Total DSRA Amount:
-                                                            <span className="ml-2 text-base font-bold text-gray-900">
-                                                                {formatCurrency(
-                                                                    b.TermSheetDebtServiceReserveAccountData?.reduce((total, item) => total + Number(item.Amount ?? 0), 0) ??
-                                                                    0,
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="w-full sm:w-auto">
-                                                        <Button
-                                                            color="blue"
-                                                            size="sm"
-                                                            onClick={() => {
-                                                                if (!canAction || isClosed) return;
-
-                                                                handleOpenDebtServiceReserveAccountModal();
-                                                            }}
-                                                            disabled={!canAction || isClosed}
-                                                        >
-                                                            Add
-                                                        </Button>
-                                                    </div>
-                                                </div>
-
-                                                <div className="p-5">
-                                                    {b.TermSheetDebtServiceReserveAccountData?.length > 0 ? (
-                                                        <div className="space-y-3">
-                                                            {b.TermSheetDebtServiceReserveAccountData.map((d, index) => (
-                                                                <div
-                                                                    key={d.TermSheetDebtServiceReserveAccountId}
-                                                                    className={`relative grid grid-cols-1 md:grid-cols-3 gap-4 p-3 pr-24 ${index !== b.TermSheetDebtServiceReserveAccountData.length - 1 ? "border-b border-gray-200" : ""
-                                                                        }`}
-                                                                >
-                                                                    <FieldItem label="Term" value={d.Term ?? "-"} />
-
-                                                                    {d.Term === "MF" && (
-                                                                        <>
-                                                                            <FieldItem label="Unit" value={d.Unit ?? 0} />
-
-                                                                            <FieldItem label="Per Unit Rate" value={formatCurrency(d.PerUnitRate ?? 0)} />
-                                                                        </>
-                                                                    )}
-
-                                                                    <FieldItem label="Amount" value={formatCurrency(d.Amount ?? 0)} />
-
-                                                                    <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
-
-                                                                    {d.Term === "FD" && (
-                                                                        <>
-                                                                            <FieldItem label="Rate Of Interest (%)" value={`${d.RateOfInterestInPercentage ?? 0} %`} />
-
-                                                                            <FieldItem label="Redemption Value" value={formatCurrency(d.RedemptionValue ?? 0)} />
-
-                                                                            <FieldItem label="Maturity Period" value={`${d.MaturityPeriod ?? 0}`} />
-                                                                        </>
-                                                                    )}
-
-                                                                    <FieldItem label="Withdraw Amount" value={formatCurrency(d.WithdrawAmount ?? 0)} />
-
-                                                                    <FieldItem
-                                                                        label="Withdraw Date"
-                                                                        value={d.WithdrawDate ? formatDate_dd_MonthName_yy(d.WithdrawDate) : "-"}
-                                                                    />
-
-                                                                    <div className="md:col-span-3">
-                                                                        <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                    </div>
-
-                                                                    <FieldItem label="Last Modified By" value={d.ModifiedBy === "" ? d.CreatedBy : d.ModifiedBy} />
-
-                                                                    <FieldItem
-                                                                        label="Last Modified Date"
-                                                                        value={
-                                                                            d.ModifiedBy === ""
-                                                                                ? d.CreatedDate
-                                                                                    ? formatDate_dd_MonthName_yy_hh_mm(d.CreatedDate)
-                                                                                    : "-"
-                                                                                : d.ModifiedDate
-                                                                                    ? formatDate_dd_MonthName_yy_hh_mm(d.ModifiedDate)
-                                                                                    : "-"
-                                                                        }
-                                                                    />
-
-                                                                    {index === b.TermSheetDebtServiceReserveAccountData.length - 1 && !isClosed && (
-                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault();
-                                                                                    e.stopPropagation();
-
-                                                                                    if (!canAction || isClosed) return;
-
-                                                                                    handleOpenDebtServiceReserveAccountModal(d);
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction || isClosed}
-                                                                                size="sm"
-                                                                                title="Edit"
-                                                                                style={{
-                                                                                    color: canAction && !isClosed ? "" : "#9CA3AF",
-                                                                                    cursor: canAction && !isClosed ? "pointer" : "not-allowed",
-                                                                                    opacity: canAction && !isClosed ? 1 : 0.5,
-                                                                                }}
-                                                                            >
-                                                                                <Edit className="h-4 w-4" />
-                                                                            </Button>
-                                                                            {!isClosed && (
-                                                                                <Button
-                                                                                    onClick={(e) => {
-                                                                                        e.preventDefault();
-                                                                                        e.stopPropagation();
-
-                                                                                        if (!canAction) return;
-
-                                                                                        handleConfirmDeleteDebtServiceReserveAccount(d);
-                                                                                    }}
-                                                                                    color="transparent"
-                                                                                    isborderRadius
-                                                                                    disabled={!canAction}
-                                                                                    size="sm"
-                                                                                    title="Delete"
-                                                                                    style={{
-                                                                                        color: canAction && !isClosed ? "red" : "#9CA3AF",
-                                                                                        cursor: canAction && !isClosed ? "pointer" : "not-allowed",
-                                                                                        opacity: canAction && !isClosed ? 1 : 0.5,
-                                                                                    }}
-                                                                                >
-                                                                                    <Trash2 className="h-4 w-4" />
-                                                                                </Button>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
-
-                                                                    {isClosed && (
-                                                                        <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
-                                                                            <Button
-                                                                                onClick={(e) => {
-                                                                                    e.preventDefault();
-                                                                                    e.stopPropagation();
-
-                                                                                    if (!canAction) return;
-
-                                                                                    handleOpenDebtServiceReserveAccountModal(d);
-                                                                                }}
-                                                                                color="transparent"
-                                                                                isborderRadius
-                                                                                disabled={!canAction}
-                                                                                size="sm"
-                                                                                title="Edit"
-                                                                                style={{
-                                                                                    color: canAction ? "" : "#9CA3AF",
-                                                                                    cursor: canAction ? "pointer" : "not-allowed",
-                                                                                    opacity: canAction ? 1 : 0.5,
-                                                                                }}
-                                                                            >
-                                                                                <Edit className="h-4 w-4" />
-                                                                            </Button>
-                                                                        </div>
-                                                                    )}
-
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <NoDataView message="No Debt Service Reserve Account Details Found" />
-                                                    )}
-                                                </div>
-                                            </section>
-                                        </>
-                                    )} */}
                                 </Fragment>
                             ))
                         ) : (
@@ -2930,6 +2279,12 @@ const ViewTermSheet: React.FC = () => {
 
                                                                 <FieldItem label="Disbursed Date" value={d.DisbursedDate ? formatDate_dd_MonthName_yy(d.DisbursedDate) : "-"} />
 
+                                                                {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
+                                                                    <FieldInfoTooltip label="Remark" value={d.Remark} isRow={false} />
+                                                                ) : (
+                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                )}
+
                                                                 <FieldItem label="Last Modified By" value={d!.ModifiedBy === "" ? d!.CreatedBy : d!.ModifiedBy} />
 
                                                                 <FieldItem
@@ -2942,11 +2297,6 @@ const ViewTermSheet: React.FC = () => {
 
                                                                 />
 
-                                                                {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
-                                                                    <FieldInfoTooltip label="Remark" value={d.Remark} isRow={false} />
-                                                                ) : (
-                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                )}
                                                                 {index === b.TermSheetDisbursedAmountDetailsData.length - 1 && !isClosed && (
                                                                     <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
                                                                         <Button
@@ -3037,7 +2387,7 @@ const ViewTermSheet: React.FC = () => {
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 w-full bg-[#F8FAFC] border-b border-gray-200 px-5 py-4">
 
                                                 <h4 className="text-lg font-semibold text-gray-900">
-                                                    Sweep Radio Details
+                                                    Sweep Ratio Details
                                                 </h4>
 
                                                 <div className="w-full sm:w-auto">
@@ -3047,7 +2397,7 @@ const ViewTermSheet: React.FC = () => {
                                                         size="sm"
                                                         onClick={() => {
                                                             if (!canAction || isClosed) return;
-                                                            handleOpenSweepRadioModal();
+                                                            handleOpenSweepRatioModal();
                                                         }}
                                                         disabled={!canAction || isClosed}
                                                     >
@@ -3060,19 +2410,19 @@ const ViewTermSheet: React.FC = () => {
 
                                             <div className="p-5">
 
-                                                {b.TermSheetSweepRadioDetailsData?.length > 0 ? (
+                                                {b.TermSheetSweepRatioDetailsData?.length > 0 ? (
 
                                                     <div className="space-y-3">
 
-                                                        {b.TermSheetSweepRadioDetailsData.map((d, index) => (
-                                                            <div key={d.TermSheetSweepRadioDetailsId}
-                                                                className={`relative grid grid-cols-1 md:grid-cols-6 gap-4 p-3 pr-24 ${index !== b.TermSheetSweepRadioDetailsData.length - 1
+                                                        {b.TermSheetSweepRatioDetailsData.map((d, index) => (
+                                                            <div key={d.TermSheetSweepRatioDetailsId}
+                                                                className={`relative grid grid-cols-1 md:grid-cols-6 gap-4 p-3 pr-24 ${index !== b.TermSheetSweepRatioDetailsData.length - 1
                                                                     ? "border-b border-gray-200"
                                                                     : ""
                                                                     }`} >
 
-                                                                <FieldItem label="Own (%)" value={`${d.OwnSweepRadioInPercentage ?? 0} %`} />
-                                                                <FieldItem label="Lender (%)" value={`${d.LenderSweepRadioInPercentage ?? 0} %`} />
+                                                                <FieldItem label="Own (%)" value={`${d.OwnSweepRatioInPercentage ?? 0} %`} />
+                                                                <FieldItem label="Lender (%)" value={`${d.LenderSweepRatioInPercentage ?? 0} %`} />
                                                                 <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
                                                                 {(d.Remark?.trim()?.length ?? 0) >= 20 ? (
                                                                     <FieldInfoTooltip label="Remark" value={d.Remark} />
@@ -3093,7 +2443,7 @@ const ViewTermSheet: React.FC = () => {
 
 
 
-                                                                {index === b.TermSheetSweepRadioDetailsData.length - 1 && !isClosed && (
+                                                                {index === b.TermSheetSweepRatioDetailsData.length - 1 && !isClosed && (
                                                                     <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row  w-full md:w-auto justify-end  mt-3 md:mt-0">
 
                                                                         <Button
@@ -3101,7 +2451,7 @@ const ViewTermSheet: React.FC = () => {
                                                                                 e.preventDefault()
                                                                                 e.stopPropagation()
                                                                                 if (!canAction || isClosed) return;
-                                                                                handleOpenSweepRadioModal(d)
+                                                                                handleOpenSweepRatioModal(d)
                                                                             }}
                                                                             color="transparent"
                                                                             isborderRadius
@@ -3122,7 +2472,7 @@ const ViewTermSheet: React.FC = () => {
                                                                                 e.preventDefault()
                                                                                 e.stopPropagation()
                                                                                 if (!canAction) return;
-                                                                                handleConfirmDeleteSweepRadio(d)
+                                                                                handleConfirmDeleteSweepRatio(d)
                                                                             }}
                                                                             color="transparent"
                                                                             isborderRadius
@@ -3148,7 +2498,7 @@ const ViewTermSheet: React.FC = () => {
                                                     </div>
 
                                                 ) : (
-                                                    <NoDataView message="No Sweep Radio Details Found" />
+                                                    <NoDataView message="No Sweep Ratio Details Found" />
                                                 )}
 
                                             </div>
@@ -3339,11 +2689,11 @@ const ViewTermSheet: React.FC = () => {
 
                                                 <div>
                                                     <h4 className="text-lg font-semibold text-gray-900">
-                                                        Repay Ledger Details
+                                                        Repayment Details
                                                     </h4>
 
                                                     <div className="mt-1 text-sm font-medium text-gray-600">
-                                                        Total Repay Amount:
+                                                        Total Repayment Amount:
                                                         <span className="ml-2 text-base font-bold text-gray-900">
                                                             {formatCurrency(
                                                                 b.TermSheetRepayLedgerData?.reduce((total, item) => total + Number(item.Amount ?? 0), 0) ?? 0
@@ -3528,7 +2878,7 @@ const ViewTermSheet: React.FC = () => {
                                                             >
                                                                 <FieldItem label="Term" value={d.Term ?? "-"} />
 
-                                                                {d.Term === "MF" && (
+                                                                {d.Term === "Mutual Fund (MF)" && (
                                                                     <>
                                                                         <FieldItem label="Unit" value={d.Unit ?? 0} />
 
@@ -3540,7 +2890,7 @@ const ViewTermSheet: React.FC = () => {
 
                                                                 <FieldItem label="Date" value={d.Date ? formatDate_dd_MonthName_yy(d.Date) : "-"} />
 
-                                                                {d.Term === "FD" && (
+                                                                {d.Term === "Fixed Deposit (FD)" && (
                                                                     <>
                                                                         <FieldItem label="Rate Of Interest (%)" value={`${d.RateOfInterestInPercentage ?? 0} %`} />
 
@@ -3549,6 +2899,19 @@ const ViewTermSheet: React.FC = () => {
                                                                         <FieldItem label="Maturity Period" value={`${d.MaturityPeriod ?? 0}`} />
                                                                     </>
                                                                 )}
+
+
+
+                                                                <FieldItem label="Withdraw Amount" value={formatCurrency(d.WithdrawAmount ?? 0)} />
+
+                                                                <FieldItem
+                                                                    label="Withdraw Date"
+                                                                    value={d.WithdrawDate ? formatDate_dd_MonthName_yy(d.WithdrawDate) : "-"}
+                                                                />
+
+                                                                <div className="md:col-span-4">
+                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
+                                                                </div>
 
                                                                 <FieldItem label="Last Modified By" value={d.ModifiedBy === "" ? d.CreatedBy : d.ModifiedBy} />
 
@@ -3564,19 +2927,6 @@ const ViewTermSheet: React.FC = () => {
                                                                                 : "-"
                                                                     }
                                                                 />
-
-                                                                <FieldItem label="Withdraw Amount" value={formatCurrency(d.WithdrawAmount ?? 0)} />
-
-                                                                <FieldItem
-                                                                    label="Withdraw Date"
-                                                                    value={d.WithdrawDate ? formatDate_dd_MonthName_yy(d.WithdrawDate) : "-"}
-                                                                />
-
-                                                                <div className="md:col-span-4">
-                                                                    <FieldItem label="Remark" value={d.Remark ?? "-"} />
-                                                                </div>
-
-
 
                                                                 {index === b.TermSheetDebtServiceReserveAccountData.length - 1 && !isClosed && (
                                                                     <div className="flex items-center gap-1 md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2 md:flex-row w-full md:w-auto justify-end mt-3 md:mt-0">
@@ -3802,11 +3152,11 @@ const ViewTermSheet: React.FC = () => {
             {/* ===========================================================================================================================  */}
 
             <Modal
-                isOpen={isSweepRadioModalOpen}
-                title={sweepRadioFormData.TermSheetSweepRadioDetailsId ? "Update Sweep Radio Details" : "Add Sweep Radio Details"}
-                onClose={handleSweepRadioModal}
-                onSubmit={handleAddUpdateSweepRadio}
-                saveText={Number(sweepRadioFormData.TermSheetSweepRadioDetailsId) > 0 ? "Update" : "Add"}
+                isOpen={isSweepRatioModalOpen}
+                title={sweepRatioFormData.TermSheetSweepRatioDetailsId ? "Update Sweep Ratio Details" : "Add Sweep Ratio Details"}
+                onClose={handleSweepRatioModal}
+                onSubmit={handleAddUpdateSweepRatio}
+                saveText={Number(sweepRatioFormData.TermSheetSweepRatioDetailsId) > 0 ? "Update" : "Add"}
                 loading={isLoading}
 
                 size="lg"
@@ -3814,30 +3164,30 @@ const ViewTermSheet: React.FC = () => {
 
                 <div className="space-y-6 p-6 bg-blue-100">
                     <Input
-                        value={sweepRadioFormData.OwnSweepRadioInPercentage ?? ""}
-                        label="Own Sweep Radio (%)"
+                        value={sweepRatioFormData.OwnSweepRatioInPercentage ?? ""}
+                        label="Own Sweep Ratio (%)"
                         required
-                        error={errorsSweepRadio.OwnSweepRadioInPercentage}
-                        placeholder="Enter Own Sweep Radio"
+                        error={errorsSweepRatio.OwnSweepRatioInPercentage}
+                        placeholder="Enter Own Sweep Ratio"
                         onChange={(e) => {
                             const val = allowPercentage(e.target.value);
                             if (val !== null) {
-                                handleSweepRadioFieldChange("OwnSweepRadioInPercentage", filterNumbersWithDecimal(e.target.value));
+                                handleSweepRatioFieldChange("OwnSweepRatioInPercentage", filterNumbersWithDecimal(e.target.value));
                             }
                         }}
 
                         rightIcon="%"
                     />
                     <Input
-                        value={sweepRadioFormData.LenderSweepRadioInPercentage ?? ""}
-                        label="Lender Sweep Radio (%)"
+                        value={sweepRatioFormData.LenderSweepRatioInPercentage ?? ""}
+                        label="Lender Sweep Ratio (%)"
                         required
-                        error={errorsSweepRadio.LenderSweepRadioInPercentage}
-                        placeholder="Enter Lender Sweep Radio"
+                        error={errorsSweepRatio.LenderSweepRatioInPercentage}
+                        placeholder="Enter Lender Sweep Ratio"
                         onChange={(e) => {
                             const val = allowPercentage(e.target.value);
                             if (val !== null) {
-                                handleSweepRadioFieldChange("LenderSweepRadioInPercentage", filterNumbersWithDecimal(e.target.value));
+                                handleSweepRatioFieldChange("LenderSweepRatioInPercentage", filterNumbersWithDecimal(e.target.value));
                             }
                         }}
 
@@ -3846,20 +3196,20 @@ const ViewTermSheet: React.FC = () => {
 
                     <DatePickerInput
                         label="Date"
-                        value={formatDate_dd_mm_yyyy(sweepRadioFormData.Date ?? "")}
-                        onChange={(val) => handleSweepRadioFieldChange("Date", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                        value={formatDate_dd_mm_yyyy(sweepRatioFormData.Date ?? "")}
+                        onChange={(val) => handleSweepRatioFieldChange("Date", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                         required
-                        error={errorsSweepRadio.Date}
+                        error={errorsSweepRatio.Date}
                     />
 
                     <TextArea
                         label="Remark"
                         className='thin-scroll'
 
-                        value={sweepRadioFormData.Remark ?? ""}
+                        value={sweepRatioFormData.Remark ?? ""}
                         placeholder="Enter Remark"
-                        onChange={(e) => handleSweepRadioFieldChange("Remark", e.target.value)}
-                        error={errorsSweepRadio.Remark}
+                        onChange={(e) => handleSweepRatioFieldChange("Remark", e.target.value)}
+                        error={errorsSweepRatio.Remark}
                     />
 
                 </div>
@@ -3867,14 +3217,14 @@ const ViewTermSheet: React.FC = () => {
             </Modal>
 
             <DeleteDialog
-                isOpen={isDeleteSweepRadioDialogOpen}
+                isOpen={isDeleteSweepRatioDialogOpen}
                 onClose={() => {
-                    setIsDeleteSweepRadioDialogOpen(false);
-                    setSelectedSweepRadioItem(null);
+                    setIsDeleteSweepRatioDialogOpen(false);
+                    setSelectedSweepRatioItem(null);
                 }}
-                onConfirm={handleDeleteSweepRadio}
+                onConfirm={handleDeleteSweepRatio}
                 loading={isLoading}
-                pageName="Term Sheet Sweep Radio"
+                pageName="Term Sheet Sweep Ratio"
             />
 
 
@@ -3959,7 +3309,7 @@ const ViewTermSheet: React.FC = () => {
             {/* ===========================================================================================================================  */}
             <Modal
                 isOpen={isRepayLedgerModalOpen}
-                title={repayLedgerFormData.TermSheetRepayLedgerId ? "Update Repay Ledger" : "Add Repay Ledger"}
+                title={repayLedgerFormData.TermSheetRepayLedgerId ? "Update Repayment" : "Add Repayment"}
                 onClose={handleRepayLedgerModal}
                 onSubmit={handleAddUpdateRepayLedger}
                 saveText={Number(repayLedgerFormData.TermSheetRepayLedgerId) > 0 ? "Update" : "Add"}
@@ -3969,10 +3319,10 @@ const ViewTermSheet: React.FC = () => {
                 <div className="space-y-6 p-6 bg-blue-100">
                     <Input
                         value={repayLedgerFormData.Amount ?? ""}
-                        label="Repay Amount (₹)"
+                        label="Repayment Amount (₹)"
                         required
                         error={errorsRepayLedger.Amount}
-                        placeholder="Enter Repay Amount"
+                        placeholder="Enter Repayment Amount"
                         onChange={(e) => handleRepayLedgerFieldChange("Amount", filterNumbersWithDecimal(e.target.value) || 0)}
                         rightIcon="₹"
                     />
@@ -4005,7 +3355,7 @@ const ViewTermSheet: React.FC = () => {
                 }}
                 onConfirm={handleDeleteRepayLedger}
                 loading={isLoading}
-                pageName="Term Sheet Repay Ledger"
+                pageName="Term Sheet Repayment"
             />
 
             <DeleteDialog
@@ -4102,10 +3452,10 @@ const ViewTermSheet: React.FC = () => {
                         onChange={(e) => handleDebtServiceReserveAccountFieldChange('Term', String(e))}
                         options={TERM_SHEET_DSRA_TERM_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                         error={errorsDebtServiceReserveAccount.Term}
-                        disabled={isClosed}
+                        disabled={isClosed || Number(debtServiceReserveAccountFormData.TermSheetDebtServiceReserveAccountId) > 0}
                     />
 
-                    {debtServiceReserveAccountFormData.Term === "MF" && (
+                    {debtServiceReserveAccountFormData.Term === "Mutual Fund (MF)" && (
                         <>
                             <Input
                                 label="Unit"
@@ -4133,14 +3483,14 @@ const ViewTermSheet: React.FC = () => {
                     <Input
                         label="Amount (₹)"
                         value={
-                            debtServiceReserveAccountFormData.Term === "MF"
+                            debtServiceReserveAccountFormData.Term === "Mutual Fund (MF)"
                                 ? (
                                     (Number(debtServiceReserveAccountFormData.Unit) || 0) * (Number(debtServiceReserveAccountFormData.PerUnitRate) || 0)
                                 )
                                 : (debtServiceReserveAccountFormData.Amount ?? "")
                         }
                         required
-                        disabled={debtServiceReserveAccountFormData.Term === "MF" && !isClosed}
+                        disabled={debtServiceReserveAccountFormData.Term === "Mutual Fund (MF)" && !isClosed}
                         error={errorsDebtServiceReserveAccount.Amount}
                         placeholder="Enter Amount"
                         onChange={(e) => handleDebtServiceReserveAccountFieldChange("Amount", filterNumbersWithDecimal(e.target.value) || 0)}
@@ -4157,7 +3507,7 @@ const ViewTermSheet: React.FC = () => {
                     />
 
 
-                    {debtServiceReserveAccountFormData.Term === "FD" && (
+                    {debtServiceReserveAccountFormData.Term === "Fixed Deposit (FD)" && (
                         <>
                             <Input
                                 label="Rate Of Interest (%)"
@@ -4165,9 +3515,12 @@ const ViewTermSheet: React.FC = () => {
                                 required
                                 error={errorsDebtServiceReserveAccount.RateOfInterestInPercentage}
                                 placeholder="Enter Rate Of Interest"
-                                onChange={(e) =>
-                                    handleDebtServiceReserveAccountFieldChange("RateOfInterestInPercentage", allowPercentage(e.target.value) || 0)
-                                }
+                                onChange={(e) => {
+                                    const val = allowPercentage(e.target.value);
+                                    if (val !== null) {
+                                        handleDebtServiceReserveAccountFieldChange("RateOfInterestInPercentage", filterNumbersWithDecimal(e.target.value));
+                                    }
+                                }}
                                 rightIcon="%"
                                 disabled={isClosed}
                             />
@@ -4195,6 +3548,7 @@ const ViewTermSheet: React.FC = () => {
                                     handleDebtServiceReserveAccountFieldChange("MaturityPeriod", filterNumbersWithDecimal(e.target.value) || 0)
                                 }
                                 disabled={isClosed}
+                                maxLength={5}
                             />
                         </>
                     )}

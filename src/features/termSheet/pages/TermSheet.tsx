@@ -419,8 +419,8 @@ export const TermSheet: React.FC = () => {
         render: (value) => value ? `${value} %` : '-'
       },
       {
-        key: 'LegalAndDoumentationFees',
-        label: 'Legal & Doumentation (₹)',
+        key: 'LegalAndDocumentationFees',
+        label: 'Legal & Documentation (₹)',
         width: '15',
         sortable: false,
         align: 'right',
@@ -444,7 +444,7 @@ export const TermSheet: React.FC = () => {
       },
       {
         key: 'MinimumSellingPrice',
-        label: 'MSP (₹)',
+        label: 'Minimum Selling Price (MSP) (₹)',
         width: '15',
         sortable: false,
         align: 'right',
@@ -825,7 +825,6 @@ export const TermSheet: React.FC = () => {
             />
 
           </div>
-
           <div>
             <Input
               type="text"

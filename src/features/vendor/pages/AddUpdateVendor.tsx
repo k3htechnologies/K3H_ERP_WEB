@@ -222,13 +222,13 @@ export const AddUpdateVendor: React.FC = () => {
             setGSTCertificateURL(row.GSTCertificateURL)
             setRemovedGSTCertificateUrls([]);
 
-            // Set location dropdowns
+            
             setSelectedCountryId(row.CountryMasterId ?? null);
             setSelectedStateId(row.StateMasterId ?? null);
             setSelectedDistrictId(row.DistrictMasterId ?? null);
             setSelectedCityId(row.CityMasterId ?? null);
           }
-          // Initialize selected materials from existing data
+          
           if (row.AvailableMaterialList) {
             const materialIds = row.AvailableMaterialList.split(",")
               .map((id) => Number(id.trim()))
@@ -485,7 +485,7 @@ export const AddUpdateVendor: React.FC = () => {
       return
     }
 
-    if (formData.VendorType.toUpperCase() === "VENDOR" || formData.VendorType.toUpperCase() === "BOTH" && selectedMaterials.size === 0) {
+    if ((formData.VendorType.toUpperCase() === "MATERIAL" || formData.VendorType.toUpperCase() === "BOTH") && selectedMaterials.size === 0) {
       addToast({ type: "error", title: "Please select at least one material" });
       return;
     }
@@ -565,7 +565,7 @@ export const AddUpdateVendor: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-        {/* ============================================================= [BASIC VENDOR DETAILS] ============================================================================================= */}
+        {}
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Basic Details
@@ -644,7 +644,7 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {/* GOVERNMENT IDENTIFIERS */}
+        {}
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Government Identifiers
@@ -743,7 +743,7 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {/* ADDRESS */}
+        {}
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Address Details
@@ -905,7 +905,7 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {/* MATERIAL / CONTRACT */}
+        {}
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
             Material and Contract Management
@@ -923,7 +923,7 @@ export const AddUpdateVendor: React.FC = () => {
             isChips
           />
 
-          {/* Material Tab Content */}
+          {}
           {activeTab === "material" && (
             <div className="space-y-4">
 

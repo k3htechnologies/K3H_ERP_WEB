@@ -20,7 +20,7 @@ export const ViewVendor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  //LOCATION
+  
   const navigate = useNavigate();
   const { listState } = useVendorListState();
   const vendorName = listState.vendorName || '';
@@ -277,7 +277,7 @@ export const ViewVendor: React.FC = () => {
             </div>
 
 
-            {/* ================= MATERIALS & CONTRACTS ================= */}
+            {}
             <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
 
               <div className="flex items-center gap-3 mb-5">

@@ -53,6 +53,8 @@ export const LOCAL_STORAGE_KEYS = {
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
     APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'approvalDocumentCategoryMaster.selectedColumns',
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
+    TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'testDocumentCategoryMaster.selectedColumns',
+    DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'drawingDocumentCategoryMaster.selectedColumns',
 
     // REDEVELOPMENT
 

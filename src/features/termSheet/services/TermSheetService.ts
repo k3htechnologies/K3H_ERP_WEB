@@ -9,8 +9,8 @@ import type {
     AddUpdateTermSheetDisbursedAmountDetailsRequest,
     DeleteTermSheetDisbursedAmountDetailsRequest,
 
-    AddUpdateTermSheetSweepRadioDetailsRequest,
-    DeleteTermSheetSweepRadioDetailsRequest,
+    AddUpdateTermSheetSweepRatioDetailsRequest,
+    DeleteTermSheetSweepRatioDetailsRequest,
 
     AddUpdateTermSheetDirectSellingAgentRequest,
     DeleteTermSheetDirectSellingAgentRequest,
@@ -23,7 +23,7 @@ import type {
     TermSheetDeleteResponse,
 
     TermSheetDisbursedAmountSaveResponse,
-    TermSheetSweepRadioSaveResponse,
+    TermSheetSweepRatioSaveResponse,
     TermSheetDirectSellingAgentSaveResponse,
     TermSheetFinalApprovalResponse,
     TermSheetRepayLedgerSaveResponse,
@@ -120,11 +120,11 @@ export const termSheetService = {
     },
 
 
-    apiCallAddUpdateTermSheetSweepRadioDetails: async ( params: AddUpdateTermSheetSweepRadioDetailsRequest): Promise<E.Either<Failure,TermSheetSweepRadioSaveResponse>> => {
+    apiCallAddUpdateTermSheetSweepRatioDetails: async ( params: AddUpdateTermSheetSweepRatioDetailsRequest): Promise<E.Either<Failure,TermSheetSweepRatioSaveResponse>> => {
 
         try {
 
-            return E.right(await termSheetDatasource.addUpdateTermSheetSweepRadioDetails( params))
+            return E.right(await termSheetDatasource.addUpdateTermSheetSweepRatioDetails( params))
 
         } catch (error: any) {
 
@@ -132,11 +132,11 @@ export const termSheetService = {
         }
     },
 
-    apiCallDeleteTermSheetSweepRadioDetails: async (params: DeleteTermSheetSweepRadioDetailsRequest): Promise<E.Either<Failure, TermSheetDeleteResponse>> => {
+    apiCallDeleteTermSheetSweepRatioDetails: async (params: DeleteTermSheetSweepRatioDetailsRequest): Promise<E.Either<Failure, TermSheetDeleteResponse>> => {
 
         try {
 
-            return E.right(await termSheetDatasource.deleteTermSheetSweepRadioDetails(params))
+            return E.right(await termSheetDatasource.deleteTermSheetSweepRatioDetails(params))
 
         } catch (error: any) {
 

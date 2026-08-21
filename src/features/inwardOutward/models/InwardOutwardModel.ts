@@ -69,6 +69,8 @@ export interface InwardAndOutWardData {
     SenderMobileNumberCountryCode: string | null,
     ReceiverMobileNumber: string | null,
     ReceiverMobileNumberCountryCode: string | null,
+    HandoverPersonMobileNumber: string | null,
+    HandoverPersonMobileNumberCountryCode: string | null,
 }
 export interface AddUpdateInwardAndOutWardRequest {
     InwardOutwardId: number;
@@ -93,6 +95,9 @@ export interface AddUpdateInwardAndOutWardRequest {
     ReceiverEmailId: string | null;
     HandOverTo: string | null;
     HandOverDate: string | null;
+    HandoverPersonMobileNumber: string | null;
+    HandoverPersonMobileNumberCountryCode: string | null;
+
     DocumentURL: File[] | null;
     RemoveDocumentURL: string;
     DocumentDescription: string | null;
@@ -105,6 +110,7 @@ export interface AddUpdateInwardAndOutWardRequest {
     AcknowledgementSignatureURL: File[] | null;
     RemoveAcknowledgementSignatureURL: string;
     AcknowledgementRemark: string | null;
+    CreatedById?: number | 0
 }
 
 export interface DeleteInwardAndOutWardRequest {

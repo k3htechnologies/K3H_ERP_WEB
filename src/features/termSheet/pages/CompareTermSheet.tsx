@@ -200,7 +200,7 @@ const CompareTermSheet: React.FC = () => {
                 {
                     label: "Legal & Documentation Fee",
                     type: "",
-                    getValue: (b: TermSheetDetailsData) => formatCurrency(b.LegalAndDoumentationFees ?? 0),
+                    getValue: (b: TermSheetDetailsData) => formatCurrency(b.LegalAndDocumentationFees ?? 0),
                     compare: "lower",
                 },
             ],
@@ -332,7 +332,7 @@ const CompareTermSheet: React.FC = () => {
             setLoadingMessage,
             async () => {
 
-                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(Number(listState.ProjectId));
+                const response = await projectMasterService.apiCallPullProjectMasterWithCompany(Number(listState.ProjectId), false);
 
                 if (E.isRight(response)) {
 
@@ -450,10 +450,13 @@ const CompareTermSheet: React.FC = () => {
                                         <Fragment key={section.title}>
 
                                             <tr>
-                                                <td colSpan={termSheetViewData.TermSheetDetailsData.length + 1}
-                                                    className="px-5 py-2.5 bg-[#F8FAFC] border-b border-gray-200 text-xs font-semibold text-[#64748B] uppercase tracking-wide" >
+                                                <td className="sticky left-0 z-30 bg-[#F8FAFC]  px-5 py-2.5 border-b border-gray-200  text-xs font-semibold  text-[#64748B] uppercase tracking-wide whitespace-nowrap">
                                                     {section.title}
                                                 </td>
+
+                                                {termSheetViewData.TermSheetDetailsData.map((b) => (
+                                                    <td key={b.TermSheetDetailsId} className="bg-[#F8FAFC] border-b border-gray-200" />
+                                                ))}
                                             </tr>
 
                                             {section.rows.map((row) => (
@@ -493,7 +496,7 @@ const CompareTermSheet: React.FC = () => {
                                                                     <ApprovalActions
                                                                         approvalStatus={b.ApprovalStatus || "-"}
                                                                         showApproval={b.IsApproval}
-                                                                        isIcons={false}
+                                                                        isIcons={true}
                                                                         onHistory={() => handleApprovalLog(b)}
                                                                         onApprove={() => handleApproveRejectDocument(b, "approve")}
                                                                         onReject={() => handleApproveRejectDocument(b, "reject")}

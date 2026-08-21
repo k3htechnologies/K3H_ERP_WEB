@@ -12,9 +12,9 @@ export const TermSheetApi = {
 
     DELETE_DISBURSED_AMOUNT: '/TermSheet/DeleteTermSheetDisbursedAmountDetails',
 
-    ADD_UPDATE_SWEEP_RADIO: '/TermSheet/AddUpdateTermSheetSweepRadioDetails',
+    ADD_UPDATE_SWEEP_RADIO: '/TermSheet/AddUpdateTermSheetSweepRatioDetails',
 
-    DELETE_SWEEP_RADIO:  '/TermSheet/DeleteTermSheetSweepRadioDetails',
+    DELETE_SWEEP_RADIO:  '/TermSheet/DeleteTermSheetSweepRatioDetails',
 
     ADD_UPDATE_DIRECT_SELLING_AGENT:  '/TermSheet/AddUpdateTermSheetDirectSellingAgent',
 

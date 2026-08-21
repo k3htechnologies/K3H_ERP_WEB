@@ -236,6 +236,29 @@ export const getPageInfo = (path: string) => {
                 title: 'Approval Document Category',
                 description: 'Categorize Approvals, Simplify Decisions',
             }
+            case 'testCategory':
+            return {
+                title: 'Test Document Category',
+                description: 'Categorize Test, Simplify Decisions',
+            }
+
+            case 'testDocument':
+            return {
+                title: 'Test Document',
+                description: 'Efficient Test for Seamless Real Estate Operations',
+            }
+
+            case 'drawingCategory':
+            return {
+                title: 'Drawing Document Category',
+                description: 'Categorize Drawing, Simplify Decisions',
+            }
+
+             case 'drawing':
+            return {
+                title: 'Drawing Document',
+                description: 'Efficient Drawing for Seamless Real Estate Operations',
+            }
 
         //PROFILE
         case 'profile':
@@ -343,8 +366,8 @@ export const getPageInfo = (path: string) => {
                 title: 'Ticket',
                 description: 'Ticket',
             }
-            
-            case 'otpLogs':
+
+        case 'otpLogs':
             return {
                 title: 'OTP Logs',
                 description: 'OTP Logs'
@@ -356,7 +379,7 @@ export const getPageInfo = (path: string) => {
                 description: 'Tax Tracker for tracking notices issued by authorities across India',
             }
 
-       
+
             {/* INVENTORY AND REPORT */ }
 
         case 'inventoryDashboard':
@@ -561,26 +584,32 @@ export const getPageInfo = (path: string) => {
                 description: "Brokerage",
             }
 
-             //SPECIFICATION MASTER
+        //SPECIFICATION MASTER
         case 'specificationmaster':
             return {
                 title: "Specification Master",
                 description: 'Overview of your system and key metrics',
             }
-            //BUDGET
-            case 'budget':
+        //BUDGET
+        case 'budget':
             return {
                 title: "Budget",
                 description: 'Overview of your system and key metrics',
             }
 
-            //FINANCE
+        //FINANCE
         case 'termSheet':
             return {
                 title: "Term Sheet",
                 description: "Manage and track term sheets for real estate transactions",
             }
             
+        case 'termSheetReport':
+            return {
+                title: "Term Sheet Report",
+                description: "Manage and track term sheets for real estate transactions",
+            }
+
         default:
             return {
                 title: 'Dashboard',

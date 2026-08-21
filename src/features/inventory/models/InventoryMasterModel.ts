@@ -230,6 +230,26 @@ export interface FilterPaginatedFlatsRequest {
     ApprovalStatus?: string
 }
 
+export interface FilterPaginatedFloorRequest {
+    PageSize: number
+    PageNumber: number
+    ProjectId: number
+    InventoryFloorId?: number
+    BuildingNumber?: string
+    Wing?: string
+    Floor?: string
+    ApprovalStatus?: string
+    BuildingNumberWingFloor?: string
+}
+
+export interface PaginationInventoryFloorData {
+    InventoryFloorId: number;
+    BuildingNumber: string;
+    Wing: string;
+    Floor: string;
+}
+
+
 export interface FilterWithPaginationProjectInventoryStructureRequest {
     ProjectId?: number
     InventoryBuildingId?: number
@@ -272,5 +292,7 @@ export type AddInventoryFloorResponse = ApiResponse<InventoryData[]>
 export type AddInventoryFlatResponse = ApiResponse<InventoryFlatData[]>
 export type AddUpdateInventoryFloorParkingCountResponse = ApiResponse<string>;
 export type FilterPaginatedFlatsResponse = ApiResponse<InventoryFlatData[]>;
+export type FilterPaginatedFloorResponse = ApiResponse<PaginationInventoryFloorData[]>;
 export type ProjectInventoryStructureListResponse = ApiResponse<ProjectInventoryStructureData[]>;
+
 

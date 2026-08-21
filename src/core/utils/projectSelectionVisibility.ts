@@ -58,6 +58,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'taxTracker'
         ,'noticeSection'
         ,'otpLogs'
+        ,'termSheetReport'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

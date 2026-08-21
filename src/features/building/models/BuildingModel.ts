@@ -12,6 +12,7 @@ export interface FilterWithPaginationBuildingRequest {
   CityName?: string | "";
   VillageName?: string | "";
   WardName?: string | "";
+  Category?: string | "";
   SortBy?: string;
   ExportType?: "Excel" | "PDF";
 }

@@ -54,6 +54,7 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
             if (params.CityName?.trim()) queryParams.append('CityName', params.CityName.trim());
             if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
             if (params.WardName?.trim()) queryParams.append('WardName', params.WardName.trim());
+            if (params.Category?.trim()) queryParams.append('Category', params.Category.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

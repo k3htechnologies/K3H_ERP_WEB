@@ -1227,6 +1227,48 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  storeTestDocumentCategoryMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Test Document Category Master Columns Details:", error);
+    }
+  },
+
+  getTestDocumentCategoryMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Test Document Category Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeDrawingDocumentCategoryMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Drawing Document Category Master Columns Details:", error);
+    }
+  },
+
+  getDrawingDocumentCategoryMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Drawing Document Category Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
   //REDEVELOPMENT
   storeRedevelopmentBuildingTableColumns: (columns: string): void => {
     try {
@@ -1546,6 +1588,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);

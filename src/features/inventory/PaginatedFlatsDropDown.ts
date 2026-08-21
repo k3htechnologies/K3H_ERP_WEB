@@ -20,11 +20,7 @@ export const fetchPaginatedFlatsDropdown = async (pageNumber: number,params?: { 
 
         const itemList = (apiResponse?.Data || []).map((d: any) => {
 
-            const label = [
-                d.BuildingNumber,
-                d.Flat
-            ].filter(Boolean)
-                .join(' - ');
+            const label = [d.BuildingNumber, d.Flat ].filter(Boolean).join(' - ');
 
             return {
                 label,

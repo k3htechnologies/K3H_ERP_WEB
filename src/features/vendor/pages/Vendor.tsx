@@ -33,7 +33,7 @@ import { copyToClipboard } from '@/core/utils/comman';
 
 
 export const Vendor: React.FC = () => {
-  //#region STATE
+  
   const [vendorList, setVendorList] = useState<VendorData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -205,9 +205,9 @@ export const Vendor: React.FC = () => {
   const handleExportVendorExcel = () => handleExportVendors('Excel')
   const handleExportVendorPdf = () => handleExportVendors('PDF')
 
-  //#endregion
+  
 
-  //#region TABLE CONFIG
+  
 
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
@@ -487,9 +487,9 @@ export const Vendor: React.FC = () => {
     [canAction, handleViewVendorDetails, handleConfirmationDialogBoxOpen]
   )
 
-  //#endregion
+  
 
-  //#region CUSTOMIZE COLUMNS
+  
   const requiredVendorColumnKeys: string[] = ['VendorName', 'Actions'];
   const allVendorColumnKeys: string[] = vendorColumns.map(c => c.key)
   const [selectedVendorColumnKeys, setSelectedVendorColumnKeys] = useState<string[]>(() => {
@@ -501,23 +501,23 @@ export const Vendor: React.FC = () => {
         return withRequired.filter(k => allVendorColumnKeys.includes(k));
       }
     } catch {
-      // Ignore parsing errors
+      
     }
     return allVendorColumnKeys
   })
 
   useEffect(() => {
     setSelectedVendorColumnKeys(prev => Array.from(new Set([...prev, ...requiredVendorColumnKeys])).filter(k => allVendorColumnKeys.includes(k)));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [vendorColumns.length])
 
   const visibleVendorColumns = useMemo(
     () => vendorColumns.filter(col => selectedVendorColumnKeys.includes(col.key)),
     [vendorColumns, selectedVendorColumnKeys]
   );
-  //#endregion
+  
 
-  //#region FILTER HELPERS
+  
   const applyFilters = () => {
     updateListState({ filters: tempFilters, page: 1 });
     loadVendors(1, tempFilters);
@@ -529,30 +529,30 @@ export const Vendor: React.FC = () => {
     updateListState({ filters: {}, page: 1 });
     loadVendors(1, {});
   };
-  //#endregion
+  
 
-  //#region ADD NEW EMPLOYEE
+  
   const handleAddVendor = () => {
     navigate('/vendor/add');
   };
-  //#endregion
+  
 
-  //#region  HANDLE CHANGE EVENT
+  
 
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  //#endregion
+  
 
 
-  //#region IMPORT EXCEL | DOWNLOAD
+  
   const downloadExcelSampleVendor = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
+        
 
         const params: FilterPullExcelSample = {
           TableName: 'Vendor'
@@ -607,9 +607,9 @@ export const Vendor: React.FC = () => {
       "Importing Excel"
     );
   };
-  //#endregion
+  
 
-  //#region  DELETE VENDOR EVENT
+  
   const handleDeleteVendor = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -675,15 +675,15 @@ export const Vendor: React.FC = () => {
     )
   }
 
-  //#endregion
+  
 
-  //region MAGIC LICK
+  
   const handleMagicLinkWithValidate = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
+        
 
         const params: FilterMagicLinkWithValidate = {
           ClientRegistrationId: Number(LocalStorageHelper.getStoredEmployeeData()?.ClientRegistrationId),
@@ -742,7 +742,7 @@ export const Vendor: React.FC = () => {
       await handleCopyMagicLink();
     }
   };
-  //#endregion
+  
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
@@ -767,12 +767,12 @@ export const Vendor: React.FC = () => {
 
         onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
 
-        // ADD
+        
         isShowAddButton={canAction}
         addTitle="Add"
         onAdd={handleAddVendor}
 
-        // ADD EXTRA MAGIC LINK
+        
         isShowAddExtraButton={canAction}
         addExtraTitle="Share"
         onAddExtra={async () => {
@@ -781,12 +781,12 @@ export const Vendor: React.FC = () => {
         }}
 
 
-        // IMPORT
+        
         isShowImportButton={canAction}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleVendor}
 
-        // EXPORT
+        
         isShowExportButton={canExport && vendorListForTable.length > 0}
         onExportExcel={handleExportVendorExcel}
         onExportPdf={handleExportVendorPdf}
@@ -804,7 +804,7 @@ export const Vendor: React.FC = () => {
         onSort={handleSortColumn}
       />
 
-      {/* DELETE CONFIRMATION MODAL */}
+      {}
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
@@ -824,7 +824,7 @@ export const Vendor: React.FC = () => {
           setSelectedVendorColumnKeys(withRequired)
           try {
             LocalStorageHelper.storeVendorTableColumns(JSON.stringify(withRequired))
-          } catch { /* empty */ }
+          } catch {  }
         }}
         columns={vendorColumns}
         selectedKeys={selectedVendorColumnKeys}

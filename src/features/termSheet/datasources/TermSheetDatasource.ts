@@ -9,8 +9,8 @@ import type {
     AddUpdateTermSheetDisbursedAmountDetailsRequest,
     DeleteTermSheetDisbursedAmountDetailsRequest,
 
-    AddUpdateTermSheetSweepRadioDetailsRequest,
-    DeleteTermSheetSweepRadioDetailsRequest,
+    AddUpdateTermSheetSweepRatioDetailsRequest,
+    DeleteTermSheetSweepRatioDetailsRequest,
 
     AddUpdateTermSheetDirectSellingAgentRequest,
     DeleteTermSheetDirectSellingAgentRequest,
@@ -22,7 +22,7 @@ import type {
     TermSheetSaveResponse,
     TermSheetDeleteResponse,
     TermSheetDisbursedAmountSaveResponse,
-    TermSheetSweepRadioSaveResponse,
+    TermSheetSweepRatioSaveResponse,
     TermSheetDirectSellingAgentSaveResponse,
     TermSheetFinalApprovalResponse,
     DeleteTermSheetRepayLedgerRequest,
@@ -49,9 +49,9 @@ export abstract class TermSheetDatasource {
 
     abstract deleteTermSheetDisbursedAmountDetails(params: DeleteTermSheetDisbursedAmountDetailsRequest): Promise<TermSheetDeleteResponse>
 
-    abstract addUpdateTermSheetSweepRadioDetails(params: AddUpdateTermSheetSweepRadioDetailsRequest): Promise<TermSheetSweepRadioSaveResponse>
+    abstract addUpdateTermSheetSweepRatioDetails(params: AddUpdateTermSheetSweepRatioDetailsRequest): Promise<TermSheetSweepRatioSaveResponse>
 
-    abstract deleteTermSheetSweepRadioDetails(params: DeleteTermSheetSweepRadioDetailsRequest): Promise<TermSheetDeleteResponse>
+    abstract deleteTermSheetSweepRatioDetails(params: DeleteTermSheetSweepRatioDetailsRequest): Promise<TermSheetDeleteResponse>
 
     abstract addUpdateTermSheetDirectSellingAgent(params: AddUpdateTermSheetDirectSellingAgentRequest): Promise<TermSheetDirectSellingAgentSaveResponse>
 
@@ -226,7 +226,7 @@ export class TermSheetDatasourceImpl implements TermSheetDatasource {
     }
 
 
-    async addUpdateTermSheetSweepRadioDetails(params: AddUpdateTermSheetSweepRadioDetailsRequest): Promise<TermSheetSweepRadioSaveResponse> {
+    async addUpdateTermSheetSweepRatioDetails(params: AddUpdateTermSheetSweepRatioDetailsRequest): Promise<TermSheetSweepRatioSaveResponse> {
 
         try {
 
@@ -237,20 +237,20 @@ export class TermSheetDatasourceImpl implements TermSheetDatasource {
             console.error('ERROR: ADD UPDATE SWEEP RADIO:', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.addUpdateTermSheetSweepRadioDetails(params)
+                return await this.addUpdateTermSheetSweepRatioDetails(params)
             }
 
             throw error
         }
     }
 
-    async deleteTermSheetSweepRadioDetails(params: DeleteTermSheetSweepRadioDetailsRequest): Promise<TermSheetDeleteResponse> {
+    async deleteTermSheetSweepRatioDetails(params: DeleteTermSheetSweepRatioDetailsRequest): Promise<TermSheetDeleteResponse> {
 
         try {
 
             const queryParams = new URLSearchParams({
 
-                TermSheetSweepRadioDetailsId: (params.TermSheetSweepRadioDetailsId ?? 0).toString(),
+                TermSheetSweepRatioDetailsId: (params.TermSheetSweepRatioDetailsId ?? 0).toString(),
 
                 TermSheetId: (params.TermSheetId ?? 0).toString(),
 
@@ -266,7 +266,7 @@ export class TermSheetDatasourceImpl implements TermSheetDatasource {
             console.error('ERROR: DELETE SWEEP RADIO:', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.deleteTermSheetSweepRadioDetails(params)
+                return await this.deleteTermSheetSweepRatioDetails(params)
             }
 
             throw error

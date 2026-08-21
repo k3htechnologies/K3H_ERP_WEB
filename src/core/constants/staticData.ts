@@ -64,6 +64,8 @@ export const MASTER_DATA = {
 
   documentStatus: ["Applied", "Doc Missing", "In Process", "Issued", "Not Applied", "Not Applicable", "Paid", "Payment Due", "Rejected"],
 
+  drawingDocumentStatus: ["Advance", "Good For Construction (GFC)"],
+
   bankAccountType: ["Current", "Overdraft", "RERA Escrow Current Account", "Salary", "Saving"],
 
   natureOfAccount: [
@@ -694,11 +696,11 @@ termSheetTypeOptions: ['Construction Finance (CF)', 'Loan Against Property (LAP)
 
 termSheetApprovalStatus: ["Term Sheet", "Sanction" ,"Closed"],
 
-termSheetDSRATerm: ["MF", "FD"],
+termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
 noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
 
-vendorType: ["Vendor", "Contractor", "Both"]
+vendorType: ["Material", "Contractor", "Both"]
 } as const;
 
 // ============================================================================
@@ -729,6 +731,7 @@ export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType);
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus);
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory);
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus);
+export const DRAWING_DOCUMENT_STATUS = toOptions(MASTER_DATA.drawingDocumentStatus);
 export const ACCOMODATION_TYPE_OPTIONS = toOptions(MASTER_DATA.accomodation);
 export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement);
 export const BUDGET_TYPE_OPTIONS = toOptions(MASTER_DATA.budget);

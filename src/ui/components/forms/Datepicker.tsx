@@ -9,10 +9,19 @@ import type { DatePickerProps } from '@/core/types/form.types'
 
 const parseDdMmYyyy = (value?: string | null): Date | null => {
   if (!value) return null
+
   const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(value)
+
   if (!match) return null
+
   const [, dd, mm, yyyy] = match
-  const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd))
+
+  const d = new Date(
+    Number(yyyy),
+    Number(mm) - 1,
+    Number(dd)
+  )
+
   return (
     d.getFullYear() === Number(yyyy) &&
     d.getMonth() === Number(mm) - 1 &&
@@ -24,21 +33,33 @@ const parseDdMmYyyy = (value?: string | null): Date | null => {
 
 const normalizeDate = (date: Date): Date => {
   const normalized = new Date(date)
+
   normalized.setHours(0, 0, 0, 0)
+
   return normalized
 }
 
-const parseDateValue = (value?: string | Date | null): Date | null => {
+const parseDateValue = (
+  value?: string | Date | null
+): Date | null => {
   if (!value) return null
-  if (typeof value === 'string') return parseDdMmYyyy(value)
-  if (value instanceof Date) return normalizeDate(value)
+
+  if (typeof value === 'string') {
+    return parseDdMmYyyy(value)
+  }
+
+  if (value instanceof Date) {
+    return normalizeDate(value)
+  }
+
   return null
 }
 
 const formatDdMmYyyy = (date: Date | null): string => {
   if (!date) return ''
+
   return `${String(date.getDate()).padStart(2, '0')}-${String(
-    date.getMonth() + 1,
+    date.getMonth() + 1
   ).padStart(2, '0')}-${date.getFullYear()}`
 }
 
@@ -54,6 +75,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   maxYear = new Date().getFullYear() + 20,
   disabled = false,
   minDate,
+  maxDate,
   isDisplayCurrentDate = false,
   helperText,
 }) => {
@@ -64,13 +86,26 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   const [isOpen, setIsOpen] = useState(false)
 
   const initialDate = parseDdMmYyyy(value)
-  const [selectedDate, setSelectedDate] = useState<Date | null>(initialDate)
-  const [currentMonth, setCurrentMonth] = useState<Date>(initialDate ?? new Date())
+
+  const [selectedDate, setSelectedDate] =
+    useState<Date | null>(initialDate)
+
+  const [currentMonth, setCurrentMonth] =
+    useState<Date>(initialDate ?? new Date())
+
+  /* ================= Today ================= */
 
   const today = new Date()
-  today.setHours(0, 0, 0, 0);
+
+  today.setHours(0, 0, 0, 0)
+
+  /* ================= Min / Max Date ================= */
 
   const minSelectableDate = parseDateValue(minDate)
+
+  const maxSelectableDate = parseDateValue(maxDate)
+
+  /* ================= Date Helpers ================= */
 
   const isSameDay = (a: Date | null, b: Date | null) =>
     !!a &&
@@ -81,12 +116,17 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   const isToday = (d: Date) => isSameDay(d, today)
 
-  const isDateBefore = (a: Date, b: Date) => normalizeDate(a).getTime() < normalizeDate(b).getTime()
+  const isDateBefore = (a: Date, b: Date) =>
+    normalizeDate(a).getTime() <
+    normalizeDate(b).getTime()
 
+  const isDateAfter = (a: Date, b: Date) =>
+    normalizeDate(a).getTime() >
+    normalizeDate(b).getTime()
 
-  /* ================= Portal Position (ONLY LOGIC CHANGE) ================= */
+  /* ================= Portal Position ================= */
 
-  const CALENDAR_HEIGHT = 280 // approx, ONLY for position calculation
+  const CALENDAR_HEIGHT = 280
 
   const [portalPos, setPortalPos] = useState<{
     left: number
@@ -95,26 +135,35 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   const updatePortalPosition = useCallback(() => {
     const node = wrapperRef.current
+
     if (!node) return
 
     const rect = node.getBoundingClientRect()
+
     const vh = window.innerHeight
 
     const spaceBelow = vh - rect.bottom
+
     const spaceAbove = rect.top
 
     const openBelow =
-      spaceBelow >= CALENDAR_HEIGHT || spaceBelow >= spaceAbove
+      spaceBelow >= CALENDAR_HEIGHT ||
+      spaceBelow >= spaceAbove
 
     let top = openBelow
       ? rect.bottom + 8
       : rect.top - CALENDAR_HEIGHT - 8
 
-    // keep inside viewport
-    top = Math.max(8, Math.min(top, vh - CALENDAR_HEIGHT - 8))
+    top = Math.max(
+      8,
+      Math.min(
+        top,
+        vh - CALENDAR_HEIGHT - 8
+      )
+    )
 
     setPortalPos({
-      left: rect.right - 320, // KEEP EXACT OLD ALIGNMENT
+      left: rect.right - 320,
       top,
     })
   }, [])
@@ -124,13 +173,31 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
     updatePortalPosition()
 
-    const onUpdate = () => updatePortalPosition()
-    window.addEventListener('resize', onUpdate)
-    window.addEventListener('scroll', onUpdate, true)
+    const onUpdate = () =>
+      updatePortalPosition()
+
+    window.addEventListener(
+      'resize',
+      onUpdate
+    )
+
+    window.addEventListener(
+      'scroll',
+      onUpdate,
+      true
+    )
 
     return () => {
-      window.removeEventListener('resize', onUpdate)
-      window.removeEventListener('scroll', onUpdate, true)
+      window.removeEventListener(
+        'resize',
+        onUpdate
+      )
+
+      window.removeEventListener(
+        'scroll',
+        onUpdate,
+        true
+      )
     }
   }, [isOpen, updatePortalPosition])
 
@@ -138,18 +205,42 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(
+          e.target as Node
+        )
+      ) {
         setIsOpen(false)
       }
     }
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setIsOpen(false)
+      if (e.key === 'Escape') {
+        setIsOpen(false)
+      }
     }
-    document.addEventListener('mousedown', onClick)
-    document.addEventListener('keydown', onKey)
+
+    document.addEventListener(
+      'mousedown',
+      onClick
+    )
+
+    document.addEventListener(
+      'keydown',
+      onKey
+    )
+
     return () => {
-      document.removeEventListener('mousedown', onClick)
-      document.removeEventListener('keydown', onKey)
+      document.removeEventListener(
+        'mousedown',
+        onClick
+      )
+
+      document.removeEventListener(
+        'keydown',
+        onKey
+      )
     }
   }, [])
 
@@ -157,79 +248,191 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
   useEffect(() => {
     const parsed = parseDdMmYyyy(value)
+
     setSelectedDate(parsed)
-    if (parsed) setCurrentMonth(parsed)
+
+    if (parsed) {
+      setCurrentMonth(parsed)
+    }
   }, [value])
+
+  /* ================= Display Current Date ================= */
 
   useEffect(() => {
     if (!value && isDisplayCurrentDate) {
       const today = new Date()
+
       today.setHours(0, 0, 0, 0)
 
       setSelectedDate(today)
+
       setCurrentMonth(today)
-      onChange(formatDdMmYyyy(today))
+
+      onChange(
+        formatDdMmYyyy(today)
+      )
     }
-  }, [isDisplayCurrentDate])
+  }, [
+    isDisplayCurrentDate,
+  ])
 
   /* ================= Calendar Logic ================= */
 
   const year = currentMonth.getFullYear()
+
   const month = currentMonth.getMonth()
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate()
-  const firstDay = new Date(year, month, 1).getDay()
+  const daysInMonth =
+    new Date(
+      year,
+      month + 1,
+      0
+    ).getDate()
+
+  const firstDay =
+    new Date(
+      year,
+      month,
+      1
+    ).getDay()
 
   const weeks: (Date | null)[][] = []
+
   let row: (Date | null)[] = []
 
-  for (let i = 0; i < firstDay; i++) row.push(null)
+  for (
+    let i = 0;
+    i < firstDay;
+    i++
+  ) {
+    row.push(null)
+  }
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    row.push(new Date(year, month, d))
+  for (
+    let d = 1;
+    d <= daysInMonth;
+    d++
+  ) {
+    row.push(
+      new Date(
+        year,
+        month,
+        d
+      )
+    )
+
     if (row.length === 7) {
       weeks.push(row)
+
       row = []
     }
   }
+
   if (row.length) {
-    while (row.length < 7) row.push(null)
+    while (row.length < 7) {
+      row.push(null)
+    }
+
     weeks.push(row)
   }
 
+  /* ================= Day Click ================= */
+
   const handleDayClick = (date: Date) => {
+    const isBeforeMin =
+      minSelectableDate &&
+      isDateBefore(
+        date,
+        minSelectableDate
+      )
+
+    const isAfterMax =
+      maxSelectableDate &&
+      isDateAfter(
+        date,
+        maxSelectableDate
+      )
+
+    if (isBeforeMin || isAfterMax) {
+      return
+    }
+
     setSelectedDate(date)
-    onChange(formatDdMmYyyy(date))
+
+    onChange(
+      formatDdMmYyyy(date)
+    )
+
     setIsOpen(false)
   }
 
+  /* ================= Month Names ================= */
+
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ]
 
-  const years = Array.from({ length: maxYear - minYear + 1 }, (_, i) => minYear + i)
+  const years = Array.from(
+    {
+      length:
+        maxYear -
+        minYear +
+        1,
+    },
+    (_, i) =>
+      minYear + i
+  )
+
+  /* ================= Clear Date ================= */
 
   const clearDate = () => {
-    setSelectedDate(null);
-    onChange("");
-  };
+    setSelectedDate(null)
 
+    onChange('')
+  }
 
   /* ================= Render ================= */
 
   return (
-    <div ref={wrapperRef} style={{ position: 'relative', width: '100%' }}>
+    <div
+      ref={wrapperRef}
+      style={{
+        position: 'relative',
+        width: '100%',
+      }}
+    >
       <Input
         label={label}
         required={required}
         type="text"
-        value={selectedDate ? formatDdMmYyyy(selectedDate) : ''}
+        value={
+          selectedDate
+            ? formatDdMmYyyy(
+              selectedDate
+            )
+            : ''
+        }
         readOnly
         disabled={disabled}
         error={error}
         helperText={helperText}
-        onClick={() => !disabled && setIsOpen(p => !p)}
+        onClick={() =>
+          !disabled &&
+          setIsOpen(
+            p => !p
+          )
+        }
         placeholder="DD-MM-YYYY"
         rightIcon={
           disabled ? (
@@ -237,10 +440,13 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
           ) : selectedDate ? (
             <X
               size={16}
-              style={{ cursor: "pointer" }}
-              onClick={(e) => {
-                e.stopPropagation();
-                clearDate();
+              style={{
+                cursor: 'pointer',
+              }}
+              onClick={e => {
+                e.stopPropagation()
+
+                clearDate()
               }}
             />
           ) : (
@@ -251,135 +457,295 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
 
       {isOpen &&
         portalPos &&
-        typeof document !== 'undefined' &&
+        typeof document !==
+        'undefined' &&
         createPortal(
           <div
-            onMouseDown={e => e.stopPropagation()}
+            onMouseDown={e =>
+              e.stopPropagation()
+            }
             style={{
               position: 'fixed',
               left: portalPos.left,
               top: portalPos.top,
-              width: 320, // 🔒 SAME AS ORIGINAL
-              backgroundColor: theme.colors.background,
-              borderRadius: theme.borderRadius.lg,
-              boxShadow: theme.shadows.lg,
+              width: 320,
+              backgroundColor:
+                theme.colors
+                  .background,
+              borderRadius:
+                theme.borderRadius
+                  .lg,
+              boxShadow:
+                theme.shadows.lg,
               border: `1px solid ${theme.colors.border}`,
               padding: 16,
               zIndex: 9999,
             }}
           >
-            {/* ===== HEADER (UNCHANGED) ===== */}
+            {/* HEADER */}
+
             <div
               style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                justifyContent:
+                  'space-between',
+                alignItems:
+                  'center',
                 marginBottom: 12,
               }}
             >
               <button
                 type="button"
                 onClick={() =>
-                  setCurrentMonth(p => new Date(p.getFullYear(), p.getMonth() - 1, 1))
+                  setCurrentMonth(
+                    p =>
+                      new Date(
+                        p.getFullYear(),
+                        p.getMonth() -
+                        1,
+                        1
+                      )
+                  )
                 }
-                style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
+                style={{
+                  border: 'none',
+                  background:
+                    'transparent',
+                  cursor:
+                    'pointer',
+                }}
               >
-                <ChevronLeft size={18} />
+                <ChevronLeft
+                  size={18}
+                />
               </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ fontWeight: 600 }}>{monthNames[month]}</span>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems:
+                    'center',
+                  gap: 8,
+                }}
+              >
+                <span
+                  style={{
+                    fontWeight: 600,
+                  }}
+                >
+                  {
+                    monthNames[
+                    month
+                    ]
+                  }
+                </span>
+
                 <select
                   value={year}
                   onChange={e =>
-                    setCurrentMonth(p => new Date(Number(e.target.value), p.getMonth(), 1))
+                    setCurrentMonth(
+                      p =>
+                        new Date(
+                          Number(
+                            e.target
+                              .value
+                          ),
+                          p.getMonth(),
+                          1
+                        )
+                    )
                   }
                   style={{
                     borderRadius: 6,
-                    border: `1px solid ${theme.colors.border}`,
-                    padding: '2px 6px',
-                    fontSize: theme.fontSize.sm,
+                    border:
+                      `1px solid ${theme.colors.border}`,
+                    padding:
+                      '2px 6px',
+                    fontSize:
+                      theme.fontSize
+                        .sm,
                   }}
                 >
-                  {years.map(y => (
-                    <option key={y} value={y}>{y}</option>
-                  ))}
+                  {years.map(
+                    y => (
+                      <option
+                        key={y}
+                        value={y}
+                      >
+                        {y}
+                      </option>
+                    )
+                  )}
                 </select>
               </div>
 
               <button
                 type="button"
                 onClick={() =>
-                  setCurrentMonth(p => new Date(p.getFullYear(), p.getMonth() + 1, 1))
+                  setCurrentMonth(
+                    p =>
+                      new Date(
+                        p.getFullYear(),
+                        p.getMonth() +
+                        1,
+                        1
+                      )
+                  )
                 }
-                style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
+                style={{
+                  border: 'none',
+                  background:
+                    'transparent',
+                  cursor:
+                    'pointer',
+                }}
               >
-                <ChevronRight size={18} />
+                <ChevronRight
+                  size={18}
+                />
               </button>
             </div>
 
-            {/* ===== WEEK HEADER ===== */}
+            {/* WEEK HEADER */}
+
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
+                gridTemplateColumns:
+                  'repeat(7, 1fr)',
                 textAlign: 'center',
-                fontSize: theme.fontSize.sm,
-                color: theme.colors.textSecondary,
+                fontSize:
+                  theme.fontSize
+                    .sm,
+                color:
+                  theme.colors
+                    .textSecondary,
                 marginBottom: 8,
               }}
             >
-              <span>S</span><span>M</span><span>T</span>
-              <span>W</span><span>T</span><span>F</span><span>S</span>
+              <span>S</span>
+              <span>M</span>
+              <span>T</span>
+              <span>W</span>
+              <span>T</span>
+              <span>F</span>
+              <span>S</span>
             </div>
 
-            {/* ===== DAYS GRID ===== */}
+            {/* DAYS GRID */}
+
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(7, 1fr)',
+                gridTemplateColumns:
+                  'repeat(7, 1fr)',
                 gap: 4,
               }}
             >
-              {weeks.flat().map((date, i) =>
-                date ? (
-                  (() => {
-                    const isDisabled = minSelectableDate ? isDateBefore(date, minSelectableDate) : false
-                    const isSelected = isSameDay(date, selectedDate) || (!selectedDate && isToday(date))
+              {weeks
+                .flat()
+                .map(
+                  (
+                    date,
+                    i
+                  ) =>
+                    date ? (
+                      (() => {
+                        /*
+                         * IMPORTANT:
+                         * Both minDate and maxDate
+                         * are checked here.
+                         */
 
-                    return (
-                      <button
+                        const isDisabled =
+                          !!(
+                            (
+                              minSelectableDate &&
+                              isDateBefore(
+                                date,
+                                minSelectableDate
+                              )
+                            ) ||
+                            (
+                              maxSelectableDate &&
+                              isDateAfter(
+                                date,
+                                maxSelectableDate
+                              )
+                            )
+                          )
+
+                        const isSelected =
+                          isSameDay(
+                            date,
+                            selectedDate
+                          ) ||
+                          (
+                            !selectedDate &&
+                            isToday(date)
+                          )
+
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            disabled={
+                              isDisabled
+                            }
+                            onClick={() =>
+                              handleDayClick(
+                                date
+                              )
+                            }
+                            style={{
+                              height: 32,
+                              borderRadius:
+                                999,
+                              border:
+                                'none',
+                              cursor:
+                                isDisabled
+                                  ? 'not-allowed'
+                                  : 'pointer',
+                              fontSize:
+                                theme.fontSize
+                                  .sm,
+                              backgroundColor:
+                                isSelected
+                                  ? theme
+                                    .colors
+                                    .primary1
+                                  : 'transparent',
+                              color:
+                                isSelected
+                                  ? '#fff'
+                                  : isDisabled
+                                    ? theme
+                                      .colors
+                                      .textSecondary
+                                    : theme
+                                      .colors
+                                      .text,
+                            }}
+                          >
+                            {
+                              date.getDate()
+                            }
+                          </button>
+                        )
+                      })()
+                    ) : (
+                      <div
                         key={i}
-                        type="button"
-                        disabled={isDisabled}
-                        onClick={() => !isDisabled && handleDayClick(date)}
                         style={{
                           height: 32,
-                          borderRadius: 999,
-                          border: 'none',
-                          cursor: isDisabled ? 'not-allowed' : 'pointer',
-                          fontSize: theme.fontSize.sm,
-                          backgroundColor: isSelected
-                            ? theme.colors.primary1
-                            : 'transparent',
-                          color: isSelected
-                            ? '#fff'
-                            : isDisabled
-                              ? theme.colors.textSecondary
-                              : theme.colors.text,
                         }}
-                      >
-                        {date.getDate()}
-                      </button>
+                      />
                     )
-                  })()
-                ) : (
-                  <div key={i} style={{ height: 32 }} />
-                ),
-              )}
+                )}
             </div>
           </div>,
-          document.body,
+          document.body
         )}
     </div>
   )

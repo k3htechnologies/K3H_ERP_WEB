@@ -1,7 +1,7 @@
 import { Loader } from "@/core/utils/loader";
 import { Input } from "@/ui/components/forms";
 import { useState } from "react";
-import type { AddUpdateVisitorManagementRequest, FilterWithPaginationVisitorsByMobileNoRequest } from "@/features/visitorManagement/models/VisitorManagementModel";
+import type { AddUpdateVisitorManagementRequest } from "@/features/visitorManagement/models/VisitorManagementModel";
 import { filterLetters } from "@/core/utils/fileValidation";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 import { runApiWithLoader } from "@/core/utils";

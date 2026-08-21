@@ -68,6 +68,7 @@ export const TimePickerCustomize: React.FC<TimePickerCustomizeProps> = ({
       onCancel={onClose}
       onSubmit={(e) => {
         e.preventDefault()
+        // e.stopPropagation() // Prevent bubbling to outer form (GatePass Modal)
         handleConfirm()
       }}
       title={title}

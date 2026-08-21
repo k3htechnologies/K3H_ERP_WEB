@@ -543,9 +543,9 @@ export const getPageInfo = (path: string) => {
                 description: "Comprehensive report for collection management with real-time insights and actionable data",
             }
 
-        case 'visitorManagement':
+        case 'gatepass':
             return {
-                title: "Visitor Management",
+                title: "Gatepass",
                 description: "Track, manage, and streamline visitor access with precision and efficiency",
             }
 
@@ -554,6 +554,7 @@ export const getPageInfo = (path: string) => {
                 title: "Brokerage",
                 description: "Brokerage",
             }
+
 
         //TAX TRACKER
         case 'noticeSection':

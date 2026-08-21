@@ -14,6 +14,8 @@ export const LOCAL_STORAGE_KEYS = {
     //SELECTED PROJECT ID
     SELECTED_PROJECT_ID: 'selectedProjectId',
 
+    // PRAVESH DWAR
+    GATE_PASS_SELECTED_COLUMNS: 'gatePass.selectedColumns',
 
     BRANCH_MASTER_SELECTED_COLUMNS: 'branchMaster.selectedColumns',
     BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS: 'branchAssociationsMaster.selectedColumns',
@@ -105,9 +107,9 @@ export const LOCAL_STORAGE_KEYS = {
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
 
     //TAX TRACKER
-     NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
+    NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
 
-     //ESTIMATION AND BUDGET
+    //ESTIMATION AND BUDGET
     BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
 
 

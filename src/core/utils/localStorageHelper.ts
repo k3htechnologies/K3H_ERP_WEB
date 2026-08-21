@@ -437,6 +437,32 @@ export const LocalStorageHelper = {
     }
   },
 
+  // Pravesh Dwaar
+  storeGatePassTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Gate Pass Columns Details:", error);
+    }
+  },
+
+  getGatePassTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Gate Pass Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+
+
+
+
   getHolidayMappingMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -1099,7 +1125,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storeAchievementByChannelPartnerWalkinsRevisitTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS, columns);
@@ -1446,7 +1472,7 @@ export const LocalStorageHelper = {
   },
 
   //ESTIMATION AND BUDGET
-   storeBudgetTableColumns: (columns: string): void => {
+  storeBudgetTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
     } catch (error) {

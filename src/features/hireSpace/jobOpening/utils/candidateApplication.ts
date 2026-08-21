@@ -3,7 +3,7 @@ import type {
   CandidateRemarkData,
   CandidateStatus,
   Stage,
-} from "@/features/jobOpening/models/CandidateModel";
+} from "@/features/hireSpace/jobOpening/models/CandidateModel";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 export const DEFAULT_REMARK_UNIQUE_KEY = "3fa85f64-5717-4562-b3fc-2c963f66afa6";

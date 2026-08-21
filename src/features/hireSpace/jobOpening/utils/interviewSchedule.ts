@@ -9,7 +9,7 @@ import type {
   CandidateInterviewData,
   InterviewRouteCandidate,
   InterviewScheduleFormState,
-} from "@/features/jobOpening/models/CandidateInterviewModel";
+} from "@/features/hireSpace/jobOpening/models/CandidateInterviewModel";
 
 export const getCandidatePosition = (candidate: InterviewRouteCandidate | null): string =>
   candidate?.appliedRole?.trim() || candidate?.role?.trim() || "";

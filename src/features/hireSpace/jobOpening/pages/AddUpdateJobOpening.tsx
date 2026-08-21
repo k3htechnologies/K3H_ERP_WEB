@@ -35,7 +35,6 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 
 export const AddUpdateJobOpening: React.FC = () => {
 
-  //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateJobOpeningRequest>(() => getInitialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');

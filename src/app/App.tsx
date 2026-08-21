@@ -210,15 +210,15 @@ import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker
 import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
-import JobRoleMaster from '@/features/hireSpace/pages/JobRoleMaster';
-import AddUpdateJobRoleMaster from '@/features/hireSpace/pages/AddUpdateJobRoleMaster';
-import ViewJobRoleMaster from '@/features/hireSpace/pages/ViewJobRoleMaster';
-import { JobRoleMasterListStateProvider } from '@/features/hireSpace/context/JobRoleMasterListStateContext';
-import JobOpening from '@/features/jobOpening/pages/JobOpening';
-import AddUpdateJobOpening from '@/features/jobOpening/pages/AddUpdateJobOpening';
-import JobApplicationDetails from '@/features/jobOpening/pages/JobApplicationDetails';
-import InterviewSchedule from '@/features/jobOpening/pages/InterviewSchedule';
-import { JobOpeningListStateProvider } from '@/features/jobOpening/context/JobOpeningListStateContext';
+import JobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/JobRoleMaster';
+import AddUpdateJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/AddUpdateJobRoleMaster';
+import ViewJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/ViewJobRoleMaster';
+import { JobRoleMasterListStateProvider } from '@/features/hireSpace/JobRoleMaster/context/JobRoleMasterListStateContext';
+import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
+import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
+import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
+import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
+import { JobOpeningListStateProvider } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

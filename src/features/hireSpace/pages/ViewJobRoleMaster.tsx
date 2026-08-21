@@ -75,7 +75,7 @@ export const ViewJobRoleMaster: React.FC = () => {
 
   const handleEditJobRoleMaster = useCallback((row: JobRoleMasterData) => {
     if (!row?.JobRoleId || !row.DepartmentId) return;
-    navigate(`/jobRoleMaster/edit/${row.DepartmentId}/${row.JobRoleId}`);
+    navigate(`/jobRoleMaster/add/${row.DepartmentId}/${row.JobRoleId}`);
   }, [navigate]);
 
   const handleDuplicateJobRoleMaster = async () => {

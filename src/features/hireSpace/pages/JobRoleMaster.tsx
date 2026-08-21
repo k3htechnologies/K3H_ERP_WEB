@@ -192,7 +192,7 @@ export const JobRoleMaster: React.FC = () => {
   }, [setJobRoleMasterContext]);
 
   const handleEditJobRoleMaster = useCallback((jobRole: JobRoleMasterData) => {
-    navigate(`/jobRoleMaster/edit/${jobRole.DepartmentId}/${jobRole.JobRoleId}`);
+    navigate(`/jobRoleMaster/add/${jobRole.DepartmentId}/${jobRole.JobRoleId}`);
   }, [navigate]);
 
   const handleDepartmentChange = useCallback((department: JobDepartmentData) => {

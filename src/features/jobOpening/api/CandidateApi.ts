@@ -3,7 +3,6 @@ export const CandidateApi = {
     ADD_UPDATE_REMARK: '/CandidateDetails/AddUpdateCandidateRemark',
     PULL_REMARK: '/CandidateDetails/PullCandidateRemark',
     UPDATE_STAGE: '/CandidateDetails/UpdateCanditateSelectionStage',
-    PULL_TIMELINE: '/CandidateProcess/PullCandidateApplicationTimeline',
 } as const
 
 export type CandidateApiKeys = keyof typeof CandidateApi

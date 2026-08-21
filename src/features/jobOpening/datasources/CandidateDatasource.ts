@@ -1,6 +1,7 @@
 import baseClient from "@/core/config/baseClient"
 import { TokenExpiredException } from "@/core/config/baseClientexceptions"
 import { CandidateApi } from "@/features/jobOpening/api/CandidateApi"
+import { CandidateInterviewApi } from "../api/CandidateInterviewApi"
 import type {
     FilterWithPaginationCandidateRequest,
     AddUpdateCandidateRemarkRequest,
@@ -123,7 +124,7 @@ export class CandidateDatasourceImpl implements CandidateDatasource {
             })
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${CandidateApi.PULL_TIMELINE}?${queryParams.toString()}`,
+                `${CandidateInterviewApi.PULL_TIMELINE}?${queryParams.toString()}`,
                 { signal }
             )
 

@@ -537,8 +537,7 @@ function App() {
 
             {/* HireSpace & Job Opening */}
             <Route path="jobRoleMaster" element={<JobRoleMasterListStateProvider><JobRoleMaster /></JobRoleMasterListStateProvider>} />
-            <Route path="jobRoleMaster/add/:departmentId" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
-            <Route path="jobRoleMaster/edit/:departmentId/:jobRoleId" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/add/:departmentId/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
             <Route path="jobRoleMaster/view" element={<JobRoleMasterListStateProvider><ViewJobRoleMaster /></JobRoleMasterListStateProvider>} />
             <Route path="jobOpenings" element={<JobOpeningListStateProvider><JobOpening /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />

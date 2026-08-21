@@ -58,57 +58,7 @@ export const AddUpdateJobOpening: React.FC = () => {
 
   const { canAction } = useMenuPermissions('/jobOpenings');
 
-  const handleFieldChange = (field: keyof AddUpdateJobOpeningRequest, value: any) => {
-    if (isUpdateMode && (JOB_OPENING_LOCKED_EDIT_FIELDS as readonly string[]).includes(field)) return;
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
-  };
-
-  
-  const handleDropdownChange = (field: keyof AddUpdateJobOpeningRequest, value: string | number) => {
-    if (isUpdateMode && (field === 'DepartmentMasterId' || field === 'JobRoleMasterId')) return;
-
-    const extractedValue = String(value ?? '');
-
-    if (field === 'DepartmentMasterId') {
-      setFormData((prev) => ({
-        ...getInitialFormState(),
-        JobOpeningMasterId: prev.JobOpeningMasterId,
-        UniqueKey: isUpdateMode ? prev.UniqueKey : INITIAL_FORM_STATE.UniqueKey,
-        DepartmentMasterId: Number(extractedValue) || 0,
-      }));
-      setErrors({});
-      return;
-    }
-
-    if (field === 'JobRoleMasterId') {
-      const selectedRole = jobRolesData.find((role) => String(role.JobRoleId) === extractedValue);
-      setFormData((prev) => ({
-        ...prev,
-        JobRoleMasterId: Number(extractedValue) || 0,
-        JobDescription: selectedRole?.RoleDescription || '',
-        JobResponsibilities: selectedRole?.RoleResponsibility || '',
-        JobRequirement: selectedRole?.JobRequirement || '',
-        JobQualification: selectedRole?.RoleQualification || '',
-        JobSkills: getJobRoleSkillsText(selectedRole?.RoleSkills ?? null),
-        WorkMode: selectedRole?.WorkMode || '',
-        ExperienceYears: Number(selectedRole?.ExperienceYears) || 0,
-        ExperienceMonths: Number(selectedRole?.ExperienceMonths) || 0,
-        NumberOfOpenings: Number(selectedRole?.NumberOfOpenings) || 0,
-        WorkLocation: selectedRole?.WorkLocation || '',
-        EmploymentType: selectedRole?.EmploymentType || '',
-        JobRoleStatus: String(selectedRole?.Status || 'Active').toLowerCase() !== 'inactive',
-      }));
-      setErrors((prev) => ({ ...prev, JobRoleMasterId: '' }));
-      return;
-    }
-
-    handleFieldChange(field, extractedValue);
-  };
 
 
   const fetchJobOpeningDetails = useCallback(async () => {
@@ -302,7 +252,58 @@ export const AddUpdateJobOpening: React.FC = () => {
     JobRoleStatus: formData.JobRoleStatus,
   });
 
+    const handleFieldChange = (field: keyof AddUpdateJobOpeningRequest, value: any) => {
+    if (isUpdateMode && (JOB_OPENING_LOCKED_EDIT_FIELDS as readonly string[]).includes(field)) return;
 
+    setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  
+  const handleDropdownChange = (field: keyof AddUpdateJobOpeningRequest, value: string | number) => {
+    if (isUpdateMode && (field === 'DepartmentMasterId' || field === 'JobRoleMasterId')) return;
+
+    const extractedValue = String(value ?? '');
+
+    if (field === 'DepartmentMasterId') {
+      setFormData((prev) => ({
+        ...getInitialFormState(),
+        JobOpeningMasterId: prev.JobOpeningMasterId,
+        UniqueKey: isUpdateMode ? prev.UniqueKey : INITIAL_FORM_STATE.UniqueKey,
+        DepartmentMasterId: Number(extractedValue) || 0,
+      }));
+      setErrors({});
+      return;
+    }
+
+    if (field === 'JobRoleMasterId') {
+      const selectedRole = jobRolesData.find((role) => String(role.JobRoleId) === extractedValue);
+      setFormData((prev) => ({
+        ...prev,
+        JobRoleMasterId: Number(extractedValue) || 0,
+        JobDescription: selectedRole?.RoleDescription || '',
+        JobResponsibilities: selectedRole?.RoleResponsibility || '',
+        JobRequirement: selectedRole?.JobRequirement || '',
+        JobQualification: selectedRole?.RoleQualification || '',
+        JobSkills: getJobRoleSkillsText(selectedRole?.RoleSkills ?? null),
+        WorkMode: selectedRole?.WorkMode || '',
+        ExperienceYears: Number(selectedRole?.ExperienceYears) || 0,
+        ExperienceMonths: Number(selectedRole?.ExperienceMonths) || 0,
+        NumberOfOpenings: Number(selectedRole?.NumberOfOpenings) || 0,
+        WorkLocation: selectedRole?.WorkLocation || '',
+        EmploymentType: selectedRole?.EmploymentType || '',
+        JobRoleStatus: String(selectedRole?.Status || 'Active').toLowerCase() !== 'inactive',
+      }));
+      setErrors((prev) => ({ ...prev, JobRoleMasterId: '' }));
+      return;
+    }
+
+    handleFieldChange(field, extractedValue);
+  };
+  
   const handleAddUpdateJobOpening = async (event?: React.FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
     setErrors({});

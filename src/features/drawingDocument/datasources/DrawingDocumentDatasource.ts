@@ -1,5 +1,5 @@
 import baseClient from "@/core/config/baseClient";
-import type { DeleteDrawingDocumentRequest, FilterWithPaginationDrawingDocument, DrawingDocumentDeleteResponse, DrawingDocumentListResponse, DrawingDocumentSaveReponse } from "@/features/drawingDocument/models/DrawingDocumentModel";
+import type { DeleteDrawingDocumentRequest, FilterWithPaginationDrawingDocument, DrawingDocumentDeleteResponse, DrawingDocumentListResponse, DrawingDocumentSaveReponse, FilterWithPaginationInventoryDrawingDocument, InventoryDrawingDocumentListResponse } from "@/features/drawingDocument/models/DrawingDocumentModel";
 import { DrawingDocumentApi } from "@/features/drawingDocument/api/DrawingDocumentApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
@@ -7,6 +7,7 @@ export abstract class DrawingDocumentDatasource {
     abstract pullDrawingDocument(params: FilterWithPaginationDrawingDocument, signal?: AbortSignal): Promise<DrawingDocumentListResponse>;
     abstract addUpdateDrawingDocument(formData: FormData): Promise<DrawingDocumentSaveReponse>;
     abstract deleteDrawingDocument(params: DeleteDrawingDocumentRequest): Promise<DrawingDocumentDeleteResponse>;
+    abstract pullInventoryDrawingDocument(params: FilterWithPaginationInventoryDrawingDocument, signal?: AbortSignal): Promise<InventoryDrawingDocumentListResponse>;
 }
 
 export class DrawingDocumentDatasourceImpl implements DrawingDocumentDatasource {
@@ -51,6 +52,7 @@ export class DrawingDocumentDatasourceImpl implements DrawingDocumentDatasource 
             throw error
         }
     }
+
     async addUpdateDrawingDocument(formData: FormData): Promise<DrawingDocumentSaveReponse> {
         try {
 
@@ -96,6 +98,32 @@ export class DrawingDocumentDatasourceImpl implements DrawingDocumentDatasource 
 
                 return await this.deleteDrawingDocument(params);
 
+            }
+
+            throw error
+        }
+    }
+
+    async pullInventoryDrawingDocument(params: FilterWithPaginationInventoryDrawingDocument, signal?: AbortSignal): Promise<InventoryDrawingDocumentListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId).toString(),
+            })
+
+            if (params.InventoryFloorId) queryParams.append('InventoryFloorId', params.InventoryFloorId.toString());
+            if (params.Floor) queryParams.append('Floor', params.Floor);
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${DrawingDocumentApi.PULL_INVENTORY_DRAWING}?${queryParams.toString()}`, { signal });
+
+        } catch (error: any) {
+
+            console.error('ERROR: PULL INVENTORY DRAWING DOCUMENT :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullInventoryDrawingDocument(params);
             }
 
             throw error

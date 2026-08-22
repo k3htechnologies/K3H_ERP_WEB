@@ -5,6 +5,8 @@ import type {
     FilterWithPaginationDrawingDocument,
     DrawingDocumentDeleteResponse,
     DrawingDocumentListResponse,
+    FilterWithPaginationInventoryDrawingDocument,
+    InventoryDrawingDocumentListResponse,
 } from '@/features/drawingDocument/models/DrawingDocumentModel';
 
 import * as E from 'fp-ts/Either';
@@ -41,6 +43,18 @@ export const drawingDocumentService = {
         try {
 
             return E.right(await drawingDocumentDatasource.deleteDrawingDocument(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullInventoryDrawingDocument: async (params: FilterWithPaginationInventoryDrawingDocument, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, InventoryDrawingDocumentListResponse>> => {
+        try {
+
+            return E.right(await drawingDocumentDatasource.pullInventoryDrawingDocument(params, options?.signal));
 
         } catch (error: any) {
 

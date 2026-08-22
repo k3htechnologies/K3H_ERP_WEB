@@ -215,6 +215,7 @@ import TestDocumentCategoryMaster from '@/features/testDocumentCategory/pages/Te
 import TestDocument from '@/features/testDocument/pages/TestDocument';
 import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pages/DrawingDocumentCategoryMaster';
 import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
+import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -373,6 +374,7 @@ function App() {
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 

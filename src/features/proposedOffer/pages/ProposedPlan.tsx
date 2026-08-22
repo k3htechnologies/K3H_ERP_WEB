@@ -449,6 +449,7 @@ export const ProposedPlan: React.FC = () => {
     }
 
     const handleAddUpdateProposedPlan = async (eOrTotalBuildings?: React.FormEvent | number) => {
+
         if (typeof eOrTotalBuildings === 'object' && eOrTotalBuildings !== null && 'preventDefault' in eOrTotalBuildings) {
             eOrTotalBuildings.preventDefault();
         }
@@ -479,6 +480,7 @@ export const ProposedPlan: React.FC = () => {
                 const response = await proposedOfferService.apiCallAddUpdateProposedPlan(Payload);
 
                 if (E.isRight(response)) {
+                    
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                     if (totalBuildings === 0) {

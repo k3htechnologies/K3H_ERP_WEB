@@ -1,4 +1,4 @@
-import { Plus, Car, Trash } from "lucide-react";
+import { Plus, Car, Trash, DraftingCompass } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
@@ -75,6 +75,41 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
         });
     };
 
+    const handleViewDrawing = () => {
+
+        sessionStorage.setItem("scrollFloorId", floor.InventoryFloorId.toString());
+
+        const newFlatData = {
+            InventoryFlatId: 0,
+            Uniquekey: '',
+            InventoryBuildingId: building.InventoryBuildingId,
+            BuildingNumber: building.BuildingNumber,
+            InventoryFlatFloorBasementPodiumWingId: wing.InventoryFlatFloorBasementPodiumWingId,
+            Wing: wing.Wing,
+            InventoryFloorId: floor.InventoryFloorId,
+            Floor: floor.Floor,
+            Flat: '',
+            RERACarpetAreaSqFt: 0,
+            FlatType: '',
+            FlatConfiguration: '',
+            FlatStatus: 'Available' as const,
+            FlatFacing: '',
+            InventoryFlatSpecificationData: [],
+            OwnerName: '',
+            BookingId: 0,
+            BookingCreatedById: 0,
+            BookingCreatedBy: '',
+            BookingCreatedDate: null,
+        };
+
+        navigate('/inventory/projectDrawing', {
+            state: {
+                flat: newFlatData,
+                projectId: projectId,
+            },
+        });
+    };
+
 
     const handleParkingClick = (e: React.MouseEvent) => {
         sessionStorage.setItem("scrollFloorId", floor.InventoryFloorId.toString());
@@ -141,59 +176,69 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
     return (
         <div className="pt-2">
             <div id={`floor-${floor.InventoryFloorId}`}>
-            <ExpandableCard
-                key={floor.InventoryFloorId}
-                title={floor.Floor}
-                subTitle={floor.InventoryFlatData.length > 0 ? floor.InventoryFlatData.length : ""}
-                showline={true}
-                defaultOpen={true}
-                customizedIcon={
-                    <div className="flex items-center gap-2">
+                <ExpandableCard
+                    key={floor.InventoryFloorId}
+                    title={floor.Floor}
+                    subTitle={floor.InventoryFlatData.length > 0 ? floor.InventoryFlatData.length : ""}
+                    showline={true}
+                    defaultOpen={true}
+                    customizedIcon={
+                        <div className="flex items-center gap-2">
 
-                        <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
-                        
-                        <div
-                            className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
-                            onClick={handleParkingClick}
-                            title="Update Parking Count">
-                            <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
-                            <Car className="text-[#135BEC]" size={20} />
+                            <Button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleViewDrawing();
+                                }}
+                                color='transparent'
+                                className="!h-8"
+                                title="View Drawing">
+                               <DraftingCompass color="#60A5FA" className="text-red-600" size={18} />
+                            </Button>
+
+                            <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
+
+                            <div className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
+                                onClick={handleParkingClick}
+                                title="Update Parking Count">
+                                <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
+                                <Car className="text-[#135BEC]" size={20} />
+                            </div>
+
+                            {canAction && (
+                                <>
+                                    {!approvalStatus?.toUpperCase().includes("APPROVED") && (
+                                        <Plus
+                                            className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
+                                            size={28}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleAddFlat();
+                                            }}
+                                        />
+                                    )}
+
+                                    {onDeleteFloor && isLastFloor && !approvalStatus?.toUpperCase().includes("APPROVED") && wing.Wing.toUpperCase() !== 'BGP' && (
+                                        <Button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDeleteFloor(floor, wing, building);
+                                            }}
+                                            color='transparent'
+                                            title="Delete Floor"
+
+                                        >
+                                            <Trash color="red" className="text-red-600" size={20} />
+                                        </Button>
+                                    )}
+                                </>
+                            )}
                         </div>
-                         
-                        {canAction && (
-                            <>
-                                {!approvalStatus?.toUpperCase().includes("APPROVED") && (
-                                    <Plus
-                                        className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
-                                        size={28}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleAddFlat();
-                                        }}
-                                    />
-                                )}
+                    }
+                    child={
+                        <div className="flex flex-1 gap-5 thin-scroll">
+                            {floor.InventoryFlatData?.map((flat, flatIndex) => (
 
-                                {onDeleteFloor && isLastFloor && !approvalStatus?.toUpperCase().includes("APPROVED") && wing.Wing.toUpperCase() !== 'BGP' && (
-                                    <Button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            onDeleteFloor(floor, wing, building);
-                                        }}
-                                        color='transparent'
-                                        title="Delete Floor"
-
-                                    >
-                                        <Trash color="red" className="text-red-600" size={20} />
-                                    </Button>
-                                )}
-                            </>
-                        )}
-                    </div>
-                }
-                child={
-                    <div className="flex flex-1 gap-5 thin-scroll">
-                        {floor.InventoryFlatData?.map((flat, flatIndex) => (
-                            
                                 <FlatCard
                                     key={flatIndex}
                                     flat={flat}
@@ -206,42 +251,42 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                     canBookingAction={canBookingAction}
                                     approvalStatus={approvalStatus}
                                 />
-                            
-                        ))}
-                    </div>
-                }
-            />
 
-            <Modal
-                isOpen={isParkingModalOpen}
-                onClose={() => {
-                    setIsParkingModalOpen(false);
-                    setParkingCount(floor.ParkingCount?.toString() || '0');
-                }}
-                title="Update Parking Count"
-                onSubmit={handleSaveParkingCount}
-                saveText="Update"
-                onCancel={() => {
-                    setIsParkingModalOpen(false);
-                    setParkingCount(floor.ParkingCount?.toString() || '0');
-                }}
-                size="md"
-                loading={isLoading}
-            >
-                <div className="space-y-4">
-                    <Input
-                        label="Number of Parking"
-                        value={parkingCount}
-                        onChange={(e) => {
-                            const digits = e.target.value.replace(/\D/g, '');
-                            setParkingCount(digits)
-                        }}
-                        placeholder="Enter Parking Count"
-                        required
-                        maxLength={3}
-                    />
-                </div>
-            </Modal>
+                            ))}
+                        </div>
+                    }
+                />
+
+                <Modal
+                    isOpen={isParkingModalOpen}
+                    onClose={() => {
+                        setIsParkingModalOpen(false);
+                        setParkingCount(floor.ParkingCount?.toString() || '0');
+                    }}
+                    title="Update Parking Count"
+                    onSubmit={handleSaveParkingCount}
+                    saveText="Update"
+                    onCancel={() => {
+                        setIsParkingModalOpen(false);
+                        setParkingCount(floor.ParkingCount?.toString() || '0');
+                    }}
+                    size="md"
+                    loading={isLoading}
+                >
+                    <div className="space-y-4">
+                        <Input
+                            label="Number of Parking"
+                            value={parkingCount}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '');
+                                setParkingCount(digits)
+                            }}
+                            placeholder="Enter Parking Count"
+                            required
+                            maxLength={3}
+                        />
+                    </div>
+                </Modal>
             </div>
         </div>
     );

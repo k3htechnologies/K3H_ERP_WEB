@@ -429,6 +429,7 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: "left",
+            fixed: "left",
             render: (value) => (
                 <TooltipText
                     text={value || ""}
@@ -842,24 +843,28 @@ export const Budget: React.FC = () => {
                 }}
             />
 
-            <div className="flex justify-end mt-1 w-full border border-gray-200 shadow-sm">
-                <div className="flex justify-end pb-2 gap-2 p-2">
-                    <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
-                    <ApprovalActions
-                        approvalStatus={approvalInfo?.ApprovalStatus}
-                        showApproval={approvalInfo?.IsApproval}
-                        onApprove={() => handleApproveRejectInvoice("approve")}
-                        onReject={() => handleApproveRejectInvoice("reject")}
-                        onHistory={handleApprovalLog}
-                        isIcons
-                    />
+            {Number(projectId) >0 && (
+                <div className="flex justify-end mt-1 w-full border border-gray-200 shadow-sm">
+                    <div className="flex justify-end pb-2 gap-2 p-2">
+                        <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
+                        <ApprovalActions
+                            approvalStatus={approvalInfo?.ApprovalStatus}
+                            showApproval={approvalInfo?.IsApproval}
+                            onApprove={() => handleApproveRejectInvoice("approve")}
+                            onReject={() => handleApproveRejectInvoice("reject")}
+                            onReopen={() => handleApproveRejectInvoice("reject")}
+                            onHistory={handleApprovalLog}
+                            isIcons
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
 
             <LevelTree
                 response={budgetData}
                 config={{
                     idKey: "BudgetId",
+                    codeKey: "WBSCode",
                     levels: [
                         { idKey: "LevelId1", nameKey: "Level1Name" },
                         { idKey: "LevelId2", nameKey: "Level2Name" },

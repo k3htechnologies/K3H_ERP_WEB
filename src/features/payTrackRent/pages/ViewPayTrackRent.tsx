@@ -187,7 +187,6 @@ export const ViewPayTrackRent: React.FC = () => {
           BuildingId: buildingId > 0 ? buildingId : undefined,
           TenantId: tenantId > 0 ? tenantId : undefined,
           TenantApplicantId: tenantApplicantId > 0 ? tenantApplicantId : undefined,
-          FlatNumber: searchtext?.trim() || undefined,
           ApplicantName: searchtext?.trim() || undefined,
           ChargeType: chargeType?.trim() || undefined,
           Tenure: tenure || null
@@ -343,7 +342,7 @@ export const ViewPayTrackRent: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search by Flat Number or Applicant Name"
+        searchPlaceholder="Search by Account Holder Name"
         onSearchChange={(v) => {
           setSearchTerm(v)
           debouncedSearch(v)

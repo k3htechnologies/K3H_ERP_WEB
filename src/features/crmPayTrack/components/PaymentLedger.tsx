@@ -448,7 +448,7 @@ export const PaymentLedger: React.FC = () => {
       newErrors.PaymentMode = "Payment Mode is required";
     }
 
-    if (!formData.BankListMasterId || formData.BankListMasterId === 0) {
+    if (formData.PaymentFor.toUpperCase() !== "AGREEMENT VALUE TDS" && (!formData.BankListMasterId || formData.BankListMasterId === 0)) {
       newErrors.BankListMasterId = "Bank Name is required";
     }
 
@@ -1122,7 +1122,7 @@ export const PaymentLedger: React.FC = () => {
             <div>
               <SingleSelectDropdownWithPagination
                 label="Bank Name"
-                required
+                required={formData.PaymentFor.toUpperCase() !== "AGREEMENT VALUE TDS"}
                 title="Select Bank Name"
                 size="lg"
                 dataFetchCallBack={fetchBankListMasterDropdown}

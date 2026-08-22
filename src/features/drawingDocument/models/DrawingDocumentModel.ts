@@ -28,7 +28,7 @@ export interface DrawingDocumentData {
     DrawingDocumentStatus: string;
     DrawingDocumentURL: string;
     DrawingDocumentDWGURL: string;
-    DrawingDocumentApprovalStatus: string;
+    ApprovalStatus: string;
     IsApproval: boolean;
     UploadedApprovalDocumentCount: number;
     ApprovalPendingApprovalDocumentCount: number;
@@ -52,13 +52,13 @@ export interface AddUpdateDrawingDocumentRequest {
     ProjectId?: number | '';
     DrawingDocumentCategoryId?: number | 0;
     DrawingDocumentName?: string | '';
-    DrawingDocumentRevisionDate?: string | ''; 
-    DrawingDocumentStatus?: string|'';
+    DrawingDocumentRevisionDate?: string | '';
+    DrawingDocumentStatus?: string | '';
     IsMaster?: number | 0;
-    DrawingDocumentURL?: File[] | null; 
-    RemoveDrawingDocumentURL?: string| '';
-    DrawingDocumentDWGURL?: File[] | null; 
-    RemoveDrawingDocumentDWGURL?: string| '';
+    DrawingDocumentURL?: File[] | null;
+    RemoveDrawingDocumentURL?: string | '';
+    DrawingDocumentDWGURL?: File[] | null;
+    RemoveDrawingDocumentDWGURL?: string | '';
     DrawingDocumentRemark?: string | '';
     InventoryFloorId?: string | '';
 }
@@ -70,6 +70,29 @@ export interface DeleteDrawingDocumentRequest {
     DrawingDocumentCategoryId: number;
 }
 
+export interface FilterWithPaginationInventoryDrawingDocument {
+    ProjectId: number
+    InventoryFloorId?: number
+    Floor?: string;
+    SortBy?: string
+}
+
+export interface InventoryDrawingDocumentData {
+    DrawingDocumentName: string;
+    DrawingDocumentCategory: string;
+    DrawingDocumentURL: string;
+    DrawingDocumentDWGURL: string;
+    DrawingDocumentRevisionDate: string | null;
+    DrawingDocumentRemark: string;
+    DrawingDocumentStatus: string;
+    ApprovalStatus: string;
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+}
+
 export type DrawingDocumentListResponse = ApiResponse<DrawingDocumentData[]>;
 export type DrawingDocumentSaveReponse = ApiResponse<DrawingDocumentData[]>;
 export type DrawingDocumentDeleteResponse = ApiResponse<number>;
+export type InventoryDrawingDocumentListResponse = ApiResponse<InventoryDrawingDocumentData[]>;

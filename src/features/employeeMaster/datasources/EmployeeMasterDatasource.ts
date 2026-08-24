@@ -8,7 +8,8 @@ import type {
     SetEmployeeMPINRequest,
     EmployeeMPINRequestResponse,
     UpdateEmployeeMasterRequest,
-    EmployeeMasterUpdateResponse
+    EmployeeMasterUpdateResponse,
+    UpdateEmployeeProfilePhotoSaveResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
@@ -17,6 +18,7 @@ export abstract class EmployeeMasterDatasource {
     abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse>;
+    abstract updateEmployeeProfilePhoto(data: FormData): Promise<UpdateEmployeeProfilePhotoSaveResponse>;
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -80,7 +82,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.pullEmployeeMaster(params);
+                return await this.pullEmployeeMaster(params);
             }
             throw error
         }
@@ -141,7 +143,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.addUpdateEmployeeMaster(params);
+                return await this.addUpdateEmployeeMaster(params);
             }
 
 
@@ -161,9 +163,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('ERROR: UPDATE Employee Master:', error)
 
-           if (error instanceof TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                return   await this.updateEmployeeMaster(params);
+                return await this.updateEmployeeMaster(params);
             }
             throw error
         }
@@ -185,10 +187,30 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.setEmployeeMPIN(params);
+                return await this.setEmployeeMPIN(params);
             }
 
 
+            throw error
+        }
+    }
+
+    async updateEmployeeProfilePhoto(data: FormData): Promise<UpdateEmployeeProfilePhotoSaveResponse> {
+
+        try {
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+                EmployeeMasterApi.UPDATE_EMPLOYEE_PROFILE_PHOTO,
+                data
+            )
+            return response
+        } catch (error) {
+
+            console.error('ERROR: UPDATE EMPLOYEE PROFILE PHOTO :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.updateEmployeeProfilePhoto(data);
+            }
             throw error
         }
     }

@@ -1220,7 +1220,7 @@ const AddCompany: React.FC = () => {
       addFilesWithExisting(fd, prefix, realPartner._photoFiles, 'PhotoURL');
       addFilesWithExisting(fd, prefix, realPartner._panCardFiles, 'PanCardURL');
       addFilesWithExisting(fd, prefix, realPartner._aadharCardFiles, 'AadharCardURL');
-      
+
     });
 
     return fd;
@@ -1512,7 +1512,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select TAN'
                 value={tanURLFiles}
                 error={errors.TANURL}
-                onChange={setTANURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("TAN") });
+                    return;
+                  }
+                  setTANURLFiles(files);
+                }}
                 availableFilesURL={tanURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",

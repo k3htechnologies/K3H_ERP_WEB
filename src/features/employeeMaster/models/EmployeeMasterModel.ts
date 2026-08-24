@@ -161,7 +161,7 @@ export interface UpdateEmployeeMasterRequest {
   CommunicationAddress?: string
   PermanentAddress?: string
   BloodGroup?: string
-  
+
   AadharCardNumber: string | ''
   PassportNumber: string | ''
   PanCardNumber: string | ''
@@ -232,8 +232,15 @@ export interface SetEmployeeMPINRequest {
   MPIN: string;
 }
 
+export interface UpdateEmployeeProfilePhoto {
+  EmployeeId: number;
+  ProfilePhotoURL: string | null
+  RemoveProfilePhotoURL: string | null
+}
+
 export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterUpdateResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMPINRequestResponse = ApiResponse<String>;
+export type UpdateEmployeeProfilePhotoSaveResponse = ApiResponse<UpdateEmployeeProfilePhoto[]>;

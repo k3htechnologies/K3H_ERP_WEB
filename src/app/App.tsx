@@ -206,6 +206,15 @@ import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
 import NewProposedPlan from '@/features/proposedOffer/pages/NewProposedPlan';
 import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
 import CameraPlayer from '@/features/cameraPlayer/pages/CameraPlayer';
+import LeadModel from '@/features/projectLead/pages/LeadModel';
+import ViewProjectLead from '@/features/projectLead/pages/ViewProjectLead';
+import { ProjectLandListStateProvider } from '@/features/projectLead/context/ProjectLandListStateContext';
+import { ProjectRedevelopmentListStateProvider } from '@/features/projectLead/context/ProjectRedevelopmentListStateContext';
+import AddUpdateProjectRedevelopment from '@/features/projectLead/components/AddUpdateProjectRedevelopment';
+import AddUpdateProjectLand from '@/features/projectLead/components/AddUpdateProjectLand';
+import { ViewProjectLand } from '@/features/projectLead/components/ViewProjectLand';
+import ViewProjectRedevelopment from '@/features/projectLead/components/ViewProjectRedevelopment';
+
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -533,12 +542,21 @@ function App() {
             <Route path='addUpdateProjectProfessionalDetails/add' element={<ProjectProfessionalDetailsListStateProvider><AddUpdateProjectProfessionalDetail /></ProjectProfessionalDetailsListStateProvider>} />
             <Route path='viewProjectProfessionalDetails/view' element={<ProjectProfessionalDetailsListStateProvider><ViewProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
 
-            <Route path='cameraPlayer' element={<CameraPlayer/>}/>
+            <Route path='cameraPlayer' element={<CameraPlayer />} />
+
+            <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
+              <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectLand/:ProjectLandId? " element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+            <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+
+            <Route path='leadModel' element={<LeadModel />} />
 
             {/* MORE */}
             <Route path='otplogs' element={<OTPLogs />} />
 
-          </Route>  
+          </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 

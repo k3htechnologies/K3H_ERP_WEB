@@ -9,7 +9,9 @@ import type {
     EmployeeMPINRequestResponse,
     SetEmployeeMPINRequest,
     UpdateEmployeeMasterRequest,
-    EmployeeMasterUpdateResponse
+    EmployeeMasterUpdateResponse,
+    UpdateEmployeeProfilePhoto,
+    UpdateEmployeeProfilePhotoSaveResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel';
 
 import * as E from 'fp-ts/Either';
@@ -20,13 +22,13 @@ export const employeeMasterService = {
 
     apiCallPullLocationHierarchy: async (): Promise<E.Either<Failure, LocationResponse>> => {
         debugger
-    try {
-      const response = await employeeMasterDatasource.pullLocationHierarchy();
-      return E.right(response);
-    } catch (error: any) {
-      return E.left({ message: error.message, code: error.code });
-    }
-  },
+        try {
+            const response = await employeeMasterDatasource.pullLocationHierarchy();
+            return E.right(response);
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
     apiCallPullEmployeeMaster: async (params: FilterWithPaginationEmployeeMasterRequest): Promise<E.Either<Failure, EmployeeMasterListResponse>> => {
         try {
 
@@ -39,7 +41,7 @@ export const employeeMasterService = {
         }
     },
 
-    apiCallAddUpdateEmployeeMaster: async (data: AddUpdateEmployeeMasterRequest): Promise<E.Either<Failure,EmployeeMasterListResponse>> => {
+    apiCallAddUpdateEmployeeMaster: async (data: AddUpdateEmployeeMasterRequest): Promise<E.Either<Failure, EmployeeMasterListResponse>> => {
         try {
 
             return E.right(await employeeMasterDatasource.addUpdateEmployeeMaster(data));
@@ -50,7 +52,7 @@ export const employeeMasterService = {
 
         }
     },
-      apiCallUpdateEmployeeMaster: async (data: UpdateEmployeeMasterRequest): Promise<E.Either<Failure,EmployeeMasterUpdateResponse>> => {
+    apiCallUpdateEmployeeMaster: async (data: UpdateEmployeeMasterRequest): Promise<E.Either<Failure, EmployeeMasterUpdateResponse>> => {
         try {
 
             return E.right(await employeeMasterDatasource.updateEmployeeMaster(data));
@@ -63,10 +65,22 @@ export const employeeMasterService = {
     },
 
 
-    apiCallSetEmployeeMPIN: async (data: SetEmployeeMPINRequest): Promise<E.Either<Failure,EmployeeMPINRequestResponse>> => {
+    apiCallSetEmployeeMPIN: async (data: SetEmployeeMPINRequest): Promise<E.Either<Failure, EmployeeMPINRequestResponse>> => {
         try {
 
             return E.right(await employeeMasterDatasource.setEmployeeMPIN(data));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallUpdateEmployeeProfilePhoto: async (data: FormData): Promise<E.Either<Failure, UpdateEmployeeProfilePhotoSaveResponse>> => {
+        try {
+
+            return E.right(await employeeMasterDatasource.updateEmployeeProfilePhoto(data));
 
         } catch (error: any) {
 

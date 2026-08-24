@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Land Details Form</title>
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: darkblue;
+            font-size: 12px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .checkbox-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group label {
+            font-weight: normal;
+        }
+
+        .form-footer {
+            text-align: center;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <form>
+        <h2>Land Details Form</h2>
+
+        <div class="section">
+            <label>Land Owner Name</label>
+            <input type="text" required maxlength="500" pattern="[A-Za-z ]+">
+            <label>Land Address</label>
+            <textarea required maxlength="500"></textarea>
+            <label>Country</label>
+            <select required>
+                <option value="">Select Country</option>
+            </select>
+            <label>State</label>
+            <select required>
+                <option value="">Select State</option>
+            </select>
+            <label>District</label>
+            <select required>
+                <option value="">Select District</option>
+            </select>
+            <label>City</label>
+            <select required>
+                <option value="">Select City</option>
+            </select>
+            <label>Pin Code</label>
+            <input type="text">
+            <label>Plot Number / CTS Number / Survey Number / Subdivision Number</label>
+            <input type="text" required maxlength="500">
+            <label>Ward Number / Zone</label>
+            <input type="text" required maxlength="500">
+            <label>Total Plot Area (in Sq. m.)</label>
+            <input type="number" step="0.01">
+            <label>Identification & Location</label>
+            <input type="text" required maxlength="500">
+            <label>Latitude & Longitude (For GIS Mapping)</label>
+            <input type="text" required maxlength="100">
+        </div>
+
+        <div class="section">
+            <label>Contact Person For Land Name</label>
+            <input type="text" required maxlength="100" pattern="[A-Za-z ]+">
+            <label>Contact Person Mobile Number</label>
+            <input type="text" required maxlength="10" pattern="\d{10}">
+            <label>Contact Person Email</label>
+            <input type="email" required maxlength="100">
+            <div class="checkbox-group">
+                <label><input type="checkbox"> Any Power of Attorney (POA) involved?</label>
+                <label><input type="checkbox"> Fencing / Boundary Wall Present?</label>
+            </div>
+            <label>Plot Shape</label>
+            <select>
+                <option>Rectangular</option>
+                <option>Irregular</option>
+                <option>L - Shape</option>
+                <option>Circle</option>
+            </select>
+            <label>Frontage (Road Facing Width)</label>
+            <input type="number" step="0.01">
+            <label>Depth Of the Plot</label>
+            <input type="number" step="0.01">
+            <label>Road Width in Front of Plot</label>
+            <input type="number" step="0.01">
+            <label>Soil Type</label>
+            <select>
+                <option>Clay</option>
+                <option>Black Cotton</option>
+                <option>Sandy</option>
+                <option>Rocky</option>
+            </select>
+            <label>Existing Ground Conditions</label>
+            <select>
+                <option>Vacant</option>
+                <option>Barren</option>
+                <option>Vegetation</option>
+                <option>Encroachements</option>
+            </select>
+            <div class="checkbox-group">
+                <label><input type="checkbox"> Is Land Converted to Non-Agricultural?</label>
+                <label><input type="checkbox"> Availability of Access Road?</label>
+                <label><input type="checkbox"> Electricity Connection Nearby</label>
+                <label><input type="checkbox"> Is the Plot under any litigation or stay Orders?</label>
+                <label><input type="checkbox"> Is 7 / 12?</label>
+            </div>
+            <label>FSI Permissible (Base + TDR if allowed)</label>
+            <input type="number" step="0.01">
+            <label>Water Supply Available</label>
+            <select>
+                <option>Borewell</option>
+                <option>Municipal</option>
+            </select>
+            <label>Surrounding Land Use</label>
+            <select>
+                <option>Agricultural</option>
+                <option>Residential</option>
+                <option>Industrial</option>
+                <option>Vacant</option>
+            </select>
+            <label>Type Of Land Tenure</label>
+            <select>
+                <option>Leasehold</option>
+                <option>Freehold</option>
+                <option>Collectors Land</option>
+                <option>MHADA</option>
+                <option>SRA</option>
+                <option>BMC</option>
+                <option>Builder</option>
+            </select>
+            <label>Land Ownership Type</label>
+            <select>
+                <option>Individual</option>
+                <option>Joint</option>
+                <option>Trust</option>
+                <option>Company</option>
+                <option>Government</option>
+                <option>Society</option>
+            </select>
+            <label>Distance From Key Landmarks</label>
+            <input type="number" step="0.01" placeholder="Nearest Town (KM)">
+            <input type="number" step="0.01" placeholder="Highway (KM)">
+            <input type="number" step="0.01" placeholder="Railway Station (KM)">
+            <input type="number" step="0.01" placeholder="Airport (KM)">
+            <label>Total Number Of Trees on Site</label>
+            <input type="number" step="0.01">
+            <label>Photo</label>
+            <input type="file" accept="image/*">
+        </div>
+
+        <div class="form-footer">
+            <button type="submit">Submit</button>
+        </div>
+    </form>
+</body></html>

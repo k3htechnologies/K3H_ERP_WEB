@@ -594,6 +594,12 @@ export const getPageInfo = (path: string) => {
                 title: "Budget",
                 description: 'Overview of your system and key metrics',
             }
+        //LEAD
+        case 'lead':
+            return {
+                title: "Lead",
+                description: 'Overview of your system and key metrics',
+            }
         default:
             return {
                 title: 'Dashboard',

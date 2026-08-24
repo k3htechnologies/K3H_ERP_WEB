@@ -318,7 +318,7 @@ export const ViewCompanyMaster: React.FC = () => {
 
                                                     <div>
                                                         <h3
-                                                            className="text-sm font-medium  text-[#0F172A] line-clamp-1 break-all pt-2"
+                                                            className="text-sm font-medium  text-[#0F172A] pt-2"
                                                             title={partner.FullName}
                                                         >
                                                             {partner.FullName}

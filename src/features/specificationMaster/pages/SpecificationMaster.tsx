@@ -101,7 +101,6 @@ export const SpecificationMaster: React.FC = () => {
             },
             undefined,
             (error: any) =>
-
                 addToast({ type: 'error', title: error.message }),
             undefined,
             'Loading Specification Master'
@@ -139,7 +138,7 @@ export const SpecificationMaster: React.FC = () => {
         if (!formData.CategoryName?.trim()) {
             newErrors.CategoryName = `${fieldName} is required`;
 
-        } else if (formData.CategoryName.trim().length > 100) {
+        } else if (formData.CategoryName.length > 100) {
             newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
         }
         return {
@@ -183,9 +182,7 @@ export const SpecificationMaster: React.FC = () => {
                     const isAdd = formData.SpecificationMasterId === 0;
 
                     if (isAdd) {
-
                         await loadSpecificationMasterData(pagination.currentPage, {}, sortInfo, searchTerm);
-
                         setChildRefreshKey(prev => prev + 1);
 
                         const parentId = expandedParentId;
@@ -200,32 +197,20 @@ export const SpecificationMaster: React.FC = () => {
                                 dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
                             }
                         }, 50);
-
                     } else {
-
-                        const updatedRecord = response.right.Data[0] as SpecificationMasterData;
-
                         const parentId = expandedParentId;
 
+                        await loadSpecificationMasterData(pagination.currentPage, {}, sortInfo, searchTerm);
+
+                        setChildRefreshKey(prev => prev + 1);
+
+                        addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
                         if (parentId) {
-                            dtRef.current?.collapseAll?.();
-
                             setTimeout(() => {
-                                dtRef.current?.expandRow?.(
-                                    String(parentId),
-                                    expandedParentRow
-                                );
-                            }, 100);
+                                dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
+                            }, 50);
                         }
-
-                        setSpecificationMasterlist(prevData =>
-                            prevData.map(item =>
-                                item.SpecificationMasterId === formData.SpecificationMasterId
-                                    ? updatedRecord
-                                    : item
-                            )
-                        );
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     }
                     setIsAddUpdateModalOpen(false);
 
@@ -257,6 +242,8 @@ export const SpecificationMaster: React.FC = () => {
             ...initialFormState(),
         });
         setErrors({});
+        setExpandedParentId(null);
+        setExpandedParentRow(null);
         setIsAddUpdateModalOpen(true);
     }
 
@@ -347,14 +334,12 @@ export const SpecificationMaster: React.FC = () => {
     }
 
     const handleSearch = (value: string) => {
-
         setSearchTerm(value);
         setPagination({ currentPage: 1 });
         loadSpecificationMasterData(1, {}, sortInfo, value);
     }
 
     const handlClearSearch = () => {
-
         setSearchTerm("")
         setPagination({ currentPage: 1 })
         loadSpecificationMasterData(1, {}, sortInfo, "");
@@ -449,6 +434,9 @@ export const SpecificationMaster: React.FC = () => {
                                                 subCategoryName: row.CategoryName,
                                             });
                                         }
+
+                                        setExpandedParentId(row.SpecificationMasterId);
+                                        setExpandedParentRow(row);
                                         setFormData({
                                             ...initialFormState(),
                                             ...nextLevel,
@@ -521,7 +509,7 @@ export const SpecificationMaster: React.FC = () => {
         },
         {
             key: 'CategoryName',
-            label: showUomColumn ? 'Discription' : 'Sub Category Name ',
+            label: showUomColumn ? 'Description' : 'Sub Category Name ',
             width: '25',
             sortable: false,
             align: 'left',
@@ -588,7 +576,7 @@ export const SpecificationMaster: React.FC = () => {
                 );
             }
         }
-    ], [showUom]);
+    ], [showUomColumn, canAction, handleConfirmationBoxOpen]);
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: page });
@@ -675,11 +663,9 @@ export const SpecificationMaster: React.FC = () => {
                 );
 
     const deletePageName =
-        activeTab === "L1"
-            ? "Category"
-            : activeTab === "L2"
-                ? (isExpandedEdit ? "Sub Category" : "Category")
-                : (isExpandedEdit ? "Description" : "Sub Category");
+        activeTab === "L1" ? "Category"
+            : activeTab === "L2" ? "Sub Category"
+                : "Description";
 
     const handleExportSpecificationmasterExcel = () => handleExportSpecificationMaster("Excel");
     const habndleExportSpecificationmasterPdf = () => handleExportSpecificationMaster("PDF");
@@ -715,6 +701,8 @@ export const SpecificationMaster: React.FC = () => {
                             categoryName: "",
                             subCategoryName: "",
                         });
+                        setExpandedParentId(null);
+                        setExpandedParentRow(null);
                     }}
                 />
             </div>
@@ -775,6 +763,21 @@ export const SpecificationMaster: React.FC = () => {
                 } : undefined}
             />
 
+            {/* <LevelTree
+                response={specificationMasterlist}
+                config={{
+                    idKey: "SpecificationMasterId",
+                    levels: [
+                        { idKey: "LevelId1", nameKey: "Level1Name" },
+                        { idKey: "LevelId2", nameKey: "Level2Name" },
+                        { idKey: "LevelId3", nameKey: "Level3Name" },
+                    ]
+                }}
+                columns={SpecificationMasterColumns}
+                emptyMessage="No Budget Data"
+                loading={isLoading}
+            /> */}
+
             <Modal
                 isOpen={isAddUpdateModalOpen}
                 onSubmit={handleAddUpdateSpecificationMaster}
@@ -820,6 +823,7 @@ export const SpecificationMaster: React.FC = () => {
                                 placeholder={`Enter ${modalLabel} `}
                                 onChange={(e) => handleFieldChange("CategoryName", e.target.value)}
                                 error={errors.CategoryName}
+                                maxLength={100}
                                 required
                             />
                         </div>

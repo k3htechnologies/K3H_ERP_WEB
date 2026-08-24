@@ -662,9 +662,28 @@ export const MASTER_DATA = {
 
   type: ["Person /Individual", "Legal Entity / Other"],
 
-   mode_options: ["Mode", "PDC", "Advance"],
+  mode_options: ["Mode", "PDC", "Advance"],
 
   brokerage_options: ["0", "1"],
+
+  existingBuildingType: ["Residential", "Commercial", "Mixed - Use"],
+
+  landTenureType: ["Leasehold", "Freehold", "Collectors Land", "MHADA", "SRA", "BMC", "Builder"],
+
+  plotShape: ["Rectangular", "Irregular", "L - Shape", "Circle"],
+
+  constructionType: ["RCC", "Load - Bearing",],
+
+  soilType: ["Clay", "Black Cotton", "Sandy", "Rocky"],
+
+  existingGroundConditions: ["Vacant", "Barren", "Vegetation", "Encroachements"],
+
+  waterSupplyAvailable: ["Borewell", "Municipal",],
+
+  surroundingLandUse: ["Agricultural", "Residential", "Industrial", "Vacant"],
+
+  landOwnerShipType: ["Individual", "Joint", "Trust", "Company", "Government", "Society"],
+
 } as const;
 
 // ============================================================================
@@ -759,6 +778,16 @@ export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
 export const MODE_OPTIONS = toOptions(MASTER_DATA.mode_options);
 export const BROKERAGE_OPTIONS = toOptions(MASTER_DATA.brokerage_options);
+export const EXISTING_BUILDING_TYPE_OPTIONS = toOptions(MASTER_DATA.existingBuildingType);
+export const LAND_TENURE_TYPE_OPTIONS = toOptions(MASTER_DATA.landTenureType);
+export const PLOT_SHAPE_OPTIONS = toOptions(MASTER_DATA.plotShape);
+export const CONSTRUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.constructionType);
+export const SOIL_TYPE_OPTIONS = toOptions(MASTER_DATA.soilType);
+export const EXISTING_GROUND_CONDITION_OPTIONS = toOptions(MASTER_DATA.existingGroundConditions);
+export const WATER_SUPPLY_AVAILABLE_OPTIONS = toOptions(MASTER_DATA.waterSupplyAvailable);
+export const SURROUNDING_LAND_USE_OPTIONS = toOptions(MASTER_DATA.surroundingLandUse);
+export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipType);
+
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
 export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);

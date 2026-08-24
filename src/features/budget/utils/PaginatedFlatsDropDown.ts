@@ -1,12 +1,16 @@
 import * as E from 'fp-ts/Either';
 import { inventoryService } from '@/features/inventory/services/InventoryServices';
 
-export const fetchPaginatedFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number }) => {
+export const fetchPaginatedFlatsDropdown = async (
+    pageNumber: number,
+    params?: { value?: string; projectId?: number }
+) => {
     try {
         const responseEither = await inventoryService.apiCallPullPaginatedFlats({
             PageSize: 1000,
             PageNumber: pageNumber,
             ProjectId: Number(params?.projectId),
+            Flat: params?.value?.trim() || undefined,
         });
 
         if (E.isLeft(responseEither)) {
@@ -25,17 +29,14 @@ export const fetchPaginatedFlatsDropdown = async (pageNumber: number, params?: {
             ].filter(Boolean)
                 .join(' - ');
 
-            return {
-                label,
-                value: String(d.InventoryFlatId),
-            };
+            return { label, value: String(d.InventoryFlatId) };
         });
 
         return {
             totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
-            itemList
+            itemList,
         };
-
+        
     } catch (err) {
         console.error('FETCH PAGINATED FLATS DROPDOWN ERROR', err);
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };

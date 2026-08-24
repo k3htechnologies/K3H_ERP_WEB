@@ -264,3 +264,9 @@ export const copyToClipboard = async (text?: string): Promise<boolean> => {
     return false;
   }
 };
+
+export const sendEmail = (email: string) => {
+  if (email) {
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, '_blank');
+  }
+}

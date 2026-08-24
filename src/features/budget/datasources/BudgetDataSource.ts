@@ -29,10 +29,8 @@ export class BudgetDatasourceImpl implements BudgetDatasource {
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${BudgetApi.PULL}?${queryParams.toString()}`, { signal }
-            )
-            return response
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${BudgetApi.PULL}?${queryParams.toString()}`, { signal })
+
 
         } catch (error: any) {
 
@@ -49,11 +47,10 @@ export class BudgetDatasourceImpl implements BudgetDatasource {
     async addUpdateBudget(data: AddUpdateBudget): Promise<BudgetSaveResponse> {
 
         try {
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            return await this.k3hHttpClient.postRequestWithAuthentication(
                 BudgetApi.ADD_UPDATE,
                 data
             )
-            return response
 
         } catch (error: any) {
             console.log("ERROR: ADD UPDATE BUDGET", error);

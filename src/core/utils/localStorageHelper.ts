@@ -1555,6 +1555,28 @@ export const LocalStorageHelper = {
     }
   },
 
+  // VISITOR MANAGEMENT
+  storeGatePassTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Gate Pass Columns Details:", error);
+    }
+  },
+
+  getGatePassTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Gate Pass Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
@@ -1618,6 +1640,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS);

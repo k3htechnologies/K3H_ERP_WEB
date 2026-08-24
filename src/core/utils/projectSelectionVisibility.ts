@@ -59,6 +59,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'noticeSection'
         ,'otpLogs'
         ,'termSheetReport'
+        ,'gatePass'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

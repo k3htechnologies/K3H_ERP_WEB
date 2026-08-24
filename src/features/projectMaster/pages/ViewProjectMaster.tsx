@@ -338,7 +338,7 @@ export const ViewProjectMaster: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Bank Details'
+            'Loading Permission'
         );
     };
 

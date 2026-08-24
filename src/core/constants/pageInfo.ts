@@ -610,6 +610,13 @@ export const getPageInfo = (path: string) => {
                 description: "Manage and track term sheets for real estate transactions",
             }
 
+            //VISITOR MANAGEMENT
+        case 'gatePass':
+            return {
+                title: "Gate Pass",
+                description: "Gate Pass",
+            }
+
         default:
             return {
                 title: 'Dashboard',

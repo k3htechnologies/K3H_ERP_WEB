@@ -216,6 +216,7 @@ import TestDocument from '@/features/testDocument/pages/TestDocument';
 import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pages/DrawingDocumentCategoryMaster';
 import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
 import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
+import { GatePass } from '@/features/gatePass/pages/GatePass';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -537,6 +538,9 @@ function App() {
             <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
             <Route path='termSheetReport' element={<TermSheetReport />} />
+          
+           {/* VISITOR MANAGEMENT */}
+            <Route path='gatePass' element={<GatePass />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

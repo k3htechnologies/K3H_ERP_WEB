@@ -118,6 +118,9 @@ export const LOCAL_STORAGE_KEYS = {
     //TAX TRACKER
     TAX_TRACKER_SELECTED_COLUMNS: 'taxTracker.selectedColumns',
 
+    //VISITOR MANAGEMENT
+    GATE_PASS_SELECTED_COLUMNS:'gatepass.selectedColumns',
+
 
 
 } as const

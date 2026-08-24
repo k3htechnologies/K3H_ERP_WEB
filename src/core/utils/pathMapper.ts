@@ -134,7 +134,10 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //FINANCE
         '/termsheet': '/termSheet',
-        '/termsheetreport': '/termSheetReport'
+        '/termsheetreport': '/termSheetReport',
+
+        //VISITOR MANAGEMENT
+        '/gatepass': '/gatePass',
     }
 
 

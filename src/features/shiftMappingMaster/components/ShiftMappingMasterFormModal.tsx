@@ -25,6 +25,7 @@ interface ShiftMappingMasterFormModalProps {
   mappingShift: string;
   onApplicableTypeChange: (value: string) => void;
   employeeDetails: EmployeeMasterData | null;
+  
   setEmployeeDetails: (details: EmployeeMasterData | null) => void;
 }
 

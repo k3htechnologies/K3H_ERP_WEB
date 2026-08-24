@@ -527,16 +527,13 @@ export const PaymentLedger: React.FC = () => {
     fd.append("Uniquekey", formData.Uniquekey);
     fd.append("BookingId", String(bookingId));
     fd.append("ProjectId", String(formData.ProjectId ?? projectId));
-    fd.append(
-      "BookingOtherChargesId",
-      formData.PaymentFor?.toUpperCase().includes("OTHER CHARGES") ? formData.BookingOtherChargesId?.toString() || "" : "0",
-    );
+    fd.append("BookingOtherChargesId", formData.PaymentFor?.toUpperCase().includes("OTHER CHARGES") ? formData.BookingOtherChargesId?.toString() || "" : "0");
     fd.append("PaymentFor", formData.PaymentFor);
     fd.append("PaymentMode", formData.PaymentMode);
     fd.append("PaymentReceivedFrom", formData.PaymentReceivedFrom);
-    fd.append("ProjectBankListMasterId", formData.ProjectBankListMasterId?.toString() || "0");
-    fd.append("BankListMasterId", formData.BankListMasterId.toString());
-    fd.append("ReceivedAmount", formData.ReceivedAmount.toString());
+    fd.append("ProjectBankListMasterId", Number(formData.ProjectBankListMasterId) > 0  ? formData.ProjectBankListMasterId?.toString() : "0");
+    fd.append("BankListMasterId", Number(formData.BankListMasterId) > 0  ? formData.BankListMasterId.toString() : "0");
+    fd.append("ReceivedAmount", formData.ReceivedAmount.toString() ?? "0");
     fd.append("TransactionChequeDemandDraftNumber", formData.TransactionChequeDemandDraftNumber);
 
     documentFiles.forEach((file) => {

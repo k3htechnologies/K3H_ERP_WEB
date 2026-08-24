@@ -85,7 +85,7 @@ export const Budget: React.FC = () => {
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
-    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject" | "reopen">("approve");
 
     useEffect(() => {
         if (!projectId) return
@@ -748,7 +748,7 @@ export const Budget: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
-    const handleApproveRejectInvoice = (approvalType: "approve" | "reject") => {
+    const handleApproveRejectInvoice = (approvalType: "approve" | "reject" | "reopen") => {
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
     };
@@ -852,7 +852,7 @@ export const Budget: React.FC = () => {
                             showApproval={approvalInfo?.IsApproval}
                             onApprove={() => handleApproveRejectInvoice("approve")}
                             onReject={() => handleApproveRejectInvoice("reject")}
-                            onReopen={() => handleApproveRejectInvoice("reject")}
+                            onReopen={() => handleApproveRejectInvoice("reopen")}
                             onHistory={handleApprovalLog}
                             isIcons
                         />

@@ -212,9 +212,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 newErrors.Amount = "Amount must be greater than 0";
             }
 
-            if (!formData.InvoiceDate) {
-                newErrors.InvoiceDate = "Invoice Date is required";
-            }
+            
         } else {
             if ((formData.InvoiceNumber !== null && String(formData.InvoiceNumber).trim() !== "") && Number(formData.InvoiceNumber) === 0) {
                 newErrors.InvoiceNumber = "Invoice Number cannot be zero";
@@ -548,7 +546,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Invoice Date"
                             value={formatDate_dd_mm_yyyy(formData.InvoiceDate ?? '')}
                             onChange={(val) => handleFieldChange('InvoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                            required={formData.DeliveryType === "Cheque"}
                             error={errors.InvoiceDate}
                             disabled={!(canEdit || canActionInwardOutward)}
                         />

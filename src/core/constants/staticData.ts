@@ -700,7 +700,9 @@ termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
 noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
 
-vendorType: ["Material", "Contractor", "Both"]
+vendorType: ["Material", "Contractor", "Both"],
+
+purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"]
 } as const;
 
 // ============================================================================
@@ -837,6 +839,7 @@ export const TERM_SHEET_APPROVAL_OPTIONS = toOptions(MASTER_DATA.termSheetApprov
 export const TERM_SHEET_DSRA_TERM_OPTIONS = toOptions(MASTER_DATA.termSheetDSRATerm);
 export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
 export const VENDOR_TYPE_OPTIONS = toOptions(MASTER_DATA.vendorType);
+export const PURPOSE_OPTIONS = toOptions(MASTER_DATA.purposeOptions);
 
 
 // ============================================================================

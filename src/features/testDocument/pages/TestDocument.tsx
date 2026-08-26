@@ -59,83 +59,83 @@ const initialFormState = (): AddUpdateTestDocumentRequest => ({
 });
 
 const TestDocument: React.FC = () => {
-  
+
   const [testDocumentList, setTestDocumentList] = useState<TestDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [expandHeaderTestDocumentName, setExpandHeaderTestDocumentName] = useState<string>("");
   const [expandHeaderTestDocumentId, setExpandHeaderTestDocumentId] = useState<number>(0);
 
-  
+
   const [testDocumentFiles, setTestDocumentFiles] = useState<(File | string)[]>([]);
   const [RemoveTestDocumentUrls, setRemoveTestDocumentUrls] = useState<string[]>([]);
   const [testDocumentURL, setTestDocumentURL] = useState<string>();
 
-  
+
   const { pagination, setPagination } = usePagination(20);
 
-  
+
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
-  
+
   const [filters] = useState<FilterInfo>({});
 
-  
+
   const { addToast } = useToast();
 
-  
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchDocuments(value);
   }, 350);
 
-  
+
   const [testDocumentTabList, setTestDocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
 
-  
+
   const dtRef = useRef<DataTableExpandableRef | null>(null);
 
-  
+
 
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
 
   const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
 
-  
+
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  
+
   const [editingDocumentData, setEditingDocumentData] = useState<TestDocumentData | null>(null);
 
   const [isAddUpdateDocumentModalOpen, setIsAddUpdateDocumentModalOpen] = useState(false);
 
-  
+
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
 
-  
+
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
 
   const [deleteTestDocumentDetailsData, setDeleteTestDocumentDetailsData] = useState<TestDocumentData | null>(null);
 
-  
+
   const [formData, setFormData] = useState<AddUpdateTestDocumentRequest>(() => initialFormState());
 
-  
+
   const [showImportModal, setShowImportModal] = useState(false);
 
-  
+
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [documentName, setDocumentName] = useState<string | null>("");
   const [documentCategory, setDocumentCategory] = useState<string | null>("");
 
-  
+
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [approvalRowData, setApprovalRowData] = useState<TestDocumentData | null>(null);
-  
+
   const { canAction } = useMenuPermissions();
   const { projectId } = useProject();
 
@@ -189,7 +189,7 @@ const TestDocument: React.FC = () => {
     }
   }, [isAddUpdateDocumentModalOpen, isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
 
-  
+
   const getActiveTabId = (filterParams?: FilterInfo): number => {
     if (filterParams && filterParams.TestDocumentCategoryId != null) {
       const raw = filterParams.TestDocumentCategoryId;
@@ -203,8 +203,8 @@ const TestDocument: React.FC = () => {
 
     return 0;
   };
-  
-  
+
+
   const loadTestDocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -245,11 +245,11 @@ const TestDocument: React.FC = () => {
     );
   };
 
-  const fetchTestDocumentList = async (page: number = pagination.currentPage) => {
-    return await loadTestDocument(page, filters);
+  const fetchTestDocumentList = async (page: number = pagination.currentPage, currentSortInfo: SortInfo | undefined = sortInfo) => {
+    return await loadTestDocument(page, filters, currentSortInfo);
   };
 
-  const loadTestDocument = async (page: number, filterParams: FilterInfo) => {
+  const loadTestDocument = async (page: number, filterParams: FilterInfo, currentSortInfo: SortInfo | undefined = sortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -262,7 +262,7 @@ const TestDocument: React.FC = () => {
           TestDocumentName: filterParams.TestDocumentName,
           TestDocumentCategory: filterParams.TestDocumentCategory,
           TestDocumentCategoryId: Number(getActiveTabId(filterParams)),
-          SortBy: getSortByParam(sortInfo ?? null, testDocumentColumns),
+          SortBy: getSortByParam(currentSortInfo ?? null, testDocumentColumns),
         };
 
         const response = await testDocumentService.apiCallPullTestDocument(params);
@@ -305,7 +305,7 @@ const TestDocument: React.FC = () => {
 
     await loadTestDocument(1, filterParams);
   };
-  
+
   const clearsearchDocumnets = () => {
     setSearchTerm("");
     debouncedSearch.cancel?.();
@@ -318,13 +318,19 @@ const TestDocument: React.FC = () => {
     },
     [fetchTestDocumentList],
   );
-  
-  const handleSortColumn = (sortInfo: SortInfo) => {
-    setSortInfo(sortInfo);
 
-    fetchTestDocumentList(1);
+  const handleSortColumn = (newSortInfo: SortInfo) => {
+
+    setSortInfo(newSortInfo);
+
+    const newFilters: FilterInfo = {
+      ...filters,
+      TestDocumentCategoryId: activeTab,
+    };
+
+    loadTestDocument(1, newFilters, newSortInfo);
   };
-  
+
 
   const testDocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -346,7 +352,7 @@ const TestDocument: React.FC = () => {
     });
     setIsAddUpdateDocumentModalOpen(true);
   }, []);
-  
+
   const handleEditTestDocumentDetails = useCallback((row: TestDocumentData) => {
     setEditingDocumentData({
       ...row,
@@ -378,7 +384,7 @@ const TestDocument: React.FC = () => {
         render: (value) => {
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
-              <TooltipText text={value || ""} maxWidth="500px" tooltipThreshold={60} />
+              <TooltipText text={value || ""} maxWidth="800px" tooltipThreshold={60} />
             </div>
           );
         },
@@ -495,7 +501,7 @@ const TestDocument: React.FC = () => {
         },
       },
     ],
-    
+
     [canAction, handleEditTestDocument, handleConfirmationDialogBoxOpen],
   );
 
@@ -555,8 +561,8 @@ const TestDocument: React.FC = () => {
         align: "left",
         render: (value) => (
           value?.length > 15 ?
-                <FieldInfoTooltip value={value} /> : value
-            )
+            <FieldInfoTooltip value={value} /> : value
+        )
       },
       {
         key: "ApprovalStatus",
@@ -663,12 +669,12 @@ const TestDocument: React.FC = () => {
         },
       },
     ],
-    
+
     [canAction, handleEditTestDocument, handleApprovalLog, handleApproveRejectDocument],
   );
-  
 
-  
+
+
 
   const handleAddDocumentDetailsModal = useCallback((row: TestDocumentData) => {
     setExpandedParentRow(row);
@@ -701,7 +707,7 @@ const TestDocument: React.FC = () => {
     setIsAddUpdateDocumentModalOpen(true);
   }, []);
 
-  
+
   const validateAddDocumentForm = (): {
     isValid: boolean;
 
@@ -726,7 +732,7 @@ const TestDocument: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {};
 
-    
+
     if (!hasAnyDocumentFile(testDocumentFiles, testDocumentURL, RemoveTestDocumentUrls)) {
       newErrors.TestDocumentURL = "File is required.";
     }
@@ -806,7 +812,7 @@ const TestDocument: React.FC = () => {
         const response = await testDocumentService.apiCallAddUpdateTestDocument(payload);
 
         if (E.isRight(response)) {
-          
+
           ismaster === 1 ? setIsAddUpdateDocumentModalOpen(false) : setIsAddUpdateDocumentDetailsModalOpen(false);
 
           const isAdd = formData.TestDocumentId === 0;
@@ -828,12 +834,12 @@ const TestDocument: React.FC = () => {
 
               await fetchTestDocumentList(pagination.currentPage);
 
-              
+
               if (dtRef.current) {
                 dtRef.current.collapseAll?.();
               }
 
-              
+
               setTimeout(() => {
                 if (parentId) {
                   dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -854,12 +860,12 @@ const TestDocument: React.FC = () => {
 
               await fetchTestDocumentList(pagination.currentPage);
 
-              
+
               if (dtRef.current) {
                 dtRef.current.collapseAll?.();
               }
 
-              
+
               setTimeout(() => {
                 if (parentId) {
                   dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -886,7 +892,7 @@ const TestDocument: React.FC = () => {
       Number(formData.TestDocumentId) === 0 ? "Add Document" : "Update Document",
     );
   };
-  
+
   const handleDeleteDocument = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -932,12 +938,12 @@ const TestDocument: React.FC = () => {
 
             await fetchTestDocumentList(pagination.currentPage);
 
-            
+
             if (dtRef.current) {
               dtRef.current.collapseAll?.();
             }
 
-            
+
             setTimeout(() => {
               if (parentId) {
                 dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -965,16 +971,16 @@ const TestDocument: React.FC = () => {
       "Delete Document",
     );
   };
-  
 
-  
+
+
 
   const downloadExcelSampleTestDocument = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
 
         const params: FilterPullExcelSample = {
           TableName: "PROJECT DOCUMENT",
@@ -1028,7 +1034,7 @@ const TestDocument: React.FC = () => {
     );
   };
 
-  
+
 
   const handleApprovalSubmit = async (remark: string) => {
 
@@ -1059,12 +1065,12 @@ const TestDocument: React.FC = () => {
 
           await fetchTestDocumentList(pagination.currentPage);
 
-          
+
           if (dtRef.current) {
             dtRef.current.collapseAll?.();
           }
 
-          
+
           setTimeout(() => {
             if (parentId) {
               dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -1105,15 +1111,15 @@ const TestDocument: React.FC = () => {
         onClearSearch={clearsearchDocumnets}
         isShowFilterButton={false}
         isShowCustomizeButton={false}
-        
+
         isShowAddButton={testDocumentTabList.length > 0 && canAction ? true : false}
         addTitle="Add"
         onAdd={handleAddDocumentModal}
-        
+
         isShowImportButton={canAction && Number(projectId) > 0}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleTestDocument}
-        
+
         isShowExportButton={false}
         exportLoading={isLoading}
       />
@@ -1198,7 +1204,7 @@ const TestDocument: React.FC = () => {
         />
       </div>
 
-      {}
+      { }
       <Modal
         isOpen={isAddUpdateDocumentModalOpen}
         onClose={() => {
@@ -1237,7 +1243,7 @@ const TestDocument: React.FC = () => {
         </div>
       </Modal>
 
-      {}
+      { }
       <Modal
         isOpen={isAddUpdateDocumentDetailsModalOpen}
         onClose={() => {

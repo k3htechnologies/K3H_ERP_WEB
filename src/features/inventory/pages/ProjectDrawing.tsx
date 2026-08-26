@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader } from "@/core/utils/loader";
-import { Tabs, type TabItem } from "@/ui/components/Tab/Tab";
+import Tabs, { type TabItem } from "@/ui/components/Tab/Tab";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
@@ -17,6 +17,7 @@ import ApprovalActions from "@/features/modulesWorkflowApproval/components/Appro
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { getDocumentStatusColor } from "@/features/drawingDocument/pages/DrawingDocumentStatus";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 const ProjectDrawing: React.FC = () => {
 
@@ -126,6 +127,7 @@ const ProjectDrawing: React.FC = () => {
             width: "30",
             sortable: false,
             align: "left",
+            fixed:"left",
             render: (value) => (
                 <span className="text-sm font-medium text-gray-800">
                     {value ? String(value).split("~")[0].trim() : "-"}
@@ -211,6 +213,18 @@ const ProjectDrawing: React.FC = () => {
             },
         },
         {
+            key: "DrawingDocumentRemark",
+            label: "Remark",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value) => (
+
+                <FieldInfoTooltip value={value} />
+            )
+        },
+
+        {
             key: "ApprovalStatus",
             label: "Approval Status",
             width: "18",
@@ -263,53 +277,37 @@ const ProjectDrawing: React.FC = () => {
                 isLoading={isLoading}
             />
 
-            <div className="pt-5">
 
 
-                <div className="space-y-6">
-                    {drawingCategoryTabs.length > 0 && (
-                        <div>
+            <div className="flex gap-5 items-start pt-5">
 
-                            <Tabs
-                                tabs={drawingCategoryTabs}
-                                defaultActive={activeCategory}
-                                islarge
-                                isChips
-                                onTabChange={(tab) => {
-                                    setActiveCategory(tab.id);
-                                }}
-                            />
+                {drawingCategoryTabs.length > 0 && (
+                    <div className="w-100 shrink-0 flex flex-col gap-2">
+                        <Tabs
+                            tabs={drawingCategoryTabs}
+                            defaultActive={activeCategory}
+                            isvertical
+                            onTabChange={(tab) => {
+                                setActiveCategory(tab.id);
+                            }}
+                        />
+                    </div>
+                )}
 
-                        </div>
-
-                    )}
-
-
-                    <div className="border border-gray-200 rounded-lg overflow-hidden">
-
-                        <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
-
-                            <h2 className="text-[15px] font-semibold text-slate-800">
-                                Latest Drawing
-                            </h2>
-
-                        </div>
-
-                        <div className="border border-gray-200 rounded-lg overflow-hidden">
-
-                            <DataTableWithHeaderRowDivider
-                                columns={drawingColumns}
-                                data={activeCategoryDocuments}
-                                emptyMessage="No Drawing Documents Found"
-                                fixedHeight={true}
-                            />
-
-                        </div>
-
+                <div className="flex-1 min-w-0 border border-gray-200 rounded-lg overflow-hidden">
+                    <div className="px-5 py-4 border-b border-gray-200 bg-gray-50">
+                        <h2 className="text-[15px] font-semibold text-slate-800">
+                            Latest Drawing
+                        </h2>
                     </div>
 
+                    <DataTableWithHeaderRowDivider
+                        columns={drawingColumns}
+                        data={activeCategoryDocuments}
+                        emptyMessage="No Drawing Documents Found"
+                        fixedHeight={true}
+                    />
                 </div>
-
             </div>
         </div>
     );

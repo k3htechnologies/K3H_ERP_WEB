@@ -55,14 +55,7 @@ export interface InwardAndOutWardData {
     ReceiverAddress: string | null
     InwardOutwardRevertHistory: InwardOutwardRevertHistory[];
     InwardOutwardDocumentHistory: InwardOutwardDocumentHistory[];
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null,
+
     ChequeNumber: string | null
     AcknowledgementBy: string | null,
     SenderMobileNumber: string | null,
@@ -71,6 +64,15 @@ export interface InwardAndOutWardData {
     ReceiverMobileNumberCountryCode: string | null,
     HandoverPersonMobileNumber: string | null,
     HandoverPersonMobileNumberCountryCode: string | null,
+
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null,
 }
 export interface AddUpdateInwardAndOutWardRequest {
     InwardOutwardId: number;
@@ -114,14 +116,15 @@ export interface AddUpdateInwardAndOutWardRequest {
 }
 
 export interface DeleteInwardAndOutWardRequest {
-    UniqueKey: string
+
     InwardOutwardId: number
+    UniqueKey: string
 }
 
 export interface InwardOutwardRevertHistory {
     InwardOutwardRevertId: number
-    InwardOutwardId: number
     UniqueKey: string | null
+    InwardOutwardId: number
     RevertDate: string | null
     RevertRemark: string | null
     RevertDocumentURL: string | null
@@ -132,11 +135,17 @@ export interface InwardOutwardDocumentHistory {
 }
 export interface AddRevertInwardOutwardData {
     InwardOutwardRevertId: number | 0,
-    InwardOutwardId: number | 0,
     UniqueKey: string | null
+    InwardOutwardId: number | 0,
     RevertDate: string | null
     RevertRemark: string | null
     RevertDocumentURL: File[] | null
+}
+export interface DeleteInwardOutwardRevertHistoryRequest {
+    InwardOutwardRevertId: number | 0,
+    Uniquekey: string
+    InwardOutwardId: number | 0,
+
 }
 
 export interface FilterWithPaginationSenderReceiverByMobileNoRequest {

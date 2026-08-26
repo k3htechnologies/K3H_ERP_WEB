@@ -257,11 +257,11 @@ const DrawingDocument: React.FC = () => {
     );
   };
 
-  const fetchDrawingDocumentList = async (page: number = pagination.currentPage) => {
-    return await loadDrawingDocument(page, filters);
+  const fetchDrawingDocumentList = async (page: number = pagination.currentPage, currentSortInfo: SortInfo | undefined = sortInfo) => {
+    return await loadDrawingDocument(page, filters, currentSortInfo);
   };
 
-  const loadDrawingDocument = async (page: number, filterParams: FilterInfo) => {
+  const loadDrawingDocument = async (page: number, filterParams: FilterInfo, currentSortInfo: SortInfo | undefined = sortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -278,7 +278,7 @@ const DrawingDocument: React.FC = () => {
           BuildingNumber: filterParams.BuildingNumber,
           Wing: filterParams.Wing,
           Floor: filterParams.Floor,
-          SortBy: getSortByParam(sortInfo ?? null, drawingDocumentColumns),
+          SortBy: getSortByParam(currentSortInfo ?? null, drawingDocumentColumns),
         };
 
         const response = await drawingDocumentService.apiCallPullDrawingDocument(params);
@@ -338,10 +338,17 @@ const DrawingDocument: React.FC = () => {
     fetchDrawingDocumentList(page);
   }, [sortInfo, fetchDrawingDocumentList]);
 
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
-    setSortInfo(sortInfo);
-    fetchDrawingDocumentList(1);
-  }, [filters, , searchTerm]);
+  const handleSortColumn = (newSortInfo: SortInfo) => {
+
+    setSortInfo(newSortInfo);
+
+    const newFilters: FilterInfo = {
+      ...filters,
+      DrawingDocumentCategoryId: activeTab,
+    };
+
+    loadDrawingDocument(1, newFilters, newSortInfo);
+  };
 
   const drawingDocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -548,15 +555,33 @@ const DrawingDocument: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value: string, row: any) => {
+        render: (value) => {
           return (
-            <div className="flex items-center justify-between w-full">
-              <div className="truncate max-w-[400px]">
-                <MultiImageViewer images={parseDocumentUrls(row.DrawingDocumentURL)} title="Document" triggerLabel={value || "-"} />
-              </div>
+            <div className="flex items-center justify-end ml-2 gap-1">
+              <TooltipText text={value || ""} maxWidth="500px" tooltipThreshold={60} />
             </div>
           );
         },
+      },
+       {
+        key: 'DrawingDocumentURL',
+        label: 'PDF',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value: string, row: any) => {
+          return (
+            <div className="flex items-center justify-between w-full">
+              <MultiImageViewer
+                images={parseDocumentUrls(row.DrawingDocumentURL)}
+                title="PDF Document"
+                isIcon={false}
+                triggerLabel={value === '' || 'PDF'}
+              />
+
+            </div>
+          );
+        }
       },
       {
         key: 'DrawingDocumentDWGURL',

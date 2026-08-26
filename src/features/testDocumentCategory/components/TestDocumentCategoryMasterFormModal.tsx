@@ -44,7 +44,7 @@ export const TestDocumentCategoryMasterFormModal: React.FC<TestDocumentCategoryM
             <Input
               label="Test Document Category"
               required
-              error={errors.projectDocumentCategory}
+              error={errors.TestDocumentCategory}
               type="text"
               value={formData.TestDocumentCategory}
               maxLength={200}

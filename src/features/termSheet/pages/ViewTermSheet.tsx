@@ -3050,6 +3050,7 @@ const ViewTermSheet: React.FC = () => {
 
                                     </div>
                                     <div className="p-2 mt-auto">
+                                         <FieldItem label="Remark" value={d.DocumentRemark} isRow={true} />
                                         <FieldItem label="Submitted Original" value={d.IsSubmittedOriginalDocument ? 'Yes' : 'No'} isRow={true} />
                                         <FieldItem label="Collected Original" value={d.IsCollectedOriginalDocument ? 'Yes' : 'No'} isRow={true} />
                                         <FieldItem label="Collected Original Date" value={`${d?.CollectedOriginalDocumentDate ? formatDate_dd_MonthName_yy_hh_mm(d?.CollectedOriginalDocumentDate) : "-"}`} isRow={true} />

@@ -29,7 +29,6 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { formatCurrency } from "@/core/utils/comman";
-import { toUpperCase } from "fp-ts/lib/string";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
@@ -65,13 +64,9 @@ export const InwardOutward: React.FC = () => {
 
     const { addToast } = useToast();
 
-    const { canExport: canExportInwardOutward } = useMenuPermissions("/inwardOutward");
-    const { canExport: canExportInwardOutwardAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
-    const { canExport: canExportInwardOutwardAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
-
-    const { canAction: canActionInwardOutward } = useMenuPermissions("/inwardOutward");
-    const { canAction: canActionAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
-    const { canAction: canActionAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
+    const { canExport: canExportInwardOutward, canAction: canActionInwardOutward } = useMenuPermissions("/inwardOutward");
+    const { canExport: canExportInwardOutwardAdministrativeAccess, canAction: canActionAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
+    const { canExport: canExportInwardOutwardAcknowledgement, canAction: canActionAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
 
     const location = useLocation() as any;
 
@@ -113,9 +108,10 @@ export const InwardOutward: React.FC = () => {
             listState.page,
             listState.filters,
             listState.sortInfo,
-            listState.searchTerm ? String(listState.searchTerm).trim() : undefined
+            listState.searchTerm ? String(listState.searchTerm).trim() : undefined,
+            activeTab === 'All' ? undefined : activeTab
         );
-    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm, activeTab]);
 
     useEffect(() => {
         return () => {
@@ -682,9 +678,9 @@ export const InwardOutward: React.FC = () => {
                             }}
                             leftIcon={
                                 <div className="relative inline-flex">
-                                    <RotateCw />
+                                    <RotateCw className="h-4 w-4 mt-1.5" />
                                     {row.InwardOutwardRevertHistory?.length > 0 && (
-                                        <span className="absolute pt-0.5 -bottom-1 -right-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
+                                        <span className="absolute pt-0.5 -bottom-1 -right-2 flex h-3 min-w-3 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-semibold text-white">
                                             {row.InwardOutwardRevertHistory.length}
                                         </span>
                                     )}
@@ -909,7 +905,6 @@ export const InwardOutward: React.FC = () => {
                         setTempFilters({});
                         updateListState({ searchTerm: '', filters: {}, page: 1 });
 
-                        loadInwardOutward(1, {}, sortInfo, undefined, toUpperCase(t.label) === "ALL" ? "" : t.label);
                     }}
                 />
 
@@ -1012,7 +1007,7 @@ export const InwardOutward: React.FC = () => {
                     e.preventDefault();
                     applyFilters();
                 }}
-                saveText="Apply "
+                saveText="Apply"
                 cancelText="Clear"
                 onCancel={() => clearFilters()}
                 size="small-half">

@@ -1,7 +1,7 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as E from 'fp-ts/Either';
-import {  type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import usePagination from "@/core/hooks/usePagination";
@@ -23,6 +23,7 @@ import { TERM_SHEET_APPROVAL_OPTIONS } from "@/core/constants";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 
 export const TermSheetReport: React.FC = () => {
 
@@ -70,7 +71,7 @@ export const TermSheetReport: React.FC = () => {
                     TermSheetId: filterParams.TermSheetId ? Number(filterParams.TermSheetId) : undefined,
                     NameOfInstitutionBankNBFC: filterParams.NameOfInstitutionBankNBFC ?? undefined,
                     ApprovalStatus: filterParams.ApprovalStatus ?? undefined,
-                    ProjectName: searchtext ?? filterParams.ProjectName ?? undefined,
+                    ProjectName: searchtext || filterParams.ProjectName || undefined,
                     CompanyName: filterParams.CompanyName ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, TermSheetReportColumns)
                 };
@@ -130,15 +131,15 @@ export const TermSheetReport: React.FC = () => {
             sortable: true,
             align: "left",
             render: (value: string, row: any) => {
-                      return (
-                        <MultiImageViewer
-                          images={parseDocumentUrls(row.TermSheetURL)}
-                          title={`Term Sheet - ${row.NameOfInstitutionBankNBFC ?? ""}`}
-                          triggerLabel={value || '-'}
-                          isWrap={false}
-                        />
-                      );
-                    }
+                return (
+                    <MultiImageViewer
+                        images={parseDocumentUrls(row.TermSheetURL)}
+                        title={`Term Sheet - ${row.NameOfInstitutionBankNBFC ?? ""}`}
+                        triggerLabel={value || '-'}
+                        isWrap={false}
+                    />
+                );
+            }
         },
         {
             key: "ProjectName",
@@ -173,96 +174,96 @@ export const TermSheetReport: React.FC = () => {
             render: (value?: string) =>
                 value ? formatDate_dd_MonthName_yy(value) : "-",
         },
-          {
-        key: "AmountGroup",
-        label: "Amount (₹)",
-        align: "center",
-        theadStyle: {
-          backgroundColor: '#EEF5FF',
-          color: '#135BEC'
-        },
-        children: [
+        {
+            key: "AmountGroup",
+            label: "Amount (₹)",
+            align: "center",
+            theadStyle: {
+                backgroundColor: '#EEF5FF',
+                color: '#135BEC'
+            },
+            children: [
 
-            {
-            key: 'FacilityAmount',
-            label: 'Sanction',
-            width: '15',
-            sortable: false,
-            align: 'right',
-            theadStyle: {
-              backgroundColor: '#FFF',
-              color: '#64748B'
-            },
-            tdStyle: {
-              backgroundColor: '#EEF5FF'
-            },
-            render: (value) => formatCurrency(value ?? 0)
-        },
-        {
-            key: 'TotalDisbursedAmount',
-            label: 'Disbursed',
-            width: '15',
-            sortable: false,
-            align: 'right',
-            theadStyle: {
-              backgroundColor: '#FFF',
-              color: '#64748B'
-            },
-            tdStyle: {
-              backgroundColor: '#EEF5FF'
-            },
-            render: (value) => formatCurrency(value ?? 0)
-        },
-        {
-            key: 'BalanceDisbursementAmount',
-            label: 'Balance Disbursement',
-            width: '15',
-            sortable: false,
-            align: 'right',
-            theadStyle: {
-              backgroundColor: '#FFF',
-              color: '#64748B'
-            },
-            tdStyle: {
-              backgroundColor: '#EEF5FF'
-            },
-            render: (value) => formatCurrency(value ?? 0)
-        },
-        {
-            key: 'TotalRepayLedgerAmount',
-            label: 'Repayment',
-            width: '15',
-            sortable: false,
-            align: 'right',
-            theadStyle: {
-              backgroundColor: '#FFF',
-              color: '#64748B'
-            },
-            tdStyle: {
-              backgroundColor: '#EEF5FF'
-            },
-            render: (value) => formatCurrency(value ?? 0)
-        },
-        {
-            key: 'BalanceAsOnDateAmount',
-            label: 'Balance as on Date',
-            width: '15',
-            sortable: false,
-            align: 'right',
-            theadStyle: {
-              backgroundColor: '#FFF',
-              color: '#64748B'
-            },
-            tdStyle: {
-              backgroundColor: '#EEF5FF'
-            },
-            render: (value) => formatCurrency(value ?? 0)
+                {
+                    key: 'FacilityAmount',
+                    label: 'Sanction',
+                    width: '15',
+                    sortable: false,
+                    align: 'right',
+                    theadStyle: {
+                        backgroundColor: '#FFF',
+                        color: '#64748B'
+                    },
+                    tdStyle: {
+                        backgroundColor: '#EEF5FF'
+                    },
+                    render: (value) => formatCurrency(value ?? 0)
+                },
+                {
+                    key: 'TotalDisbursedAmount',
+                    label: 'Disbursed',
+                    width: '15',
+                    sortable: false,
+                    align: 'right',
+                    theadStyle: {
+                        backgroundColor: '#FFF',
+                        color: '#64748B'
+                    },
+                    tdStyle: {
+                        backgroundColor: '#EEF5FF'
+                    },
+                    render: (value) => formatCurrency(value ?? 0)
+                },
+                {
+                    key: 'BalanceDisbursementAmount',
+                    label: 'Balance Disbursement',
+                    width: '15',
+                    sortable: false,
+                    align: 'right',
+                    theadStyle: {
+                        backgroundColor: '#FFF',
+                        color: '#64748B'
+                    },
+                    tdStyle: {
+                        backgroundColor: '#EEF5FF'
+                    },
+                    render: (value) => formatCurrency(value ?? 0)
+                },
+                {
+                    key: 'TotalRepayLedgerAmount',
+                    label: 'Repayment',
+                    width: '15',
+                    sortable: false,
+                    align: 'right',
+                    theadStyle: {
+                        backgroundColor: '#FFF',
+                        color: '#64748B'
+                    },
+                    tdStyle: {
+                        backgroundColor: '#EEF5FF'
+                    },
+                    render: (value) => formatCurrency(value ?? 0)
+                },
+                {
+                    key: 'BalanceAsOnDateAmount',
+                    label: 'Balance as on Date',
+                    width: '15',
+                    sortable: false,
+                    align: 'right',
+                    theadStyle: {
+                        backgroundColor: '#FFF',
+                        color: '#64748B'
+                    },
+                    tdStyle: {
+                        backgroundColor: '#EEF5FF'
+                    },
+                    render: (value) => formatCurrency(value ?? 0)
+                },
+
+
+            ]
         },
 
-          
-        ]
-      },
-        
         {
             key: 'RateOfInterestInPercentage',
             label: 'Rate Of Interest (%)',
@@ -273,11 +274,19 @@ export const TermSheetReport: React.FC = () => {
         },
         {
             key: "ApprovalStatus",
-            label: "Status",
-            width: "15",
+            label: "Approval Status",
+            width: "18",
             sortable: false,
-            align: "left",
-            render: (value) => value || "-",
+            align: "center",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApproval}
+                    isIcons={true}
+                />
+
+            )
         },
         {
             key: "ClosingDate",

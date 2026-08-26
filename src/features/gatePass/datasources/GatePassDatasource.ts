@@ -1,11 +1,12 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { GatePassApi } from '@/features/gatePass/api/GatePassApi'
-import type { AddUpdateGatePassRequest, DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassDeleteResponse, GatePassListResponse, GatePassSaveResponse } from '../models/GatePassModel'
+import type {  DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassDeleteResponse, GatePassListResponse, GatePassOutResponse, GatePassSaveResponse, UpdateGatePassOutRequest } from '@/features/gatePass/models/GatePassModel'
 
 export abstract class GatePassDatasource {
     abstract pullGatePass(params: FilterWithPaginationGatePassRequest, signal?: AbortSignal): Promise<GatePassListResponse>;
-    abstract addUpdateGatePass(params: AddUpdateGatePassRequest): Promise<GatePassSaveResponse>;
+    abstract addUpdateGatePass(FormData: FormData): Promise<GatePassSaveResponse>;
+    abstract updateGatePassOutRequest(parms: UpdateGatePassOutRequest): Promise<GatePassOutResponse>;
     abstract deleteGatePass(params: DeleteGatePassRequest): Promise<GatePassDeleteResponse>;
 }
 
@@ -53,10 +54,10 @@ export class GatePassDatasourceImpl implements GatePassDatasource {
 
     }
 
-    async addUpdateGatePass(params: AddUpdateGatePassRequest): Promise<GatePassSaveResponse> {
+    async addUpdateGatePass(FormData: FormData): Promise<GatePassSaveResponse> {
         try {
 
-            return await this.k3hHttpClient.postRequestWithAuthentication(GatePassApi.ADD_UPDATE, params);
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(GatePassApi.ADD_UPDATE, FormData);
 
         } catch (error) {
 
@@ -64,7 +65,24 @@ export class GatePassDatasourceImpl implements GatePassDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateGatePass(params);
+                return await this.addUpdateGatePass(FormData);
+            }
+            throw error
+        }
+    }
+
+    async updateGatePassOutRequest(parms: UpdateGatePassOutRequest): Promise<GatePassOutResponse> {
+        try {
+
+            return await this.k3hHttpClient.postRequestWithAuthentication(GatePassApi.UPDATE_OUT, parms);
+
+        } catch (error) {
+
+            console.error('ERROR: ADD UPDATE GATE PASS :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.updateGatePassOutRequest(parms);
             }
             throw error
         }

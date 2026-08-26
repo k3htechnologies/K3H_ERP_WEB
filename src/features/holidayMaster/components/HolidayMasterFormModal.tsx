@@ -32,7 +32,6 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
   editingData,
   loading,
   holidayURL,
-
   holidayFiles,
   setHolidayFiles,
   removedHolidayUrls,

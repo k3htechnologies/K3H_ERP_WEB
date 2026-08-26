@@ -218,7 +218,7 @@ export const useTestDocumentCategoryMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadTestDocumentCategories(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+  }, [filters, searchTerm,projectId]);
   
 
   
@@ -328,7 +328,7 @@ export const useTestDocumentCategoryMaster = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.TestDocumentCategory?.trim()) {
-      newErrors.testDocumentCategory = 'Test Document Category is required';
+      newErrors.TestDocumentCategory = 'Test Document Category is required';
     }
 
     if (formData.OrderBy === 0) {

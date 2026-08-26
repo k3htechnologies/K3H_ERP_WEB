@@ -49,7 +49,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/testdocument': '/testDocument',
         '/drawingcategory': '/drawingCategory',
         '/drawing': '/drawing',
-        
+
         '/rera': '/rera',
         '/siteprogress': '/siteProgress',
         '/building': '/building',
@@ -96,7 +96,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/incentivereport': '/incentiveReport',
         '/paymentschedulereport': '/paymentScheduleReport',
         '/paymentschedule': '/paymentSchedule',
-        '/channelpartnercategory' :'/channelPartnerCategory',
+        '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
 
 
@@ -138,6 +138,9 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //VISITOR MANAGEMENT
         '/gatepass': '/gatePass',
+
+        //PROJECT LAND
+        '/projectlead': '/projectLead'
     }
 
 

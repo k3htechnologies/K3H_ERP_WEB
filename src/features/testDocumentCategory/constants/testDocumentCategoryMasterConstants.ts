@@ -27,21 +27,21 @@ export const getTestDocumentCategoryMasterColumns = (): TableColumn[] => [
   {
     key: 'OrderBy',
     label: 'Sequence',
-    width: '20',
+    width: '60',
     sortable: true,
     align: 'center'
   },
   {
     key: 'DocumentCount',
     label: 'Document Count',
-    width: '20',
+    width: '60',
     sortable: false,
     align: 'center'
   },
   {
     key: 'Actions',
     label: 'Actions',
-    width: '12',
+    width: '60',
     fixed: 'right',
     align: 'center'
   }

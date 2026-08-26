@@ -77,7 +77,7 @@ export const TestDocumentCategoryMasterTable: React.FC<TestDocumentCategoryMaste
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
                 text={value || '-'}
-                maxWidth="500px"
+                maxWidth="900px"
                 tooltipThreshold={30}
                 onClick={() => onView(row)}
               />

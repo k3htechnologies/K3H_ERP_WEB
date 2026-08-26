@@ -440,9 +440,21 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["LEVEL 1","LEVEL 2","LEVEL 3","LEVEL 4","LEVEL 5","LEVEL 6","LEVEL 7","LEVEL 8","LEVEL 9","LEVEL 10", "GROUND LEVEL"],
+  parkingSubCategory_PuzzleParking: [
+    "LEVEL 1",
+    "LEVEL 2",
+    "LEVEL 3",
+    "LEVEL 4",
+    "LEVEL 5",
+    "LEVEL 6",
+    "LEVEL 7",
+    "LEVEL 8",
+    "LEVEL 9",
+    "LEVEL 10",
+    "GROUND LEVEL",
+  ],
 
-  parkingSubCategory_TowerParking: ["ROTATING","TO 1", "GROUND"],
+  parkingSubCategory_TowerParking: ["ROTATING", "TO 1", "GROUND"],
 
   parkingSubCategory_PitPuzzleParking: ["PIT 1", "GROUND"],
 
@@ -533,7 +545,7 @@ export const MASTER_DATA = {
     "Agreement Value GST",
     "Agreement Value TDS",
     "Other Charges Value",
-    "Other Charges GST"
+    "Other Charges GST",
   ],
 
   paymentReceivedFrom: ["Bank", "Owner"],
@@ -571,7 +583,6 @@ export const MASTER_DATA = {
 
   reasonForInactivity: ["Firm Closed", "Key SPOC left", "Brokerage Pending", "Did not like project/brand"],
 
-
   platform: ["ERP", "Application", "Website"],
 
   module: [
@@ -604,14 +615,21 @@ export const MASTER_DATA = {
     "Between 201 And 300",
     "Between 301 And 400",
     "Between 401 And 500",
-    "Above 501"
+    "Above 501",
   ],
 
   channelPartnerCategory: ["P1", "P2", "P3", "P4"],
 
   ibmObmReportStage: ["IBM", "OBM"],
 
-  noticeType: ['GST (Goverment Service Tax)', 'Income Tax', 'PF (Provident Fund)', 'ESIC (Employee State Insurance)', 'PT (Profession Tax)', 'Other'],
+  noticeType: [
+    "GST (Goverment Service Tax)",
+    "Income Tax",
+    "PF (Provident Fund)",
+    "ESIC (Employee State Insurance)",
+    "PT (Profession Tax)",
+    "Other",
+  ],
 
   budgetLevelType: ["L1", "L2", "L3"],
 
@@ -652,57 +670,66 @@ export const MASTER_DATA = {
     "Unit Plan",
     "Vacant Possession Letter",
     "Vacating Consent Letter",
-    "Yadi Slip"
+    "Yadi Slip",
   ],
 
-  financialYear: [
-    "2019-20",
-    "2020-21",
-    "2021-22",
-    "2022-23",
-    "2023-24",
-    "2024-25",
-    "2025-26",
-    "2026-27",
-    "2027-28",
-    "2028-29",
-    "2029-30",
-  ],
+  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30"],
 
   termSheetDocument: [
-  "Board Resolution",
-  "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
-  "Deed Of Corporate Guarantee",
-  "Deed Of Hypothecation",
-  "Deed Of Personal Guarantee",
-  "Demand Promissory Note",
-  "Disbursement Request Letter as per format of NBFC or Bank",
-  "Escrow Agreement",
-  "Indenture of Mortgage",
-  "Loan Agreement",
-  "Other documents as per Sanction Letter",
-  "PDC to be given as per Sanction Letter",
-  "Power Of Attorney",
-  "Promoters Undertaking"
-],
+    "Board Resolution",
+    "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
+    "Deed Of Corporate Guarantee",
+    "Deed Of Hypothecation",
+    "Deed Of Personal Guarantee",
+    "Demand Promissory Note",
+    "Disbursement Request Letter as per format of NBFC or Bank",
+    "Escrow Agreement",
+    "Indenture of Mortgage",
+    "Loan Agreement",
+    "Other documents as per Sanction Letter",
+    "PDC to be given as per Sanction Letter",
+    "Power Of Attorney",
+    "Promoters Undertaking",
+  ],
 
-authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
+  authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
 
-orderStatusOptions: ['Favourable', 'Non-Favourable'],
+  orderStatusOptions: ["Favourable", "Non-Favourable"],
 
-requestTypeOptions: ['Reply', 'Order', 'Notice', 'Close-Notice'],
+  requestTypeOptions: ["Reply", "Order", "Notice", "Close-Notice"],
 
-termSheetTypeOptions: ['Construction Finance (CF)', 'Loan Against Property (LAP)', 'Lease Rental Discounting (LRD)', 'Overdraft Facility (OD)'],
+  termSheetTypeOptions: [
+    "Construction Finance (CF)",
+    "Loan Against Property (LAP)",
+    "Lease Rental Discounting (LRD)",
+    "Overdraft Facility (OD)",
+  ],
 
-termSheetApprovalStatus: ["Term Sheet", "Sanction" ,"Closed"],
+  termSheetApprovalStatus: ["Term Sheet", "Sanction", "Closed"],
 
-termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
+  termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
-noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending"],
 
-vendorType: ["Material", "Contractor", "Both"],
+  vendorType: ["Material", "Contractor", "Both"],
 
-purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"]
+  purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"],
+
+  landTenureType: ["Leasehold", "Freehold", "Collectors Land", "MHADA", "SRA", "BMC", "Builder"],
+
+  plotShape: ["Rectangular", "Irregular", "L - Shape", "Circle"],
+
+  constructionType: ["RCC", "Load - Bearing"],
+
+  soilType: ["Clay", "Black Cotton", "Sandy", "Rocky"],
+
+  existingGroundConditions: ["Vacant", "Barren", "Vegetation", "Encroachements"],
+
+  waterSupplyAvailable: ["Borewell", "Municipal"],
+
+  surroundingLandUse: ["Agricultural", "Residential", "Industrial", "Vacant"],
+
+  landOwnerShipType: ["Individual", "Joint", "Trust", "Company", "Government", "Society"],
 } as const;
 
 // ============================================================================
@@ -840,6 +867,14 @@ export const TERM_SHEET_DSRA_TERM_OPTIONS = toOptions(MASTER_DATA.termSheetDSRAT
 export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
 export const VENDOR_TYPE_OPTIONS = toOptions(MASTER_DATA.vendorType);
 export const PURPOSE_OPTIONS = toOptions(MASTER_DATA.purposeOptions);
+export const LAND_TENURE_TYPE_OPTIONS = toOptions(MASTER_DATA.landTenureType);
+export const PLOT_SHAPE_OPTIONS = toOptions(MASTER_DATA.plotShape);
+export const CONSTRUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.constructionType);
+export const SOIL_TYPE_OPTIONS = toOptions(MASTER_DATA.soilType);
+export const EXISTING_GROUND_CONDITION_OPTIONS = toOptions(MASTER_DATA.existingGroundConditions);
+export const WATER_SUPPLY_AVAILABLE_OPTIONS = toOptions(MASTER_DATA.waterSupplyAvailable);
+export const SURROUNDING_LAND_USE_OPTIONS = toOptions(MASTER_DATA.surroundingLandUse);
+export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipType);
 
 
 // ============================================================================

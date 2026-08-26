@@ -12,6 +12,7 @@ interface TabsProps {
   onTabChange?: (tab: TabItem) => void;
   islarge?: boolean
   isChips?: boolean;
+  isvertical?: boolean;
   istoggleTab?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const Tabs: React.FC<TabsProps> = ({
   onTabChange,
   islarge = false,
   isChips = false,
+  isvertical = false,
   istoggleTab = false,
 }) => {
 
@@ -75,7 +77,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (isChips) {
     return (
-      <div className="w-full border-b border-gray-200">
+      <div className="w-full border-b border-gray-200 overflow-x-auto scrollbar-hide thin-scroll">
         <div className="flex gap-8">
           {tabs.map((tab) => {
             const isActive = active === tab.id;
@@ -91,16 +93,38 @@ export const Tabs: React.FC<TabsProps> = ({
                   }
               `}>
                 {tab.label}
-
-                {/* underline */}
                 {isActive && (
-                  <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full"
-                  />
+                  <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full" />
                 )}
               </button>
             );
           })}
         </div>
+      </div>
+    );
+  }
+
+  if (isvertical) {
+    return (
+      <div className="flex flex-col gap-2 w-full">
+        {tabs.map((tab) => {
+          const isActive = active === tab.id;
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => handleChange(tab)}
+              className={`w-full text-left px-4 py-3 rounded-lg font-medium text-sm transition
+              ${isActive
+                  ? "bg-blue-400 text-white border border-blue-300"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
+                }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
       </div>
     );
   }

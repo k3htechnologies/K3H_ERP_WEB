@@ -217,6 +217,13 @@ import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pa
 import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
 import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
 import { GatePass } from '@/features/gatePass/pages/GatePass';
+import { ProjectLandListStateProvider } from '@/features/projectLead/context/ProjectLandListStateContext';
+import { ProjectRedevelopmentListStateProvider } from '@/features/projectLead/context/ProjectRedevelopmentListStateContext';
+import AddUpdateProjectLand from '@/features/projectLead/components/AddUpdateProjectLand';
+import AddUpdateProjectRedevelopment from '@/features/projectLead/components/AddUpdateProjectRedevelopment';
+import { ViewProjectLand } from '@/features/projectLead/components/ViewProjectLand';
+import ViewProjectRedevelopment from '@/features/projectLead/components/ViewProjectRedevelopment';
+import ViewProjectLead from '@/features/projectLead/pages/ViewProjectLead';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -538,9 +545,18 @@ function App() {
             <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
             <Route path='termSheetReport' element={<TermSheetReport />} />
-          
-           {/* VISITOR MANAGEMENT */}
+
+            {/* VISITOR MANAGEMENT */}
             <Route path='gatePass' element={<GatePass />} />
+
+            {/* PROJECT LAND */}
+            <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
+            <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectLand/:ProjectLandId?" element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectRedevelopment/:ProjectRedevelopmentId?" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+            <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

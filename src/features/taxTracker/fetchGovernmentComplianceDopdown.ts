@@ -18,7 +18,6 @@ export const fetchNoticeSectionDropdown = async (pageNumber: number, governmentC
         const apiResponse = responseEither.right;
 
         const itemList = (apiResponse?.Data || [])
-            .filter((d: any) => d.GovernmentCompliance === governmentCompliance)
             .map((d: any) => ({
                 label: d.NoticeSection,
                 value: d.NoticeSectionMasterId,

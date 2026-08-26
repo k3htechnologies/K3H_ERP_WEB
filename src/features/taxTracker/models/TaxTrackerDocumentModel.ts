@@ -40,6 +40,7 @@ export interface AddUpdateTaxTrackerDocumentRequest {
     OfficerName: string | null;
     OfficerAddress: string | null;
     AmountUnderDisputeDate: string | null;
+    DateOfAppeal: string | null;
     AmountUnderDispute: number | 0;
     OrderStatus: string | null;
     NoticeStatus: string | null;

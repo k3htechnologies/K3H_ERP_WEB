@@ -192,8 +192,9 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                 }}
                                 color='transparent'
                                 className="!h-8"
-                                title="View Drawing">
-                               <DraftingCompass color="#60A5FA" className="text-red-600" size={18} />
+                                disabled={approvalStatus?.trim().toUpperCase() === "APPROVED" ? false : true}
+                                title={ approvalStatus?.trim().toUpperCase() === "APPROVED"  ? "View Drawing"  : "Your inventory is not approved, so drawing cannot be viewed."}>
+                                <DraftingCompass color="#60A5FA" className="text-red-600" size={18} />
                             </Button>
 
                             <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>

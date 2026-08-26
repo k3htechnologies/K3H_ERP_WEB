@@ -330,7 +330,7 @@ const AddUpdateBuilding: React.FC = () => {
       const purchaseEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseEndDate ? new Date(formData.TenderPurchaseEndDate) : undefined);
 
       if (formData?.TenderPurchaseStartDate && formData.TenderPurchaseEndDate && !isToDateGreaterOrEqualFromDate(purchaseStartDate, purchaseEndDate)) {
-        newErrors.TenderPurchaseEndDate = "Purchase Start Date must be greater than or equal to Purchase End Date";
+        newErrors.TenderPurchaseEndDate = "Purchase End Date must be greater than or equal to Purchase Start Date";
       }
 
     }

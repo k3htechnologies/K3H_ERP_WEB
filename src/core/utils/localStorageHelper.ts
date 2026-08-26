@@ -1577,6 +1577,47 @@ export const LocalStorageHelper = {
     return null;
   },
 
+   //#region PROJECT LAND
+  storeProjectLandTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("ERROR Project Land Columns Details", error);
+    }
+  },
+  getProjectLandTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Project Land Columns Details:", error);
+        return null
+      }
+    }
+    return null
+  },
+  //#region PROJECT REDEVELOPMENT
+  storeProjectRedevelopmentTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("ERROR Project Redevelopment Columns Details", error);
+    }
+  },
+  getProjectRedevelopmentTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Project Redevelopment Columns Details:", error);
+        return null
+      }
+    }
+    return null
+  },
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
@@ -1676,6 +1717,10 @@ export const LocalStorageHelper = {
 
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
 
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS);
+
+
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
@@ -1700,6 +1745,9 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_LAND);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_REDEVELOPMENT);
+
 
 
     } catch (error) {

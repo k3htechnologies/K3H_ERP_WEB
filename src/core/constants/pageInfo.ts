@@ -617,6 +617,13 @@ export const getPageInfo = (path: string) => {
                 description: "Gate Pass",
             }
 
+            //PROJECT LEAD
+        case 'projectLead':
+            return {
+                title: "Project Lead",
+                description: 'Overview of your system and key metrics',
+            }
+
         default:
             return {
                 title: 'Dashboard',

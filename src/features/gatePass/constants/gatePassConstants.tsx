@@ -12,6 +12,8 @@ export const INITIAL_FORM_STATE: AddUpdateGatePassRequest = {
     EmployeeId: 0,
     PassDateTime: '',
     NoOfParticipants: 0,
+    PhotoURL: null,
+    RemovePhotoURL: "",
 };
 
 export const REQUIRED_COLUMN_KEYS: string[] = ['FullName', 'Address', 'Purpose', 'Actions'];
@@ -66,12 +68,20 @@ export const getGatePassTableColumns = (): TableColumn[] => [
     },
     {
         key: 'PassDateTime',
-        label: 'Appointment Date',
+        label: 'Appointment Date / Time',
         width: '30',
         sortable: false,
         align: 'left'
     },
-    
+
+     {
+        key: 'OutDateTime',
+        label: 'Out Date / Time',
+        width: '30',
+        sortable: false,
+        align: 'left'
+    },
+
     {
         key: 'Actions',
         label: 'Actions',

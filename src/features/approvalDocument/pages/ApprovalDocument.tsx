@@ -58,95 +58,49 @@ const initialFormState = (): AddUpdateApprovalDocumentRequest => ({
 });
 
 const ApprovalDocument: React.FC = () => {
-
-  //#region STATE
   const [approvalDocumentList, setApprovalDocumentList] = useState<ApprovalDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderApprovalDocumentName, setExpandHeaderApprovalDocumentName] = useState<string>('');
   const [expandHeaderApprovalDocumentId, setExpandHeaderApprovalDocumentId] = useState<number>(0);
-
-  //SET AND REMOVE URL FILE
   const [approvalDocumentFiles, setApprovalDocumentFiles] = useState<(File | string)[]>([]);
   const [RemoveApprovalDocumentUrls, setRemoveApprovalDocumentUrls] = useState<string[]>([]);
   const [approvalDocumentURL, setApprovalDocumentURL] = useState<string>();
-
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
-  //FILTER STATE
   const [filters] = useState<FilterInfo>({});
-
-  // TOAST
   const { addToast } = useToast();
-
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchDocuments(value)
   }, 350)
-
-  // TAB LIST
   const [approvalDocumentTabList, setApprovalDocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
-
-  //DATATABLE EXPANDABLE REF
   const dtRef = useRef<DataTableExpandableRef | null>(null)
-
-  //DATATABLE EXPANDED ROW AND PARENT ID
 
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
 
   const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  // ADD EDIT UPDATE DOCUMENT
   const [editingDocumentData, setEditingDocumentData] = useState<ApprovalDocumentData | null>(null);
 
   const [isAddUpdateDocumentModalOpen, setIsAddUpdateDocumentModalOpen] = useState(false);
-
-  // ADD EDIT UPDATE DOCUMENT DETAILS
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
-
-  //DELETE DEPARTMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteApprovalDocumentDetailsData, setDeleteApprovalDocumentDetailsData] = useState<ApprovalDocumentData | null>(null)
-
-  //ADD UPDATE DEPARTMENT MASTER
   const [formData, setFormData] = useState<AddUpdateApprovalDocumentRequest>(() => initialFormState());
-
-  //EXCEL IMPORT 
   const [showImportModal, setShowImportModal] = useState(false);
-
-  // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
   const [approvalDocumentCategory, setApprovalDocumentCategory] = useState<string | null>("");
-
-  // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [approvalRowData, setApprovalRowData] = useState<ApprovalDocumentData | null>(null);
-
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
-
-  //#region INIT
 
   useEffect(() => {
     if (!projectId) return;
@@ -211,24 +165,21 @@ const ApprovalDocument: React.FC = () => {
     }
   }, [isAddUpdateDocumentModalOpen, isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
 
-  //#endregion
 
-  //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
-
     if (filterParams && filterParams.ApprovalDocumentCategoryId != null) {
       const raw = filterParams.ApprovalDocumentCategoryId;
-      const num = typeof raw === 'number' ? raw : Number(raw);
+      const num = typeof raw === "number" ? raw : Number(raw);
       if (!Number.isNaN(num)) return num;
     }
-    if (activeTab !== '' && !Number.isNaN(Number(activeTab))) {
+
+    if (activeTab !== "" && !Number.isNaN(Number(activeTab))) {
       return Number(activeTab);
     }
+
     return 0;
   };
-  //#endregion
 
-  //#region LOAD TAB APPROVAL DOCUMENT CATEGORY
   const loadApprovalDocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -273,14 +224,11 @@ const ApprovalDocument: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region DATA LOAD
-  const fetchApprovalDocumentList = async (page: number = pagination.currentPage) => {
-    return await loadApprovalDocument(page, filters);
+  const fetchApprovalDocumentList = async (page: number = pagination.currentPage, currentSortInfo: SortInfo | undefined = sortInfo) => {
+    return await loadApprovalDocument(page, filters,currentSortInfo);
   };
 
-  const loadApprovalDocument = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+  const loadApprovalDocument = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string, currentSortInfo: SortInfo | undefined = sortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -295,7 +243,7 @@ const ApprovalDocument: React.FC = () => {
           ApprovalDocumentStatus: filterParams.ApprovalDocumentStatus,
           ApprovalDocumentCategory: filterParams.ApprovalDocumentCategory,
           ApprovalDocumentCategoryId: Number(getActiveTabId(filterParams)),
-          SortBy: getSortByParam(sortInfo ?? null, approvalDocumentColumns),
+          SortBy: getSortByParam(currentSortInfo ?? null, approvalDocumentColumns),
         };
 
         const response = await approvalDocumentService.apiCallPullApprovalDocument(params);
@@ -326,9 +274,7 @@ const ApprovalDocument: React.FC = () => {
       'Loading Approval Document'
     );
   };
-  //#endregion
 
-  //#region SERACH Document 
   const searchDocuments = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -342,39 +288,29 @@ const ApprovalDocument: React.FC = () => {
     await loadApprovalDocument(1, filters, sortInfo, searchValue);
 
   }
-  //#endregion
-
-  //#region CLEAR SERACH Document 
+  
   const clearsearchDocumnets = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     loadApprovalDocument(1, { ApprovalDocumentName: '' }, sortInfo, undefined);
   }
 
-  //#endregion
-
-  //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = useCallback((page: number) => {
     fetchApprovalDocumentList(page);
   }, [fetchApprovalDocumentList]);
 
-  //#endregion
 
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
+  const handleSortColumn = (newSortInfo: SortInfo) => {
+
+    setSortInfo(newSortInfo);
 
     const newFilters: FilterInfo = {
       ...filters,
       ApprovalDocumentCategoryId: activeTab,
     };
 
-    loadApprovalDocument(1, newFilters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
-  //#endregion
-
-  //#region TABLE PAGINATION INFO
+    loadApprovalDocument(1, newFilters, newSortInfo);
+  };
 
   const approvalDocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -388,10 +324,6 @@ const ApprovalDocument: React.FC = () => {
   )
 
   const approvalDocumentListForTable = useMemo(() => approvalDocumentList, [approvalDocumentList]);
-
-  //#endregion
-
-  //#region EDIT APPROVAL DOCUMENT
   const handleEditApprovalDocument = useCallback((row: ApprovalDocumentData) => {
     setEditingDocumentData({
       ...row,
@@ -400,10 +332,6 @@ const ApprovalDocument: React.FC = () => {
     setIsAddUpdateDocumentModalOpen(true);
 
   }, [])
-
-  //#endregion
-
-  //#region EDIT APPROVAL DOCUMENT DETAILS
   const handleEditApprovalDocumentDetails = useCallback((row: ApprovalDocumentData) => {
     setEditingDocumentData({
       ...row,
@@ -415,10 +343,6 @@ const ApprovalDocument: React.FC = () => {
     setIsAddUpdateDocumentDetailsModalOpen(true);
 
   }, [])
-
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: ApprovalDocumentData) => {
 
     setDeleteApprovalDocumentDetailsData({
@@ -428,10 +352,6 @@ const ApprovalDocument: React.FC = () => {
 
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
-  //#endregion
-
-  //#region TABLE COLUMN
 
   const approvalDocumentColumns = useMemo<TableColumn[]>(
     () => [
@@ -576,13 +496,8 @@ const ApprovalDocument: React.FC = () => {
         },
       }
     ],
-    // dependencies: include everything used inside that might change
     [canAction, handleEditApprovalDocument, handleConfirmationDialogBoxOpen]
   )
-  //#endregion
-
-
-  //#region TABLE COLUMN DOCUMENT DETAILS
 
   const handleApprovalLog = (row: ApprovalDocumentData) => {
     const request: ModulesApprovalStatusRequest = {
@@ -753,28 +668,28 @@ const ApprovalDocument: React.FC = () => {
               </div>
 
               <div className="w-[34px] flex justify-center">
-                
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      if (!showEdit) return;
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    disabled={!showEdit}
-                    size="sm"
-                    style={{
-                      color: showEdit ? 'red' : '#9CA3AF',
-                      cursor: showEdit ? 'pointer' : 'not-allowed',
-                      opacity: showEdit ? 1 : 0.5
-                    }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!showEdit) return;
+                    handleConfirmationDialogBoxOpen(row)
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  style={{
+                    color: showEdit ? 'red' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
               </div>
 
             </div>
@@ -784,12 +699,8 @@ const ApprovalDocument: React.FC = () => {
       }
 
     ],
-    // dependencies: include everything used inside that might change
     [canAction, handleEditApprovalDocument, handleApprovalLog, handleApproveRejectDocument]
   )
-  //#endregion
-
-  //#region ADD UPDATE EDIT DOCUMENT
 
   const handleAddDocumentDetailsModal = useCallback((row: ApprovalDocumentData) => {
     setExpandedParentRow(row);
@@ -823,8 +734,6 @@ const ApprovalDocument: React.FC = () => {
     setErrors({});
     setIsAddUpdateDocumentModalOpen(true);
   }, [])
-
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddDocumentForm = (): {
 
     isValid: boolean
@@ -1052,10 +961,6 @@ const ApprovalDocument: React.FC = () => {
     )
 
   };
-
-  //#endregion
-
-  //#region DELETE DOCUMENT
   const handleDeleteDocument = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -1148,16 +1053,12 @@ const ApprovalDocument: React.FC = () => {
       'Delete Document'
     )
   }
-  //#endregion
-
-  //#region IMPORT EXCEL | DOWNLOAD
 
   const downloadExcelSampleApprovalDocument = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
           TableName: 'APPROVAL DOCUMENT'
@@ -1214,8 +1115,6 @@ const ApprovalDocument: React.FC = () => {
     );
   };
 
-  //#endregion
-
   const handleApprovalSubmit = async (remark: string) => {
 
     if (!approvalRowData) return;
@@ -1244,13 +1143,9 @@ const ApprovalDocument: React.FC = () => {
           const parentId = expandedParentId;
 
           await fetchApprovalDocumentList(pagination.currentPage);
-
-          // collapse all first
           if (dtRef.current) {
             dtRef.current.collapseAll?.();
           }
-
-          // reopen after table renders
           setTimeout(() => {
             if (parentId) {
               dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -1292,16 +1187,12 @@ const ApprovalDocument: React.FC = () => {
         onClearSearch={clearsearchDocumnets}
         isShowFilterButton={false}
         isShowCustomizeButton={false}
-        // ADD
         isShowAddButton={approvalDocumentTabList.length > 0 && canAction ? true : false}
         addTitle="Add"
         onAdd={handleAddDocumentModal}
-
-        // IMPORT
         isShowImportButton={canAction && Number(projectId) > 0}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleApprovalDocument}
-        // EXPORT
         isShowExportButton={false}
         exportLoading={isLoading}
       />

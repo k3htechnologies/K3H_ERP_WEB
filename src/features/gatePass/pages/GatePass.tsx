@@ -33,6 +33,8 @@ export const GatePass: React.FC = () => {
         errors,
         editingGatePassData,
         isConfirmationDialogBoxOpen,
+        isConfirmationDialogBoxOpenforOut,
+        isConfirmationDialogBoxOpenforBell,
         isViewModalOpen,
         viewGatePassDetailsData,
         showFilterPopup,
@@ -45,7 +47,9 @@ export const GatePass: React.FC = () => {
         clearFilters,
         clearSearchGatePass,
         employeeDetails,
-
+        photoFiles,
+        removedPhotoURLs,
+        photoURL,
 
         // Setters
         setSearchTerm,
@@ -54,6 +58,8 @@ export const GatePass: React.FC = () => {
         setFormData,
         setErrors,
         setIsConfirmationDialogBoxOpen,
+        setIsConfirmationDialogBoxOpenforOut,
+        setIsConfirmationDialogBoxOpenforBell,
         setDeleteGatePassDetailsData,
         setIsViewModalOpen,
         setViewGatePassDetailsData,
@@ -62,6 +68,9 @@ export const GatePass: React.FC = () => {
         setSelectedGatePassColumnKeys,
         setIsShowCustomizeGatePassColumnsModal,
         setEmployeeDetails,
+        setPhotoFiles,
+        setRemovedPhotoURLs,
+        setPhotoURL,
 
         // Actions
         handleAddGatePassModal,
@@ -74,7 +83,11 @@ export const GatePass: React.FC = () => {
         handleAddUpdateGatePass,
         handleFieldChange,
         handleDeleteGatePass,
+        handleOutGatePass,
         handleConfirmationDialogBoxOpen,
+        handleConfirmationDialogBoxOpenforOut,
+        handleConfirmationDialogBoxOpenforBell,
+
         handleEditGatePass,
     } = useGatePass();
 
@@ -93,9 +106,9 @@ export const GatePass: React.FC = () => {
 
     const handleFormReset = useCallback(
 
-        createFormResetHandler(setIsAddUpdateModalOpen, setEditingGatePassData, setFormData, setErrors),
+        createFormResetHandler(setIsAddUpdateModalOpen, setEditingGatePassData, setFormData, setErrors, setPhotoFiles, setPhotoURL, setRemovedPhotoURLs),
 
-        [setIsAddUpdateModalOpen, setEditingGatePassData, setFormData, setErrors]
+        [setIsAddUpdateModalOpen, setEditingGatePassData, setFormData, setErrors, setPhotoFiles, setPhotoURL, setRemovedPhotoURLs]
 
     );
 
@@ -112,6 +125,22 @@ export const GatePass: React.FC = () => {
         setDeleteGatePassDetailsData(null);
 
     }, [setIsConfirmationDialogBoxOpen, setDeleteGatePassDetailsData]);
+
+    const handleDeleteDialogCloseforOut = useCallback(() => {
+
+        setIsConfirmationDialogBoxOpenforOut(false);
+
+        setDeleteGatePassDetailsData(null);
+
+    }, [setIsConfirmationDialogBoxOpenforOut, setDeleteGatePassDetailsData]);
+
+    const handleDeleteDialogCloseforBell = useCallback(() => {
+
+        setIsConfirmationDialogBoxOpenforBell(false);
+
+        setDeleteGatePassDetailsData(null);
+
+    }, [setIsConfirmationDialogBoxOpenforBell, setDeleteGatePassDetailsData]);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -138,7 +167,7 @@ export const GatePass: React.FC = () => {
                 addTitle="Add"
                 onAdd={handleAddGatePassModal}
                 // EXPORT
-                isShowExportButton={(canExportGatePass || canExportGatePassAdministrativeAccess ) && gatePassListForTable.length > 0}
+                isShowExportButton={(canExportGatePass || canExportGatePassAdministrativeAccess) && gatePassListForTable.length > 0}
                 onExportExcel={handleExportGatePassExcel}
                 onExportPdf={handleExportGatePassPdf}
                 exportLoading={isLoading}
@@ -154,6 +183,8 @@ export const GatePass: React.FC = () => {
                     onView={handleViewGatePassDetails}
                     onEdit={handleEditGatePass}
                     onDelete={handleConfirmationDialogBoxOpen}
+                    onLogout={handleConfirmationDialogBoxOpenforOut}
+                    onBell={handleConfirmationDialogBoxOpenforBell}
                     lastUpdatedRow={lastUpdatedRow}
                     canAction={canActionGatePass || canActionGatePassAdministrativeAccess}
                     loading={isLoading}
@@ -181,6 +212,11 @@ export const GatePass: React.FC = () => {
                 loading={isLoading}
                 employeeDetails={employeeDetails}
                 setEmployeeDetails={setEmployeeDetails}
+                photoFiles={photoFiles}
+                setPhotoFiles={setPhotoFiles}
+                photoURL={photoURL}
+                removedPhotoUrls={removedPhotoURLs}
+                setRemovedPhotoUrls={setRemovedPhotoURLs}
             />
 
             <CustomizeColumnsModal
@@ -223,6 +259,28 @@ export const GatePass: React.FC = () => {
                 onConfirm={handleDeleteGatePass}
                 loading={isLoading}
                 pageName='Gate Pass'
+            />
+
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpenforOut}
+                onClose={handleDeleteDialogCloseforOut}
+                onConfirm={() => handleOutGatePass('Out')}
+                loading={isLoading}
+                pageName='Gate Pass Out'
+                title="You are about to mark this Gate Pass Out?"
+                message="Marking this Gate Pass Out will confirm that the visitor has exited. Do you want to continue?"
+                confirmText="Out"
+            />
+
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpenforBell}
+                onClose={handleDeleteDialogCloseforBell}
+                onConfirm={() => handleOutGatePass('Bell')}
+                loading={isLoading}
+                pageName="Gate Pass Bell"
+                title="You are about to notify the visitor?"
+                message="A notification will be sent to the visitor at reception. Do you want to continue?"
+                confirmText="Notify"
             />
         </div>
     )

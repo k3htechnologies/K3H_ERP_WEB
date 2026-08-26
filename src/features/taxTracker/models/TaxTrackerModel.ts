@@ -56,6 +56,7 @@ export interface TaxTrackerDocumentDetailsData {
     NoticeDescription: string | null;
     OfficerName: string | null;
     OfficerAddress: string | null;
+    DateOfAppeal: string | null;
     AmountUnderDisputeDate: string | null;
     AmountUnderDispute: number | null;
     OrderStatus: string | null;

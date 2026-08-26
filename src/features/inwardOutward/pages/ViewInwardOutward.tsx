@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardRevertHistory, } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { AddRevertInwardOutwardData, DeleteInwardOutwardRevertHistoryRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardRevertHistory, } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
@@ -8,17 +8,24 @@ import { Loader } from "@/core/utils/loader";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { Tabs } from "@/ui/components/Tab/Tab";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { useInwardOutwardListState } from "@/features/inwardOutward/context/InwardOutwardListStateContext";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
-import { formatCurrency } from "@/core/utils/comman";
+import { formatCurrency, isDateWithinPastDays } from "@/core/utils/comman";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import Accordion from "@/ui/components/Card/Accordion";
-import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon, Edit, Trash2 } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { Button } from "@/ui/components/forms";
+import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
+import { Modal } from "@/ui/components/Modal/Modal";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const ViewInwardOutward: React.FC = () => {
 
@@ -27,12 +34,29 @@ const ViewInwardOutward: React.FC = () => {
     const [inwardOutwardRevertHistory, setInwardOutwardRevertHistory] = useState<InwardOutwardRevertHistory[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isDeleteInwardOutwardRevertHistoryDialogOpen, setIsDeleteInwardOutwardRevertHistoryDialogOpen] = useState(false);
+    const [selectedInwardOutwardRevertHistoryItem, setSelectedInwardOutwardRevertHistoryItem] = useState<InwardOutwardRevertHistory | null>(null);
+    const [isRevertInwardOutWardModalOpen, setIsRevertInwardOutWardModalOpen] = useState(false);
+    const [, setRevertInwardOutWardData] = useState<InwardOutwardRevertHistory | null>(null);
+    const [revertEditFormData, setRevertEditFormData] = useState<AddRevertInwardOutwardData>({
+        InwardOutwardRevertId: 0,
+        InwardOutwardId: 0,
+        UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        RevertDate: null,
+        RevertDocumentURL: null,
+        RevertRemark: '',
+    });
+    const [revertEditErrors, setRevertEditErrors] = useState<{ [k: string]: string }>({});
+    const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
+    const [revertDocumentURL, setRevertDocumentURL] = useState<string>("");
+    const [removedRevertDocumentURLs, setRemovedRevertDocumentURLs] = useState<string[]>([]);
+
     const navigate = useNavigate();
     const { addToast } = useToast();
-    const { canAction } = useMenuPermissions("/inwardOutward");
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
     const { listState } = useInwardOutwardListState();
 
+    const { canAction } = useMenuPermissions("/inwardOutward");
     const { canAction: canActionAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
     const { canAction: canActionAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
 
@@ -108,6 +132,20 @@ const ViewInwardOutward: React.FC = () => {
         );
     };
 
+    const validateRevertEditForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+        const newErrors: { [key: string]: string } = {};
+        if (!revertEditFormData.RevertRemark || !revertEditFormData.RevertRemark.trim()) {
+            newErrors.RevertRemark = "Remark is required";
+        }
+        if (!revertEditFormData.RevertDate) {
+            newErrors.RevertDate = "Revert Date is required";
+        }
+        if (!hasAnyDocumentFile(revertDocumentURLFiles, revertDocumentURL, removedRevertDocumentURLs)) {
+            newErrors.RevertDocumentURL = "File is required.";
+        }
+        return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
+    };
+
     const handleBackToInwardList = () => {
         navigate("/inwardOutward");
     };
@@ -115,6 +153,130 @@ const ViewInwardOutward: React.FC = () => {
     const handleEditInward = (row: InwardAndOutWardData) => {
         if (!row?.InwardOutwardId) return;
         navigate(`/inwardOutward/add/${row.InwardOutwardId}`);
+    };
+
+    const handleRevertEditFieldChange = (field: keyof AddRevertInwardOutwardData, value: any) => {
+        setRevertEditFormData(prev => ({ ...prev, [field]: value }));
+        if (revertEditErrors[field]) {
+            setRevertEditErrors(prev => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const handleOpenRevertInwardOutWardModal = (item?: InwardOutwardRevertHistory) => {
+
+        if (!item?.InwardOutwardId) return;
+
+        setRevertInwardOutWardData(item);
+
+        setRevertEditFormData({
+            InwardOutwardRevertId: item.InwardOutwardRevertId ?? 0,
+            InwardOutwardId: item.InwardOutwardId ?? 0,
+            UniqueKey: item.UniqueKey ?? "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+            RevertDate: item.RevertDate ?? null,
+            RevertDocumentURL: null,
+            RevertRemark: item.RevertRemark ?? '',
+        });
+        setRevertDocumentURL(item.RevertDocumentURL ?? "");
+        setRevertDocumentURLFiles([]);
+        setRemovedRevertDocumentURLs([]);
+        setRevertEditErrors({});
+        setIsRevertInwardOutWardModalOpen(true);
+    };
+
+    const handleDeleteInwardOutwardRevertHistory = (item: InwardOutwardRevertHistory) => {
+        setSelectedInwardOutwardRevertHistoryItem(item);
+        setIsDeleteInwardOutwardRevertHistoryDialogOpen(true);
+    };
+
+
+    const handleConfirmDeleteInwardOutwardRevertHistory = async () => {
+        if (!selectedInwardOutwardRevertHistoryItem) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: DeleteInwardOutwardRevertHistoryRequest = {
+                    InwardOutwardRevertId: selectedInwardOutwardRevertHistoryItem.InwardOutwardRevertId || 0,
+                    Uniquekey: selectedInwardOutwardRevertHistoryItem.UniqueKey || '',
+                    InwardOutwardId: Number(currentInwardOutwardId),
+                };
+
+                const response = await inwardOutwardService.apiCallDeleteInwardOutwardRevertHistory(params);
+
+                if (E.isRight(response)) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    setIsDeleteInwardOutwardRevertHistoryDialogOpen(false);
+                    setSelectedInwardOutwardRevertHistoryItem(null);
+                    fetchInwardOutwardData();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Inward Outward Revert History'
+        );
+    }
+
+
+    const handleSubmitRevertEdit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        setRevertEditErrors({});
+
+        const validation = validateRevertEditForm();
+
+        if (!validation.isValid) {
+            setRevertEditErrors(validation.errors);
+            return;
+        }
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const fd = new FormData();
+                fd.append("InwardOutwardRevertId", String(revertEditFormData.InwardOutwardRevertId));
+                fd.append("InwardOutwardId", String(revertEditFormData.InwardOutwardId));
+                fd.append("UniqueKey", revertEditFormData.UniqueKey ?? "");
+                fd.append("RevertDate", revertEditFormData.RevertDate ?? "");
+                fd.append("RevertRemark", revertEditFormData.RevertRemark ?? "");
+
+                revertDocumentURLFiles.forEach(file => {
+                    if (file instanceof File) fd.append("RevertDocumentURL", file);
+                });
+
+                const hasExisting = revertDocumentURL &&
+                    revertDocumentURL.trim() !== "" &&
+                    !removedRevertDocumentURLs.includes(revertDocumentURL);
+                if (hasExisting) fd.append("RevertDocumentURL", revertDocumentURL);
+
+                const response = await inwardOutwardService.apiCallAddRevertInwardOutward(fd);
+
+                if (E.isRight(response)) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    setIsRevertInwardOutWardModalOpen(false);
+                    setRevertInwardOutWardData(null);
+                    setRevertDocumentURL("");
+                    setRevertDocumentURLFiles([]);
+                    setRemovedRevertDocumentURLs([]);
+                    fetchInwardOutwardData();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => { addToast({ type: 'error', title: error.message }); },
+            undefined,
+            'Updating Revert'
+        );
     };
 
     return (
@@ -170,12 +332,9 @@ const ViewInwardOutward: React.FC = () => {
                                     <FieldItem label="Document Type" value={inwardOutwardData?.DocumentType} />
                                     <FieldItem label="Delivery Type" value={inwardOutwardData?.DeliveryType} />
                                     <FieldItem label="Amount" value={formatCurrency(Number(inwardOutwardData?.Amount?.toFixed(2) ?? 0))} />
-                                    <FieldItem label="Date" value={inwardOutwardData?.InwardOutwardDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InwardOutwardDate) : ""} />
                                     <FieldItem label="Invoice Number" value={inwardOutwardData?.InvoiceNumber} />
                                     <FieldItem label="Invoice Date" value={inwardOutwardData?.InvoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InvoiceDate) : ""} />
                                     <FieldItem label="Cheque Number" value={inwardOutwardData?.ChequeNumber} />
-
-
                                 </div>
                             </section>
 
@@ -259,7 +418,14 @@ const ViewInwardOutward: React.FC = () => {
                                         <FieldItem label="Acknowledger's Signature" value={inwardOutwardData?.AcknowledgementSignatureURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementSignatureURL} isIcon />
                                         <FieldItem label="Acknowledge Document" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
                                         <FieldItem label="Handover To" value={inwardOutwardData?.HandOverTo} />
-                                        <FieldItem label="Handover Person Mobile Number" value={`${inwardOutwardData?.HandoverPersonMobileNumberCountryCode} ${inwardOutwardData?.HandoverPersonMobileNumber}`} />
+                                        <FieldItem
+                                            label="Handover Person's Mobile Number"
+                                            value={
+                                                inwardOutwardData?.HandoverPersonMobileNumber
+                                                    ? `${inwardOutwardData?.HandoverPersonMobileNumberCountryCode || ''} ${inwardOutwardData.HandoverPersonMobileNumber}`.trim()
+                                                    : '-'
+                                            }
+                                        />
                                         <FieldItem label="Handover Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.HandOverDate ?? '')} />
                                     </div>
                                     <div className="p-4 -mt-5">
@@ -348,7 +514,8 @@ const ViewInwardOutward: React.FC = () => {
                             <div className="p-3">
                                 <div className="overflow-y-auto h-[420px] thin-scroll pr-2 pt-2">
                                     {inwardOutwardRevertHistory.length > 0 ? (
-                                        inwardOutwardRevertHistory.map((item) => {
+                                        inwardOutwardRevertHistory.map((item, index) => {
+                                            const isLatest = index === 0;
                                             return (
                                                 <div
                                                     key={item.InwardOutwardRevertId}
@@ -359,6 +526,35 @@ const ViewInwardOutward: React.FC = () => {
                                                             label="Date"
                                                             value={formatDate_dd_MonthName_yy(item.RevertDate || "-")}
                                                         />
+
+                                                        {isLatest && canAction && isDateWithinPastDays(item.RevertDate, 2) && (
+                                                            <div className="flex items-center gap-1">
+                                                                <Button
+                                                                    color="transparent"
+                                                                    isborderRadius
+                                                                    size="sm"
+                                                                    style={{ color: 'blue', padding: '4px 8px' }}
+                                                                    title="Edit"
+                                                                    onClick={() => handleOpenRevertInwardOutWardModal(item)}
+                                                                    disabled={isLoading}
+                                                                    leftIcon={<Edit className="h-4 w-4" />}
+                                                                />
+
+                                                                <Button
+                                                                    color="transparent"
+                                                                    isborderRadius
+                                                                    size="sm"
+                                                                    style={{ color: 'red', padding: '4px 8px' }}
+                                                                    title="Delete"
+                                                                    onClick={() => handleDeleteInwardOutwardRevertHistory(item)}
+                                                                    disabled={isLoading}
+                                                                    leftIcon={<Trash2 className="h-4 w-4" />}
+                                                                />
+
+                                                            </div>
+
+
+                                                        )}
                                                     </div>
 
                                                     <FieldItem label="Remark" value={item.RevertRemark || "-"} />
@@ -560,6 +756,9 @@ const ViewInwardOutward: React.FC = () => {
 
                                                 </div>
                                             )}
+
+
+
                                         </div>
                                     );
                                 }}
@@ -572,6 +771,83 @@ const ViewInwardOutward: React.FC = () => {
                 )
             }
 
+            <ConfirmationDialogBox
+                isOpen={isDeleteInwardOutwardRevertHistoryDialogOpen}
+                onClose={() => {
+                    setIsDeleteInwardOutwardRevertHistoryDialogOpen(false);
+                    setSelectedInwardOutwardRevertHistoryItem(null);
+                }}
+                onConfirm={handleConfirmDeleteInwardOutwardRevertHistory}
+                title="Delete Revert Details"
+                message={`Are you sure you want to delete this revert detail? This action cannot be undone.`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant="danger"
+            />
+            <Modal
+                isOpen={isRevertInwardOutWardModalOpen}
+                onClose={() => {
+                    setIsRevertInwardOutWardModalOpen(false);
+                    setRevertInwardOutWardData(null);
+                    setRevertEditErrors({});
+                    setRevertDocumentURLFiles([]);
+                }}
+                onCancel={() => {
+                    setIsRevertInwardOutWardModalOpen(false);
+                    setRevertInwardOutWardData(null);
+                    setRevertEditErrors({});
+                    setRevertDocumentURLFiles([]);
+                }}
+                title="Edit Revert"
+                saveText="Update"
+                onSubmit={handleSubmitRevertEdit}
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div className="space-y-4">
+                        <div>
+                            <DatePickerInput
+                                label="Revert Date"
+                                value={formatDate_dd_mm_yyyy(revertEditFormData.RevertDate)}
+                                onChange={(val) => handleRevertEditFieldChange('RevertDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                required
+                                isDisplayCurrentDate
+                                minDate={new Date(new Date().setDate(new Date().getDate()))}
+                                error={revertEditErrors.RevertDate}
+                            />
+                        </div>
+                        <div>
+                            <MultiFilePicker
+                                label="Upload Document"
+                                required
+                                placeholder="Select files"
+                                value={revertDocumentURLFiles}
+                                onChange={setRevertDocumentURLFiles}
+                                availableFilesURL={revertDocumentURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel"]}
+                                maxFiles={5}
+                                onRemoveExisting={(url) => {
+                                    setRemovedRevertDocumentURLs(prev => [...prev, url]);
+                                }}
+                                error={revertEditErrors.RevertDocumentURL}
+                            />
+                        </div>
+                        <div>
+                            <TextArea
+                                label="Remark"
+                                required
+                                className='thin-scroll'
+                                value={revertEditFormData.RevertRemark ?? ""}
+                                placeholder="Enter Remark"
+                                onChange={(e) => handleRevertEditFieldChange("RevertRemark", e.target.value)}
+                                error={revertEditErrors.RevertRemark}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Modal>
         </div >
     )
 }

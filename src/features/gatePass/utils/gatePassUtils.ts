@@ -9,7 +9,10 @@ export const createFormResetHandler = (
     setIsAddUpdateModalOpen: (value: boolean) => void,
     setEditingGatePassData: (value: any) => void,
     setFormData: (value: AddUpdateGatePassRequest) => void,
-    setErrors: (value: { [k: string]: string }) => void
+    setErrors: (value: { [k: string]: string }) => void,
+    setPhotoFiles: (value: (File | string)[]) => void,
+    setPhotoURL: (value: string | undefined) => void,
+    setRemovedPhotoUrls: (value: string[]) => void
 ) => {
     return () => {
 
@@ -20,5 +23,9 @@ export const createFormResetHandler = (
         setFormData(resetFormData());
 
         setErrors({});
+
+        setPhotoFiles([]);
+        setPhotoURL("");
+        setRemovedPhotoUrls([]);
     };
 };

@@ -189,7 +189,7 @@ export const useDrawingDocumentCategoryMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadDrawingDocumentCategories(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+  }, [filters, searchTerm,projectId]);
   
   const requiredDrawingDocumentCategoryMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 

@@ -8,8 +8,8 @@ export interface FilterWithPaginationGatePassRequest {
     FullName?: string
     MobileNumber?: string
     Address?: string
-    FromDate?: string
-    ToDate?: string
+    FromDate?: string | null;
+    ToDate?: string | null;
     Purpose?: string
     EmployeeName?: string
     SortBy?: string
@@ -28,6 +28,8 @@ export interface GatePassData {
     EmployeeName: string | '';
     PassDateTime: string | '';
     NoOfParticipants: number | 0;
+    PhotoURL: string | ''
+    OutDateTime: string | '';
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -38,16 +40,24 @@ export interface GatePassData {
 }
 
 export interface AddUpdateGatePassRequest {
-    ExternalId?: number;
-    Uniquekey?: string;
-    MobileNumber?: string;
-    FullName?: string;
-    Address?: string;
-    Purpose?: string;
-    Remark?: string;
-    EmployeeId?: number;
-    PassDateTime?: string;
-    NoOfParticipants?: number;
+    ExternalId: number;
+    Uniquekey: string;
+    MobileNumber: string;
+    FullName: string;
+    Address: string;
+    Purpose: string;
+    Remark: string;
+    EmployeeId: number;
+    PassDateTime: string;
+    NoOfParticipants: number;
+    PhotoURL: (File | string)[] | null;
+    RemovePhotoURL: string | '';
+}
+
+export interface UpdateGatePassOutRequest {
+    ExternalId: number;
+    Uniquekey: string;
+    Type: string;
 }
 
 export interface DeleteGatePassRequest {
@@ -57,4 +67,5 @@ export interface DeleteGatePassRequest {
 
 export type GatePassListResponse = ApiResponse<GatePassData[]>;
 export type GatePassSaveResponse = ApiResponse<GatePassData[]>;
+export type GatePassOutResponse = ApiResponse<GatePassData[]>;
 export type GatePassDeleteResponse = ApiResponse<number>;

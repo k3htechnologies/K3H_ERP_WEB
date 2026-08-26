@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import type { AddUpdateGatePassRequest } from '@/features/gatePass/models/GatePassModel';
 import { Input } from '@/ui/components/forms';
@@ -15,6 +15,7 @@ import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleS
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { EmployeeMasterData } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
 
 interface GatePassFormModalProps {
     isOpen: boolean;
@@ -28,6 +29,11 @@ interface GatePassFormModalProps {
     loading: boolean;
     employeeDetails: EmployeeMasterData | null;
     setEmployeeDetails: (details: EmployeeMasterData | null) => void;
+    photoFiles: (File | string)[];
+    setPhotoFiles: (files: (File | string)[]) => void;
+    photoURL?: string;
+    removedPhotoUrls: string[];
+    setRemovedPhotoUrls: (urls: string[]) => void;
 }
 
 export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
@@ -41,13 +47,30 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
     editingData,
     loading,
     employeeDetails,
-    setEmployeeDetails
+    setEmployeeDetails,
+    photoURL,
+    photoFiles,
+    setPhotoFiles,
+    removedPhotoUrls,
+    setRemovedPhotoUrls,
 }) => {
 
     const [timePickerField, setTimePickerField] = useState<{ field: keyof AddUpdateGatePassRequest; value: string; } | null>(null);
     const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
 
     const isDateSelected = Boolean(formData.PassDateTime && formData.PassDateTime.trim() !== "");
+
+    useEffect(() => {
+
+        if (!editingData && isDateSelected && formData.PassDateTime) {
+
+            const currentTime = new Date().toTimeString().slice(0, 5);
+
+            const existingDate = formData.PassDateTime.substring(0, 10);
+
+            onFieldChange("PassDateTime", `${existingDate}T${currentTime}:00`);
+        }
+    }, [isDateSelected]);
 
     return (
         <Modal
@@ -154,8 +177,8 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             <Input
                                 type="text"
                                 label='Number of Participants'
-                                value={formData.NoOfParticipants || ''}
-                                onChange={(e) => onFieldChange('NoOfParticipants', filterNumbers(e.target.value))}
+                                value={formData.NoOfParticipants || 0}
+                                onChange={(e) => onFieldChange('NoOfParticipants', filterNumbers(e.target.value) || 0)}
                                 placeholder="Enter Number of Participants"
                                 maxLength={3}
                                 error={errors.NoOfParticipants}
@@ -185,6 +208,7 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             disabled={!isDateSelected}
                             readOnly
                             required
+
                             error={errors.PassTime}
                             value={
                                 formData.PassDateTime && formData.PassDateTime.length >= 16 ? formData.PassDateTime.substring(11, 16) : "00:00"
@@ -230,13 +254,31 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                         />
                     </div>
 
+                    <div>
+                        <MultiFilePicker
+                            label="Photo"
+                            placeholder="Select Photo"
+                            error={errors.PhotoURL}
+                            value={photoFiles}
+                            availableFilesURL={photoURL ?? ""}
+                            onChange={setPhotoFiles}
+                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                            maxFiles={1}
+                            onRemoveExisting={(url) => {
+                                setRemovedPhotoUrls([...removedPhotoUrls, url]);
+                            }}
+                        />
+                    </div>
+
 
                     <div>
                         <TextArea
                             label="Remark"
+                            required={formData.Purpose?.toUpperCase() === "OTHERS"}
                             placeholder="Enter Remark"
                             className='thin-scroll'
                             value={formData.Remark}
+                            error={errors.Remark}
                             onChange={(e) => onFieldChange("Remark", e.target.value)}
                         />
                     </div>

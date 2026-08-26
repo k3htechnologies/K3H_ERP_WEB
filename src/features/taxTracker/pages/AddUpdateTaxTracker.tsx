@@ -77,6 +77,79 @@ export const AddUpdateTaxTracker: React.FC = () => {
         }
     }, [currentTaxTrackerId]);
 
+    const loadDetailsData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationTaxTrackerRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    TaxTrackerId: currentTaxTrackerId
+                };
+
+                const response = await taxTrackerService.apiCallPullTaxTracker(params);
+
+                if (E.isRight(response)) {
+
+                    const mainData = response.right.Data?.[0];
+                    const docData = mainData?.TaxTrackerDocumentDetailsData?.[0];
+
+                    if (mainData) {
+                        setFormData(prev => ({
+                            ...prev,
+                            TaxTrackerId: mainData.TaxTrackerId ?? prev.TaxTrackerId,
+                            Uniquekey: mainData.Uniquekey ?? prev.Uniquekey,
+                            GovernmentCompliance: mainData.GovernmentCompliance ?? prev.GovernmentCompliance,
+                            CompanyId: mainData.CompanyId ?? prev.CompanyId,
+                            NoticeType: mainData.NoticeType ?? prev.NoticeType,
+                            NoticeSectionMasterId: mainData.NoticeSectionMasterId ?? prev.NoticeSectionMasterId,
+                            Authority: mainData.Authority ?? prev.Authority,
+                            OfficerName: docData?.OfficerName ?? prev.OfficerName,
+                            OfficerAddress: docData?.OfficerAddress ?? prev.OfficerAddress,
+                            NoticeDate: mainData.NoticeDate ?? prev.NoticeDate,
+                            FinancialYear: mainData.FinancialYear ?? prev.FinancialYear,
+                            ResponsiblePersonId: mainData.ResponsiblePersonId ?? prev.ResponsiblePersonId,
+                            DueDate: mainData.DueDate ?? prev.DueDate,
+                            NoticeDescription: docData?.NoticeDescription ?? prev.NoticeDescription,
+
+                        }));
+
+                        setDropdownLabels(prev => ({
+                            ...prev,
+                            companyName: mainData.CompanyName || prev.companyName,
+                            noticeSectionLabel: mainData.NoticeSection || prev.noticeSectionLabel,
+                        }));
+
+                        setSelectedResponsiblePersonesNames(mainData.ResponsiblePersonId);
+
+                        if (docData?.NoticeDocumentURL) {
+                            setNoticeDocumentURL(docData.NoticeDocumentURL);
+                        }
+                    }
+                }
+                else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Details Data'
+        );
+    };
+
+    const handleFieldChange = (field: keyof AddUpdateTaxTrackerRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
     const validateAddTaxTrackerForm = (): {
 
         isValid: boolean
@@ -177,78 +250,6 @@ export const AddUpdateTaxTracker: React.FC = () => {
 
     }
 
-    const loadDetailsData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationTaxTrackerRequest = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    TaxTrackerId: currentTaxTrackerId
-                };
-
-                const response = await taxTrackerService.apiCallPullTaxTracker(params);
-
-                if (E.isRight(response)) {
-
-                    const mainData = response.right.Data?.[0];
-                    const docData = mainData?.TaxTrackerDocumentDetailsData?.[0];
-
-                    if (mainData) {
-                        setFormData(prev => ({
-                            ...prev,
-                            TaxTrackerId: mainData.TaxTrackerId ?? prev.TaxTrackerId,
-                            Uniquekey: mainData.Uniquekey ?? prev.Uniquekey,
-                            GovernmentCompliance: mainData.GovernmentCompliance ?? prev.GovernmentCompliance,
-                            CompanyId: mainData.CompanyId ?? prev.CompanyId,
-                            NoticeType: mainData.NoticeType ?? prev.NoticeType,
-                            NoticeSectionMasterId: mainData.NoticeSectionMasterId ?? prev.NoticeSectionMasterId,
-                            Authority: mainData.Authority ?? prev.Authority,
-                            OfficerName: docData?.OfficerName ?? prev.OfficerName,
-                            OfficerAddress: docData?.OfficerAddress ?? prev.OfficerAddress,
-                            NoticeDate: mainData.NoticeDate ?? prev.NoticeDate,
-                            FinancialYear: mainData.FinancialYear ?? prev.FinancialYear,
-                            ResponsiblePersonId: mainData.ResponsiblePersonId ?? prev.ResponsiblePersonId,
-                            DueDate: mainData.DueDate ?? prev.DueDate,
-                            NoticeDescription: docData?.NoticeDescription ?? prev.NoticeDescription,
-
-                        }));
-
-                        setDropdownLabels(prev => ({
-                            ...prev,
-                            companyName: mainData.CompanyName || prev.companyName,
-                            noticeSectionLabel: mainData.NoticeSection || prev.noticeSectionLabel,
-                        }));
-
-                        setSelectedResponsiblePersonesNames(mainData.ResponsiblePersonId);
-
-                        if (docData?.NoticeDocumentURL) {
-                            setNoticeDocumentURL(docData.NoticeDocumentURL);
-                        }
-                    }
-                }
-                else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Loading Details Data'
-        );
-    };
-
-    const handleFieldChange = (field: keyof AddUpdateTaxTrackerRequest, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
 
     const handleAddUpdateTaxTracker = async () => {
         setErrors({});

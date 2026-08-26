@@ -34,6 +34,8 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
 
 const initialFormState = (): AddUpdateTaxTrackerRequest => ({
     TaxTrackerId: 0,
@@ -73,6 +75,7 @@ const getInitialRequestFormState = (): AddUpdateTaxTrackerDocumentRequest => ({
     AmountUnderDisputeDate: null,
     AmountUnderDispute: 0,
     NoticeStatus: null,
+    DateOfAppeal: null,
 });
 
 export const TaxTracker: React.FC = () => {
@@ -86,6 +89,7 @@ export const TaxTracker: React.FC = () => {
     const [requestFormData, setRequestFormData] = useState<AddUpdateTaxTrackerDocumentRequest>(() => getInitialRequestFormState());
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateRequestAppealModalOpen, setIsAddUpdateRequestAppealModalOpen] = useState(false);
+    const [appealSourceRow, setAppealSourceRow] = useState<TaxTrackerData | null>(null);
     const [noticeDocumentURLFiles, setNoticeDocumentURLFiles] = useState<(File | string)[]>([]);
     const [noticeDocumentURL, setNoticeDocumentURL] = useState<string>("");
     const [removedNoticeDocumentURLs, setRemovedNoticeDocumentURLs] = useState<string[]>([]);
@@ -107,15 +111,21 @@ export const TaxTracker: React.FC = () => {
     const navigate = useNavigate();
 
     const [formData, setFormData] = useState<AddUpdateTaxTrackerRequest>(() => ({
-        ...initialFormState(),
-        CompanyId: listState.CompanyId || 0,
-        CompanyName: listState.CompanyName || null,
-        FinancialYear: listState.FinancialYear || '',
+        ...initialFormState()
     }));
 
     useEffect(() => {
         loadTaxTrackerList(page, filters);
     }, [page, filters]);
+
+    const getDateOfAppeal = (appealDueDate?: string | null) => {
+        if (!appealDueDate) return "";
+
+        const date = new Date(appealDueDate);
+        date.setDate(date.getDate() + 60);
+
+        return date.toISOString().split("T")[0];
+    };
 
     const loadTaxTrackerList = async (
         page: number,
@@ -300,6 +310,7 @@ export const TaxTracker: React.FC = () => {
 
     const handleAddAppealModal = useCallback((row: TaxTrackerData) => {
         setIsAddUpdateRequestAppealModalOpen(true);
+        setAppealSourceRow(row);
         setRequestFormData(() => ({
             ...getInitialRequestFormState(),
             TaxTrackerId: row.TaxTrackerId ?? 0,
@@ -448,7 +459,6 @@ export const TaxTracker: React.FC = () => {
                             >
                                 <Plus className="h-4 w-4" />
                             </Button>
-
 
                             {row?.IsDelete === true && (
                                 <Button
@@ -661,6 +671,14 @@ export const TaxTracker: React.FC = () => {
                 if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
                     newErrors.NoticeDocumentURL = "Document is required.";
                 break;
+            case "Appeal":
+
+                if (!requestFormData.AmountUnderDisputeDate)
+                    newErrors.AmountUnderDisputeDate = "Appeal Date is required.";
+
+                if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
+                    newErrors.NoticeDocumentURL = "Document is required.";
+                break;
 
             default:
                 break;
@@ -699,6 +717,10 @@ export const TaxTracker: React.FC = () => {
             case "Reopen":
                 requestFormData.NoticeStatus = "Reopened";
                 break;
+
+            case "Others":
+                requestFormData.NoticeStatus = "Pending";
+                break;
         }
 
         const fd = new FormData();
@@ -713,6 +735,7 @@ export const TaxTracker: React.FC = () => {
         fd.append('OfficerAddress', requestFormData.OfficerAddress || '');
         fd.append('AmountUnderDisputeDate', requestFormData.AmountUnderDisputeDate || '');
         fd.append('AmountUnderDispute', requestFormData.AmountUnderDispute.toString());
+        fd.append('DateOfAppeal', requestFormData.DateOfAppeal || '');
         fd.append('OrderStatus', requestFormData.OrderStatus || '');
         fd.append('NoticeStatus', requestFormData.NoticeStatus || '');
 
@@ -889,6 +912,7 @@ export const TaxTracker: React.FC = () => {
                     setIsAddUpdateRequestAppealModalOpen(false)
                     setErrors({})
                     setRequestFormData(getInitialRequestFormState());
+                    setAppealSourceRow(null);
 
                     setNoticeDocumentURL("");
                     setNoticeDocumentURLFiles([]);
@@ -906,6 +930,8 @@ export const TaxTracker: React.FC = () => {
                 size="xl"
             >
                 <div className="space-y-4 p-6 bg-blue-100">
+
+
 
                     <div>
                         <SinglePageSelection
@@ -986,6 +1012,139 @@ export const TaxTracker: React.FC = () => {
                         </>
                     )}
 
+                    {requestFormData.RequestType === 'Appeal' && (() => {
+                        const lastOrderRecord = appealSourceRow?.TaxTrackerDocumentDetailsData
+                            ?.filter(d => d.RequestType === 'Order')
+                            ?.at(-1) ?? null;
+
+                        const isNonFavourable = lastOrderRecord?.OrderStatus === 'Non-Favourable';
+
+                        return (
+                            <>
+                                {lastOrderRecord && isNonFavourable && (
+                                    <div
+                                        style={{
+                                            background: '#f9fafb',
+                                            border: '1px solid #93c5fd',
+                                            borderLeft: '4px solid #3b82f6',
+                                            borderRadius: '10px',
+                                            padding: '14px 16px',
+                                            marginBottom: '4px',
+                                        }}
+                                    >
+                                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#111111f1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
+                                            Order Details
+                                        </p>
+                                        <div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                                                <div>
+                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Order Date</p>
+                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                        {lastOrderRecord.AmountUnderDisputeDate
+                                                            ? formatDate_dd_MonthName_yy(lastOrderRecord.AmountUnderDisputeDate)
+                                                            : '—'}
+                                                    </p>
+                                                </div>
+
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Order Status</p>
+                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                        {lastOrderRecord.OrderStatus || '—'}
+                                                    </p>
+                                                </div>
+
+                                                <div>
+                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute</p>
+                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                        {lastOrderRecord.AmountUnderDispute
+                                                            ? (lastOrderRecord.AmountUnderDispute)
+                                                            : '—'}
+                                                    </p>
+                                                </div>
+
+                                                <div style={{ textAlign: 'left' }}>
+                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Authority Type</p>
+                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                        {lastOrderRecord.AuthorityType || '—'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+
+                                            {/* Description */}
+                                            <div style={{ marginTop: '12px' }}>
+                                                <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Description</p>
+                                                <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                    {lastOrderRecord.NoticeDescription || '—'}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {lastOrderRecord.NoticeDocumentURL && (
+                                            <div className="mt-2">
+                                                <p style={{ fontSize: '11px', color: '#6b7280' }}>Order Document</p>
+                                                <div className="inline-flex items-center gap-1 px-3 py-1.5 border rounded-md mt-3 text-xs font-medium cursor-pointer">
+                                                    <MultiImageViewer
+                                                        images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}
+                                                        title="Document"
+                                                        isIcon={true}
+                                                        triggerLabel="Document"
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <div className="mt-5">
+                                    <DatePickerInput
+                                        label="Appeal Due Date"
+                                        placeholder="Enter Appeal Due Date"
+                                        value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
+                                        onChange={(val) => {
+                                            const appealDueDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
+                                            const appealDate = getDateOfAppeal(appealDueDate);
+                                            handleRequestFieldChange("AmountUnderDisputeDate", appealDueDate);
+                                            handleRequestFieldChange("DateOfAppeal", appealDate);
+                                        }}
+                                        required
+                                        error={errors.AmountUnderDisputeDate}
+                                    />
+                                </div>
+
+                                <div>
+                                    <DatePickerInput
+                                        label="Date of Appeal"
+                                        placeholder="Enter Date of Appeal"
+                                        value={formatDate_dd_mm_yyyy(requestFormData.DateOfAppeal)}
+                                        onChange={() => { }}
+                                        disabled
+                                        required
+                                        error={errors.DateOfAppeal}
+                                    />
+                                </div>
+
+                                <div className="mt-5">
+                                    <MultiFilePicker
+                                        label="Documents"
+                                        required
+                                        placeholder="Select Documents"
+                                        value={noticeDocumentURLFiles}
+                                        onChange={setNoticeDocumentURLFiles}
+                                        availableFilesURL={noticeDocumentURL ?? ""}
+                                        allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                        maxFiles={5}
+                                        maxSizeMB={10}
+                                        onRemoveExisting={(url) => {
+                                            setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
+                                        }}
+                                        error={errors.NoticeDocumentURL}
+                                    />
+                                </div>
+                            </>
+                        );
+                    })()}
+
                     {requestFormData.RequestType === 'Reply' && (
                         <>
                             <div>
@@ -1038,11 +1197,7 @@ export const TaxTracker: React.FC = () => {
                             {requestFormData.OrderStatus && (
                                 <div>
                                     <DatePickerInput
-                                        label={
-                                            requestFormData.OrderStatus === "Non-Favourable"
-                                                ? "Appeal Date"
-                                                : "Order Date"
-                                        }
+                                        label="Order Date"
                                         placeholder="Enter Date"
                                         value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
                                         onChange={(val) =>
@@ -1094,7 +1249,7 @@ export const TaxTracker: React.FC = () => {
                                 <MultiFilePicker
                                     label={
                                         requestFormData.OrderStatus === "Non-Favourable"
-                                            ? "Appeal Document"
+                                            ? "Order Document"
                                             : requestFormData.OrderStatus === "Favourable"
                                                 ? "Document"
                                                 : `${requestFormData.RequestType} Document`

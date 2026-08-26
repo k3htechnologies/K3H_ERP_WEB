@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AddUpdateGatePassRequest, DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassData } from "../models/GatePassModel";
+import type { AddUpdateGatePassRequest, DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassData, UpdateGatePassOutRequest } from "@/features/gatePass/models/GatePassModel";
 import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import usePagination from "@/core/hooks/usePagination";
 import useToast from "@/core/hooks/useToast";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { getGatePassTableColumns, getInitialFormState, REQUIRED_COLUMN_KEYS } from "../constants/gatePassConstants";
-import { gatePassService } from "../services/GatePassService";
+import { getGatePassTableColumns, getInitialFormState, REQUIRED_COLUMN_KEYS } from "@/features/gatePass/constants/gatePassConstants";
+import { gatePassService } from "@/features/gatePass/services/GatePassService";
 import * as E from 'fp-ts/Either';
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
@@ -16,6 +16,7 @@ import { handleExportFile } from "@/core/utils/exportFile";
 import { isValidMobile } from "@/core/utils/fileValidation";
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import { fetchEmployeeMasterById } from "@/features/employeeMaster/employeeMasterDropDown";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 
 export const useGatePass = () => {
 
@@ -28,7 +29,7 @@ export const useGatePass = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const { canExport: canExportGatePass, canAction: canActionGatePass } = useMenuPermissions("/gatePass");
-    const { canExport: canExportGatePassAdministrativeAccess, canAction: canActionGatePassAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
+    const { canExport: canExportGatePassAdministrativeAccess, canAction: canActionGatePassAdministrativeAccess } = useMenuPermissions("/gatePassAdministrativeAccess");
 
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -37,18 +38,21 @@ export const useGatePass = () => {
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [lastUpdatedRow, setLastUpdatedRow] = React.useState<string | number | null>(null);
 
-
-    //DELETE DEPARTMENT MASTER STATES
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGatePassDetailsData, setDeleteGatePassDetailsData] = useState<GatePassData | null>(null)
+    const [isConfirmationDialogBoxOpenforOut, setIsConfirmationDialogBoxOpenforOut] = useState(false)
+    const [isConfirmationDialogBoxOpenforBell, setIsConfirmationDialogBoxOpenforBell] = useState(false)
 
     const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
     const [formData, setFormData] = useState<AddUpdateGatePassRequest>(() => getInitialFormState());
 
-
     const [filters, setFilters] = useState<FilterInfo>({});
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+    const [photoFiles, setPhotoFiles] = useState<(File | string)[]>([]);
+    const [removedPhotoURLs, setRemovedPhotoURLs] = useState<string[]>([]);
+    const [photoURL, setPhotoURL] = useState<string>();
 
     const hasFetchedInitialGatePasses = useRef(false);
 
@@ -87,7 +91,13 @@ export const useGatePass = () => {
                     EmployeeId: editingGatePassData.EmployeeId || 0,
                     PassDateTime: editingGatePassData.PassDateTime || '',
                     NoOfParticipants: editingGatePassData.NoOfParticipants || 0,
+                    PhotoURL: null,
+                    RemovePhotoURL: "",
                 });
+
+                setPhotoURL(editingGatePassData.PhotoURL || "");
+                setPhotoFiles([]);
+                setRemovedPhotoURLs([]);
 
                 if (editingGatePassData.EmployeeId) {
                     fetchEmployeeMasterById(Number(editingGatePassData.EmployeeId)).then((employee) => {
@@ -98,6 +108,9 @@ export const useGatePass = () => {
             } else {
                 setFormData(getInitialFormState());
                 setEmployeeDetails(null);
+                setPhotoFiles([]);
+                setPhotoURL("");
+                setRemovedPhotoURLs([]);
             }
             setErrors({});
         }
@@ -177,6 +190,16 @@ export const useGatePass = () => {
         setDeleteGatePassDetailsData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, [])
+
+    const handleConfirmationDialogBoxOpenforOut = useCallback((row: GatePassData) => {
+        setDeleteGatePassDetailsData(row)
+        setIsConfirmationDialogBoxOpenforOut(true)
+    }, [])
+
+    const handleConfirmationDialogBoxOpenforBell = useCallback((row: GatePassData) => {
+        setDeleteGatePassDetailsData(row)
+        setIsConfirmationDialogBoxOpenforBell(true)
+    }, [])
     //#endregion
 
     const applyFilters = () => {
@@ -189,7 +212,6 @@ export const useGatePass = () => {
         setTempFilters({})
         setFilters({})
         loadGatePassList(1, {})
-        setShowFilterPopup(false)
     }
 
     const handleFilterChange = (key: string, value: string) => {
@@ -219,8 +241,8 @@ export const useGatePass = () => {
                     FullName: searchtext ?? filterParams.FullName ?? undefined,
                     MobileNumber: filterParams.MobileNumber ?? undefined,
                     Address: filterParams.Address ?? undefined,
-                    FromDate: filterParams.FromDate ?? undefined,
-                    ToDate: filterParams.ToDate ?? undefined,
+                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) : undefined,
+                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) : undefined,
                     Purpose: filterParams.Purpose ?? undefined,
                     EmployeeName: filterParams.EmployeeName ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, gatePassColumns)
@@ -282,8 +304,8 @@ export const useGatePass = () => {
                     FullName: filters.FullName ?? undefined,
                     MobileNumber: filters.MobileNumber ?? undefined,
                     Address: filters.Address ?? undefined,
-                    FromDate: filters.FromDate ?? undefined,
-                    ToDate: filters.ToDate ?? undefined,
+                    FromDate: filters.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) : undefined,
+                    ToDate: filters.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) : undefined,
                     Purpose: filters.Purpose ?? undefined,
                     EmployeeName: filters.EmployeeName ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, gatePassColumns),
@@ -319,6 +341,9 @@ export const useGatePass = () => {
         setEditingGatePassData(null);
         setFormData(getInitialFormState());
         setErrors({});
+        setPhotoFiles([]);
+        setPhotoURL("");
+        setRemovedPhotoURLs([]);
         setIsAddUpdateModalOpen(true);
     }
 
@@ -328,7 +353,7 @@ export const useGatePass = () => {
     } => {
         const newErrors: { [key: string]: string } = {}
         if (formData.FullName?.trim() === "") {
-            newErrors.FullName = "Visitor is required"
+            newErrors.FullName = "Visitor Name is required"
         }
         if (formData.MobileNumber?.trim() === "") {
             newErrors.MobileNumber = "Mobile Number is required"
@@ -340,10 +365,8 @@ export const useGatePass = () => {
             newErrors.Address = "Address is required"
         }
 
-        if (formData.NoOfParticipants === null || formData.NoOfParticipants === undefined || formData.NoOfParticipants === 0) {
-            newErrors.NoOfParticipants = "Number of Participants is required";
-        } else if (formData.NoOfParticipants >= 100) {
-            newErrors.NoOfParticipants = "Number of Participants should be less than 100";
+        if (Number(formData.NoOfParticipants) > 200) {
+            newErrors.NoOfParticipants = "Number of Participants should be less than 200";
         }
 
         const passDate = formData.PassDateTime?.split("T")[0];
@@ -361,11 +384,15 @@ export const useGatePass = () => {
         if (formData.Purpose?.trim() === "") {
             newErrors.Purpose = "Purpose is required";
         }
-        if (formData.EmployeeId === 0) {
+
+        if (!formData.EmployeeId) {
             newErrors.EmployeeId = "Appointment With is required";
         }
         if (formData.PassDateTime && formData.PassDateTime?.substring(11, 16) === "00:00") {
             newErrors.PassTime = "Appointment Time is required";
+        }
+        if (formData.Purpose?.trim().toUpperCase() === "OTHERS" && !formData.Remark?.trim()) {
+            newErrors.Remark = "Remark is required";
         }
 
         setErrors(newErrors)
@@ -375,23 +402,42 @@ export const useGatePass = () => {
         }
     }
 
-    const PushGatePassFormData = (): AddUpdateGatePassRequest => {
+    const PushGatePassFormData = (): FormData => {
 
-        return {
-            ExternalId: formData.ExternalId,
-            Uniquekey: formData.Uniquekey,
-            FullName: formData.FullName,
-            MobileNumber: formData.MobileNumber,
-            Address: formData.Address,
-            Purpose: formData.Purpose,
-            Remark: formData.Remark,
-            EmployeeId: formData.EmployeeId,
-            PassDateTime: formData.PassDateTime,
-            NoOfParticipants: formData.NoOfParticipants,
-        }
-    }
+        const now = new Date();
+
+        now.setMinutes(now.getMinutes() + 2);
+
+        const currentDateTime =
+            `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}` +
+            `T${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+
+        const fd = new FormData();
+        fd.append("ExternalId", formData.ExternalId.toString());
+        fd.append("Uniquekey", formData.Uniquekey ?? "");
+        fd.append("FullName", formData.FullName.trim() ?? "");
+        fd.append("MobileNumber", formData.MobileNumber.trim() ?? "");
+        fd.append("Address", formData.Address.trim() ?? "");
+        fd.append("Purpose", formData.Purpose.trim() ?? "");
+        fd.append("Remark", formData.Remark.trim() ?? "");
+        fd.append("EmployeeId", formData.EmployeeId.toString());
+        fd.append("PassDateTime", currentDateTime);
+        fd.append("NoOfParticipants", formData.NoOfParticipants.toString() ?? "");
+
+        photoFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("PhotoURL", file);
+            }
+        });
+
+        fd.append("RemovePhotoURL", removedPhotoURLs.join(","));
+
+        return fd;
+    };
+
 
     const handleAddUpdateGatePass = async (e: React.FormEvent) => {
+
         e.preventDefault();
         setErrors({})
 
@@ -525,7 +571,64 @@ export const useGatePass = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Delete Department'
+            'Delete Visitor Details'
+        )
+    }
+    const handleOutGatePass = async (action: 'Out' | 'Bell') => {
+
+        if (action === 'Out') {
+            setIsConfirmationDialogBoxOpenforOut(false);
+        } else {
+            setIsConfirmationDialogBoxOpenforBell(false);
+        }
+
+        if (!deleteGatePassDetailsData) return
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: UpdateGatePassOutRequest = {
+                    ExternalId: deleteGatePassDetailsData.ExternalId,
+                    Uniquekey: deleteGatePassDetailsData.Uniquekey,
+                    Type:action
+                }
+
+                const response = await gatePassService.apiCallUpdateGatePassOutRequest(params);
+
+                if (E.isRight(response)) {
+
+                    const updatedRecord = response.right.Data[0] as GatePassData;
+                    setLastUpdatedRow(updatedRecord.ExternalId);
+
+                    setGatePassList(prevData =>
+                        prevData.map(item =>
+                            item.ExternalId === updatedRecord.ExternalId
+                                ? updatedRecord
+                                : item
+                        )
+                    )
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+                    setIsConfirmationDialogBoxOpenforOut(false);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+
+                    setIsConfirmationDialogBoxOpenforOut(false);
+                }
+
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            action === 'Bell' ? 'Notify Visitor' : 'Out Visitor Details'
         )
     }
 
@@ -549,6 +652,8 @@ export const useGatePass = () => {
         errors,
         editingGatePassData,
         isConfirmationDialogBoxOpen,
+        isConfirmationDialogBoxOpenforOut,
+        isConfirmationDialogBoxOpenforBell,
         isViewModalOpen,
         viewGatePassDetailsData,
         showFilterPopup,
@@ -558,6 +663,9 @@ export const useGatePass = () => {
         isShowCustomizeGatePassColumnsModal,
         clearSearchGatePass,
         employeeDetails,
+        photoFiles,
+        removedPhotoURLs,
+        photoURL,
 
         setSearchTerm,
         setIsAddUpdateModalOpen,
@@ -565,6 +673,8 @@ export const useGatePass = () => {
         setFormData,
         setErrors,
         setIsConfirmationDialogBoxOpen,
+        setIsConfirmationDialogBoxOpenforOut,
+        setIsConfirmationDialogBoxOpenforBell,
         setDeleteGatePassDetailsData,
         setShowFilterPopup,
         setTempFilters,
@@ -572,6 +682,9 @@ export const useGatePass = () => {
         selectedGatePassColumnKeys,
         setIsShowCustomizeGatePassColumnsModal,
         setEmployeeDetails,
+        setPhotoFiles,
+        setRemovedPhotoURLs,
+        setPhotoURL,
 
 
         setFilters,
@@ -583,7 +696,10 @@ export const useGatePass = () => {
         handleAddGatePassModal,
         handleAddUpdateGatePass,
         handleConfirmationDialogBoxOpen,
+        handleConfirmationDialogBoxOpenforOut,
+        handleConfirmationDialogBoxOpenforBell,
         handleDeleteGatePass,
+        handleOutGatePass,
         applyFilters,
         clearFilters,
         setIsViewModalOpen,

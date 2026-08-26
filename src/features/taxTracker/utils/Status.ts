@@ -22,18 +22,18 @@ const DEFAULT_CARD_CONFIG: CardConfig = {
 
 const ORDER_STATUS_CONFIGS: Record<string, CardConfig> = {
     "Non-Favourable": {
-        title: "Appeal",
-        bgColor: "bg-[#f0f4f9]",
-        textColor: "text-gray-800",
-        labelColor: "text-gray-500",
-        fieldTextColor: "text-gray-900",
-        footerColor: "text-gray-700",
-        borderColor: "border-gray-200",
-        badgeColor: "border-blue-500 text-blue-600 hover:bg-blue-50"
+        title: "Order",
+        bgColor: "bg-blue-500",
+        textColor: "text-white",
+        labelColor: "text-blue-200",
+        fieldTextColor: "text-blue-100",
+        footerColor: "text-gray-600",
+        borderColor: "border-blue-600",
+        badgeColor: "border-white/40 text-white hover:bg-white/10"
     },
     "Favourable": {
         title: "Order",
-        bgColor: "bg-blue-600",
+        bgColor: "bg-blue-500",
         textColor: "text-white",
         labelColor: "text-blue-200",
         fieldTextColor: "text-blue-100",
@@ -56,13 +56,13 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
     },
     "Close-Notice": {
         title: "Closed",
-        bgColor: "bg-[#F1F1F1]",
-        textColor: "text-[#116EB2]",
+        bgColor: "bg-[#EBF4FA]",
+        textColor: "text-[#0E568B]",
         labelColor: "text-[#116EB2]",
-        fieldTextColor: "text-[#116EB2]",
-        footerColor: "text-[#116EB2]",
-        borderColor: "border-[#D1D5DB]",
-        badgeColor: "border-[#D1D5DB] text-[#116EB2] hover:bg-[#E5E5E5]"
+        fieldTextColor: "text-[#0A3D62]",
+        footerColor: "text-[#4A7B9D]",
+        borderColor: "border-[#BCD7EA]",
+        badgeColor: "border-[#96C2DF] text-[#0E568B] bg-white hover:bg-[#DCEEFB]"
     },
     "Notice": {
         ...DEFAULT_CARD_CONFIG,
@@ -90,6 +90,16 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
     },
     "Appeal": {
         title: "Appeal Filed",
+        bgColor: "bg-slate-100",
+        textColor: "text-slate-900",
+        labelColor: "text-slate-600",
+        fieldTextColor: "text-slate-900",
+        footerColor: "text-slate-500",
+        borderColor: "border-slate-300",
+        badgeColor: "border-slate-400 text-slate-700 bg-slate-50 hover:bg-slate-200"
+    },
+    "Others": {
+        title: "Others",
         bgColor: "bg-[#e2e8f0]",
         textColor: "text-gray-900",
         labelColor: "text-gray-600",
@@ -115,11 +125,12 @@ export const getCardConfig = (orderStatus?: string, requestType?: string): CardC
 export const getNoticeStatusColor = (status: string = "") => {
     const map: Record<string, { bg: string; text: string }> = {
         "Reply Pending": { bg: "#ffedd5", text: "#C2410C" },
+        "Pending": { bg: "#d9f8e4ff", text: "#0cd092ff" },
         "Reply Submitted": { bg: "#DBEAFE", text: "#1D4ED8" },
         "Favourable": { bg: "#F3E8FF", text: "#7E22CE" },
         "Non-Favourable": { bg: "#FEE2E2", text: "#B91C1C" },
         "Appeal Pending": { bg: "#FEF9C3", text: "#A16207" },
-        "AppealFiled": { bg: "#DBEAFE", text: "#1D4ED8" },
+        "Appeal Filed": { bg: "#e8f9f8ff", text: "#0aa3c5ff" },
         "Closed": { bg: "#EBFFD5", text: "#2E844A" },
         "Reopened": { bg: "#002060", text: "#ffffff" },
     };

@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Button } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm, parseTimeFromISO } from '@/core/utils/dateFormat';
+import {  formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import type { GatePassData } from '@/features/gatePass/models/GatePassModel';
 import { getStatusColor } from '../utils/Status';
 
@@ -78,12 +78,11 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
 
                 <FieldItem
                     label="Visitor Name"
-                    value={`${data.FullName || '-'}${Number(data.NoOfParticipants) > 0
-                            ? ` + ${data.NoOfParticipants}`
-                            : ''
-                        }`}
+                    value={`${data.FullName || '-'}${Number(data.NoOfParticipants) > 0 ? ` + ${data.NoOfParticipants}` : ''}`}
                     isRow
                     withBorder={true}
+                    urls={data.PhotoURL}
+                    isIcon
                 />
 
                 <FieldItem label="Address" value={data.Address} isRow withBorder={true} />
@@ -100,7 +99,13 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
 
                 <FieldItem
                     label="Appointment Date"
-                    value={`${formatDate_dd_MonthName_yy(data.PassDateTime)} - ${parseTimeFromISO(data.PassDateTime)}`}
+                    value={`${formatDate_dd_MonthName_yy_hh_mm(data.PassDateTime)}`}
+                    isRow
+                    withBorder={true}
+                />
+                <FieldItem
+                    label="Out Date"
+                    value={`${formatDate_dd_MonthName_yy_hh_mm(data.OutDateTime)}`}
                     isRow
                     withBorder={true}
                 />

@@ -1532,7 +1532,7 @@ export const LocalStorageHelper = {
     return null
   },
 
-   // ACCOUNT
+  // ACCOUNT
   getTaxTrackerTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
     if (stored) {
@@ -1562,6 +1562,28 @@ export const LocalStorageHelper = {
     } catch (error) {
       console.error("Error Gate Pass Columns Details:", error);
     }
+  },
+
+  // Project Professional
+  //#region PROJECT PROFESSIONAL DETAILS
+  storeProjectProfessionalDetailsTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("ERROR Project Professional Details Columns Details", error);
+    }
+  },
+  getProjectProfessionalDetailsTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Project Professional Details Columns Details:", error);
+        return null
+      }
+    }
+    return null
   },
 
   getGatePassTableColumns: (): string | null => {

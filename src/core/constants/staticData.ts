@@ -440,9 +440,9 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["LEVEL 1","LEVEL 2","LEVEL 3","LEVEL 4","LEVEL 5","LEVEL 6","LEVEL 7","LEVEL 8","LEVEL 9","LEVEL 10", "GROUND LEVEL"],
+  parkingSubCategory_PuzzleParking: ["LEVEL 1", "LEVEL 2", "LEVEL 3", "LEVEL 4", "LEVEL 5", "LEVEL 6", "LEVEL 7", "LEVEL 8", "LEVEL 9", "LEVEL 10", "GROUND LEVEL"],
 
-  parkingSubCategory_TowerParking: ["ROTATING","TO 1", "GROUND"],
+  parkingSubCategory_TowerParking: ["ROTATING", "TO 1", "GROUND"],
 
   parkingSubCategory_PitPuzzleParking: ["PIT 1", "GROUND"],
 
@@ -670,39 +670,44 @@ export const MASTER_DATA = {
   ],
 
   termSheetDocument: [
-  "Board Resolution",
-  "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
-  "Deed Of Corporate Guarantee",
-  "Deed Of Hypothecation",
-  "Deed Of Personal Guarantee",
-  "Demand Promissory Note",
-  "Disbursement Request Letter as per format of NBFC or Bank",
-  "Escrow Agreement",
-  "Indenture of Mortgage",
-  "Loan Agreement",
-  "Other documents as per Sanction Letter",
-  "PDC to be given as per Sanction Letter",
-  "Power Of Attorney",
-  "Promoters Undertaking"
-],
+    "Board Resolution",
+    "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
+    "Deed Of Corporate Guarantee",
+    "Deed Of Hypothecation",
+    "Deed Of Personal Guarantee",
+    "Demand Promissory Note",
+    "Disbursement Request Letter as per format of NBFC or Bank",
+    "Escrow Agreement",
+    "Indenture of Mortgage",
+    "Loan Agreement",
+    "Other documents as per Sanction Letter",
+    "PDC to be given as per Sanction Letter",
+    "Power Of Attorney",
+    "Promoters Undertaking"
+  ],
 
-authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
+  authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
 
-orderStatusOptions: ['Favourable', 'Non-Favourable'],
+  professionalType: ["Architect", "Engineer", "Real Estate Agent", "Advocate"],
 
-requestTypeOptions: ['Reply', 'Order', 'Notice', 'Close-Notice'],
 
-termSheetTypeOptions: ['Construction Finance (CF)', 'Loan Against Property (LAP)', 'Lease Rental Discounting (LRD)', 'Overdraft Facility (OD)'],
+  type: ["Person /Individual", "Legal Entity / Other"],
 
-termSheetApprovalStatus: ["Term Sheet", "Sanction" ,"Closed"],
+  orderStatusOptions: ['Favourable', 'Non-Favourable'],
 
-termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
+  requestTypeOptions: ['Reply', 'Order', 'Notice', 'Close-Notice'],
 
-noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
+  termSheetTypeOptions: ['Construction Finance (CF)', 'Loan Against Property (LAP)', 'Lease Rental Discounting (LRD)', 'Overdraft Facility (OD)'],
 
-vendorType: ["Material", "Contractor", "Both"],
+  termSheetApprovalStatus: ["Term Sheet", "Sanction", "Closed"],
 
-purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"]
+  termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
+
+  noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
+
+  vendorType: ["Material", "Contractor", "Both"],
+
+  purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"]
 } as const;
 
 // ============================================================================
@@ -720,6 +725,8 @@ export const filterOptions = (options: Option[], searchTerm: string = ""): Optio
 // ============================================================================
 
 export const EMERGENCY_RELATION_OPTIONS = toOptions(MASTER_DATA.emergencyRelations);
+export const PROJECT_PROFESSIONAL_DETAILS_STATUS_OPTIONS = toOptions(MASTER_DATA.professionalType);
+export const TYPE_STATUS_OPTIONS = toOptions(MASTER_DATA.type);
 export const EMPLOYEE_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeTypes);
 export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders);
 export const MONTHS_OPTIONS = toOptions(MASTER_DATA.months);

@@ -30,15 +30,11 @@ export const useGatePass = () => {
     const { canExport: canExportGatePass, canAction: canActionGatePass } = useMenuPermissions("/gatePass");
     const { canExport: canExportGatePassAdministrativeAccess, canAction: canActionGatePassAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
 
-
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
     const [editingGatePassData, setEditingGatePassData] = useState<GatePassData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [lastUpdatedRow, setLastUpdatedRow] = React.useState<string | number | null>(null);
 
-
-    //DELETE DEPARTMENT MASTER STATES
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGatePassDetailsData, setDeleteGatePassDetailsData] = useState<GatePassData | null>(null)
 
@@ -396,6 +392,7 @@ export const useGatePass = () => {
         setErrors({})
 
         const validation = validateAddGatePassForm();
+        console.log('validation', validation);
 
         if (!validation.isValid) {
             setErrors(validation.errors)

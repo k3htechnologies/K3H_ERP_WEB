@@ -217,6 +217,10 @@ import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pa
 import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
 import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
 import { GatePass } from '@/features/gatePass/pages/GatePass';
+import { ProjectProfessionalDetailsListStateProvider } from '@/features/projectProfessionalDetails/context/ProjectProfessionalDetailsListStateContext';
+import ProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ProjectProfessionalDetails';
+import AddUpdateProjectProfessionalDetail from '@/features/projectProfessionalDetails/pages/AddUpdateProjectProfessionalDetails';
+import ViewProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ViewProjectProfessionalDetails';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -538,9 +542,15 @@ function App() {
             <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
             <Route path='termSheetReport' element={<TermSheetReport />} />
-          
-           {/* VISITOR MANAGEMENT */}
+
+            {/* VISITOR MANAGEMENT */}
             <Route path='gatePass' element={<GatePass />} />
+
+            {/* PROJECT PROFESSIONALS */}
+            <Route path='projectProfessionalDetails' element={<ProjectProfessionalDetailsListStateProvider><ProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
+            <Route path='projectProfessionalDetails/add' element={<ProjectProfessionalDetailsListStateProvider><AddUpdateProjectProfessionalDetail /></ProjectProfessionalDetailsListStateProvider>} />
+            <Route path='projectProfessionalDetails/view' element={<ProjectProfessionalDetailsListStateProvider><ViewProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

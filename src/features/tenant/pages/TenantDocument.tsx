@@ -33,6 +33,8 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { TENANT_DOCUMENT_TYPE } from '@/core/constants';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -167,7 +169,7 @@ export const TenantDocument: React.FC = () => {
     return await loadTenantDocuments(page, filters);
   }
 
-  const loadTenantDocuments = async (page: number, filterParams: FilterInfo) => {
+  const loadTenantDocuments = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -182,7 +184,7 @@ export const TenantDocument: React.FC = () => {
           BuildingId: buildingId,
           TenantId: tenantId,
           TenantDocumentId: filterParams.TenantDocumentId ? Number(filterParams.TenantDocumentId) : undefined,
-          DocumentName: filterParams.DocumentName?.trim() || undefined,
+          DocumentName: searchtext ?? filterParams.DocumentName?.trim() ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, tenantDocumentColumns)
         }
 
@@ -241,7 +243,7 @@ export const TenantDocument: React.FC = () => {
   const clearsearchTenantDocuments = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    fetchTenantDocumentList();
+    loadTenantDocuments(1, { DocumentName: '' }, sortInfo, undefined);
   }
 
   //#endregion
@@ -252,7 +254,7 @@ export const TenantDocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-       
+
         const params: FilterWithPaginationTenantDocumentRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -283,27 +285,18 @@ export const TenantDocument: React.FC = () => {
   const handleExportTenantDocumentExcel = () => handleExportTenantDocuments('Excel')
   const handleExportTenantDocumentPdf = () => handleExportTenantDocuments('PDF')
 
-  //#endregion
-
-  //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = (page: number) => {
-    fetchTenantDocumentList(page);
+    loadTenantDocuments(page, filters, sortInfo, searchTerm || undefined);
   };
 
-  //#endregion
 
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-
-    setSortInfo(sortInfo);
-
-    fetchTenantDocumentList(1);
-
-  }
-  //#endregion
-
-  //#region TABLE PAGINATION INFO
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+  
+      setSortInfo(sort);
+  
+      loadTenantDocuments(1, filters, sort, searchTerm || undefined);
+  
+    }, [filters, searchTerm]);
 
   const tenantDocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -317,10 +310,7 @@ export const TenantDocument: React.FC = () => {
   )
 
   const tenantDocumentListForTable = useMemo(() => tenantDocumentList, [tenantDocumentList]);
-  //#endregion
-
-  //#region EDIT TENANT DOCUMENT
-
+  
   const handleEditTenantDocument = useCallback((row: TenantDocumentData) => {
     setEditingTenantDocumentData({
       ...row,
@@ -331,18 +321,10 @@ export const TenantDocument: React.FC = () => {
   }, [])
 
 
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
-
   const handleConfirmationDialogBoxOpen = useCallback((row: TenantDocumentData) => {
     setDeleteTenantDocumentDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
-  //#endregion
-
-  //#region TABLE COLUMN
 
   const tenantDocumentColumns = useMemo<TableColumn[]>(
     () => [
@@ -459,18 +441,12 @@ export const TenantDocument: React.FC = () => {
     [canAction, handleEditTenantDocument, handleConfirmationDialogBoxOpen]
   )
 
-  //#endregion
-
-  //#region FILTER MODAL HELPERS
   const applyFilters = () => {
     setFilters(tempFilters)
     loadTenantDocuments(1, tempFilters)
     setShowFilterPopup(false)
   }
 
-  //#endregion
-
-  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({})
@@ -479,17 +455,11 @@ export const TenantDocument: React.FC = () => {
     setShowFilterPopup(false)
   }
 
-  //#endregion
-
-  //#region HANDLE FILTER CHNAGE
 
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  //#endregion
-
-  //#region ADD UPDATE EDIT TENANT DOCUMENT
 
   const handleFieldChange = (field: keyof AddUpdateTenantDocumentRequest, value: any) => {
 
@@ -658,9 +628,6 @@ export const TenantDocument: React.FC = () => {
 
   };
 
-  //#endregion
-
-  //#region DELETE TENANT DOCUMENT
   const handleDeleteTenantDocument = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -730,13 +697,9 @@ export const TenantDocument: React.FC = () => {
     )
   }
 
-  //#endregion
-
-  //#region BACK TENANT PAGE
   const handleBackToListTenant = () => {
     navigate('/tenant');
   };
-  //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -844,16 +807,15 @@ export const TenantDocument: React.FC = () => {
         <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
             <div>
-              <Input
-                label='Document Name'
+
+              <SinglePageSelection
+                label="Document Name"
+                placeholder="Select Document Name"
+                value={formData.DocumentName ?? ""}
                 required
-                error={errors.DocumentName}
-                type="text"
-                value={formData.DocumentName || ''}
-                maxLength={100}
-                onChange={(e) => handleFieldChange('DocumentName', e.target.value)}
-                placeholder="Enter Document Name"
-              />
+                onChange={(val) => handleFieldChange("DocumentName", String(val))}
+                options={TENANT_DOCUMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errors.DocumentName} />
 
             </div>
 

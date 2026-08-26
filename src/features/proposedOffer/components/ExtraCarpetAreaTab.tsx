@@ -15,6 +15,10 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { CARPET_AREA_TYPE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { initialFormStateExtraCarpetArea } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface ExtraCarpetAreaTabProps {
   projectId: number | null;
@@ -31,7 +35,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setExtraCarpetAreaData] = useState<ProposedOfferExtraCarpetAreaData | null>(null);
+  const [extraCarpetAreaData, setExtraCarpetAreaData] = useState<ProposedOfferExtraCarpetAreaData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -64,6 +68,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
         const response = await proposedOfferService.apiCallPullExtraCarpetArea(params);
 
         if (E.isRight(response)) {
+
           const data = response.right.Data?.[0] || null;
           setExtraCarpetAreaData(data);
 
@@ -75,7 +80,8 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
               ProjectId: Number(projectId),
               ExtraCarpetAreaOfferedType: data.ExtraCarpetAreaOfferedType || '',
               ResidentialExtraCarpetPercent: data.ResidentialExtraCarpetPercent ?? 0,
-              CommercialExtraCarpetPercent: data.CommercialExtraCarpetPercent ?? 0
+              CommercialExtraCarpetPercent: data.CommercialExtraCarpetPercent ?? 0,
+              Remark: data.Remark ?? "",
             });
           } else {
             setFormDataExtraCarpetArea({
@@ -107,13 +113,13 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
       newErrors.ExtraCarpetAreaOfferedType = "Extra Carpet Area Type is required"
     }
 
-    if (!formDataExtraCarpetArea.ResidentialExtraCarpetPercent) {
+    if (isEmpty(formDataExtraCarpetArea.ResidentialExtraCarpetPercent)) {
       newErrors.ResidentialExtraCarpetPercent = 'Residential Extra Carpet Percentage is required'
     } else if (!isValidPercentage(String(formDataExtraCarpetArea.ResidentialExtraCarpetPercent))) {
       newErrors.ResidentialExtraCarpetPercent = 'Enter a valid percentage'
     }
 
-    if (!formDataExtraCarpetArea.CommercialExtraCarpetPercent) {
+    if (isEmpty(formDataExtraCarpetArea.CommercialExtraCarpetPercent)) {
       newErrors.CommercialExtraCarpetPercent = 'Commercial Extra Carpet Percentage is required'
     } else if (!isValidPercentage(String(formDataExtraCarpetArea.CommercialExtraCarpetPercent))) {
       newErrors.CommercialExtraCarpetPercent = 'Enter a valid percentage'
@@ -151,7 +157,8 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           ProjectId: Number(projectId),
           ExtraCarpetAreaOfferedType: formDataExtraCarpetArea.ExtraCarpetAreaOfferedType,
           ResidentialExtraCarpetPercent: formDataExtraCarpetArea.ResidentialExtraCarpetPercent ?? 0,
-          CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0
+          CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0,
+          Remark: formDataExtraCarpetArea.Remark
         };
 
         const response = await proposedOfferService.apiCallAddUpdateExtraCarpetArea(payload);
@@ -187,10 +194,11 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
     )
   };
 
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6 pb-5">
-        {/* Basic Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Basic Details
@@ -205,12 +213,12 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 onChange={(e) => handleFieldChangeExtraCarpetArea('ExtraCarpetAreaOfferedType', String(e))}
                 options={CARPET_AREA_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                 error={errors.ExtraCarpetAreaOfferedType}
+                disabled={!isBuildingSelected}
               />
             </div>
           </div>
         </div>
 
-        {/* Percentage Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Percentage Details
@@ -221,7 +229,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 label="Residential Extra Carpet (%)"
                 required
                 type="text"
-                value={formDataExtraCarpetArea.ResidentialExtraCarpetPercent || ''}
+                value={getInputValue(formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId, formDataExtraCarpetArea.ResidentialExtraCarpetPercent)}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -231,6 +239,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 error={errors.ResidentialExtraCarpetPercent}
                 placeholder="Enter Residential Extra Carpet"
                 rightIcon="%"
+                disabled={!isBuildingSelected}
               />
             </div>
             <div>
@@ -238,7 +247,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 label="Commercial Extra Carpet (%)"
                 required
                 type="text"
-                value={formDataExtraCarpetArea.CommercialExtraCarpetPercent || ''}
+                value={getInputValue(formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId, formDataExtraCarpetArea.CommercialExtraCarpetPercent)}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -248,9 +257,45 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 error={errors.CommercialExtraCarpetPercent}
                 placeholder="Enter Commercial Extra Carpet"
                 rightIcon="%"
+                disabled={!isBuildingSelected}
               />
             </div>
+
           </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataExtraCarpetArea.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeExtraCarpetArea("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
+            />
+          </div>
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={extraCarpetAreaData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(extraCarpetAreaData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={extraCarpetAreaData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(extraCarpetAreaData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 

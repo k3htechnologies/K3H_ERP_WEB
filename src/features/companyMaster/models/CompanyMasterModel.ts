@@ -133,12 +133,70 @@ export interface AddUpdateCompanyPartnerRequest {
     RemovePhotoURL: string | ''
 }
 
-
 export interface DeleteCompanyMasterRequest {
     CompanyId: number
     Uniquekey: string
 }
 
+export interface FilterWithPaginationCompanyMasterWithBankDetails {
+    CompanyWithBankDetailsId?: number
+    CompanyId?: number
+    BeneficiaryAccountHolderName?: string
+    AccountNumber?: string
+    BankName?: string
+    IsCheckPermission?: boolean
+}
+
+export interface CompanyMasterWithBankDetails {
+    CompanyWithBankDetailsId: number | 0;
+    CompanyId: number | 0;
+    Uniquekey: string | '';
+    CompanyName: string | '';
+    BeneficiaryAccountHolderName: string | '';
+    BankListMasterId: number | 0;
+    BankName: string | '';
+    AccountNumber: string | '';
+    Branch: string | '';
+    IFSCCode: string | '';
+    AcType: string | '';
+    NatureOfAccount: string | '';
+    Status: string | '';
+    MICRCode: string | '';
+    CancelChequeURL: string | '';
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+}
+
+export interface AddUpdateCompanyMasterWithBankDetailsRequest {
+    CompanyWithBankDetailsId: number | 0;
+    CompanyId: number | 0;
+    Uniquekey: string | '';
+    BeneficiaryAccountHolderName: string | '';
+    BankListMasterId: number | 0;
+    AccountNumber: string | '';
+    Branch: string | '';
+    IFSCCode: string | '';
+    AcType: string | '';
+    NatureOfAccount: string | '';
+    Status: string | '';
+    MICRCode: string | '';
+    CancelChequeURL: File[] | null;
+    RemoveCancelChequeURLURL: string | '';
+}
+
+export interface DeleteCompanyMasterWithBankDetailsRequest {
+    CompanyId: number | 0;
+    CompanyWithBankDetailsId: number | 0;
+    Uniquekey: string | '';
+}
+
 export type CompanyMasterListResponse = ApiResponse<CompanyMasterData[]>;
 export type CompanyMasterSaveResponse = ApiResponse<CompanyMasterData[]>;
 export type CompanyMasterDeleteResponse = ApiResponse<number>;
+export type CompanyMasterWithBankDetailsListResponse = ApiResponse<CompanyMasterWithBankDetails[]>;
+export type CompanyMasterWithBankDetailsSaveResponse = ApiResponse<CompanyMasterWithBankDetails[]>;
+export type CompanyMasterWithBankDetailsDeleteResponse = ApiResponse<number>;

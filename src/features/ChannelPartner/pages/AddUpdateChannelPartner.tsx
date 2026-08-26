@@ -53,13 +53,14 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
 import { getChannelPartnerVerificationSteps } from "@/features/ChannelPartner/utils/channelPartnerVerificationSteps";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { checkDuplicateField } from "@/core/utils/duplicateValidation";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   ChannelPartnerId: 0,
@@ -102,50 +103,42 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   VillageMasterId: null,
   PrimaryProjectPortfolioId: 0,
   SecondaryProjectPortfolioId: "",
+
+  AOPFromDate: null,
+  AOPToDate: null,
+  AOPDocumentURL: null,
+  RemoveAOPDocumentURL: "",
+
   OTP: "",
 });
 
 export const AddUpdateChannelPartner: React.FC = () => {
-  //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-
-  // PAN CARD URL
 
   const [panCardURLFiles, setPanCardURLFiles] = useState<(File | string)[]>([]);
   const [panCardURL, setPanCardURL] = useState<string>();
   const [removePanCardUrls, setRemovePanCardUrls] = useState<string[]>([]);
 
-  // AADHAR CARD URL
-  const [aadharCardURLFiles, setAadharCardURLFiles] = useState<
-    (File | string)[]
-  >([]);
+  const [aadharCardURLFiles, setAadharCardURLFiles] = useState<(File | string)[]>([]);
   const [aadharCardURL, setAadharCardURL] = useState<string>();
-  const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>(
-    [],
-  );
+  const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>([]);
 
-  // GST CERTIFICATE URL
-
-  const [gSTCertificateURLFiles, setGSTCertificateURLFiles] = useState<
-    (File | string)[]
-  >([]);
+  const [gSTCertificateURLFiles, setGSTCertificateURLFiles] = useState<(File | string)[]>([]);
   const [gSTCertificateURL, setGSTCertificateURL] = useState<string>();
-  const [removeGSTCertificateUrls, setRemoveGSTCertificateUrls] = useState<
-    string[]
-  >([]);
+  const [removeGSTCertificateUrls, setRemoveGSTCertificateUrls] = useState<string[]>([]);
 
-  //COMPLETE VERIFICATION
+  const [aopDocumentURLFiles, setAopDocumentURLFiles] = useState<(File | string)[]>([]);
+  const [aopDocumentURL, setAopDocumentURL] = useState<string>();
+  const [removeAopDocumentUrls, setRemoveAopDocumentUrls] = useState<string[]>([]);
+
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [showOtpSection, setShowOtpSection] = useState(false);
 
-  // NAVIGATE
   const navigate = useNavigate();
-
-  // GET VALUE FROM URL CHANNEL PARTNERID
   const { ChannelPartnerId } = useParams<{ ChannelPartnerId?: string }>();
   const channelPartnerIdParam = ChannelPartnerId ? Number(ChannelPartnerId) : 0;
   const isAddMode = channelPartnerIdParam === 0;
@@ -300,6 +293,9 @@ export const AddUpdateChannelPartner: React.FC = () => {
               VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
               PrimaryProjectPortfolioId: e.PrimaryProjectPortfolioId ?? prev.PrimaryProjectPortfolioId,
               SecondaryProjectPortfolioId: e.SecondaryProjectPortfolioId ?? prev.SecondaryProjectPortfolioId,
+              AOPFromDate: e.AOPFromDate ?? prev.AOPFromDate,
+              AOPToDate: e.AOPToDate ?? prev.AOPToDate,
+              RemoveAOPDocumentURL: "",
             }));
             setPanCardURLFiles([]);
             setPanCardURL(e.PanCardURL);
@@ -312,6 +308,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
             setGSTCertificateURLFiles([]);
             setGSTCertificateURL(e.GSTCertificateURL);
             setRemoveGSTCertificateUrls([]);
+
+            setAopDocumentURLFiles([]);
+            setAopDocumentURL(e.AOPDocumentURL);
+            setRemoveAopDocumentUrls([]);
 
             setSelectedCountryId(e.CountryMasterId ?? null);
             setSelectedStateId(e.StateMasterId ?? null);
@@ -327,7 +327,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
             setSelectedSecondaryProjectValues(e.SecondaryProjectPortfolioId || "");
           }
-          
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -375,18 +375,22 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.EmailId !== "") {
       if (!isValidEmail(formData.EmailId!.trim())) {
-        newErrors.EmailId = "Enter a Valid E-mail Id";
+        newErrors.EmailId = "Enter a Valid E-Mail ID";
       }
     }
 
     if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId.trim() === "") {
-      newErrors.EmailId = "E-mail Id is mandatory";
+      newErrors.EmailId = "E-Mail ID is mandatory";
     }
 
     if (formData.AlternativeMobileNumber?.trim()) {
       if (!isValidMobile(formData.AlternativeMobileNumber.trim())) {
         newErrors.AlternativeMobileNumber = "Enter a valid 10-digit Alternative Mobile Number";
       }
+    }
+
+    if (formData.ChannelPartnerId === 0 && !formData.CompanyName) {
+      newErrors.CompanyType = " Company Type is required";
     }
 
     if (!formData.CompanyName) {
@@ -479,6 +483,37 @@ export const AddUpdateChannelPartner: React.FC = () => {
       newErrors.VillageMasterId = "Village is required";
     }
 
+    // AOP VALIDATION
+    const hasAOPDocument = hasAnyDocumentFile(aopDocumentURLFiles, aopDocumentURL, removeAopDocumentUrls);
+
+    const hasAOPFromDate = !!formData.AOPFromDate;
+    const hasAOPToDate = !!formData.AOPToDate;
+
+    const aopFromDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.AOPFromDate ? new Date(formData.AOPFromDate) : undefined);
+    const aopToDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.AOPToDate ? new Date(formData.AOPToDate) : undefined);
+
+    if (hasAOPDocument) {
+      if (!hasAOPFromDate) {
+        newErrors.AOPFromDate = "From Date is required.";
+      }
+
+      if (!hasAOPToDate) {
+        newErrors.AOPToDate = "To Date is required.";
+      }
+    }
+
+    if (hasAOPFromDate || hasAOPToDate) {
+      if (!hasAOPDocument) {
+        newErrors.AOPDocumentURL = "AOP Document is required.";
+      }
+    }
+
+    if (hasAOPFromDate && hasAOPToDate) {
+      if (!isToDateGreaterOrEqualFromDate(aopFromDate, aopToDate)) {
+        newErrors.AOPToDate = "To Date must be greater than or equal to From Date.";
+      }
+    }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
@@ -516,6 +551,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
     fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
     fd.append("PrimaryProjectPortfolioId", String(formData.PrimaryProjectPortfolioId ?? 0));
     fd.append("SecondaryProjectPortfolioId", secondaryProjectIdsString);
+    fd.append("AOPFromDate", formData.AOPFromDate ?? "");
+    fd.append("AOPToDate", formData.AOPToDate ?? "");
     fd.append("OTP", otp?.trim() ?? "");
 
     panCardURLFiles.forEach((file) => {
@@ -541,6 +578,15 @@ export const AddUpdateChannelPartner: React.FC = () => {
     });
 
     fd.append("RemoveGSTCertificateURL", removeGSTCertificateUrls.join(","));
+
+    aopDocumentURLFiles.forEach((file) => {
+      if (file instanceof File) {
+        fd.append("AOPDocumentURL", file);
+      }
+    });
+
+    fd.append("RemoveAOPDocumentURL", removeAopDocumentUrls.join(","));
+
 
     return fd;
   };
@@ -711,7 +757,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
       apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
 
-      extraParams: { MobileNumberCountryCode: countryCode}
+      extraParams: { MobileNumberCountryCode: countryCode }
     });
 
     if (isDuplicate) {
@@ -778,7 +824,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                     handleFieldChange("MobileNumber", value);
 
-                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode|| "+91");
+                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode || "+91");
                   }}
                   onCountryCodeChange={(value) =>
                     handleFieldChange("MobileNumberCountryCode", value)
@@ -788,7 +834,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
               <div>
                 <Input
-                  label="E-mail Id"
+                  label="E-Mail ID"
                   type="text"
                   value={formData.EmailId}
                   error={errors.EmailId}
@@ -797,11 +843,11 @@ export const AddUpdateChannelPartner: React.FC = () => {
                     const emailId = filterEmail(e.target.value);
                     handleFieldChange("EmailId", emailId);
                   }}
-                  placeholder="Enter Valid E-mail Id"
+                  placeholder="Enter Valid E-Mail ID"
                 />
               </div>
 
-              
+
               <div>
                 <Input
                   leftIcon="+91"
@@ -826,6 +872,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                     label="Company Type"
                     placeholder="Select Company Type"
                     value={formData.CompanyType}
+                    error={errors.CompanyType}
                     onChange={(e) => {
                       const value = String(e);
 
@@ -1071,9 +1118,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   value={aadharCardURLFiles}
                   onChange={setAadharCardURLFiles}
                   availableFilesURL={aadharCardURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                   maxFiles={5}
-                  maxSizeMB={50}
                   onRemoveExisting={(url) => {
                     setRemoveAadharCardUrls((prev) => [...prev, url]);
                   }}
@@ -1105,9 +1151,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   value={panCardURLFiles}
                   onChange={setPanCardURLFiles}
                   availableFilesURL={panCardURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                   maxFiles={5}
-                  maxSizeMB={50}
                   onRemoveExisting={(url) => {
                     setRemovePanCardUrls((prev) => [...prev, url]);
                   }}
@@ -1138,9 +1183,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   value={gSTCertificateURLFiles}
                   onChange={setGSTCertificateURLFiles}
                   availableFilesURL={gSTCertificateURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                   maxFiles={5}
-                  maxSizeMB={50}
                   onRemoveExisting={(url) => {
                     setRemoveGSTCertificateUrls((prev) => [...prev, url]);
                   }}
@@ -1387,6 +1431,44 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
 
+          </div>
+
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              AOP Details
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <MultiFilePicker
+                  label=" Upload AOP Document"
+                  placeholder="Select AOP Document"
+                  error={errors.AOPDocumentURL}
+                  value={aopDocumentURLFiles}
+                  onChange={setAopDocumentURLFiles}
+                  availableFilesURL={aopDocumentURL ?? ""}
+                  allowedTypes={["application/pdf"]}
+                  maxFiles={1}
+                  onRemoveExisting={(url) => {
+                    setRemoveAopDocumentUrls((prev) => [...prev, url]);
+                  }}
+                />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="From Date"
+                  value={formatDate_dd_mm_yyyy(formData.AOPFromDate)}
+                  onChange={(val) => handleFieldChange("AOPFromDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  error={errors.AOPFromDate} />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="To Date"
+                  value={formatDate_dd_mm_yyyy(formData.AOPToDate)}
+                  onChange={(val) => handleFieldChange("AOPToDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  error={errors.AOPToDate} />
+              </div>
+            </div>
           </div>
         </form>
       </div>

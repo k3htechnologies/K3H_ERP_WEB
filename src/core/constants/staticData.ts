@@ -64,6 +64,8 @@ export const MASTER_DATA = {
 
   documentStatus: ["Applied", "Doc Missing", "In Process", "Issued", "Not Applied", "Not Applicable", "Paid", "Payment Due", "Rejected"],
 
+  drawingDocumentStatus: ["Advance", "Good For Construction (GFC)"],
+
   bankAccountType: ["Current", "Overdraft", "RERA Escrow Current Account", "Salary", "Saving"],
 
   natureOfAccount: [
@@ -248,6 +250,7 @@ export const MASTER_DATA = {
     "Re - Visit Proposed",
     "Re - Visit Scheduled",
     "Re - Visit",
+    "Repeat Re - Visit",
     "Negotiation",
     "Unit Selection / Blocked",
     "Booking Done",
@@ -437,9 +440,9 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["PU 1", "GROUND"],
+  parkingSubCategory_PuzzleParking: ["LEVEL 1","LEVEL 2","LEVEL 3","LEVEL 4","LEVEL 5","LEVEL 6","LEVEL 7","LEVEL 8","LEVEL 9","LEVEL 10", "GROUND LEVEL"],
 
-  parkingSubCategory_TowerParking: ["TO 1", "GROUND"],
+  parkingSubCategory_TowerParking: ["ROTATING","TO 1", "GROUND"],
 
   parkingSubCategory_PitPuzzleParking: ["PIT 1", "GROUND"],
 
@@ -568,7 +571,6 @@ export const MASTER_DATA = {
 
   reasonForInactivity: ["Firm Closed", "Key SPOC left", "Brokerage Pending", "Did not like project/brand"],
 
-  refundedDetaisAmountType: ["Agreement Amount"],
 
   platform: ["ERP", "Application", "Website"],
 
@@ -613,6 +615,8 @@ export const MASTER_DATA = {
 
   budgetLevelType: ["L1", "L2", "L3"],
 
+    tenderPaymentMode: ["Cheque", "Cash", "Demand Draft", "IMPS", "NEFT", "Pay Order", "RTGS", "UPI"],
+
 } as const;
 
 // ============================================================================
@@ -643,6 +647,7 @@ export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType);
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus);
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory);
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus);
+export const DRAWING_DOCUMENT_STATUS = toOptions(MASTER_DATA.drawingDocumentStatus);
 export const ACCOMODATION_TYPE_OPTIONS = toOptions(MASTER_DATA.accomodation);
 export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement);
 export const BUDGET_TYPE_OPTIONS = toOptions(MASTER_DATA.budget);
@@ -705,6 +710,7 @@ export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
 export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
+export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
 export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
@@ -726,7 +732,6 @@ export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrack
 export const CALL_STATUS_OPTIONS = toOptions(MASTER_DATA.callStatus);
 export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
 export const REASON_FOR_INAACTIVITY = toOptions(MASTER_DATA.reasonForInactivity);
-export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
 export const PLATFORM_OPTIONS = toOptions(MASTER_DATA.platform);
 export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
 export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);

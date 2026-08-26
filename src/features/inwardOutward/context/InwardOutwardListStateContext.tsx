@@ -10,7 +10,6 @@ export type InwardOutwardListState = {
   sortInfo: SortInfo | undefined;
   InwardOutwardId: number;
   DocumentTitle: string;
-  pageName: string;
   uniquekey: string;
 };
 
@@ -19,7 +18,7 @@ const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD;
 const getInitialState = (): InwardOutwardListState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
       const parsed = JSON.parse(stored) as InwardOutwardListState;
       return {
@@ -41,7 +40,6 @@ const getInitialState = (): InwardOutwardListState => {
     sortInfo: undefined,
     InwardOutwardId: 0,
     DocumentTitle: "",
-    pageName: "",
     uniquekey: "",
   };
 };
@@ -68,7 +66,7 @@ export const InwardOutwardListStateProvider = ({ children }: { children: ReactNo
     }
   }, [listState]);
 
-  
+
   const updateListState = useCallback((updates: Partial<InwardOutwardListState>) => {
     setListState((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -93,7 +91,6 @@ export const InwardOutwardListStateProvider = ({ children }: { children: ReactNo
       sortInfo: undefined,
       InwardOutwardId: 0,
       DocumentTitle: "",
-      pageName: "",
       uniquekey: "",
     };
     setListState(defaultState);
@@ -109,7 +106,7 @@ export const InwardOutwardListStateProvider = ({ children }: { children: ReactNo
     }));
   }, []);
 
-  
+
   const clearInwardOutwardContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,

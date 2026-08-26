@@ -30,6 +30,10 @@ export class PayTrackBookingDatasourceImpl implements PayTrackBookingDatasource 
             if (params.Floor?.trim()) queryParams.append('Floor', params.Floor.trim());
             if (params.ApplicantName?.trim()) queryParams.append('ApplicantName', params.ApplicantName.trim());
             if (params.ApplicantMobileNumber?.trim()) queryParams.append('ApplicantMobileNumber', params.ApplicantMobileNumber.trim());
+            if (params.AgreementValue) queryParams.append('AgreementValue', params.AgreementValue.toString());
+            if (params.BookingType?.trim()) queryParams.append('BookingType', params.BookingType.trim());
+            if (params.Configuration?.trim()) queryParams.append('Configuration', params.Configuration.trim());
+            if (params.IsFinalRegistrationCompleted !== undefined) queryParams.append('IsFinalRegistrationCompleted', String(params.IsFinalRegistrationCompleted));
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

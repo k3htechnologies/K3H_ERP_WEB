@@ -1,9 +1,10 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import { PayTrackParkingModificationDatasourceImpl } from '@/features/crmPayTrack/datasources/PayTrackParkingModificationDatasource'
 import type {
+    DeleteParkingModificationRequest,
     FilterWithPaginationParkingModificationDetails,
+    ParkingModificationDetailsDeleteReponse,
     ParkingModificationDetailsListResponse,
-    AddUpdateParkingModificationRequest,
     ParkingModificationDetailsSaveReponse
 } from '@/features/crmPayTrack/models/ParkingModificationModel';
 
@@ -25,10 +26,10 @@ export const parkingModificationService = {
         }
     },
 
-    apiCallAddUpdateParkingModificationDetails: async (params: AddUpdateParkingModificationRequest): Promise<E.Either<Failure, ParkingModificationDetailsSaveReponse>> => {
+    apiCallAddUpdateParkingModificationDetails: async (formData: FormData): Promise<E.Either<Failure, ParkingModificationDetailsSaveReponse>> => {
         try {
 
-            return E.right(await payTrackParkingModificationDatasource.addUpdateParkingModificationDetails(params));
+            return E.right(await payTrackParkingModificationDatasource.addUpdateParkingModificationDetails(formData));
 
         } catch (error: any) {
 
@@ -36,5 +37,20 @@ export const parkingModificationService = {
 
         }
     },
+
+
+    apiCallDeleteParkingModificationRequest: async (params: DeleteParkingModificationRequest): Promise<E.Either<Failure, ParkingModificationDetailsDeleteReponse>> => {
+        try {
+
+            return E.right(await payTrackParkingModificationDatasource.deleteParkingModificationRequest(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+
 
 }

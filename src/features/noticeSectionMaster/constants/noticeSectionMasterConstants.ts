@@ -16,16 +16,16 @@ export const getInitialFormState = (): AddUpdateNoticeSectionMasterRequest => ({
 
 export const getNoticeSectionMasterColumns = (): TableColumn[] => [
     {
-        key: 'GovernmentCompliance',
-        label: 'Government Compliance',
+        key: 'NoticeSection',
+        label: 'Notice Section',
         width: '30',
         sortable: true,
         fixed: 'left',
         align: 'left'
     },
     {
-        key: 'NoticeSection',
-        label: 'Notice Section',
+        key: 'GovernmentCompliance',
+        label: 'Government Compliance',
         width: '30',
         sortable: true,
         fixed: 'left',

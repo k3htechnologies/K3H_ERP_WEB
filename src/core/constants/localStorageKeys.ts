@@ -53,6 +53,8 @@ export const LOCAL_STORAGE_KEYS = {
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
     APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'approvalDocumentCategoryMaster.selectedColumns',
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
+    TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'testDocumentCategoryMaster.selectedColumns',
+    DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'drawingDocumentCategoryMaster.selectedColumns',
 
     // REDEVELOPMENT
 
@@ -84,6 +86,11 @@ export const LOCAL_STORAGE_KEYS = {
     ACHIEVEMENT_BY_BOOKING_COLUMNS: 'achievementByBooking.selectedColumns',
     ACHIEVEMENT_BY_IBMOBM_COLUMNS: 'achievementByIbmObm.selectedColumns',
 
+    //AOP ACHIEVEMENT
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS: 'achievementByChannelPartner.selectedColumns',
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS: 'achievementByChannelPartnerWalkinsRevisit.selectedColumns',
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS: 'achievementByChannelPartnerBooking.selectedColumns',
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS: 'achievementByChannelPartnerIbmObm.selectedColumns',
 
     //CRM
     PAY_TRACK_BOOKING_SELECTED_COLUMNS: 'payTrackBooking.selectedColumns',
@@ -131,5 +138,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INWARD_OUTWARD: 'inwardOutward.listState',
     BOOKING_Brokerage: 'bookingBrokerage.listState',
     TICKET: 'ticket.listState',
+    TERM_SHEET: 'termSheet.listState',
+    TAX_TRACKER: 'taxTracker.listState',
 
 } as const

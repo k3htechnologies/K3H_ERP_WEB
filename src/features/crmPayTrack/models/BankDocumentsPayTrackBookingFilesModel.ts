@@ -22,6 +22,8 @@ export interface BankDocumentsPayTrackBookingFilesData {
     BookingLoanDetailsId: number;
     BankStatusClosedActive: string | '';
     PayTrackBookingFilesURL: string;
+    ApprovalStatus: string;
+    IsApproval: boolean;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string | null;

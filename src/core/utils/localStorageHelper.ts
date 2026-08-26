@@ -1077,6 +1077,91 @@ export const LocalStorageHelper = {
     return null
   },
 
+  //AOP ACHIEVEMENT
+
+  storeAchievementByChannelPartnerTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByChannelPartnerWalkinsRevisitTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner Walkins Revisit Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerWalkinsRevisitTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner Walkins Revisit Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByChannelPartnerBookingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner Booking Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerBookingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner Booking Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByChannelPartnerIbmObmTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner IbmObm Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerIbmObmTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner IbmObm Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
 
   //PROJECT DOCUMENT
   storeProjectDocumentCategoryMasterTableColumns: (columns: string): void => {
@@ -1136,6 +1221,48 @@ export const LocalStorageHelper = {
         return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       } catch (error) {
         console.error("Error reading Project RERA Document Category Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeTestDocumentCategoryMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Test Document Category Master Columns Details:", error);
+    }
+  },
+
+  getTestDocumentCategoryMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Test Document Category Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeDrawingDocumentCategoryMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Drawing Document Category Master Columns Details:", error);
+    }
+  },
+
+  getDrawingDocumentCategoryMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Drawing Document Category Master Columns Details:", error);
         return null;
       }
     }
@@ -1385,6 +1512,7 @@ export const LocalStorageHelper = {
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_PROJECT);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
@@ -1414,6 +1542,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
@@ -1461,11 +1591,12 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
 
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);
     }
   },
-  //#endregion
 };

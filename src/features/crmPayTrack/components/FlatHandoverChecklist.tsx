@@ -28,7 +28,7 @@ export const FlatHandoverChecklist: React.FC = () => {
     const { addToast } = useToast();
     const { listState } = usePayTrackBookingListState();
     const { bookingId, bookingApprovalStatus } = listState;
-    const { canAction } = useMenuPermissions();
+    const { canAction } = useMenuPermissions('/flatHandoverChecklist');
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<FlatHandoverChecklistData | null>(null);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});

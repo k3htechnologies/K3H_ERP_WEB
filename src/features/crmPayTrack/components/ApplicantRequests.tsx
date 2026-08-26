@@ -1,23 +1,23 @@
 
 import { runApiWithLoader } from "@/core/utils";
-import React, { useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest, BookingApplicantModificationRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest, BookingApplicantModificationRequest, DeleteBookingApplicantModificationModelRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
 import { APPLICANT_TYPE } from "@/core/constants";
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import * as E from 'fp-ts/Either';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { IdCardIcon, Plus, Trash2 } from "lucide-react";
+import { IdCardIcon, Plus, Trash2,Edit } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { filterEmail, filterAadhaar, filterPAN, filterPassportNumber, filterDrivingLicenseNumber, filterVoterId, filterGST, isValidMobile, isValidEmail, calculateMergedFiles, isValidAadhaar, isValidPAN, isValidPassportNumber, isValidDrivingLicenseNumber, isValidVoterId, isValidGST, mergeFiles, calculateRemovedFiles, createFileUrlString, filterMobile } from "@/core/utils/fileValidation";
+import { filterEmail, filterAadhaar, filterPAN, filterPassportNumber, filterDrivingLicenseNumber, filterVoterId, filterGST, isValidMobile, isValidEmail, calculateMergedFiles, isValidAadhaar, isValidPAN, isValidPassportNumber, isValidDrivingLicenseNumber, isValidVoterId, isValidGST, mergeFiles, calculateRemovedFiles, createFileUrlString } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
@@ -25,6 +25,12 @@ import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import usePagination from "@/core/hooks/usePagination";
+import type { FilterWithPaginationPayTrackBooking } from "../models/PayTrackBookingModel";
+import { payTrackBookingService } from "../services/PayTrackBookingService";
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -41,6 +47,7 @@ const initialFormStateForDetailsRequest = (): BookingApplicantModificationReques
     ApplicantName: '',
     VotingIdURL: [],
     ApplicantMobileNumber: '',
+    ApplicantMobileNumberCountryCode: "+91",
     AadharCardNumber: '',
     RemoveDrivingLicenseURL: '',
     GSTNumber: '',
@@ -101,8 +108,11 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     ModifiedDate?: string | null;
 
 }
+interface Props {
+    onLoaded?: () => void;
+}
 
-export const ApplicantRequests: React.FC = () => {
+export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
     const [bookingApplicantModificationData, setBookingApplicantModificationData] = useState<BookingApplicantModificationDataRequest[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -165,16 +175,18 @@ export const ApplicantRequests: React.FC = () => {
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
 
     const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
     const { projectId } = useProject();
-    const { listState } = usePayTrackBookingListState();
+    const { listState, updateListState } = usePayTrackBookingListState();
     const { bookingId, bookingData, bookingApprovalStatus } = listState;
+    const { pagination, setPagination } = usePagination(20);
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
-   const applicantModificationList = useMemo(() => {
+    const applicantModificationList = useMemo(() => {
         if (!bookingApplicantModificationData?.length) {
             return [];
         }
@@ -188,38 +200,125 @@ export const ApplicantRequests: React.FC = () => {
         );
     }, [bookingApplicantModificationData]);
 
-    const applicantTypeOptions = useMemo(() => {
-        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
-            .filter((app) => app.VersionNumber !== "1")
-            .some(
-                (app) =>
-                    app.ApplicantType === "Applicant" &&
-                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
-            );
-
-        const hasApplicantInLocalList = applicantList.some(
-            (app, index) =>
-                app.ApplicantType === "Applicant" &&
-                index !== editingApplicantData?.index
-        );
-        const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
-
-        return APPLICANT_TYPE.filter((opt) => {
-            if (opt.name === "Applicant" && shouldDisableApplicant) {
-                return editingApplicantData?.row.ApplicantType === "Applicant";
-            }
-            return true;
-        }).map((opt) => ({ label: opt.name, value: opt.id }));
-    }, [bookingApplicantModificationData, editingApplicantData, applicantList]);
-
 
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
         fetchBookingApplicantModificationList();
 
+
     }, [projectId, bookingId]);
 
+
+    const fetchBookingApplicantModificationList = async () => {
+        await loadBookingApplicantModificationRequest();
+        onLoaded?.();
+    };
+
+    const loadBookingApplicantModificationRequest = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationBookingApplicantModificationRequest = {
+                    PageNumber: 1,
+                    PageSize: 10,
+                    ProjectId: Number(projectId),
+                    BookingId: Number(bookingId),
+                    TabName:"REQUESTS",
+                };
+
+                const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
+
+                if (E.isRight(response)) {
+                    setBookingApplicantModificationData(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Booking Applicant Modification Request'
+        );
+    };
+
+    const handleEditLocalApplicant = (row: RequestBookingApplicantWithFiles, index: number) => {
+        setEditingApplicantData({ row, index });
+        setFormDataDetails({
+            BookingApplicantModificationRequestId: row.BookingApplicantModificationRequestId ?? 0,
+            ApplicantType: row.ApplicantType ?? '',
+            ApplicantName: row.ApplicantName ?? '',
+            ApplicantMobileNumber: row.ApplicantMobileNumber ?? '',
+            ApplicantMobileNumberCountryCode: row.ApplicantMobileNumberCountryCode ?? '+91',
+            ApplicantEmailId: row.ApplicantEmailId ?? '',
+            AadharCardNumber: row.AadharCardNumber ?? '',
+            PanNumber: row.PanNumber ?? '',
+            PassportNumber: row.PassportNumber ?? '',
+            DrivingLicenseNumber: row.DrivingLicenseNumber ?? '',
+            VotingIdNumber: row.VotingIdNumber ?? '',
+            GSTNumber: row.GSTNumber ?? '',
+            RemovePhotoURL: row.RemovePhotoURL ?? '',
+            RemoveAadharCardURL: row.RemoveAadharCardURL ?? '',
+            RemovePanCardURL: row.RemovePanCardURL ?? '',
+            RemovePassportURL: row.RemovePassportURL ?? '',
+            RemoveDrivingLicenseURL: row.RemoveDrivingLicenseURL ?? '',
+            RemoveVotingIdURL: row.RemoveVotingIdURL ?? '',
+            RemoveGSTNumberURL: row.RemoveGSTNumberURL ?? '',
+            RemoveProofOfDocumentURL: row.RemoveProofOfDocumentURL ?? '',
+            PhotoURL: [],
+            AadharCardURL: [],
+            PanCardURL: [],
+            PassportURL: [],
+            DrivingLicenseURL: [],
+            VotingIdURL: [],
+            GSTNumberURL: [],
+            CancelledChequeURL: [],
+            POAURL: [],
+            IncomeForm16ITRURL: [],
+            NreNroBankDetailsURL: [],
+            NomineeFormURL: [],
+            StatementOfSourceOfFundsURL: [],
+            PaymentProofURL: [],
+            ProofOfDocumentURL: [],
+        });
+        setApplicantPhotoFiles(row._photoFiles ?? []);
+        setAadharCardFiles(row._aadharFiles ?? []);
+        setPanCardFiles(row._panFiles ?? []);
+        setPassportFiles(row._passportFiles ?? []);
+        setDrivingLicenseFiles(row._drivingFiles ?? []);
+        setVotingIdFiles(row._votingFiles ?? []);
+        setGstFiles(row._gstFiles ?? []);
+        setCancelledChequeFiles(row._cancelledChequeFiles ?? []);
+        setPOAFiles(row._pOAFiles ?? []);
+        setIncomeForm16ITRFiles(row._incomeForm16ITRFiles ?? []);
+        setNreNroBankDetailsFiles(row._nreNroBankDetailsFiles ?? []);
+        setNomineeFormFiles(row._nomineeFormFiles ?? []);
+        setStatementOfSourceOfFundsFiles(row._statementOfSourceOfFundsFiles ?? []);
+        setPaymentProofFiles(row._paymentProofFiles ?? []);
+        setProofOfDocumentFiles(row._proofOfDocumentFiles ?? []);
+        setRemovedApplicantPhotoURLs([]);
+        setRemovedAadharCardURLs([]);
+        setRemovedPanCardURLs([]);
+        setRemovedPassportURLs([]);
+        setRemovedDrivingLicenseURLs([]);
+        setRemovedVotingIdURLs([]);
+        setRemovedGstURLs([]);
+        setRemovedCancelledChequeURLs([]);
+        setRemovedPOAURLs([]);
+        setRemovedIncomeForm16ITRURLs([]);
+        setRemovedNreNroBankDetailsURLs([]);
+        setRemovedNomineeFormURLs([]);
+        setRemovedStatementOfSourceOfFundsURLs([]);
+        setRemovedPaymentProofURLs([]);
+        setRemovedProofOfDocumentURLs([]);
+        setErrorsBookingApplicant({});
+        setIsAddUpdateApplicantDetailsModalOpen(true);
+    };
 
     const handleFieldChangeBookingApplicantDetails = (field: keyof BookingApplicantModificationRequest, value: any) => {
 
@@ -229,52 +328,6 @@ export const ApplicantRequests: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-
-    const handleApprovalSubmit = async (remark: string) => {
-
-        if (!approvalRowData) return;
-
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "BOOKING APPLICANT MODIFICATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            IsApproved: approvalActionType === "approve",
-            Remarks: remark ?? null,
-            SubId: approvalRowData.BookingApplicantModificationRequestId ?? 0
-        };
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsApprovalActionModalOpen(false);
-
-                    await fetchBookingApplicantModificationList();
-
-                } else {
-
-                    addToast({ type: "error", title: response.left.message });
-
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
-        );
-    };
-
 
     const validateAddApplicantForm = (): {
         isValid: boolean;
@@ -288,6 +341,7 @@ export const ApplicantRequests: React.FC = () => {
             newErrorsBookingApplicant.ProofOfDocumentURL = "Proof of Document is required";
         }
 
+
         if (!formDataDetails.ApplicantType?.trim()) {
             newErrorsBookingApplicant.ApplicantType = "Applicant Type is required";
         }
@@ -295,18 +349,18 @@ export const ApplicantRequests: React.FC = () => {
         if (!formDataDetails.ApplicantName?.trim()) {
             newErrorsBookingApplicant.ApplicantName = "Applicant Name is required";
         }
-
         if (!formDataDetails.ApplicantMobileNumber?.trim()) {
             newErrorsBookingApplicant.ApplicantMobileNumber = "Mobile Number is required";
-        } else if (!isValidMobile(formDataDetails.ApplicantMobileNumber.trim())) {
-            newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
+        } else if (!isValidMobile(formDataDetails.ApplicantMobileNumber.trim(), formDataDetails.ApplicantMobileNumberCountryCode!.trim())) {
+            newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid Mobile Number";
         }
 
+
         if (!formDataDetails.ApplicantEmailId?.trim()) {
-            newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
+            newErrorsBookingApplicant.ApplicantEmailId = "E-Mail ID is required";
         }
         else if (!isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
+            newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-Mail ID";
         }
 
         const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();
@@ -462,6 +516,7 @@ export const ApplicantRequests: React.FC = () => {
             ApplicantType: formDataDetails.ApplicantType || "",
             ApplicantName: formDataDetails.ApplicantName || "",
             ApplicantMobileNumber: formDataDetails.ApplicantMobileNumber || "",
+            ApplicantMobileNumberCountryCode: formDataDetails.ApplicantMobileNumberCountryCode!.trim() || "",
             ApplicantEmailId: formDataDetails.ApplicantEmailId || "",
             PhotoURL: createFileUrlString(mergedPhotoFiles),
             AadharCardNumber: formDataDetails.AadharCardNumber || "",
@@ -556,41 +611,7 @@ export const ApplicantRequests: React.FC = () => {
         setProofOfDocumentFiles([]);
     };
 
-    const fetchBookingApplicantModificationList = async () => {
-        return await loadBookingApplicantModificationRequest();
-    };
-
-    const loadBookingApplicantModificationRequest = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationBookingApplicantModificationRequest = {
-                    PageNumber: 1,
-                    PageSize: 10,
-                    ProjectId: Number(projectId),
-                    BookingId: Number(bookingId),
-
-                };
-
-                const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
-
-                if (E.isRight(response)) {
-                    setBookingApplicantModificationData(response.right.Data);
-
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Loading Booking Applicant Modification Request'
-        );
-    };
+    
 
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
@@ -642,6 +663,7 @@ export const ApplicantRequests: React.FC = () => {
                     formDataToSend.append(`${prefix}.ApplicantType`, app.ApplicantType ?? "");
                     formDataToSend.append(`${prefix}.ApplicantName`, app.ApplicantName ?? "");
                     formDataToSend.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? "");
+                    formDataToSend.append(`${prefix}.ApplicantMobileNumberCountryCode`, app.ApplicantMobileNumberCountryCode ?? "");
                     formDataToSend.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? "");
                     formDataToSend.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? "");
                     formDataToSend.append(`${prefix}.PanNumber`, app.PanNumber ?? "");
@@ -715,6 +737,11 @@ export const ApplicantRequests: React.FC = () => {
         );
     };
 
+    const handleConfirmationDialogBoxOpen = useCallback((row: BookingApplicantModificationDataRequest) => {
+        setBookingApplicantModificationData([row])
+        setIsConfirmationDialogBoxOpen(true)
+    }, [])
+
     const summaryColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -763,11 +790,11 @@ export const ApplicantRequests: React.FC = () => {
                 width: "15",
                 sortable: false,
                 align: "center",
-                render: (value) => value || "-",
+                render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
             },
             {
                 key: "ApplicantEmailId",
-                label: "Email Id",
+                label: "E-Mail ID",
                 width: "15",
                 sortable: false,
                 align: "center",
@@ -800,7 +827,9 @@ export const ApplicantRequests: React.FC = () => {
                 width: "15",
                 sortable: false,
                 align: "center",
-                render: (value) => value || "-",
+                render: (value: string, row: any) => {
+                    return <MultiImageViewer images={parseDocumentUrls(row.VotingIdURL)} title="Voting ID Document" triggerLabel={value || "-"} isWrap={false} />;
+                },
             },
             {
                 key: "PassportNumber",
@@ -968,14 +997,51 @@ export const ApplicantRequests: React.FC = () => {
                     );
                 }
             },
+            {
+                key: 'Actions',
+                label: 'Actions',
+                width: '15',
+                align: 'center',
+                render: (_value, row) => {
+
+                    if (row.ApplicantType !== "Applicant") {
+                        return "-";
+                    }
+
+                    const isDisabled = row.ApprovalStatus !== "Pending";
+
+                    return (
+                        <div>
+                            <Button
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    color: (!isDisabled) ? 'red' : '#9CA3AF',
+                                    cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
+                                    opacity: (!isDisabled) ? 1 : 0.5
+                                }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleConfirmationDialogBoxOpen(row);
+                                }}
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                                disabled={isDisabled}
+                            />
+
+                        </div>
+
+                    )
+                }
+            }
         ],
-        [bookingApplicantModificationData, canAction]
+        [bookingApplicantModificationData, canAction, handleConfirmationDialogBoxOpen]
     )
 
     const pendingColumns = useMemo<TableColumn[]>(
         () => [
             ...summaryColumns.filter(
-                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber"
+                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber" && col.key!=="Actions"
             ),
             {
                 key: "actions",
@@ -983,8 +1049,17 @@ export const ApplicantRequests: React.FC = () => {
                 width: "10",
                 sortable: false,
                 align: "center" as const,
-                render: (_v: any, _row: any, index: number) => (
-                    <div className="flex justify-center">
+                render: (_v: any, row: RequestBookingApplicantWithFiles, index: number) => (
+                    <div className="flex justify-center gap-1">
+                        <Button
+                            onClick={() => handleEditLocalApplicant(row, index)}
+                            variant="outline"
+                            color="transparent"
+                            size="sm"
+                            title="Edit"
+                        >
+                            <Edit className="h-4 w-4 text-blue-700" />
+                        </Button>
                         <Button
                             onClick={() => setApplicantList((prev) => prev.filter((_, i) => i !== index))}
                             variant="outline"
@@ -997,9 +1072,74 @@ export const ApplicantRequests: React.FC = () => {
                     </div>
                 ),
             },
+
         ],
-        [summaryColumns]
+        [summaryColumns, handleEditLocalApplicant]
     );
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setBookingApplicantModificationData([]);
+    }, [setIsConfirmationDialogBoxOpen, setBookingApplicantModificationData]);
+
+
+
+     const handleDeleteBookingApplicantRequest = async () => {
+        if (!bookingApplicantModificationData || bookingApplicantModificationData.length === 0) return;
+
+        const targetId = bookingApplicantModificationData[0].BookingApplicantModificationRequestId;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: DeleteBookingApplicantModificationModelRequest = {
+                    BookingId: bookingId ?? 0,
+                    ProjectId: projectId ?? 0,
+                    BookingApplicantModificationRequestId: targetId,
+                };
+
+                const response = await bookingApplicantModificationService.apiCallDeleteBookingApplicantModificationRequest(params);
+
+                if (E.isRight(response)) {
+
+                    setBookingApplicantModificationData((prevList) =>
+                        prevList.filter(item => item.BookingApplicantModificationRequestId !== targetId)
+                    );
+
+                    const newTotalRecords = Math.max(0, pagination.totalRecords - 1);
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+
+                    await loadBookingApplicantModificationRequest();
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    setIsConfirmationDialogBoxOpen(false);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                    setIsConfirmationDialogBoxOpen(false);
+                    await loadBookingApplicantModificationRequest();
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Delete Applicant Requests'
+        );
+    };
 
     const handleApprovalLog = (row: BookingApplicantModificationDataRequest) => {
         const request: ModulesApprovalStatusRequest = {
@@ -1021,73 +1161,165 @@ export const ApplicantRequests: React.FC = () => {
         setIsApprovalActionModalOpen(true);
     };
 
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (!approvalRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "BOOKING APPLICANT MODIFICATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null,
+            SubId: approvalRowData.BookingApplicantModificationRequestId ?? 0
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await fetchBookingApplicantModificationList();
+
+                    await loadPayTrackList();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+    };
+
+
+     const loadPayTrackList = async () => {
+            await runApiWithLoader(
+                setIsLoading,
+                setLoadingMessage,
+                async () => {
+                    const params: FilterWithPaginationPayTrackBooking = {
+                        PageNumber: 1,
+                        PageSize: 1,
+                        ProjectId: Number(projectId),
+                        BookingId: Number(bookingId)
+                    };
+    
+                    const response = await payTrackBookingService.apiCallPullPayTrackBooking(params);
+    
+                    if (E.isRight(response)) {
+    
+                        updateListState({ bookingName: response.right.Data[0]?.ApplicantName || "-" });
+    
+    
+                    } else {
+                        addToast({ type: "error", title: response.left.message });
+                    }
+    
+                    return response;
+                },
+                undefined,
+                (error: any) => {
+                    addToast({ type: "error", title: error.message });
+                },
+                undefined,
+                "Loading Pay Track Booking",
+            );
+        };
+
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
 
-            <section className="bg-white rounded-xl pt-5">
-                <div className="flex justify-between items-center mb-8">
-                    <h4 className="text-lg font-semibold text-gray-900">
-                        Applicant Details
-                    </h4>
+            <div className="pt-5">
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
+                    <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+                        <h4 className="text-sm font-semibold text-[#C2410C]">
+                            Applicant Details
+                        </h4>
 
-                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
-                        <Button
-                            onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
-                            color="blue"
-                            size="sm"
-                            variant="solid"
-                            leftIcon={<Plus className="h-4 w-4" />}
-                            disabled={isBookingCancelled}
-                        >
-                            Applicant Change Request
-                        </Button>
-                    )}
-                </div>
+                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !applicantModificationList.length && (
 
-                {applicantList.length > 0 && (
-                    <div className="mb-8">
-                        <div className="flex justify-between items-center mb-4">
-                            <h5 className="text-md font-medium text-blue-800">Pending Requests (unsaved)</h5>
-                            <Button
-                                onClick={handleSaveApplicantRequests}
-                                color="blue"
-                                size="sm"
-                                variant="solid"
-                                loading={isLoading}
-                                style={{ width: '140px' }}
-                                disabled={isBookingCancelled}
-                            >
-                                Save
-                            </Button>
-                        </div>
-                        <DataTable
-                            columns={pendingColumns}
-                            data={applicantList}
-                            fixedHeight={false}
-                            className="shadow-sm border border-blue-100 rounded-lg"
-                        />
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
+                                    color="blue"
+                                    size="sm"
+                                    variant="solid"
+                                    leftIcon={<Plus className="h-4 w-4" />}
+                                    disabled={isBookingCancelled}
+                                >
+                                    Add
+                                </Button>
+
+                                {applicantList.length > 0 && (
+                                    <Button
+                                        onClick={handleSaveApplicantRequests}
+                                        size="sm"
+
+                                        color="transparent"
+                                        variant="transparent_border_background"
+
+                                        loading={isLoading}
+                                        style={{ width: '140px' }}
+                                        disabled={isBookingCancelled}
+                                    >
+                                        Save
+                                    </Button>
+                                )}
+                            </div>
+
+                        )}
                     </div>
-                )}
 
-                {applicantModificationList.length > 0 ? (
-                    <DataTable
-                        columns={summaryColumns}
-                        data={applicantModificationList}
-                        fixedHeight={false}
-                        className="shadow-sm border border-gray-100 rounded-lg"
-                    />
-                ) : (
-                    applicantList.length === 0 && (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message="No Applicant Found" />
-                        </section>
-                    )
-                )}
-            </section>
+                    {applicantList.length > 0 && (
+                        <div className="p-6">
+                            
+                            <DataTableWithHeaderRowDivider
+                                columns={pendingColumns}
+                                data={applicantList}
+                                fixedHeight={false}
+                            />
+                        </div>
+                    )}
 
+                    {applicantModificationList.length > 0 ? (
+                        <div className="p-5">
+                            
+                            <DataTableWithHeaderRowDivider
+                                columns={summaryColumns}
+                                data={applicantModificationList}
+                                fixedHeight={false}
+                            />
+                        </div>
+                    ) : (
+                        applicantList.length === 0 && (
+                            <section className="md:col-span-4 bg-white rounded-xl p-6">
+                                <NoDataView message="No Applicant Found" />
+                            </section>
+                        )
+                    )}
+
+                </section>
+            </div>
             <Modal
                 isOpen={isAddUpdateApplicantDetailsModalOpen}
                 onClose={() => {
@@ -1166,8 +1398,8 @@ export const ApplicantRequests: React.FC = () => {
                     setRemovedProofOfDocumentURLs([]);
                 }}
 
-                title="Add Applicant"
-                saveText="Add"
+                title={editingApplicantData ? "Edit Applicant" : "Add Applicant"}
+                saveText={editingApplicantData ? "Update" : "Add"}
                 cancelText="Cancel"
                 onSubmit={handleAddUpdateBookingApplicant}
                 loading={isLoading}
@@ -1185,12 +1417,18 @@ export const ApplicantRequests: React.FC = () => {
                                     value={proofOfDocumentFiles}
                                     onChange={setProofOfDocumentFiles}
                                     allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                                    maxFiles={3} maxSizeMB={10}
+                                    
                                     onRemoveExisting={(url) => setRemovedProofOfDocumentURLs((prev) => [...prev, url])} />
                             </div>
                         </div>
                         <div>
-                            <SinglePageSelection label="Applicant Type" placeholder="Select Applicant Type" required value={formDataDetails?.ApplicantType ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))} options={applicantTypeOptions} error={errorsBookingApplicant.ApplicantType} />
+                            <SinglePageSelection
+                                label="Applicant Type"
+                                placeholder="Select Applicant Type"
+                                required value={formDataDetails?.ApplicantType ?? ""}
+                                onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))}
+                                options={APPLICANT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                error={errorsBookingApplicant.ApplicantType} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1198,13 +1436,22 @@ export const ApplicantRequests: React.FC = () => {
                             <Input label="Applicant Name" placeholder="Enter Applicant Name" type="text" value={formDataDetails.ApplicantName ?? ''} onChange={(e) => handleFieldChangeBookingApplicantDetails('ApplicantName', e.target.value)} error={errorsBookingApplicant.ApplicantName} required
                             />
                         </div>
-
                         <div>
-                            <Input label="Mobile Number" required error={errorsBookingApplicant.ApplicantMobileNumber} type="text" value={formDataDetails.ApplicantMobileNumber ?? ""} maxLength={10} leftIcon="+91" onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantMobileNumber", filterMobile(e.target.value))} placeholder="Enter Mobile Number" />
+                            <MobileNumberInput
+                                mobileNumber={formDataDetails.ApplicantMobileNumber ?? ""}
+                                countryCode={formDataDetails.ApplicantMobileNumberCountryCode ?? "+91"}
+                                required
+                                error={errorsBookingApplicant.ApplicantMobileNumber}
+                                onMobileChange={(value) =>
+                                    handleFieldChangeBookingApplicantDetails("ApplicantMobileNumber", value)
+                                }
+                                onCountryCodeChange={(value) =>
+                                    handleFieldChangeBookingApplicantDetails("ApplicantMobileNumberCountryCode", value)
+                                }
+                            />
                         </div>
-
                         <div>
-                            <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
+                            <Input label="E-Mail ID" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter E-Mail ID" />
                         </div>
                         <div>
                             <MultiFilePicker label="Profile Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} maxSizeMB={5} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />
@@ -1213,63 +1460,70 @@ export const ApplicantRequests: React.FC = () => {
                             <Input label="Aadhaar Number" error={errorsBookingApplicant.AadharCardNumber} required type="text" value={formDataDetails.AadharCardNumber ?? ""} maxLength={12} onChange={(e) => handleFieldChangeBookingApplicantDetails("AadharCardNumber", filterAadhaar(e.target.value))} placeholder="Enter Aadhaar Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2}  onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="PAN Number" required error={errorsBookingApplicant.PanNumber} type="text" value={formDataDetails.PanNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter PAN Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Passport Number" error={errorsBookingApplicant.PassportNumber} type="text" value={formDataDetails.PassportNumber ?? ""} maxLength={8} onChange={(e) => handleFieldChangeBookingApplicantDetails("PassportNumber", filterPassportNumber(e.target.value.toUpperCase()))} placeholder="Enter Passport Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Driving License Number" error={errorsBookingApplicant.DrivingLicenseNumber} type="text" value={formDataDetails.DrivingLicenseNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicantDetails("DrivingLicenseNumber", filterDrivingLicenseNumber(e.target.value.toUpperCase()))} placeholder="Enter Driving License Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Voting ID Number" error={errorsBookingApplicant.VotingIdNumber} type="text" value={formDataDetails.VotingIdNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("VotingIdNumber", filterVoterId(e.target.value.toUpperCase()))} placeholder="Enter Voting ID Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataDetails.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicantDetails("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Cancelled Cheque" placeholder="Select Cancelled Cheque" error={errorsBookingApplicant.CancelledChequeURL} value={cancelledChequeFiles} onChange={setCancelledChequeFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedCancelledChequeURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Cancelled Cheque" placeholder="Select Cancelled Cheque" error={errorsBookingApplicant.CancelledChequeURL} value={cancelledChequeFiles} onChange={setCancelledChequeFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedCancelledChequeURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="POA (if NRI Execution)" placeholder="Select POA Document" error={errorsBookingApplicant.POAURL} value={pOAFiles} onChange={setPOAFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPOAURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="POA (if NRI Execution)" placeholder="Select POA Document" error={errorsBookingApplicant.POAURL} value={pOAFiles} onChange={setPOAFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedPOAURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Income Docs (Form 16 / ITR)" placeholder="Select Income Document" error={errorsBookingApplicant.IncomeForm16ITRURL} value={incomeForm16ITRFiles} onChange={setIncomeForm16ITRFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedIncomeForm16ITRURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Income Docs (Form 16 / ITR)" placeholder="Select Income Document" error={errorsBookingApplicant.IncomeForm16ITRURL} value={incomeForm16ITRFiles} onChange={setIncomeForm16ITRFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedIncomeForm16ITRURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="NRE / NRO Bank Details" placeholder="Select NRE / NRO Bank Document" error={errorsBookingApplicant.NreNroBankDetailsURL} value={nreNroBankDetailsFiles} onChange={setNreNroBankDetailsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNreNroBankDetailsURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="NRE / NRO Bank Details" placeholder="Select NRE / NRO Bank Document" error={errorsBookingApplicant.NreNroBankDetailsURL} value={nreNroBankDetailsFiles} onChange={setNreNroBankDetailsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedNreNroBankDetailsURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Nominee Form" placeholder="Select Nominee Form" error={errorsBookingApplicant.NomineeFormURL} value={nomineeFormFiles} onChange={setNomineeFormFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNomineeFormURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Nominee Form" placeholder="Select Nominee Form" error={errorsBookingApplicant.NomineeFormURL} value={nomineeFormFiles} onChange={setNomineeFormFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedNomineeFormURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Statement of Source of Funds" placeholder="Select Source Document" error={errorsBookingApplicant.StatementOfSourceOfFundsURL} value={statementOfSourceOfFundsFiles} onChange={setStatementOfSourceOfFundsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedStatementOfSourceOfFundsURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Statement of Source of Funds" placeholder="Select Source Document" error={errorsBookingApplicant.StatementOfSourceOfFundsURL} value={statementOfSourceOfFundsFiles} onChange={setStatementOfSourceOfFundsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedStatementOfSourceOfFundsURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Payment Proof" placeholder="Select Payment Proof" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Payment Proof" placeholder="Select Payment Proof" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
                         </div>
                     </div>
                 </div>
             </Modal>
 
+           <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={handleDeleteDialogClose}
+                onConfirm={handleDeleteBookingApplicantRequest}
+                loading={isLoading}
+                pageName='Booking Applicant'
+            />
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 title='Applicant Details '

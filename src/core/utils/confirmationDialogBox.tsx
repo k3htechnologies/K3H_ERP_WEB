@@ -131,7 +131,7 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
                         disabled={loading}
                         className={`px-4 py-2 rounded-md transition-colors duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed ${styles.confirmButton}`}
                     >
-                        {loading ? 'Deleting...' : confirmText}
+                        {loading ? 'Processing...' : confirmText}
                     </button>
                 </div>
             </div>

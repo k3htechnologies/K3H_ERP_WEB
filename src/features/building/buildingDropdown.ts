@@ -1,14 +1,15 @@
 import * as E from 'fp-ts/Either';
 import { buildingService } from '@/features/building/services/BuildingService';
 
-export const fetchBuildingDropdown = async (pageNumber: number, params?: { value?: string ,projectId?: number}) => {
+export const fetchBuildingDropdown = async (pageNumber: number, params?: { value?: string ,projectId?: number,buildingName?: string,}) => {
     try {
         const responseEither = await buildingService.apiCallPullBuilding({
             PageSize: 20,
             PageNumber: pageNumber,
             ProjectId: params?.projectId,
+            BuildingName: params?.buildingName || '',
             IsCheckPermission: false
-        });
+        })
 
         if (E.isLeft(responseEither)) {
             return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };

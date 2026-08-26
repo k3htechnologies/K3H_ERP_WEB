@@ -13,10 +13,12 @@ export interface TableColumn {
   fixed?: "left" | "right"
   align?: "left" | "center" | "right"
   truncate?: boolean
+  wrap?:boolean
   maxWidth?: string
   children?: TableColumn[]
   theadStyle?: React.CSSProperties
   tdStyle?: React.CSSProperties
+
 }
 
 export interface PaginationInfo {
@@ -200,14 +202,10 @@ export const CustomTable: React.FC<Props> = ({
 
         <table className="min-w-full border-collapse border border-gray-300">
 
-          {/* HEADER */}
-
-          <thead
-            className={`${fixedHeight ? "sticky top-0 z-40" : ""}`}
-            style={{ backgroundColor: "#E4F0FF", zIndex: 30, }}
-          >
+          <thead className={`${fixedHeight ? "sticky top-0 z-40" : ""}`} style={{ backgroundColor: "#E4F0FF", zIndex: 30, }} >
 
             {buildHeaderRows().map((row, rIndex) => (
+              
               <tr key={rIndex}>
 
                 {row.map((col: any, cIndex: number) => (
@@ -216,7 +214,8 @@ export const CustomTable: React.FC<Props> = ({
                     key={cIndex}
                     colSpan={col.colSpan}
                     rowSpan={col.rowSpan}
-                    className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
+                    className={`px-4 py-2 text-gray-800 tracking-wider ${col.wrap ? 'whitespace-normal break-words' : 'whitespace-nowrap'}
+                   
                     ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
                     ${col.width ? `w-${col.width}` : ''}
                     ${col.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
@@ -235,8 +234,6 @@ export const CustomTable: React.FC<Props> = ({
                     }}
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
-
-
                     <div className={`flex items-center space-x-1  ${col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'}`}>
 
                       {col.label}
@@ -255,7 +252,6 @@ export const CustomTable: React.FC<Props> = ({
 
           </thead>
 
-          {/* BODY */}
 
           <tbody>
 

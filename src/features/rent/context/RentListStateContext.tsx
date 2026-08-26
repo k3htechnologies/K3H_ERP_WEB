@@ -19,6 +19,8 @@ export type RentListState = {
   tenure: string;
   totalAmount: number;
   paidTotalAmount: number;
+  unitType:string;
+  carpetArea:number;
   // PayTrackRent related state
   payTrackRentTenantApplicantId: number;
   payTrackRentTenantApplicantName: string;
@@ -44,7 +46,9 @@ const getInitialState = (projectId: number | null): RentListState => {
       activeTab: "",
       tenure: "",
       totalAmount: 0, 
-        paidTotalAmount: 0,
+      paidTotalAmount: 0,
+      unitType:"",
+      carpetArea:0,
       payTrackRentTenantApplicantId: 0,
       payTrackRentTenantApplicantName: "",
     };
@@ -85,6 +89,8 @@ const getInitialState = (projectId: number | null): RentListState => {
     tenure: "",
     totalAmount: 0,
     paidTotalAmount: 0,
+    unitType:"",
+    carpetArea:0,
     payTrackRentTenantApplicantId: 0,
     payTrackRentTenantApplicantName: "",
   };
@@ -129,6 +135,8 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
         tenure: "",
         totalAmount: 0,
         paidTotalAmount: 0,
+        unitType:"",
+        carpetArea:0,
         payTrackRentTenantApplicantId: 0,
         payTrackRentTenantApplicantName: "",
       };
@@ -143,7 +151,6 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
     setLastProjectId(projectId);
   }, [projectId, lastProjectId]);
 
-  // Persist state to localStorage when it changes (only if projectId exists)
   useEffect(() => {
     if (projectId) {
       try {
@@ -158,12 +165,10 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
     }
   }, [listState, projectId]);
 
-  // Update list state (partial updates)
   const updateListState = useCallback((updates: Partial<RentListState>) => {
     setListState((prev) => ({ ...prev, ...updates }));
   }, []);
 
-  // Reset filters only (keeps page, pageSize, buildingId, etc.)
   const resetFilters = useCallback(() => {
     setListState((prev) => ({
       ...prev,
@@ -174,7 +179,6 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
     }));
   }, []);
 
-  // Reset to default state
   const resetToDefault = useCallback(() => {
     const defaultState: RentListState = {
       page: 1,
@@ -193,13 +197,14 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
       tenure: "",
       totalAmount: 0,
       paidTotalAmount: 0,
+      unitType:"",
+      carpetArea:0,
       payTrackRentTenantApplicantId: 0,
       payTrackRentTenantApplicantName: "",
     };
     setListState(defaultState);
   }, []);
 
-  // Set PayTrackRent context (for view/add pages)
   const setPayTrackRentContext = useCallback((
     tenantApplicantId: number,
     tenantApplicantName: string
@@ -211,7 +216,6 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
     }));
   }, []);
 
-  // Clear PayTrackRent context (when leaving view/add pages)
   const clearPayTrackRentContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,
@@ -220,13 +224,11 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
     }));
   }, []);
 
-  // Set building context (when building dropdown changes)
   const setBuildingContext = useCallback((buildingId: number, buildingName: string) => {
     setListState((prev) => ({
       ...prev,
       buildingId,
       buildingName,
-      // Reset filters, search, and page when building changes
       filters: {},
       searchTerm: "",
       sortInfo: undefined,
@@ -234,13 +236,11 @@ export const RentListStateProvider = ({ children }: { children: ReactNode }) => 
     }));
   }, []);
 
-  // Clear building context (when project changes - handled by reset)
   const clearBuildingContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,
       buildingId: 0,
       buildingName: "",
-      
       filters: {},
       searchTerm: "",
       sortInfo: undefined,

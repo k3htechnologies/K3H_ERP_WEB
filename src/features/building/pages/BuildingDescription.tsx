@@ -23,11 +23,13 @@ const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
   PlotAreaOldApprovedPlanSqFt: undefined,
   PlotAreaConveyanceSqFt: undefined,
   PlotAreaPRCardSqFt: undefined,
-  TotalBuiltUpAreaSqFt: 0,
+  TotalCarpetAreaSqFt: 0,
   TotalResidentialUnits: undefined,
   TotalResidentialCarpetAreaSqFt: undefined,
   TotalCommercialUnits: undefined,
   TotalCommercialCarpetAreaSqFt: undefined,
+  TotalGarageCarpetAreaSqFt: 0,
+  TotalTerraceCarpetAreaSqFt: 0,
   BuildingKeyContactDetailsJSON: undefined
 });
 
@@ -116,11 +118,13 @@ const BuildingDescription: React.FC = () => {
               PlotAreaOldApprovedPlanSqFt: row.PlotAreaOldApprovedPlanSqFt ?? prev.PlotAreaOldApprovedPlanSqFt,
               PlotAreaConveyanceSqFt: row.PlotAreaConveyanceSqFt ?? prev.PlotAreaConveyanceSqFt,
               PlotAreaPRCardSqFt: row.PlotAreaPRCardSqFt ?? prev.PlotAreaPRCardSqFt,
-              TotalBuiltUpAreaSqFt: row.TotalBuiltUpAreaSqFt ?? prev.TotalBuiltUpAreaSqFt ?? 0,
+              TotalCarpetAreaSqFt: row.TotalCarpetAreaSqFt ?? prev.TotalCarpetAreaSqFt ?? 0,
               TotalResidentialUnits: row.TotalResidentialUnits ?? prev.TotalResidentialUnits,
               TotalResidentialCarpetAreaSqFt: row.TotalResidentialCarpetAreaSqFt ?? prev.TotalResidentialCarpetAreaSqFt,
               TotalCommercialUnits: row.TotalCommercialUnits ?? prev.TotalCommercialUnits,
-              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt
+              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt,
+              TotalGarageCarpetAreaSqFt: row.TotalGarageCarpetAreaSqFt ?? prev.TotalGarageCarpetAreaSqFt,
+              TotalTerraceCarpetAreaSqFt: row.TotalTerraceCarpetAreaSqFt ?? prev.TotalTerraceCarpetAreaSqFt,
             }));
 
             // Parse contact details from JSON
@@ -176,8 +180,8 @@ const BuildingDescription: React.FC = () => {
       newErrors.GrossPlotAreaSqFt = "Gross Plot Area is required.";
     }
 
-    if (formData.TotalBuiltUpAreaSqFt === null || formData.TotalBuiltUpAreaSqFt === undefined || formData.TotalBuiltUpAreaSqFt <= 0) {
-      newErrors.TotalBuiltUpAreaSqFt = "Total Built Up Area is required.";
+    if (formData.TotalCarpetAreaSqFt === null || formData.TotalCarpetAreaSqFt === undefined || formData.TotalCarpetAreaSqFt <= 0) {
+      newErrors.TotalCarpetAreaSqFt = "Total Carpet Area is required.";
     }
 
     return {
@@ -210,11 +214,13 @@ const BuildingDescription: React.FC = () => {
       PlotAreaOldApprovedPlanSqFt: formData.PlotAreaOldApprovedPlanSqFt ?? undefined,
       PlotAreaConveyanceSqFt: formData.PlotAreaConveyanceSqFt ?? undefined,
       PlotAreaPRCardSqFt: formData.PlotAreaPRCardSqFt ?? undefined,
-      TotalBuiltUpAreaSqFt: formData.TotalBuiltUpAreaSqFt ?? 0,
+      TotalCarpetAreaSqFt: formData.TotalCarpetAreaSqFt ?? 0,
       TotalResidentialUnits: formData.TotalResidentialUnits ?? undefined,
       TotalResidentialCarpetAreaSqFt: formData.TotalResidentialCarpetAreaSqFt ?? undefined,
       TotalCommercialUnits: formData.TotalCommercialUnits ?? undefined,
       TotalCommercialCarpetAreaSqFt: formData.TotalCommercialCarpetAreaSqFt ?? undefined,
+      TotalGarageCarpetAreaSqFt: formData.TotalGarageCarpetAreaSqFt ??0,
+      TotalTerraceCarpetAreaSqFt: formData.TotalTerraceCarpetAreaSqFt ?? 0,
       BuildingKeyContactDetailsJSON: contactDetailsJSON
     };
 
@@ -347,17 +353,17 @@ const BuildingDescription: React.FC = () => {
 
           {/* ============================================================= [BUILDING CONSTRUCTION DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3 pt-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Construction Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Existing Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Total Built Up Area (SqFt)"
+                  label="Total Carpet Area (SqFt)"
                   required
-                  error={errors.TotalBuiltUpAreaSqFt}
+                  error={errors.TotalCarpetAreaSqFt}
                   type="text"
-                  value={formData.TotalBuiltUpAreaSqFt || ''}
-                  onChange={(e) => handleFieldChange('TotalBuiltUpAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  value={formData.TotalCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Total Built Up Area"
                   rightIcon="SqFt"
                 />
@@ -399,6 +405,26 @@ const BuildingDescription: React.FC = () => {
                   value={formData.TotalCommercialCarpetAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('TotalCommercialCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Commercial Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Garage Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalGarageCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalGarageCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter Garage Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
+               <div>
+                <Input
+                  label="Terrace Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalTerraceCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalTerraceCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter Terrace Carpet Area"
                   rightIcon="SqFt"
                 />
               </div>
@@ -479,7 +505,7 @@ const BuildingDescription: React.FC = () => {
                     </div>
                     <div className="md:col-span-2 lg:col-span-1">
                       <Input
-                        label="Email ID"
+                        label="E-Mail ID"
                         type="text"
                         value={contact.EmailId || ''}
                         onChange={(e) => {
@@ -499,7 +525,7 @@ const BuildingDescription: React.FC = () => {
                             }));
                           }
                         }}
-                        placeholder="Enter Email Id"
+                        placeholder="Enter E-Mail ID"
                         error={contactDetailsErrors[index]?.EmailId}
                       />
                     </div>

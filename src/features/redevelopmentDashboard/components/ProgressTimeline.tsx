@@ -21,6 +21,15 @@ export default function ProgressTimeline({
   proposedOfferProposedPlanData = [],
 }: Props) {
 
+const totalBuildingIds = [
+  ...new Set(buildingData.map((x) => Number(x.BuildingId))),
+];
+
+const tenantBuildingIds = new Set(tenantData.map((x) => Number(x.BuildingId)));
+
+const matchedBuildingCount = totalBuildingIds.filter((id) =>tenantBuildingIds.has(id)).length;
+
+const tenantDataPercent = totalBuildingIds.length === 0 ? 0 : Math.round((matchedBuildingCount / totalBuildingIds.length) * 100);
 
   const allCompleted =
     buildingData.length > 0 &&
@@ -37,7 +46,7 @@ export default function ProgressTimeline({
     },
     {
       label: "Tenant Data",
-      percent: tenantData.length > 0 ? 100 : 0,
+      percent: tenantDataPercent,
     },
     {
       label: "Offer",
@@ -70,7 +79,7 @@ export default function ProgressTimeline({
       style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
     >
       <p className="text-sm text-gray-500 font-medium mb-4">
-        Project Progress
+        Project ERP Progress
       </p>
 
       <div className="relative flex items-center justify-between">

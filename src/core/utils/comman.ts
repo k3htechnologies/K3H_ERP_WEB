@@ -264,3 +264,9 @@ export const copyToClipboard = async (text?: string): Promise<boolean> => {
     return false;
   }
 };
+
+export const getInputValue = (id: number,value: number | null | undefined) => {
+  return id > 0 ? (value ?? 0): (value === 0 ? '' : (value ?? ''));
+};
+
+export const isEmpty = (value: any) =>value === null || value === undefined || value === '';

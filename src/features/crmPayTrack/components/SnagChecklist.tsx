@@ -191,7 +191,7 @@ export const SnagChecklist: React.FC = () => {
                     <div className="flex justify-center">
                         <Checkbox
                             checked={row.IsCheck === true}
-                            disabled={!canAction}
+                            disabled={!canAction || bookingApprovalStatus?.toUpperCase() !== 'APPROVED'}
                             onChange={(e) => {
                                 const checked = e.target.checked;
 
@@ -219,7 +219,7 @@ export const SnagChecklist: React.FC = () => {
         return Object.values(
             filteredData.reduce((data: any, item) => {
 
-                const key = `${item.CategoryName}_${item.SubCategoryName}_${item.Title}`;
+                const key = `${item.CategoryName}_${item.SubCategoryName}_${item.Title}_${item.Tags}`;
 
                 if (!data[key]) {
                     data[key] = {
@@ -267,7 +267,8 @@ export const SnagChecklist: React.FC = () => {
                         (data) =>
                             data.CategoryName === item.CategoryName &&
                             data.SubCategoryName === item.SubCategoryName &&
-                            data.Title === item.Title
+                            data.Title === item.Title &&
+                            data.Tags === item.Tags
                     );
 
                     const checkedCount = savedRows.filter(

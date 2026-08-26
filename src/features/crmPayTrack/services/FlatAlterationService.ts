@@ -1,7 +1,9 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import { FlatAlterationCrmDatasourceImpl } from '@/features/crmPayTrack/datasources/FlatAlterationCrmDatasource'
 import type {
+    DeleteFlatAlterationRequest,
     FilterWithPaginationFlatAlterationRequest,
+    FlatAlterationRequestDeleteReponse,
     FlatAlterationRequestListResponse,
     FlatAlterationRequestSaveReponse
 } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
@@ -28,6 +30,18 @@ export const flatAlterationService = {
         try {
 
             return E.right(await flatAlterationCrmDatasource.addUpdateFlatAlterationRequest(formData));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallDeleteFlatAlterationRequest: async (params: DeleteFlatAlterationRequest): Promise<E.Either<Failure, FlatAlterationRequestDeleteReponse>> => {
+        try {
+
+            return E.right(await flatAlterationCrmDatasource.deleteFlatAlterationRequest(params));
 
         } catch (error: any) {
 

@@ -5,6 +5,7 @@ export interface FilterWithPaginationFlatAlterationRequest {
     PageNumber: number;
     ProjectId: number;
     BookingId: number;
+    TabName?:string;
 }
 
 export interface FlatAlterationRequestData {
@@ -35,5 +36,13 @@ export interface AddUpdateFlatAlterationRequest {
     RemoveProofOfDocumentURL?: string;
 }
 
+export interface DeleteFlatAlterationRequest {
+    FlatAlterationRequestId: number;
+    Uniquekey: string;
+    BookingId: number;
+    ProjectId: number;
+}
+
 export type FlatAlterationRequestListResponse = ApiResponse<FlatAlterationRequestData[]>;
 export type FlatAlterationRequestSaveReponse = ApiResponse<FlatAlterationRequestData[]>;
+export type FlatAlterationRequestDeleteReponse = ApiResponse<number>;

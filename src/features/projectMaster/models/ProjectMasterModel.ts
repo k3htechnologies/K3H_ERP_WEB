@@ -48,20 +48,20 @@ export interface ProjectMasterData {
     // ADVANCE DETAILS
     Category: string | '';
 
-    // TENDER DETAILS
     TenderAmount: number | 0;
-    TenderEMDAmount: number | 0;
-
     TenderPurchaseStartDate: string | '';
     TenderPurchaseEndDate: string | '';
-
-    TenderChequeNumber: string | '';
-    TenderChequeNumberURL: string | '';
-
+    TenderAmountPaymentMode: string | '';
+    TenderAmountChequeNumber: string | '';
+    TenderAmountChequeNumberURL: string | '';
+    TenderAmountPayorderRemark: string | '';
+    
+    TenderEMDAmount: number | 0;
     TenderSubmissionDate: string | '';
-    TenderIssueDate: string | '';
-
-    TenderPayorderRemark: string | '';
+    TenderEMDPaymentMode: string | '';
+    TenderEMDChequeNumber: string | '';
+    TenderEMDChequeNumberURL: string | '';
+    TenderEMDPayorderRemark: string | '';
 
     BussinessCategory: string | '';
     ProjectShortName: string | '';
@@ -87,7 +87,7 @@ export interface ProjectMasterData {
     ProjectEstimateCost: number | 0;
     ProjectAreaInSqft: string | '';
     ProjectAreaInSqmt: string | '';
-    OnGoingBudgetCost: string | '';
+    OnGoingBudgetCost:number | 0;
 
     SurveyDate: string | null;
     ExpectedStartDate: string | null;
@@ -95,16 +95,26 @@ export interface ProjectMasterData {
 
     SiteContactMobileNumber: string | '';
     SiteContactName: string | '';
+    SiteContactDesignation: string | '';
+    SiteContact2MobileNumber: string | '';
+    SiteContact2Name: string | '';
+    SiteContact2Designation: string | '';
+    SiteContact3MobileNumber: string | '';
+    SiteContact3Name: string | '';
+    SiteContact3Designation: string | '';
     ProjectStatus: string | '';
     RERANumber: string | '';
     APFNumber: string | '';
 
     RERACertificateDate: string | null;
-    RERAComplitionDate: string | null;
+    RERAPossessionDate: string | null;
 
     ProjectScheme: string | '';
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
+
+    IsFederation:boolean | false;
+    FederationAmount:number | 0;
 
     // Notification
     NotificationCount: number | 0;
@@ -170,19 +180,21 @@ export interface AddUpdateProjectMasterRequest {
 
     // TENDER DETAILS
     TenderAmount: number | 0;
-    TenderEMDAmount: number | 0;
-
     TenderPurchaseStartDate: string | null;
     TenderPurchaseEndDate: string | null;
-
-    TenderChequeNumber: string | '';
-    TenderChequeNumberURL: (File | string)[] | null;
-    RemoveTenderChequeNumberURL: string | '';
-
+    TenderAmountPaymentMode: string | '';
+    TenderAmountChequeNumber: string | '';
+    TenderAmountChequeNumberURL: (File | string)[] | null;
+    RemoveTenderAmountChequeNumberURL: string | '';
+    TenderAmountPayorderRemark: string | '';
+    
+    TenderEMDAmount: number | 0;
     TenderSubmissionDate: string | null;
-    TenderIssueDate: string | null;
-
-    TenderPayorderRemark: string | '';
+    TenderEMDPaymentMode: string | '';
+    TenderEMDChequeNumber: string | '';
+    TenderEMDChequeNumberURL: (File | string)[] | null;
+    RemoveTenderEMDChequeNumberURL: string | '';
+    TenderEMDPayorderRemark: string | '';
 
     BussinessCategory: string | '';
     ProjectShortName: string | '';
@@ -205,15 +217,25 @@ export interface AddUpdateProjectMasterRequest {
 
     SiteContactMobileNumber: string | '';
     SiteContactName: string | '';
+    SiteContactDesignation: string | '';
+    SiteContact2MobileNumber: string | '';
+    SiteContact2Name: string | '';
+    SiteContact2Designation: string | '';
+    SiteContact3MobileNumber: string | '';
+    SiteContact3Name: string | '';
+    SiteContact3Designation: string | '';
     ProjectStatus: string | '';
     RERANumber: string | '';
     APFNumber: string | '';
     RERACertificateDate: string | null;
-    RERAComplitionDate: string | null;
+    RERAPossessionDate: string | null;
 
     ProjectScheme: string | '';
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
+
+    IsFederation:boolean | false;
+    FederationAmount:number | 0;
 }
 
 export interface AddUpdateProjectMasterWithEmployeeRequest {

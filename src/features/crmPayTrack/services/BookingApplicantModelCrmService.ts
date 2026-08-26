@@ -3,7 +3,9 @@ import { BookingApplicantModificationDatasourceImpl } from '@/features/crmPayTra
 import type {
     FilterWithPaginationBookingApplicantModificationRequest,
     BookingApplicantModificationListResponse,
-    BookingApplicantModificationSaveReponse
+    BookingApplicantModificationSaveReponse,
+    DeleteBookingApplicantModificationModelRequest,
+    BookingApplicantModificationDeleteReponse
 } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
 
 import * as E from 'fp-ts/Either';
@@ -33,6 +35,18 @@ export const bookingApplicantModificationService = {
         } catch (error: any) {
 
             return E.left({ message: error.message, code: error.code });
+        }
+    },
+
+    apiCallDeleteBookingApplicantModificationRequest: async (params: DeleteBookingApplicantModificationModelRequest): Promise<E.Either<Failure, BookingApplicantModificationDeleteReponse>> => {
+        try {
+
+            return E.right(await bookingApplicantModificationCrmDatasource.deleteBookingApplicantModificationRequest(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
         }
     },
 

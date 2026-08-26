@@ -160,6 +160,11 @@ export const getPageInfo = (path: string) => {
                 description: 'Smart Leave Credit Setup for Seamless HR Management',
             }
 
+        case 'noticeSection':
+            return {
+                title: 'Notice Section Master',
+                description: 'Centralized management of notice sections for real estate projects',
+            }
         // PAYROLL
 
         case 'payrollDashboard':
@@ -230,6 +235,29 @@ export const getPageInfo = (path: string) => {
             return {
                 title: 'Approval Document Category',
                 description: 'Categorize Approvals, Simplify Decisions',
+            }
+            case 'testCategory':
+            return {
+                title: 'Test Document Category',
+                description: 'Categorize Test, Simplify Decisions',
+            }
+
+            case 'testDocument':
+            return {
+                title: 'Test Document',
+                description: 'Efficient Test for Seamless Real Estate Operations',
+            }
+
+            case 'drawingCategory':
+            return {
+                title: 'Drawing Document Category',
+                description: 'Categorize Drawing, Simplify Decisions',
+            }
+
+             case 'drawing':
+            return {
+                title: 'Drawing Document',
+                description: 'Efficient Drawing for Seamless Real Estate Operations',
             }
 
         //PROFILE
@@ -306,7 +334,7 @@ export const getPageInfo = (path: string) => {
             }
         case 'rent':
             return {
-                title: 'Rent',
+                title: 'Temporary Alternate Accommodation',
                 description: 'Manage rent cycles with clarity and control',
             }
         case 'proposedOffer':
@@ -339,7 +367,20 @@ export const getPageInfo = (path: string) => {
                 description: 'Ticket',
             }
 
-            {/* INVENTORY */ }
+        case 'otpLogs':
+            return {
+                title: 'OTP Logs',
+                description: 'OTP Logs'
+            }
+
+        case 'taxTracker':
+            return {
+                title: 'Tax Tracker',
+                description: 'Tax Tracker for tracking notices issued by authorities across India',
+            }
+
+
+            {/* INVENTORY AND REPORT */ }
 
         case 'inventoryDashboard':
             return {
@@ -472,7 +513,11 @@ export const getPageInfo = (path: string) => {
                 title: "Channel Partner Category",
                 description: "Channel Partner Category",
             }
-
+        case 'aopAchievement':
+            return {
+                title: "AOP Achievement",
+                description: "Recognize and Reward Top Performers",
+            }
 
 
         // MARKETING
@@ -539,11 +584,37 @@ export const getPageInfo = (path: string) => {
                 description: "Brokerage",
             }
 
-        //TAX TRACKER
-        case 'noticeSection':
+        //SPECIFICATION MASTER
+        case 'specificationmaster':
             return {
-                title: 'Notice Section Master',
-                description: 'Centralized management of notice sections for real estate projects',
+                title: "Specification Master",
+                description: 'Overview of your system and key metrics',
+            }
+        //BUDGET
+        case 'budget':
+            return {
+                title: "Budget",
+                description: 'Overview of your system and key metrics',
+            }
+
+        //FINANCE
+        case 'termSheet':
+            return {
+                title: "Term Sheet",
+                description: "Manage and track term sheets for real estate transactions",
+            }
+            
+        case 'termSheetReport':
+            return {
+                title: "Term Sheet Report",
+                description: "Manage and track term sheets for real estate transactions",
+            }
+
+            //VISITOR MANAGEMENT
+        case 'gatePass':
+            return {
+                title: "Gate Pass",
+                description: "Gate Pass",
             }
 
         //ESTIMATION AND BUDGET

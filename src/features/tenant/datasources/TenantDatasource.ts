@@ -41,16 +41,19 @@ export class TenantDatasourceImpl implements TenantDatasource {
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString());
             if (params.TenantId) queryParams.append('TenantId', params.TenantId.toString());
-            if (params.FlatNumber?.trim()) queryParams.append('FlatNumber', params.FlatNumber.trim());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
+            if (params.UnitAnnexureSurveyNumber?.trim()) queryParams.append('UnitAnnexureSurveyNumber', params.UnitAnnexureSurveyNumber.trim());
             if (params.ApplicantName?.trim()) queryParams.append('ApplicantName', params.ApplicantName.trim());
+            if (params.UnitType?.trim()) queryParams.append('UnitType', params.UnitType.trim());
+            if (params.UnitCarpetAreaSqFt) queryParams.append('UnitCarpetAreaSqFt', params.UnitCarpetAreaSqFt.toString());
+            if (params.UnitConfiguration?.trim()) queryParams.append('UnitConfiguration', params.UnitConfiguration.trim());
+            if (params.BuildingNumber?.trim()) queryParams.append('BuildingNumber', params.BuildingNumber.trim());
             if (params.FlatType?.trim()) queryParams.append('FlatType', params.FlatType.trim());
             if (params.FlatConfiguration?.trim()) queryParams.append('FlatConfiguration', params.FlatConfiguration.trim());
             if (params.FlatCarpetAreaSqFt?.trim()) queryParams.append('FlatCarpetAreaSqFt', params.FlatCarpetAreaSqFt.trim());
-            if (params.BuildingNumber?.trim()) queryParams.append('BuildingNumber', params.BuildingNumber.trim());
             if (params.Wing?.trim()) queryParams.append('Wing', params.Wing.trim());
             if (params.Flat?.trim()) queryParams.append('Flat', params.Flat.trim());
             if (params.ParkingNumber?.trim()) queryParams.append('ParkingNumber', params.ParkingNumber.trim());
-
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

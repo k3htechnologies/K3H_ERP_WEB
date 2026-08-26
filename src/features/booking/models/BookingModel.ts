@@ -60,6 +60,7 @@ export interface BookingData {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectName: string | null;
+    ProjectId: number | null;
     EnquiryId: number | null;
     SystemGeneratedCode: string | null;
     ApplicantName: string | null;
@@ -96,6 +97,8 @@ export interface BookingData {
 
     RegistrationDate: string | null;
     FinalRegistrationDate: string | null;
+    IsFinalRegistrationCompleted:boolean;
+    FinalRegistrationURL: string | null;
     
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
@@ -103,8 +106,11 @@ export interface BookingData {
     AgreementValueGSTAmount: number | null;
     StampDutyPercentage: number | null;
     StampDutyAmount: number | null;
+
     RegistrationFees: number | null;
+    
     ParkingId: string | null;
+
     NumberOfParking: number | null;
     HandoverType: string | null;
     SourceOfFunding: string | null;
@@ -121,6 +127,7 @@ export interface BookingData {
     PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleScheme: string | null;
     BookingPaymentScheduleData?: BookingPaymentScheduleData[] | null;
+
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;
@@ -131,23 +138,29 @@ export interface BookingData {
     CancelledById: number | null;
     CancelledBy: string | null;
     CancelledDate: string | null;
+    CancelRemark: string | null;
+    CancelBookingApprovalStatus: string | null;
+    ProofOfDocumentURL: string | null;
 
     IsApproval: boolean;
     ApprovalStatus: string | null;
-    ProjectId: number | null;
+
     TotalAmountReceivedAgainstBooking: number | null;
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;
+
     FlatAlterationRequestIsApproval: boolean;
     FlatAlterationRequestApprovalStatus: string | null;
+
     ParkingModificationRequestIsApproval: boolean;
-    ParkingModificationRequestApprovalStatus: string | null;
+    ParkingModificationRequestApprovalStatus: string | null
+    ;
     BookingApplicantModificationRequestIsApproval: boolean;
     BookingApplicantModificationRequestApprovalStatus: string | null;
+
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
-    LedgerCount: number | null;
     IsApplicableOtherCharge:boolean | null;
 }
 
@@ -351,6 +364,9 @@ export interface CancelBookingRequest {
     ProjectId: number | null;
     InventoryFlatId: number | null;
     ParkingId: string | null;
+    CancelRemark: string | null;
+    ProofOfDocumentURL?: File[] | null;
+    RemoveProofOfDocumentURL?: string;
 }
 
 //=============================================================
@@ -362,13 +378,6 @@ export interface PaymentScheduleStagesData {
     TotalRecords?: number | null;
 }
 
-export interface UpdatePayTrackBookingRegistrationDateParking {
-    BookingId: number | null;
-    Uniquekey: string | null;
-    ProjectId: number | null;
-    FinalRegistrationDate: string | null;
-    ParkingId: string | null;
-}
 
 //=============================================================
 // [ API RESPONSE TYPES ]

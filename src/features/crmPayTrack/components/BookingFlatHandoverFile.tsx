@@ -24,6 +24,11 @@ import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayT
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
+import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
+import ApprovalActionModalForFlatHandover from '@/features/modulesWorkflowApproval/components/ApprovalActionModalForFlatHandover';
 
 const initialFormState = (): AddUpdateBankDocumentsPayTrackBookingFilesRequest => ({
     PayTrackBookingFilesId: 0,
@@ -69,10 +74,10 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-    const { canAction } = useMenuPermissions(fileType==="FLAT HANDOVER" ? "/flatHandover" : "/files");
+    const { canAction } = useMenuPermissions(fileType === "FLAT HANDOVER" ? "/flatHandover" : "/files");
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId ,bookingApprovalStatus} = listState;
+    const { bookingId, bookingApprovalStatus, bookingData } = listState;
 
     const { projectId } = useProject();
 
@@ -84,39 +89,49 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
         searchDocuments(value);
     }, 350);
 
-     
+    // APPROVAL LOG MODAL
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [fileName, setFileName] = useState<string | null>("");
+
+    // APPROVAL ACTION MODAL
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+    const [approvalRowData, setApprovalRowData] = useState<BankDocumentsPayTrackBookingFilesData | null>(null);
+
+
     useEffect(() => {
         loadBankDoucumentsPayTrackBookingFiles(1, {});
     }, [projectId, bookingId]);
 
-     useEffect(() => {
+    useEffect(() => {
         if (isAddUpdateModalOpen) {
-          if (editingBankDocumentPayTrackBookingFilesData) {
-            setFormData({
-              PayTrackBookingFilesId: editingBankDocumentPayTrackBookingFilesData.PayTrackBookingFilesId,
-              Uniquekey: editingBankDocumentPayTrackBookingFilesData.Uniquekey || initialFormState().Uniquekey,
-              BookingId: editingBankDocumentPayTrackBookingFilesData.BookingId || 0,
-              ProjectId: Number(projectId),
-              FileName: editingBankDocumentPayTrackBookingFilesData.FileName || "",
-              FileType: fileType.toUpperCase(),
-            });
-    
-            setDocumentFiles([]);
-            setDocumentURL(editingBankDocumentPayTrackBookingFilesData.PayTrackBookingFilesURL || "");
-            setRemovedDocumentURLs([]);
-          } else {
-            setFormData(initialFormState());
-          }
-          setErrors({});
+            if (editingBankDocumentPayTrackBookingFilesData) {
+                setFormData({
+                    PayTrackBookingFilesId: editingBankDocumentPayTrackBookingFilesData.PayTrackBookingFilesId,
+                    Uniquekey: editingBankDocumentPayTrackBookingFilesData.Uniquekey || initialFormState().Uniquekey,
+                    BookingId: editingBankDocumentPayTrackBookingFilesData.BookingId || 0,
+                    ProjectId: Number(projectId),
+                    FileName: editingBankDocumentPayTrackBookingFilesData.FileName || "",
+                    FileType: fileType.toUpperCase(),
+                });
+
+                setDocumentFiles([]);
+                setDocumentURL(editingBankDocumentPayTrackBookingFilesData.PayTrackBookingFilesURL || "");
+                setRemovedDocumentURLs([]);
+            } else {
+                setFormData(initialFormState());
+            }
+            setErrors({});
         }
-      }, [isAddUpdateModalOpen, editingBankDocumentPayTrackBookingFilesData, projectId]);
-    
+    }, [isAddUpdateModalOpen, editingBankDocumentPayTrackBookingFilesData, projectId]);
+
 
     const fetchBankDoucumentsPayTrackBookingFiles = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadBankDoucumentsPayTrackBookingFiles(page, filters, sort ?? sortInfo);
     };
 
-    const loadBankDoucumentsPayTrackBookingFiles = async (page: number, filterParams: FilterInfo,sortInfo?: SortInfo, searchtext?: string) => {
+    const loadBankDoucumentsPayTrackBookingFiles = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -127,7 +142,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                     ProjectId: Number(projectId),
                     BookingId: bookingId,
                     FileType: fileType.toUpperCase(),
-                    FileName:searchtext ?? filterParams.DepartmentName ?? undefined,
+                    FileName: searchtext ?? filterParams.DepartmentName ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, bankDocumentColumns),
 
                 };
@@ -165,7 +180,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
 
             return;
         }
-        await loadBankDoucumentsPayTrackBookingFiles(1,filters, sortInfo, searchValue);
+        await loadBankDoucumentsPayTrackBookingFiles(1, filters, sortInfo, searchValue);
     };
 
     const clearsearchDocumnets = () => {
@@ -176,7 +191,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
 
     const handlePageChange = useCallback(
         (page: number) => {
-            loadBankDoucumentsPayTrackBookingFiles(page,filters, sortInfo,searchTerm);
+            loadBankDoucumentsPayTrackBookingFiles(page, filters, sortInfo, searchTerm);
         },
         [loadBankDoucumentsPayTrackBookingFiles],
     );
@@ -213,6 +228,29 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
         setDeleteBankDocumentPayTrackDetailsData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, [])
+
+
+    const handleApprovalLog = (row: BankDocumentsPayTrackBookingFilesData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "FLAT HANDOVER APPROVAL",
+            Id: row.BookingId ?? 0,
+            SubId: row.PayTrackBookingFilesId ?? 0,
+            ProjectId: row.ProjectId ?? 0,
+        };
+        setFileName(row.FileName);
+
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
+    const handleApproveRejectDocument = (row: BankDocumentsPayTrackBookingFilesData, approvalType: "approve" | "reject") => {
+
+        setApprovalRowData(row);
+        setFileName(row.FileName);
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+
+    };
 
     const bankDocumentColumns = useMemo<TableColumn[]>(
         () => [
@@ -251,6 +289,27 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 render: (value, row) =>
                     value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy(row.CreatedDate) : "-",
             },
+            ...(pageName === "Flat Handover"
+                ? [{
+                    key: "ApprovalStatus",
+                    label: "Approval Status",
+                    width: "18",
+                    sortable: false,
+                    render: (value: any, row: any) => (
+                        row.PayTrackBookingFilesURL?.trim() !== "" && (
+                            <ApprovalActions
+                                approvalStatus={value || "-"}
+                                showApproval={row.IsApproval}
+                                isIcons={true}
+                                onHistory={() => handleApprovalLog(row)}
+                                onApprove={() => handleApproveRejectDocument(row, "approve")}
+                                onReject={() => handleApproveRejectDocument(row, "reject")}
+                            />
+                        )
+                    )
+                }]
+                : []),
+
             {
                 key: "Actions",
                 label: "Actions",
@@ -259,8 +318,15 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 fixed: "right",
                 render: (_value, row) => {
 
-                    const showEdit = canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED';
-                    const showDelete = canAction  &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && pageName!="Flat Handover" ? true :false;
+                    const showEdit = canAction
+                        && bookingApprovalStatus?.toUpperCase() === 'APPROVED'
+                        && !row.ApprovalStatus?.toUpperCase().includes("APPROVED");
+                        
+
+                    const showDelete = canAction
+                        && bookingApprovalStatus?.toUpperCase() === 'APPROVED'
+                        && !row.ApprovalStatus?.toUpperCase().includes("APPROVED")
+                        && pageName != "Flat Handover" ? true : false;
 
                     return (
                         <div className="flex items-center justify-end ml-2 gap-1">
@@ -321,7 +387,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 },
             },
 
-        ], [canAction, handleConfirmationDialogBoxOpen, handleEditBankDocumentPayTrackDetails]
+        ], [canAction, handleConfirmationDialogBoxOpen, handleEditBankDocumentPayTrackDetails, handleApprovalLog, handleApproveRejectDocument]
     );
 
     const handleFieldChange = (field: keyof AddUpdateBankDocumentsPayTrackBookingFilesRequest, value: any) => {
@@ -336,7 +402,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
         setFormData(initialFormState());
         setErrors({});
         setIsAddUpdateModalOpen(true);
-      }, []);
+    }, []);
 
 
     const validateAddBankDocumentPayTrackBookingFiles = (): {
@@ -348,7 +414,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
         if (!formData.FileName?.trim()) {
             newErrors.FileName = 'File Name is required';
         }
-       
+
         if (!hasAnyDocumentFile(documentFiles, documentURL, removedDocumentURLs)) {
             newErrors.documentFiles = "File is required.";
         }
@@ -527,6 +593,51 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
     };
     //#endregion
 
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (!approvalRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "FLAT HANDOVER APPROVAL",
+            Id: approvalRowData.BookingId ?? 0,
+            SubId: approvalRowData.PayTrackBookingFilesId ?? 0,
+            ProjectId: approvalRowData.ProjectId ?? 0,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await loadBankDoucumentsPayTrackBookingFiles(pagination.currentPage, filters, sortInfo);
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+    };
+
     return (
         <div className="pt-5">
 
@@ -545,7 +656,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 isShowFilterButton={false}
                 isShowCustomizeButton={false}
                 // Add
-                isShowAddButton={canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && pageName!="Flat Handover" ? true :false}
+                isShowAddButton={canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && pageName != "Flat Handover" ? true : false}
                 addTitle="Add"
                 onAdd={handleBankDocumentsModal}
             />
@@ -594,7 +705,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                                 label="File Name"
                                 placeholder="Enter File Name"
                                 type="text"
-                                disabled={pageName!="Flat Handover" ? false :true}
+                                disabled={pageName != "Flat Handover" ? false : true}
                                 value={formData.FileName ?? ''}
                                 onChange={(e) => handleFieldChange('FileName', e.target.value)}
                                 error={errors.FileName}
@@ -634,6 +745,26 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 loading={isLoading}
                 pageName={pageName}
             />
+
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Flat Handover'
+                titleText={fileName ?? ""}
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest} />
+
+            {bookingData && (
+                <ApprovalActionModalForFlatHandover
+                    title="Flat Handover"
+                    isOpen={isApprovalActionModalOpen}
+                    onClose={() => setIsApprovalActionModalOpen(false)}
+                    actionType={approvalActionType}
+                    titleText={fileName ?? ""}
+                    bookingData={bookingData}
+                    onSubmit={handleApprovalSubmit}
+                    loading={isLoading}
+                />
+            )}
         </div>
     )
 }

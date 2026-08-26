@@ -4,15 +4,26 @@ import { Tabs } from '@/ui/components/Tab/Tab';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
-import { ExtraCarpetAreaTab } from '../components/ExtraCarpetAreaTab';
-import { CorpusDetailsTab } from '../components/CorpusDetailsTab';
-import { SecurityDepositTab } from '../components/SecurityDepositTab';
-import { ShiftingDetailsTab } from '../components/ShiftingDetailsTab';
-import { LienToSocietyDetailsTab } from '../components/LienToSocietyDetailsTab';
-import { ParkingAllotmentTab } from '../components/ParkingAllotmentTab';
-import { GSTonExistingPlusFreeAreaTab } from '../components/GSTonExistingPlusFreeAreaTab';
-import { ProjectCompletionTab } from '../components/ProjectCompletionTab';
-import { RentDetailsTab } from '../components/RentDetailsTab';
+import { ExtraCarpetAreaTab } from '@/features/proposedOffer/components/ExtraCarpetAreaTab';
+import { HardshipDetailsTab } from '@/features/proposedOffer/components/HardshipDetailsTab';
+import { SecurityDepositTab } from '@/features/proposedOffer/components/SecurityDepositTab';
+import { ShiftingDetailsTab } from '@/features/proposedOffer/components/ShiftingDetailsTab';
+import { LienToSocietyDetailsTab } from '@/features/proposedOffer/components/LienToSocietyDetailsTab';
+import { ParkingAllotmentTab } from '@/features/proposedOffer/components/ParkingAllotmentTab';
+import { GSTonExistingPlusFreeAreaTab } from '@/features/proposedOffer/components/GSTonExistingPlusFreeAreaTab';
+import { ProjectCompletionTab } from '@/features/proposedOffer/components/ProjectCompletionTab';
+import { TemporaryAlternateAccommodationTab } from '@/features/proposedOffer/components/TemporaryAlternateAccommodationTab';
+import { ReadyReckonerRateTab } from '@/features/proposedOffer/components/ReadyReckonerRateTab';
+import { CarpetPlotAreaTab } from '@/features/proposedOffer/components/CarpetPloatAreaTab';
+import { AdditionalInformationTab } from '@/features/proposedOffer/components/AdditionalInformationTab';
+import { BankGuaranteeTab } from '@/features/proposedOffer/components/BankGuranteeTab';
+import { Button } from '@/ui/components/forms';
+import { handleExportFile } from '@/core/utils/exportFile';
+import { runApiWithLoader } from '@/core/utils';
+import type { FilterWithPaginationProposedOfferPdfRequest } from '@/features/proposedOffer/models/ProposedOfferModel';
+import useToast from '@/core/hooks/useToast';
+import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { BuildingOverviewTab } from '@/features/proposedOffer/components/BuildingOverviewTab';
 
 export const ProposedOffer: React.FC = () => {
   const [buildingId, setBuildingId] = useState(0);
@@ -20,50 +31,78 @@ export const ProposedOffer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
+  const { addToast } = useToast()
 
-  //#region TAB ACTIVITY
   const proposedOfferTabList = [
+    { id: "BuildingOverview", label: "Building Overview" },
+    { id: "ReadyReckonerRate", label: "Ready Reckoner Rate" },
+    { id: "CarpetPlotArea", label: "Carpet / Plot Area" },
     { id: "ExtraCarpetArea", label: "Extra Carpet Area" },
-    { id: "CorpusDetails", label: "Corpus Details" },
-    { id: "SecurityDeposit", label: "Security Deposit" },
+    { id: "HardshipDetails", label: "Hardship Offer" },
+    { id: "TemporaryAlternateAccommodation", label: "Temp Alternate Accom" },
     { id: "ShiftingDetails", label: "Shifting Details" },
-    { id: "LienToSocietyDetails", label: "Lien to Society Details" },
-    { id: "ParkingAllotment", label: "Parking Allotment" },
     { id: "GSTonExistingPlusFreeArea", label: "GST on Existing + Free Area" },
+    { id: "ParkingAllotment", label: "Parking Allotment" },
+    { id: "SecurityDeposit", label: "Security Deposit" },
+    { id: "BankGuarantee", label: "Bank Guarantee" },
+    { id: "LienToSocietyDetails", label: "Lien to Society Details" },
     { id: "ProjectCompletion", label: "Project Completion" },
-    { id: "RentDetails", label: "Rent Details" },
+    { id: "AdditionalInformation", label: "Additional Information" },
   ];
 
   const [activeTab, setActiveTab] = useState<string>(proposedOfferTabList[0].id);
-  //#endregion
 
   const selectedBuilding = useMemo(() => {
     if (!projectId || !buildingId) return null;
     return { label: buildingName, value: buildingId };
   }, [buildingId, buildingName, projectId]);
 
-  const fetchBuildingCallback = useCallback(
-    (pageNumber: number) =>
-      fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) }),
+  const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
+    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
     [projectId]
   );
 
   useEffect(() => {
-    // project changed → reset building
     setBuildingId(0);
     setBuildingName('');
   }, [projectId]);
 
+  const handleExportPDF = async (exportType: 'Excel' | 'PDF') => {
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: FilterWithPaginationProposedOfferPdfRequest = {
+          BuildingId: buildingId,
+          ProjectId: Number(projectId),
+          ExportType: exportType
+        }
+        const response = await proposedOfferService.apiCallPullProposedOfferPDF(params);
+
+        handleExportFile(response, exportType, 'Proposed Offer', addToast);
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Export failed' })
+      },
+      undefined,
+      'Preparing Export'
+    )
+  }
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      <Loader loading={isLoading} title={loadingMessage}>
-        <div></div>
-      </Loader>
-      <div className="pb-5 flex">
-        <div className="relative min-w-0 w-[526px]">
+
+      <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
+
+      <div className="pb-5 flex items-end justify-between">
+
+        <div className="w-[526px]">
           <SingleSelectDropdownWithPagination
             label="Building"
             title="Select Building"
@@ -71,7 +110,7 @@ export const ProposedOffer: React.FC = () => {
             size="lg"
             initialValue={selectedBuilding}
             dataFetchCallBack={fetchBuildingCallback}
-            
+
             onSelected={(item) => {
               if (!item) return;
               setBuildingId(Number(item.value));
@@ -79,7 +118,25 @@ export const ProposedOffer: React.FC = () => {
             }}
           />
         </div>
+
+        <Button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleExportPDF('PDF');
+
+          }}
+          color="blue"
+          colorMode="gradient_light"
+          disabled={Number(projectId) > 0 ? false : true}
+          size="mxs"
+          title="Export as PDF"
+          style={{ width: '95px' }}>
+          PDF
+        </Button>
+
       </div>
+
       <Tabs
         tabs={proposedOfferTabList}
         defaultActive={activeTab}
@@ -90,6 +147,15 @@ export const ProposedOffer: React.FC = () => {
       />
 
       <div className="mt-6">
+        {activeTab === 'BuildingOverview' && (
+          <BuildingOverviewTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
         {activeTab === 'ExtraCarpetArea' && (
           <ExtraCarpetAreaTab
             projectId={projectId}
@@ -120,8 +186,8 @@ export const ProposedOffer: React.FC = () => {
           />
         )}
 
-        {activeTab === 'CorpusDetails' && (
-          <CorpusDetailsTab
+        {activeTab === 'HardshipDetails' && (
+          <HardshipDetailsTab
             projectId={projectId}
             buildingId={buildingId}
             isLoading={isLoading}
@@ -170,8 +236,45 @@ export const ProposedOffer: React.FC = () => {
           />
         )}
 
-        {activeTab === 'RentDetails' && (
-          <RentDetailsTab
+        {activeTab === 'TemporaryAlternateAccommodation' && (
+          <TemporaryAlternateAccommodationTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'ReadyReckonerRate' && (
+          <ReadyReckonerRateTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'CarpetPlotArea' && (
+          <CarpetPlotAreaTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'AdditionalInformation' && (
+          <AdditionalInformationTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+
+        {activeTab === 'BankGuarantee' && (
+          <BankGuaranteeTab
             projectId={projectId}
             buildingId={buildingId}
             isLoading={isLoading}

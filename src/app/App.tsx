@@ -118,7 +118,6 @@ import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
-import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
@@ -172,7 +171,6 @@ import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
 import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
-import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
 import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
@@ -189,13 +187,36 @@ import ViewTicket from '@/features/ticket/pages/ViewTicket';
 import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
 import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
-import Budget from '@/features/budget/pages/Budget';
 import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
 import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
+import Budget from '@/features/budget/pages/Budget';
+import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
+import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
+import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
+import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
+import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
+import { TermSheetListStateProvider } from '@/features/termSheet/context/TermSheetListStateContext';
+import TermSheet from '@/features/termSheet/pages/TermSheet';
+import { TermSheetDocument } from '@/features/termSheet/pages/TermSheetDocument';
+import ViewTermSheet from '@/features/termSheet/pages/ViewTermSheet';
+import CompareTermSheet from '@/features/termSheet/pages/CompareTermSheet';
+import { TaxTrackerListStateProvider } from '@/features/taxTracker/context/TaxTrackerListStateContext';
+import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
+import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker';
+import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
+import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
+import TestDocumentCategoryMaster from '@/features/testDocumentCategory/pages/TestDocumentCategoryMaster';
+import TestDocument from '@/features/testDocument/pages/TestDocument';
+import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pages/DrawingDocumentCategoryMaster';
+import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
+import { AddUpdateInwardOutward } from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
+import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
+import TermSheetReport from '@/features/termSheetReport/pages/TermSheetReport';
+import { GatePass } from '@/features/gatePass/pages/GatePass';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -207,7 +228,6 @@ const LoadingSpinner = () => (
   </div>
 )
 
-// Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const token = LocalStorageHelper.getStoredTokenData();
@@ -265,6 +285,7 @@ function App() {
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
+            <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -354,6 +375,7 @@ function App() {
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
@@ -364,6 +386,10 @@ function App() {
             <Route path="approvalDocument" element={<ApprovalDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
+            <Route path="testCategory" element={<TestDocumentCategoryMaster />} />
+            <Route path="testDocument" element={<TestDocument />} />
+            <Route path="drawingCategory" element={<DrawingDocumentCategoryMaster />} />
+            <Route path="drawing" element={<DrawingDocument />} />
 
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
@@ -378,6 +404,14 @@ function App() {
             <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
             <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
 
+            {/* TAX TRACKER */}
+            <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} />
+
+
+            <Route path='otplogs' element={<OTPLogs />} />
+
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
 
@@ -386,6 +420,7 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path="channelPartner/salesMetrics" element={<ChannelPartnerListStateProvider><ChannelPartnerSalesMetrics /></ChannelPartnerListStateProvider>} />
 
             <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
             <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
@@ -418,6 +453,7 @@ function App() {
 
             <Route path="performance" element={<PerformanceReport />} />
             <Route path="achievement" element={<AchievementReport />} />
+            <Route path="aopAchievement" element={<AopAchievementReport />} />
 
             <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
@@ -437,7 +473,7 @@ function App() {
 
             <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
             <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
-            <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
+            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
             <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
@@ -480,7 +516,6 @@ function App() {
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
-            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
 
@@ -500,6 +535,22 @@ function App() {
 
             {/* TAX TRACKER */}
             <Route path="noticeSection" element={<NoticeSectionMaster />} />
+
+            {/* ESTIMATION AND BUDGET */}
+            <Route path='budget' element={<Budget />} />
+            <Route path='summaryMis' element={<SummaryMIS />} />
+            <Route path='specificationMaster' element={<SpecificationMaster />} />
+
+            {/* FINANCE */}
+            <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/add/:TermSheetId?' element={<TermSheetListStateProvider><AddUpdateTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
+            <Route path='termSheetReport' element={<TermSheetReport />} />
+          
+           {/* VISITOR MANAGEMENT */}
+            <Route path='gatePass' element={<GatePass />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -15,7 +15,7 @@ import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValida
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { Checkbox } from '@/ui/components/forms/Checkbox';
 import { FLAT_UNIT_TYPE } from '@/core/constants';
@@ -24,6 +24,13 @@ import {
   initialFormStateLienToSocietyPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
+import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import { fetchPaginatedCommercialFlatsDropdown, fetchPaginatedResidentialFlatsDropdown } from '@/features/inventory/PaginatedFlatsDropDown';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface LienToSocietyDetailsTabProps {
   projectId: number | null;
@@ -40,7 +47,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setLienToSocietyDetailsData] = useState<ProposedOfferLienToSocietyDetailsData | null>(null);
+  const [lienToSocietyDetailsData, setLienToSocietyDetailsData] = useState<ProposedOfferLienToSocietyDetailsData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsLienToSocietyDetails, setErrorsLienToSocietyDetails] = useState<{ [k: string]: string }>({});
@@ -52,6 +59,8 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
   const [formDataLienToSocietyPaymentStage, setFormDataLienToSocietyPaymentStage] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData>(() => initialFormStateLienToSocietyPaymentStage());
   const [isConfirmationDialogBoxOpenLienToSocietyPaymentStage, setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage] = useState(false);
   const [deleteLienToSocietyPaymentStageData, setDeleteLienToSocietyPaymentStageData] = useState<{ row: ProposedOfferLienToSocietyDetailsWithPaymentStageData; index: number } | null>(null);
+  const [selectResidentialFlatValues, setSelectResidentialFlatValues] = useState<string  | null>(null);
+  const [selectCommercialFlatValues, setSelectCommercialFlatValues] = useState<string  | null>(null);
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
@@ -59,6 +68,46 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
     setErrorsLienToSocietyPaymentStage({});
     fetchLienToSocietyDetailsData();
   }, [projectId, buildingId]);
+
+  const fetchResidentialFlats = useCallback(async (pageNumber: number, params?: { value?: string }) => {
+
+    return fetchPaginatedResidentialFlatsDropdown(pageNumber, {
+      ...params,
+      value: params?.value || "",
+      projectId: projectId || 0,
+      flat: params?.value || "",
+      displayInventoryFlatId: selectResidentialFlatValues || "",
+    });
+  }, [projectId,selectResidentialFlatValues]);
+
+
+  const ResidentialFlatDropDown = useMultiSelectDropdown({
+    value: selectResidentialFlatValues, fetchCallback: fetchPaginatedResidentialFlatsDropdown,
+    fetchParams: {
+      projectId: String(projectId),
+    },
+    autoFetchOptions: true,
+  });
+
+  const fetchCommercialFlats = useCallback(async (pageNumber: number, params?: { value?: string }) => {
+
+    return fetchPaginatedCommercialFlatsDropdown(pageNumber, {
+      ...params,
+      value: params?.value || "",
+      projectId: projectId || 0,
+      flat: params?.value || "",
+      displayInventoryFlatId: selectCommercialFlatValues || "",
+    });
+  }, [projectId,selectCommercialFlatValues]);
+
+  const CommercialFlatDropDown = useMultiSelectDropdown({
+    value: selectCommercialFlatValues,
+    fetchCallback: fetchPaginatedCommercialFlatsDropdown,
+    fetchParams: {
+      projectId: String(projectId),
+    },
+    autoFetchOptions: true,
+  });
 
   const handleFieldChangeLienToSocietyDetails = (field: keyof AddUpdateProposedOfferLienToSocietyDetailsRequest, value: any) => {
     setFormDataLienToSocietyDetails((prev) => ({ ...prev, [field]: value }));
@@ -100,8 +149,16 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
               CommercialAreaSqFt: data.CommercialAreaSqFt ?? 0,
               NumberOfResidentialLienUnits: data.NumberOfResidentialLienUnits ?? 0,
               NumberOfCommercialLienUnits: data.NumberOfCommercialLienUnits ?? 0,
+              Remark: data.Remark ?? "",
+              ResidentialInventoryFlatId: data.ResidentialInventoryFlatId ?? "",
+              CommercialInventoryFlatId: data.CommercialInventoryFlatId ?? "",
               LienToSocietyWithPaymentStageJSON: ''
             });
+
+            setSelectResidentialFlatValues(data.ResidentialInventoryFlatId || null);
+            setSelectCommercialFlatValues(data.CommercialInventoryFlatId || null);
+
+
 
             if (data.ProposedOfferSecurityDepositDetailsWithPaymentStageData && data.ProposedOfferSecurityDepositDetailsWithPaymentStageData.length > 0) {
               setLienToSocietyPaymentStageList(data.ProposedOfferSecurityDepositDetailsWithPaymentStageData);
@@ -114,6 +171,8 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
               ProjectId: Number(projectId)
             });
             setLienToSocietyPaymentStageList([]);
+            setSelectCommercialFlatValues("");
+            setSelectResidentialFlatValues("");
           }
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -136,20 +195,24 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataLienToSocietyDetails.ResidentialAreaSqFt) {
+    if (isEmpty(formDataLienToSocietyDetails.ResidentialAreaSqFt)) {
       newErrors.ResidentialAreaSqFt = "Residential Area is required"
     }
 
-    if (!formDataLienToSocietyDetails.CommercialAreaSqFt) {
+    const selectedResidentialCount = (formDataLienToSocietyDetails.ResidentialInventoryFlatId ?? "").split(",").filter(x => x.trim() !== "").length;
+
+    if (selectedResidentialCount!==0 && Number(formDataLienToSocietyDetails.NumberOfResidentialLienUnits) !== selectedResidentialCount) {
+      newErrors.ResidentialInventoryFlatId = `${formDataLienToSocietyDetails.NumberOfResidentialLienUnits} Residential Lien Units are required.`
+    }
+
+    if (isEmpty(formDataLienToSocietyDetails.CommercialAreaSqFt)) {
       newErrors.CommercialAreaSqFt = "Commercial Area is required"
     }
 
-    if (!formDataLienToSocietyDetails.NumberOfResidentialLienUnits) {
-      newErrors.NumberOfResidentialLienUnits = "Number of Residential Lien Units is required"
-    }
+    const selectedCommercialCount = (formDataLienToSocietyDetails.CommercialInventoryFlatId ?? "").split(",").filter(x => x.trim() !== "").length;
 
-    if (!formDataLienToSocietyDetails.NumberOfCommercialLienUnits) {
-      newErrors.NumberOfCommercialLienUnits = "Number of Commercial Lien Units is required"
+    if (selectedCommercialCount!==0 && Number(formDataLienToSocietyDetails.NumberOfCommercialLienUnits) !== selectedCommercialCount) {
+      newErrors.CommercialInventoryFlatId = `${formDataLienToSocietyDetails.NumberOfCommercialLienUnits} Commercial Lien Units are required.`
     }
 
     return {
@@ -164,17 +227,17 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
       return
     }
 
-    else if (lienToSocietyPaymentStageList.length === 0) {
-      addToast({ type: "error", title: "Please add atleast one Lien to Society details" });
-      return
-    }
-
     setErrorsLienToSocietyDetails({})
 
     const validation = validateLienToSocietyDetailsForm()
 
     if (!validation.isValid) {
       setErrorsLienToSocietyDetails(validation.errors)
+      return
+    }
+
+    if (lienToSocietyPaymentStageList.length === 0) {
+      addToast({ type: "error", title: "Please add atleast one Lien to Society details" });
       return
     }
 
@@ -198,7 +261,10 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
           ResidentialAreaSqFt: formDataLienToSocietyDetails.ResidentialAreaSqFt,
           CommercialAreaSqFt: formDataLienToSocietyDetails.CommercialAreaSqFt,
           NumberOfResidentialLienUnits: formDataLienToSocietyDetails.NumberOfResidentialLienUnits,
+          ResidentialInventoryFlatId: formDataLienToSocietyDetails.ResidentialInventoryFlatId,
           NumberOfCommercialLienUnits: formDataLienToSocietyDetails.NumberOfCommercialLienUnits,
+          CommercialInventoryFlatId: formDataLienToSocietyDetails.CommercialInventoryFlatId,
+          Remark: formDataLienToSocietyDetails.Remark,
           LienToSocietyWithPaymentStageJSON: paymentStageJSON
         };
 
@@ -367,7 +433,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
       },
       {
         key: 'CarpetAreaSqFt',
-        label: 'Carpet Area (Sq Ft)',
+        label: 'Carpet Area (SqFt)',
         width: '20',
         sortable: false,
         align: 'right',
@@ -427,6 +493,8 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
     [canAction, handleEditLienToSocietyPaymentStage, handleConfirmationDialogBoxOpenLienToSocietyPaymentStage]
   );
 
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6">
@@ -441,47 +509,106 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 label="Residential Area (SqFt)"
                 required
                 type="text"
-                value={formDataLienToSocietyDetails.ResidentialAreaSqFt || ''}
+                value={getInputValue(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId, formDataLienToSocietyDetails.ResidentialAreaSqFt)}
                 onChange={(e) => handleFieldChangeLienToSocietyDetails('ResidentialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                 error={errorsLienToSocietyDetails.ResidentialAreaSqFt}
                 placeholder="Enter Residential Area"
                 rightIcon="SqFt"
+                disabled={!isBuildingSelected || lienToSocietyPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
               />
             </div>
             <div>
               <Input
                 label="Number of Residential Lien Units"
-                required
                 type="text"
-                value={formDataLienToSocietyDetails.NumberOfResidentialLienUnits || ''}
+                value={formDataLienToSocietyDetails.NumberOfResidentialLienUnits || 0}
                 onChange={(e) => handleFieldChangeLienToSocietyDetails('NumberOfResidentialLienUnits', filterNumbers(e.target.value))}
                 error={errorsLienToSocietyDetails.NumberOfResidentialLienUnits}
                 placeholder="Enter Number of Residential Lien Units"
+                disabled={!isBuildingSelected}
+                maxLength={5}
               />
+            </div>
+            <div>
+              <MultiSelectPagination
+                key={projectId}
+                label="Residential Lien Units"
+                title="Select Residential Lien Units"
+                size="md"
+                dataFetchCallBack={fetchResidentialFlats}
+                selectedValues={ResidentialFlatDropDown.selectedValues}
+                options={ResidentialFlatDropDown.initialOptions}
+                onChange={(values) => {
+                  const { idsString } = ResidentialFlatDropDown.handleChange(values);
+                  setSelectResidentialFlatValues(idsString || null);
+                  handleFieldChangeLienToSocietyDetails("ResidentialInventoryFlatId", idsString);
+                  if (errorsLienToSocietyDetails.ResidentialInventoryFlatId) {
+                    setErrorsLienToSocietyDetails((prev) => ({ ...prev, ResidentialInventoryFlatId: "" }));
+                  }
+                }}
+                error={errorsLienToSocietyDetails.ResidentialInventoryFlatId}
+                disabled={!isBuildingSelected}
+              />
+
+
             </div>
             <div>
               <Input
                 label="Commercial Area (SqFt)"
                 required
                 type="text"
-                value={formDataLienToSocietyDetails.CommercialAreaSqFt || ''}
+                value={getInputValue(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId, formDataLienToSocietyDetails.CommercialAreaSqFt)}
                 onChange={(e) => handleFieldChangeLienToSocietyDetails('CommercialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                 error={errorsLienToSocietyDetails.CommercialAreaSqFt}
                 placeholder="Enter Commercial Area"
                 rightIcon="SqFt"
+                disabled={!isBuildingSelected || lienToSocietyPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
               />
             </div>
             <div>
               <Input
                 label="Number of Commercial Lien Units"
-                required
                 type="text"
-                value={formDataLienToSocietyDetails.NumberOfCommercialLienUnits || ''}
+                value={formDataLienToSocietyDetails.NumberOfCommercialLienUnits || 0}
                 onChange={(e) => handleFieldChangeLienToSocietyDetails('NumberOfCommercialLienUnits', filterNumbers(e.target.value))}
                 error={errorsLienToSocietyDetails.NumberOfCommercialLienUnits}
                 placeholder="Enter Number of Commercial Lien Units"
+                disabled={!isBuildingSelected}
+                maxLength={5}
               />
             </div>
+            <div>
+              <MultiSelectPagination
+                key={projectId}
+                label="Commercial Lien Units"
+                title="Select Commercial Lien Units"
+                size="md"
+                dataFetchCallBack={fetchCommercialFlats}
+                selectedValues={CommercialFlatDropDown.selectedValues}
+                options={CommercialFlatDropDown.initialOptions}
+                onChange={(values) => {
+                  const { idsString } = CommercialFlatDropDown.handleChange(values);
+                  setSelectCommercialFlatValues(idsString || null);
+                  handleFieldChangeLienToSocietyDetails("CommercialInventoryFlatId", idsString);
+                  if (errorsLienToSocietyDetails.CommercialInventoryFlatId) {
+                    setErrorsLienToSocietyDetails((prev) => ({ ...prev, CommercialInventoryFlatId: "" }));
+                  }
+                }}
+                error={errorsLienToSocietyDetails.CommercialInventoryFlatId}
+                disabled={!isBuildingSelected}
+              />
+            </div>
+
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataLienToSocietyDetails.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeLienToSocietyDetails("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
+            />
           </div>
         </div>
 
@@ -493,14 +620,15 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 Lien to Society List
               </h3>
             </div>
-            {canAction && buildingId > 0 && (
+            {canAction && buildingId > 0 && (Number(formDataLienToSocietyDetails.ResidentialAreaSqFt) > 0 || Number(formDataLienToSocietyDetails.CommercialAreaSqFt) > 0) && (
               <Button
                 onClick={handleAddLienToSocietyPaymentStageModal}
                 color="blue"
-                size="sm"
-                title="Add Lien Details"
-              >
-                Add Lien Details
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Plus className="h-4 w-4" />}>
+
               </Button>
             )}
           </div>
@@ -513,20 +641,34 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
             recordsPerPage={20}
             className="min-w-full"
           />
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={lienToSocietyDetailsData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(lienToSocietyDetailsData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={lienToSocietyDetailsData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(lienToSocietyDetailsData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <BottomActionBar
-        cancelText="Cancel"
         saveText={(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId && formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataLienToSocietyDetails({
-            ...initialFormStateLienToSocietyDetails(),
-            ProjectId: Number(projectId)
-          });
-          setLienToSocietyPaymentStageList([]);
-          setErrorsLienToSocietyDetails({});
-          fetchLienToSocietyDetailsData();
-        }}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveLienToSocietyDetails}
         isLoading={isLoading}
@@ -550,11 +692,10 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
         title={editingLienToSocietyPaymentStageData ? 'Update Lien to Society Payment Stage' : 'Add Lien to Society Payment Stage'}
         onSubmit={handleAddUpdateLienToSocietyPaymentStage}
         saveText={editingLienToSocietyPaymentStageData ? 'Update' : 'Add'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection
@@ -564,7 +705,17 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 value={formDataLienToSocietyPaymentStage.Type || ''}
                 onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('Type', String(e))}
                 options={FLAT_UNIT_TYPE
-                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .filter(opt => {
+                    if (opt.id === "Residential" && Number(formDataLienToSocietyDetails.ResidentialAreaSqFt) > 0) {
+                      return true;
+                    }
+
+                    if (opt.id === "Commercial" && Number(formDataLienToSocietyDetails.CommercialAreaSqFt) > 0) {
+                      return true;
+                    }
+
+                    return false;
+                  })
                   .map(opt => ({
                     label: opt.name,
                     value: opt.id
@@ -582,6 +733,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 onChange={(e) => handleFieldChangeLienToSocietyPaymentStage('Stage', e.target.value)}
                 error={errorsLienToSocietyPaymentStage.Stage}
                 placeholder="Enter Stage"
+                maxLength={100}
               />
             </div>
             <div>

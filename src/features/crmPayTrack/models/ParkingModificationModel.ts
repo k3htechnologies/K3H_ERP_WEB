@@ -6,18 +6,20 @@ export interface FilterWithPaginationParkingModificationDetails {
     PageNumber: number;
     ProjectId: number;
     BookingId: number;
+    TabName?:string;
 }
 
 export interface ParkingModificationDetailsData {
-
-    Uniquekey: string | null;
     BookingId: number;
+    UniqueKey: string | null;
     ProjectId: number;
     ParkingId: string;
+    ParkingIds: string;
     parkingData?: ParkingData[] | null;
     IsApproval: boolean;
     ApprovalStatus: string;
     VersionNumber: string;
+    ProofOfDocumentURL: string;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;
@@ -33,19 +35,18 @@ export interface AddUpdateParkingModificationRequest {
     BookingId: number;
     ProjectId: number;
     ParkingId: string;
-    ParkingModificationDocumentURL?: File[] | null;
-    RemoveParkingModificationDocumentURL?: string;
+    ProofOfDocumentURL?: File[] | null;
+    RemoveProofOfDocumentURL?: string;
     ParkingData?: ParkingData[] | null;
-    IsApproval: boolean;
-    ApprovalStatus: string;
-    VersionNumber: string;
-    CreatedById: number;
-    CreatedBy: string;
-    CreatedDate: string;
-    ModifiedById: number;
-    ModifiedBy: string;
-    ModifiedDate: string;
+}
+
+export interface DeleteParkingModificationRequest {
+    ParkingModificationRequestId: number;
+    Uniquekey: string;
+    BookingId: number;
+    ProjectId: number;
 }
 
 export type ParkingModificationDetailsListResponse = ApiResponse<ParkingModificationDetailsData[]>;
 export type ParkingModificationDetailsSaveReponse = ApiResponse<ParkingModificationDetailsData[]>;
+export type ParkingModificationDetailsDeleteReponse = ApiResponse<number>;

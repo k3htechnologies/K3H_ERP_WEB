@@ -96,12 +96,12 @@ export const PaymentLedger: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  const { canAction,canExport } = useMenuPermissions("/paymentLedger");
+  const { canAction, canExport } = useMenuPermissions("/paymentLedger");
 
   const { projectId } = useProject();
 
   const { listState } = usePayTrackBookingListState();
-  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus } = listState;
+  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus, bookingData } = listState;
 
   const { addToast } = useToast();
 
@@ -148,7 +148,7 @@ export const PaymentLedger: React.FC = () => {
           BankListMasterId: editingPaymentLedgerData.BankListMasterId || 0,
           ReceivedAmount: editingPaymentLedgerData.ReceivedAmount || 0,
           TransactionChequeDemandDraftNumber: editingPaymentLedgerData.TransactionChequeDemandDraftNumber || "",
-          RemoveTransactionChequeDemandDraftURL: editingPaymentLedgerData.TransactionChequeDemandDraftURL || "",
+          RemoveTransactionChequeDemandDraftURL: "",
           TransactionChequeDemandDraftDate: editingPaymentLedgerData.TransactionChequeDemandDraftDate || "",
         });
         setDropdownLabels({
@@ -163,7 +163,7 @@ export const PaymentLedger: React.FC = () => {
         handlePaymentForChange(editingPaymentLedgerData.PaymentFor || "", editingPaymentLedgerData.BookingOtherChargesId || 0);
 
         if (editingPaymentLedgerData.ProjectId) {
-          fetchProjectBankDropdownById(Number(projectId)).then((bank) => {
+          fetchProjectBankDropdownById(Number(projectId), "", false).then((bank) => {
             if (!bank) return;
             setProjectWithBankData(bank);
           });
@@ -306,7 +306,7 @@ export const PaymentLedger: React.FC = () => {
     return [
       {
         key: "PaymentFor",
-        label: "Stage (Milestone)",
+        label: "Stage",
         render: (value, row) => <span className={boldIfTotal(row)}>{value}</span>,
       },
       {
@@ -448,7 +448,7 @@ export const PaymentLedger: React.FC = () => {
       newErrors.PaymentMode = "Payment Mode is required";
     }
 
-    if (!formData.BankListMasterId || formData.BankListMasterId === 0) {
+    if (formData.PaymentFor.toUpperCase() !== "AGREEMENT VALUE TDS" && (!formData.BankListMasterId || formData.BankListMasterId === 0)) {
       newErrors.BankListMasterId = "Bank Name is required";
     }
 
@@ -469,9 +469,11 @@ export const PaymentLedger: React.FC = () => {
         const total = formData.PaymentFor.toUpperCase().includes("GST") ? selectedCharge.GSTValue || 0 : selectedCharge.Value || 0;
 
         const alreadyPaid = 0;
-        const remaining = total - alreadyPaid;
+        const remaining = Number((total - alreadyPaid).toFixed(2));
 
-        if (formData.ReceivedAmount > remaining) {
+        const receivedAmount = Number(Number(formData.ReceivedAmount).toFixed(2));
+
+        if (receivedAmount > remaining) {
 
           newErrors.ReceivedAmount = `Amount cannot exceed remaining ₹ ${remaining}`;
         }
@@ -482,9 +484,11 @@ export const PaymentLedger: React.FC = () => {
       const selectedRow = paymentLedgerList.find((x) => x.PaymentFor === formData.PaymentFor);
 
       if (selectedRow) {
-        const total = selectedRow.TotalAmount || 0;
-        const alreadyPaid = selectedRow.ReceivedAmount || 0;
-        const remaining = total - alreadyPaid;
+
+        const total = Number(Number(selectedRow.TotalAmount || 0).toFixed(2));
+        const alreadyPaid = Number(Number(selectedRow.ReceivedAmount || 0).toFixed(2));
+
+        const remaining = Number((total - alreadyPaid).toFixed(2));
 
         if (formData.ReceivedAmount > remaining) {
           newErrors.ReceivedAmount = `Amount cannot exceed remaining ₹ ${remaining}`;
@@ -505,7 +509,7 @@ export const PaymentLedger: React.FC = () => {
       newErrors.documentFiles = "Transaction / Cheque / Demand Draft Image is required.";
     }
 
-    if (!formData.ProjectBankListMasterId || formData.ProjectBankListMasterId === 0) {
+    if (!["Stamp Duty", "Agreement Value TDS", "Registration Fees"].includes(formData.PaymentFor ?? "") && (!formData.ProjectBankListMasterId || formData.ProjectBankListMasterId === 0)) {
       newErrors.ProjectBankListMasterId = "Project Bank Name is required";
     }
 
@@ -523,16 +527,13 @@ export const PaymentLedger: React.FC = () => {
     fd.append("Uniquekey", formData.Uniquekey);
     fd.append("BookingId", String(bookingId));
     fd.append("ProjectId", String(formData.ProjectId ?? projectId));
-    fd.append(
-      "BookingOtherChargesId",
-      formData.PaymentFor?.toUpperCase().includes("OTHER CHARGES") ? formData.BookingOtherChargesId?.toString() || "" : "0",
-    );
+    fd.append("BookingOtherChargesId", formData.PaymentFor?.toUpperCase().includes("OTHER CHARGES") ? formData.BookingOtherChargesId?.toString() || "" : "0");
     fd.append("PaymentFor", formData.PaymentFor);
     fd.append("PaymentMode", formData.PaymentMode);
     fd.append("PaymentReceivedFrom", formData.PaymentReceivedFrom);
-    fd.append("ProjectBankListMasterId", formData.ProjectBankListMasterId.toString());
-    fd.append("BankListMasterId", formData.BankListMasterId.toString());
-    fd.append("ReceivedAmount", formData.ReceivedAmount.toString());
+    fd.append("ProjectBankListMasterId", Number(formData.ProjectBankListMasterId) > 0  ? formData.ProjectBankListMasterId?.toString() : "0");
+    fd.append("BankListMasterId", Number(formData.BankListMasterId) > 0  ? formData.BankListMasterId.toString() : "0");
+    fd.append("ReceivedAmount", formData.ReceivedAmount.toString() ?? "0");
     fd.append("TransactionChequeDemandDraftNumber", formData.TransactionChequeDemandDraftNumber);
 
     documentFiles.forEach((file) => {
@@ -597,6 +598,7 @@ export const PaymentLedger: React.FC = () => {
           setDocumentFiles([]);
           setDocumentURL("");
           setRemovedDocumentURLs([]);
+          setProjectWithBankData(null);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -677,7 +679,8 @@ export const PaymentLedger: React.FC = () => {
     async (pageNumber: number, params?: { value?: string }) => {
       return fetchProjectBankDropdown(pageNumber, {
         projectId: projectId || 0,
-        bankName: params?.value || ""
+        bankName: params?.value || "",
+        isCheckPermission: false
       });
     },
     [projectId]
@@ -791,7 +794,13 @@ export const PaymentLedger: React.FC = () => {
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
-        isShowAddButton={canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
+        isShowAddButton={canAction
+          && (
+            Number(bookingData?.AgreementValue) -
+            Number(bookingData?.ReceivedAgreementValue) -
+            Number(bookingData?.ReceivedAgreementValueTDS)
+          ) > 0
+          && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
         addTitle="Add"
         onAdd={handlePaymentLedgerCrmModal} />
 
@@ -807,7 +816,7 @@ export const PaymentLedger: React.FC = () => {
 
           keyField: "PaymentFor",
           alwaysFetchOnOpen: true,
-          rowExpandable: (row) =>  !row.isTotal,
+          rowExpandable: (row) => !row.isTotal,
 
           fetchRow: async (row) => {
 
@@ -856,9 +865,11 @@ export const PaymentLedger: React.FC = () => {
               <div className="space-y-4">
                 {details.map((row, index) => {
 
-                  const showEdit = canAction && !row.IsBookingAmount && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+                  const showEdit = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+                  const showDelete = canAction && !row.IsBookingAmount && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
 
                   return (
+
                     <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-700">
@@ -871,7 +882,7 @@ export const PaymentLedger: React.FC = () => {
                           />
                           <FieldItem label="Payment Mode" value={row.PaymentMode || "-"} isRow />
 
-                         {row.IsBookingAmount && ( <FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />)}
+                          {row.IsBookingAmount && (<FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />)}
 
                           {row.ChargeName !== "" && <FieldItem label="Other Charges" value={row.ChargeName || "-"} isRow />}
 
@@ -904,26 +915,26 @@ export const PaymentLedger: React.FC = () => {
                               cursor: showEdit ? "pointer" : "not-allowed",
                               opacity: showEdit ? 1 : 0.5,
                             }}
-                            title="Edit"
-                          >
+                            title="Edit">
                             <Edit className="h-4 w-4" />
                           </Button>
+
 
                           <Button
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              if (!showEdit) return;
+                              if (!showDelete) return;
                               handleConfirmationDialogBoxOpen(row);
                             }}
                             color="transparent"
                             isborderRadius
-                            disabled={!showEdit}
+                            disabled={!showDelete}
                             size="sm"
                             style={{
-                              color: showEdit ? "red" : "#9CA3AF",
-                              cursor: showEdit ? "pointer" : "not-allowed",
-                              opacity: showEdit ? 1 : 0.5,
+                              color: showDelete ? "red" : "#9CA3AF",
+                              cursor: showDelete ? "pointer" : "not-allowed",
+                              opacity: showDelete ? 1 : 0.5,
                             }}
                             title="Delete"
                           >
@@ -945,6 +956,8 @@ export const PaymentLedger: React.FC = () => {
 
                         <div className="space-y-3">
                           <h3 className="font-semibold mb-2">Customer Bank Details</h3>
+
+                          <FieldItem label="Payment Received From" value={row.PaymentReceivedFrom || "-"} />
 
                           <FieldItem label="Bank" value={row.BankName || "-"} />
 
@@ -991,6 +1004,7 @@ export const PaymentLedger: React.FC = () => {
           setDocumentFiles([]);
           setDocumentURL("");
           setRemovedDocumentURLs([]);
+          setProjectWithBankData(null);
           setPaymentDetails({ total: 0, received: 0, pending: 0 });
         }}
         onCancel={() => {
@@ -1061,7 +1075,6 @@ export const PaymentLedger: React.FC = () => {
                   required
                   value={formData.BookingOtherChargesId ?? 0}
                   onChange={(item) => {
-
                     if (!item) {
 
                       handleFieldChange("BookingOtherChargesId", 0);
@@ -1073,6 +1086,7 @@ export const PaymentLedger: React.FC = () => {
                       });
 
                       handlePaymentForChange(formData.PaymentFor);
+
                       return;
                     }
 
@@ -1083,7 +1097,7 @@ export const PaymentLedger: React.FC = () => {
 
                   options={(bookingOtherChargesData || []).map((opt) => ({
                     label: opt.ChargeName || "",
-                    value: String(opt.BookingOtherChargesId),
+                    value: opt.BookingOtherChargesId,
                   }))}
                   error={errors.BookingOtherChargesId}
                 />
@@ -1105,7 +1119,7 @@ export const PaymentLedger: React.FC = () => {
             <div>
               <SingleSelectDropdownWithPagination
                 label="Bank Name"
-                required
+                required={formData.PaymentFor.toUpperCase() !== "AGREEMENT VALUE TDS"}
                 title="Select Bank Name"
                 size="lg"
                 dataFetchCallBack={fetchBankListMasterDropdown}
@@ -1161,6 +1175,7 @@ export const PaymentLedger: React.FC = () => {
                 value={formData.TransactionChequeDemandDraftNumber || ""}
                 onChange={(e) => handleFieldChange("TransactionChequeDemandDraftNumber", e.target.value)}
                 error={errors.TransactionChequeDemandDraftNumber}
+                maxLength={25}
               />
             </div>
             <div>
@@ -1195,13 +1210,18 @@ export const PaymentLedger: React.FC = () => {
           </div>
 
           <div className="space-y-4 pt-5">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Our Bank Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Developer Bank Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Project Bank Name"
-                  required
+                  required={
+                    ![
+                      "Stamp Duty",
+                      "Agreement Value TDS",
+                      "Registration Fees"
+                    ].includes(formData.PaymentFor ?? "")}
                   title="Select Project Bank Name"
                   size="lg"
                   dataFetchCallBack={fetchProjectBankList}
@@ -1212,15 +1232,16 @@ export const PaymentLedger: React.FC = () => {
                       return;
                     }
 
-                    setProjectWithBankData(item as unknown as ProjectWithBankDetails);
-
                     handleFieldChange("ProjectBankListMasterId", Number(item.value));
+
+                    setProjectWithBankData(item as unknown as ProjectWithBankDetails);
                   }}
                   initialValue={createDropdownInitialValue(formData.ProjectBankListMasterId, dropdownLabels.projectBankName)}
                   error={errors.ProjectBankListMasterId}
                 />
               </div>
-              {projectWithBankData && (
+
+              {projectWithBankData && Number(formData.ProjectBankListMasterId) > 0 && (
                 <>
                   <div>
                     <Input
@@ -1238,6 +1259,9 @@ export const PaymentLedger: React.FC = () => {
                   </div>
                   <div>
                     <Input label="Account Type" placeholder="Enter Account Type" value={projectWithBankData?.AcType || ""} disabled />
+                  </div>
+                  <div>
+                    <Input label="Nature Of Account" placeholder="Enter Nature Of Account" value={projectWithBankData?.NatureOfAccount || ""} disabled />
                   </div>
                 </>
               )}
@@ -1269,9 +1293,7 @@ export const PaymentLedger: React.FC = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        titleText={bookingName ?? ""}
-        subTitleText={flat ?? ""}
-        subSubTitleText={`${payementFor ?? ""} -  ₹${receivedAmount ?? ""}`}
+        titleText={`${payementFor ?? ""} -  ₹${receivedAmount ?? ""}`}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

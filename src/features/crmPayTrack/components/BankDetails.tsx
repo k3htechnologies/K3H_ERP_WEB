@@ -20,7 +20,7 @@ import { bookingLoanDetailsService } from "@/features/crmPayTrack/services/Booki
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
-import { filterLetters, filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import Checkbox from "@/ui/components/forms/Checkbox";
@@ -46,6 +46,7 @@ export const BankDetails: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateBookingLoanDetailsRequest>(() => initialFormState());
     const [bookingLoanDetailsList, setBookingLoanDetailsList] = useState<BookingLoanDetailsData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     const { canAction } = useMenuPermissions("/bankLoan");
@@ -83,6 +84,7 @@ export const BankDetails: React.FC = () => {
     }, [projectId, bookingId]);
 
     const fetchBankLoanDetails = async () => {
+        setIsDataLoaded(false);
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -102,7 +104,7 @@ export const BankDetails: React.FC = () => {
                     addToast({ type: "error", title: response.left.message });
 
                 }
-
+                setIsDataLoaded(true);
                 return response;
             },
             undefined,
@@ -390,50 +392,60 @@ export const BankDetails: React.FC = () => {
 
             {mode === "view" && (
                 <>
-                    {!isLoading && activeLoans.length === 0 && (
+                    {isDataLoaded && !isLoading && activeLoans.length === 0 && (
                         <div className="pt-5">
-                            <section className="bg-white rounded-xl p-3 border-[0.1px] border-[#3333330f]">
 
-                                <div className="flex justify-between items-center">
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
 
-                                    <h4 className="text-sm font-medium text-gray-500">
-                                        No Active Bank
+
+                                <div className="bg-[#E7F2FF] px-3 py-0.5 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+
+                                    <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                        Active Bank
                                     </h4>
 
-                                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
-                                        <Button
-                                            color="primary"
-                                            size="sm"
-                                            onClick={() => {
-                                                setMode("edit");
-                                                setErrors({});
-                                                setFormData(initialFormState());
-                                                setDropdownLabels({
-                                                    bankName: "",
-                                                });
-                                            }}
-                                        >
-                                            Add Bank Details
-                                        </Button>
-                                    )}
-                                </div>
+                                    <div className="flex items-center gap-2">
 
+                                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                                            <Button
+                                                color="primary"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setMode("edit");
+                                                    setErrors({});
+                                                    setFormData(initialFormState());
+                                                    setDropdownLabels({
+                                                        bankName: "",
+                                                    });
+                                                }}
+                                            >
+                                                Add Bank Details
+                                            </Button>
+                                        )}
+
+                                    </div>
+
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                   <p className="text-center text-sm"> No active Bank Found</p>
+                                </div>
                             </section>
+
                         </div>
                     )}
 
-                    {!isLoading && activeLoans.length > 0 && (
+                    {isDataLoaded && !isLoading && activeLoans.length > 0 && (
                         <>
                             <div className="pt-5">
-                                <section className="bg-white rounded-xl shadow-sm p-3 border-[0.1px] border-[#3333334f]">
 
-                                    <div className="flex justify-between items-center">
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
 
+                                    <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
 
-                                        <h4 className="text-lg font-semibold text-gray-900 pl-3">
+                                        <h4 className="text-sm font-semibold text-[#1D4ED8]">
                                             Active Bank
                                         </h4>
-
 
                                         <div className="flex items-center gap-2">
 
@@ -448,7 +460,6 @@ export const BankDetails: React.FC = () => {
                                                     cursor: canDeleteActiveBank ? "pointer" : "not-allowed",
                                                     opacity: canDeleteActiveBank ? 1 : 0.5,
                                                 }}
-                                                leftIcon={<Edit className="h-4 w-4" />}
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
@@ -456,7 +467,9 @@ export const BankDetails: React.FC = () => {
                                                     setBankLoanDetailsData(activeLoans[0]);
                                                     setMode("edit");
                                                 }}
-                                            />
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
 
                                             <Button
                                                 onClick={(e) => {
@@ -478,10 +491,9 @@ export const BankDetails: React.FC = () => {
                                             </Button>
 
                                         </div>
+
                                     </div>
-
-                                    <div className="space-y-5">
-
+                                    <div className="p-4 bg-white">
                                         {activeLoans.map((item, index) => {
                                             return (
 
@@ -545,59 +557,65 @@ export const BankDetails: React.FC = () => {
                                         })}
                                     </div>
                                 </section>
+
                             </div>
                         </>
                     )}
 
-                    {!isLoading && closedLoans.length > 0 && (
+                    {isDataLoaded && !isLoading && closedLoans.length > 0 && (
                         <>
                             <div className="pt-5">
-                                <section className="bg-white rounded-xl shadow-sm p-3 border-[0.1px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Closed Bank
-                                    </h4>
-                                    <div className="space-y-5">
-                                        {closedLoans.map((item, index) => {
-                                            return (
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                <div key={item.BookingLoanDetailsId || index} className="bg-gray-100 p-3 rounded-xl">
+                                    <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                            Closed Bank
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="space-y-5">
+                                            {closedLoans.map((item, index) => {
+                                                return (
 
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-                                                        <FieldItem label="Bank Name" value={item.BankName ?? "-"} />
-                                                        <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
-                                                        <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
-                                                        <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
-                                                        <FieldItem label="Loan Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
-                                                        <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
+                                                    <div key={item.BookingLoanDetailsId || index} className="bg-gray-100 p-3 rounded-xl">
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                                            <FieldItem label="Bank Name" value={item.BankName ?? "-"} />
+                                                            <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
+                                                            <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
+                                                            <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
+                                                            <FieldItem label="Loan Sanction Date" value={formatDate_dd_MonthName_yy(item.LoanSanctionDate)} />
+                                                            <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">
+                                                            <FieldItem label="Address" value={item.Address ?? "-"} />
+                                                        </div>
+                                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-5">
+                                                            <FieldItem label="Created By" value={getSafeString(item.CreatedBy)} />
+                                                            <FieldItem
+                                                                label="Created Date"
+                                                                value={
+                                                                    item.CreatedDate
+                                                                        ? formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate)
+                                                                        : '-'
+                                                                }
+                                                            />
+                                                            <FieldItem label="Modified By" value={getSafeString(item.ModifiedBy)} />
+                                                            <FieldItem
+                                                                label="Modified Date"
+                                                                value={
+                                                                    item.ModifiedDate
+                                                                        ? formatDate_dd_MonthName_yy_hh_mm(item.ModifiedDate)
+                                                                        : '-'
+                                                                }
+                                                            />
+                                                        </div>
+
                                                     </div>
-                                                    <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">
-                                                        <FieldItem label="Address" value={item.Address ?? "-"} />
-                                                    </div>
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm pt-5">
-                                                        <FieldItem label="Created By" value={getSafeString(item.CreatedBy)} />
-                                                        <FieldItem
-                                                            label="Created Date"
-                                                            value={
-                                                                item.CreatedDate
-                                                                    ? formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate)
-                                                                    : '-'
-                                                            }
-                                                        />
-                                                        <FieldItem label="Modified By" value={getSafeString(item.ModifiedBy)} />
-                                                        <FieldItem
-                                                            label="Modified Date"
-                                                            value={
-                                                                item.ModifiedDate
-                                                                    ? formatDate_dd_MonthName_yy_hh_mm(item.ModifiedDate)
-                                                                    : '-'
-                                                            }
-                                                        />
-                                                    </div>
 
-                                                </div>
-
-                                            )
-                                        })}
+                                                )
+                                            })}
+                                        </div>
                                     </div>
                                 </section>
                             </div>
@@ -639,7 +657,7 @@ export const BankDetails: React.FC = () => {
                                         required
                                         value={formData.BankBranchName}
                                         maxLength={250}
-                                        onChange={(e) => handleFieldChange("BankBranchName", filterLetters(e.target.value))}
+                                        onChange={(e) => handleFieldChange("BankBranchName", e.target.value)}
                                         error={errors.BankBranchName}
                                     />
                                 </div>

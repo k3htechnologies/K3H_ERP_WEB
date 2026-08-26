@@ -1,11 +1,12 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import { BookingApplicantModificationApi } from "@/features/crmPayTrack/api/BookingApplicantModificationApi";
-import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationListResponse, BookingApplicantModificationSaveReponse } from "@/features/crmPayTrack/models/BookingApplicantModificationModel";
+import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationListResponse, BookingApplicantModificationSaveReponse, DeleteBookingApplicantModificationModelRequest, BookingApplicantModificationDeleteReponse } from "@/features/crmPayTrack/models/BookingApplicantModificationModel";
 
 export abstract class BookingApplicantModificationDatasource {
     abstract pullBookingApplicantModification(params: FilterWithPaginationBookingApplicantModificationRequest, signal?: AbortSignal): Promise<BookingApplicantModificationListResponse>;
     abstract addUpdateBookingApplicantModification(data: FormData): Promise<BookingApplicantModificationSaveReponse>;
+    abstract  deleteBookingApplicantModificationRequest(params: DeleteBookingApplicantModificationModelRequest): Promise<BookingApplicantModificationDeleteReponse>;
 }
 
 export class BookingApplicantModificationDatasourceImpl implements BookingApplicantModificationDatasource {
@@ -23,6 +24,7 @@ export class BookingApplicantModificationDatasourceImpl implements BookingApplic
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
+            if (params.TabName) queryParams.append('TabName', params.TabName);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${BookingApplicantModificationApi.PULL}?${queryParams.toString()}`, { signal }
@@ -55,6 +57,34 @@ export class BookingApplicantModificationDatasourceImpl implements BookingApplic
                 return await this.addUpdateBookingApplicantModification(formData);
             }
             throw error;
+        }
+    }
+
+    async deleteBookingApplicantModificationRequest(params: DeleteBookingApplicantModificationModelRequest): Promise<BookingApplicantModificationDeleteReponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                BookingApplicantModificationRequestId: (params.BookingApplicantModificationRequestId ?? 0).toString(),
+                BookingId: (params.BookingId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${BookingApplicantModificationApi.DELETE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE BOOKING APPLICANT REQUEST ', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteBookingApplicantModificationRequest(params);
+
+            }
+
+            throw error
         }
     }
 }

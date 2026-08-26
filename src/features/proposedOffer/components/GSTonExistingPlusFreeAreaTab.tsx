@@ -13,6 +13,9 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateGSTonExistingPlusFreeArea } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface GSTonExistingPlusFreeAreaTabProps {
   projectId: number | null;
@@ -29,7 +32,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setGSTonExistingPlusFreeAreaData] = useState<ProposedOfferGSTonExistingPlusFreeAreaData | null>(null);
+  const [gSTonExistingPlusFreeAreaData, setGSTonExistingPlusFreeAreaData] = useState<ProposedOfferGSTonExistingPlusFreeAreaData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsGSTonExistingPlusFreeArea, setErrorsGSTonExistingPlusFreeArea] = useState<{ [k: string]: string }>({});
@@ -71,7 +74,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
               BuildingId: buildingId,
               ProjectId: Number(projectId),
               GSTOnAreaByMemberPercent: data.GSTOnAreaByMemberPercent ?? 0,
-              GSTOnAreaByDeveloperPercent: data.GSTOnAreaByDeveloperPercent ?? 0
+              GSTOnAreaByDeveloperPercent: data.GSTOnAreaByDeveloperPercent ?? 0,
+              Remark: data.Remark
             });
           } else {
             setFormDataGSTonExistingPlusFreeArea({
@@ -147,7 +151,9 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
           BuildingId: buildingId,
           ProjectId: Number(projectId),
           GSTOnAreaByMemberPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent,
-          GSTOnAreaByDeveloperPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent
+          GSTOnAreaByDeveloperPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent,
+          Remark: formDataGSTonExistingPlusFreeArea.Remark
+
         };
 
         const response = await proposedOfferService.apiCallAddUpdateGSTonExistingPlusFreeArea(payload);
@@ -183,6 +189,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
     )
   };
 
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6 pb-5">
@@ -198,7 +206,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 required
                 type="text"
                 rightIcon="%"
-                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || ''}
+                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || 0}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -206,7 +214,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                   }
                 }}
                 error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent}
-                placeholder="Enter GST on Area by Member Percent"
+                placeholder="Enter GST on Area by Member"
+                disabled={!isBuildingSelected}
               />
             </div>
 
@@ -216,7 +225,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 required
                 type="text"
                 rightIcon="%"
-                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || ''}
+                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || 0}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -224,10 +233,10 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                   }
                 }}
                 error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent}
-                placeholder="Enter GST on Area by Developer Percent"
+                placeholder="Enter GST on Area by Developer"
+                disabled={!isBuildingSelected}
               />
             </div>
-
             <div>
               <Input
                 label="Total GST (%)"
@@ -235,26 +244,57 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 type="text"
                 rightIcon="%"
                 disabled
-                value={Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent) + Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent) || 0}
+                value={(
+                  (Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent) || 0) +
+                  (Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent) || 0)
+                ).toFixed(2)}
                 error={errorsGSTonExistingPlusFreeArea.TotalGSTPercent}
                 placeholder="System Calculated Total GST"
               />
             </div>
+
           </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataGSTonExistingPlusFreeArea.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea("Remark", e.target.value)}
+              error={errorsGSTonExistingPlusFreeArea.Remark}
+              disabled={!isBuildingSelected}
+            />
+          </div>
+
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={gSTonExistingPlusFreeAreaData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(gSTonExistingPlusFreeAreaData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={gSTonExistingPlusFreeAreaData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(gSTonExistingPlusFreeAreaData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 
       <BottomActionBar
-        cancelText="Cancel"
         saveText={(formDataGSTonExistingPlusFreeArea.ProposedOfferGSTonExistingPlusFreeAreaId && formDataGSTonExistingPlusFreeArea.ProposedOfferGSTonExistingPlusFreeAreaId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataGSTonExistingPlusFreeArea({
-            ...initialFormStateGSTonExistingPlusFreeArea(),
-            ProjectId: Number(projectId)
-          });
-          setErrorsGSTonExistingPlusFreeArea({});
-          fetchGSTonExistingPlusFreeAreaData();
-        }}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveGSTonExistingPlusFreeArea}
         isLoading={isLoading}

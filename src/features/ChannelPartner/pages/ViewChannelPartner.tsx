@@ -1,24 +1,25 @@
 import { useNavigate } from "react-router-dom";
-import type { ChannelPartnerData } from "../models/ChannelPartnerModel";
+import type { ChannelPartnerData } from "@/features/ChannelPartner/models/ChannelPartnerModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useChannelPartnerListState } from "../context/ChannelPartnerListStateContext";
+import { useChannelPartnerListState } from "@/features/ChannelPartner/context/ChannelPartnerListStateContext";
 import { useEffect, useState } from "react";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
-import type { FilterWithPaginationChannelPartnerRequest } from "../models/ChannelPartnerModel";
-import { ChannelPartnerService } from "../services/ChannelPartnerService";
-import { Mail, Phone } from "lucide-react";
+import type { FilterWithPaginationChannelPartnerRequest } from "@/features/ChannelPartner/models/ChannelPartnerModel";
+import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
+import { BadgeCheck, Building2, ChartNoAxesCombined, Circle, FileBadge2, FolderKanban, IdCard, Mail, MapPin, Phone, Users2, History, Handshake } from "lucide-react";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { formatCurrency } from "@/core/utils/comman";
+import { Button } from "@/ui/components/forms";
 
 const ViewChannelPartner: React.FC = () => {
 
-    // NAVIGATION
     const navigate = useNavigate();
 
     const { canAction } = useMenuPermissions('/channelPartner');
@@ -103,7 +104,7 @@ const ViewChannelPartner: React.FC = () => {
             'Loading Channel Partner'
         );
     };
-    //#region EDIT CHANNEL PARTNER MASTER
+
     const handleEditChannelPartner = (row: ChannelPartnerData) => {
         if (!row?.ChannelPartnerId) return;
         navigate(`/channelPartner/add/${row.ChannelPartnerId}`, {
@@ -112,26 +113,50 @@ const ViewChannelPartner: React.FC = () => {
             }
         });
     };
-    //#endregion
 
-    //#region BACK PROJECT PAGE
     const handleBackToListChannelPartner = () => {
         navigate('/channelPartner');
     };
-    //#endregion
 
+    const handleViewSalesMetrics = (row: ChannelPartnerData) => {
+        if (!row?.ChannelPartnerId) return;
+        navigate('/channelPartner/salesMetrics', {
+            state: {
+                fromList: true
+            }
+        });
+    };
 
     const filteredTeamMembers = channelPartnerTeamMemberData.filter(
         member => member.ChannelPartnerId !== editChannelPartnerData?.ChannelPartnerId
     );
 
-    return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+    const isActive = Number(editChannelPartnerData?.NoOfEnquiry) > 0;
 
-            {/* Loader */}
+    const getAOPStatusStyle = (status?: string) => {
+        switch (status?.toUpperCase()) {
+            case "AOP":
+                return "border-blue-500 bg-blue-50 text-blue-600";
+
+            case "NON-AOP":
+                return "border-gray-300 bg-gray-100 text-gray-700";
+
+            case "EXPIRE SOON":
+                return "border-orange-300 bg-orange-50 text-orange-600";
+
+            case "EXPIRED":
+                return "border-red-300 bg-red-50 text-red-600";
+
+            default:
+                return "border-gray-300 bg-gray-100 text-gray-700";
+        }
+    };
+
+    return (
+        <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-300 p-6">
+
             <Loader loading={isLoading} title={loadingMessage} ><div></div> </Loader>
 
-            {/* Header Details*/}
             <HeaderActionBar
                 titleText="Channel Partner : "
                 subTitleText={channelPartnerName || editChannelPartnerData?.Name || ''}
@@ -145,220 +170,517 @@ const ViewChannelPartner: React.FC = () => {
                 }}
                 isLoading={false}
             />
+            <div className="grid grid-cols-12 gap-5">
 
-            <div className="grid grid-cols-12 gap-4 pt-5">
+                <div className="col-span-12 lg:col-span-7">
 
-                {/* LEFT SIDE PROFILE CARD */}
-                <div className="col-span-8">
+                    <div className="bg-white rounded-3xl border border-gray-200  box-shadow: 0px 8px 30px 0px #00000005 px-5 py-5 mt-5">
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                        <div className="flex items-center justify-between">
 
-                        {/* HEADER  DETAILS */}
-                        <div className="pl-4 pb-4 border-b-2 border-gray-300">
-                            <div className="flex flex-col gap-2">
+                            <div className="flex items-start gap-6">
 
-                                <div className="flex items-start">
-                                    <span className="text-gray-500 font-medium text-sm w-[120px]">
-                                        Company Name
-                                    </span>
-                                    <span className="text-gray-500 font-medium text-sm px-2">:</span>
-                                    <span className="text-black text-sm break-all">
-                                        {editChannelPartnerData?.CompanyName || '-'}
-                                    </span>
+
+                                <div className="relative">
+                                    {editChannelPartnerData?.ChannelPartnerPhotoUrl ? (
+                                        <img
+                                            src={editChannelPartnerData.ChannelPartnerPhotoUrl}
+                                            alt={editChannelPartnerData?.Name}
+                                            className="w-18 h-18 rounded-full object-cover border border-gray-300"
+                                        />
+                                    ) : null}
+
+                                    <div className={`w-18 h-18 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-xl ${editChannelPartnerData?.ChannelPartnerPhotoUrl ? "hidden" : "flex"}`}>
+                                        {getNameInitials(editChannelPartnerData?.Name)}
+                                    </div>
+
+                                    <div className="absolute bottom-1 right-1 w-5 h-5 rounded-full bg-indigo-600 border-2 border-white flex items-center justify-center">
+                                        <BadgeCheck size={14} className="text-white" />
+                                    </div>
                                 </div>
 
-                                <div className="flex items-start">
-                                    <span className="text-gray-500 font-medium text-sm w-[120px]">
-                                        Firm Type
-                                    </span>
-                                    <span className="text-gray-500 font-medium text-sm px-2">:</span>
-                                    <span className="text-black text-sm break-all">
-                                        {editChannelPartnerData?.FirmsType || '-'}
-                                    </span>
-                                </div>
+                                <div>
 
+                                    <div className="flex items-center gap-3 flex-wrap">
+
+                                        <h1 className="text-2xl font-bold text-slate-800">
+                                            {editChannelPartnerData?.Name}
+                                        </h1>
+
+                                        <span
+                                            className={`px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2 border
+                                        ${isActive
+                                                    ? "bg-green-50 text-green-700 border-green-200"
+                                                    : "bg-red-50 text-red-700 border-red-200"
+                                                }`}
+                                        >
+                                            <Circle
+                                                size={8}
+                                                className={
+                                                    isActive
+                                                        ? "fill-green-500 text-green-500"
+                                                        : "fill-red-500 text-red-500"
+                                                }
+                                            />
+
+                                            {isActive ? "Active" : "Inactive"}
+                                        </span>
+
+                                        {editChannelPartnerData?.RERANumber && (
+                                            <span className="px-5 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium flex items-center gap-2 border border-[#E0E7FF]">
+                                                <BadgeCheck size={18} />
+                                                RERA Verified
+                                            </span>
+                                        )}
+
+                                        {editChannelPartnerData?.GSTNumber && (
+                                            <span className="px-5 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm font-medium flex items-center gap-2 border border-[#E0E7FF]">
+                                                <BadgeCheck size={18} />
+                                                GST Verified
+                                            </span>
+                                        )}
+
+                                    </div>
+
+                                    <p className="text-lg text-gray-500 mt-2">
+                                        {editChannelPartnerData?.Designation} at {editChannelPartnerData?.CompanyName}
+                                    </p>
+
+                                    <div className="inline-flex items-center gap-2 mt-2 px-5 py-2 rounded-full bg-[#EFF4FF] text-[#464554] text-1xl font-medium">
+                                        <MapPin className="text-[#4648D4]" size={18} />
+                                        {editChannelPartnerData?.CityName}, {editChannelPartnerData?.StateName}
+                                    </div>
+
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+                <div className="col-span-12 lg:col-span-5">
 
-                        {/* Basic Deatils */}
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Basic Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
-                                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
-                                <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" :  `${editChannelPartnerData?.MobileNumberCountryCode || "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
-                                <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId} />
-                                <FieldItem label="Alternative Contact No:" value={editChannelPartnerData?.AlternativeMobileNumber ? `+91 ${editChannelPartnerData?.AlternativeMobileNumber}` : '-'} />
-                                <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality} />
-                                <FieldItem label="Firms Type" value={editChannelPartnerData?.FirmsType} />
-                                <FieldItem label="Type" value={editChannelPartnerData?.Type} />
-                                <FieldItem label="Designation" value={editChannelPartnerData?.Designation} />
+                    <div className="bg-white rounded-3xl border border-gray-200  box-shadow: 0px 8px 30px 0px #00000005 p-5 mt-5">
 
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pb-4 pt-4">
-                                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
-                                    Website URL
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                                <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center">
+                                    <Handshake className="w-5 h-5 text-violet-600" />
                                 </div>
-                                {editChannelPartnerData?.WebsiteURL !== "" ?
-                                    <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
-                                        onClick={() => window.open(editChannelPartnerData?.WebsiteURL, "_blank")}>
-                                        {editChannelPartnerData?.WebsiteURL}
-                                    </span> : "-"}
+
+                                <h2 className="text-[16px] font-semibold text-slate-800">
+                                    Compliance Status
+                                </h2>
                             </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
 
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                RERA Details
-                            </h4>
+                            <Button
+                                type="button"
+                                variant="link"
+                                className="p-0"
+                                onClick={() => {
+                                    if (editChannelPartnerData) {
+                                        handleViewSalesMetrics(editChannelPartnerData);
+                                    }
+                                }}
+                            >
+                                View Sales Metrics
+                            </Button>
+                        </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Available RERA Number" value={editChannelPartnerData?.RERANumber != "" ? 'Yes' : 'No'} />
 
-                                <FieldItem label="RERA Number" value={editChannelPartnerData?.RERANumber} />
+                        <div className="grid grid-cols-2 gap-6">
+
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                    Status
+                                </p>
+
+                                <div className={`inline-flex items-center gap-2 px-5 py-2 mt-4 rounded-[15px] border text-sm font-medium ${getAOPStatusStyle(editChannelPartnerData?.AOPStatus)}`} >
+
+                                    {["AOP", "EXPIRE SOON"].includes(editChannelPartnerData?.AOPStatus?.toUpperCase() || "") ? (
+
+                                        <FieldItem label="" value={editChannelPartnerData?.AOPStatus} urls={editChannelPartnerData?.AOPDocumentURL} isIcon className="-mt-1" />
+                                    ) : (
+                                        editChannelPartnerData?.AOPStatus
+                                    )}
+                                </div>
                             </div>
-                        </section>
 
-                        <hr className="border-t border-gray-200" />
 
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Address
-                            </h4>
+                            {["AOP", "EXPIRE SOON"].includes(editChannelPartnerData?.AOPStatus?.toUpperCase() || "") && (
+                                <div>
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                                        Validity
+                                    </p>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <FieldItem label="Country" value={editChannelPartnerData?.CountryName ?? '-'} />
-                                <FieldItem label="State" value={editChannelPartnerData?.StateName ?? '-'} />
-                                <FieldItem label="District" value={editChannelPartnerData?.DistrictName ?? '-'} />
-                                <FieldItem label="City" value={editChannelPartnerData?.CityName ?? '-'} />
-                                <FieldItem label="Village" value={editChannelPartnerData?.VillageName ?? '-'} />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
-                                <FieldItem label="Office Address" value={editChannelPartnerData?.OfficeAddress} />
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Document Details
-                            </h4>
+                                    <p className="text-[14px] font-medium text-slate-800 leading-6 mt-4">
+                                        {editChannelPartnerData?.AOPFromDate &&
+                                            editChannelPartnerData?.AOPToDate ? `${formatDate_dd_MonthName_yy(editChannelPartnerData.AOPFromDate)} - ${formatDate_dd_MonthName_yy(editChannelPartnerData.AOPToDate)}` : "-"}
+                                    </p>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="PAN Number" value={editChannelPartnerData?.PanNumber} urls={editChannelPartnerData?.PanCardURL} isIcon />
-                                <FieldItem label="Aadhaar Number" value={editChannelPartnerData?.AadharCardNumber} urls={editChannelPartnerData?.AadharCardURL} isIcon />
-                                <FieldItem label="GST Number" value={editChannelPartnerData?.GSTNumber} urls={editChannelPartnerData?.GSTCertificateURL} isIcon />
-                            </div>
-                        </section>
+                                </div>
+                            )}
 
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Enquiry , Booking ,IBM & OBM  Details
-                            </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry} />
-                                <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking} />
-                                
-                                <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
-                                <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.BrokerageAmount)} />
-                                <FieldItem label="Paid Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.PaidBrokerageAmount)} />
-                                <FieldItem label="No Of IBM" value={editChannelPartnerData?.NoOfIbm} />
-                                <FieldItem label="No Of OBM" value={editChannelPartnerData?.NoOfObm} />
-                            </div>
-                        </section>
+                        </div>
+                    </div>
 
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Primary & Secondary Project Portfolio
-                            </h4>
+                </div>
+            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-                                <FieldItem label="Primary" value={editChannelPartnerData?.PrimaryProjectPortfolio} />
-                                <FieldItem label="Secondary" value={editChannelPartnerData?.SecondaryProjectPortfolio} />
-                                <FieldItem label="Micromarket Proximity" value={editChannelPartnerData?.MicromarketProximity} />
-                            </div>
-                        </section>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-5">
 
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
+                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
-                                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
-                                {editChannelPartnerData?.ModifiedBy && (
-                                    <>
-                                        <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
-                                        <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
-                                    </>
-                                )}
-                            </div>
-                        </section>
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
+                            <Phone className="w-5 h-5 text-indigo-600" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Personal Information
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+
+                        <FieldItem label="Full Name" value={editChannelPartnerData?.Name} />
+
+                        <FieldItem label="Mobile Number" value={editChannelPartnerData?.MobileNumber ? `${editChannelPartnerData?.MobileNumberCountryCode || "+91"} ${editChannelPartnerData.MobileNumber}` : "-"} />
+
+                        <FieldItem label="Alternative Contact No:" value={editChannelPartnerData?.AlternativeMobileNumber ? `+91 ${editChannelPartnerData?.AlternativeMobileNumber}` : '-'} />
+
+                        <FieldItem label="Date Of Birth" value={editChannelPartnerData?.DateOfBirth ? formatDate_dd_MonthName_yy(editChannelPartnerData.DateOfBirth) : "-"} />
+
+                        <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId} />
+
+                        <FieldItem label="Website URL" value={
+                            editChannelPartnerData?.WebsiteURL ? (
+                                <a
+                                    href={editChannelPartnerData.WebsiteURL}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="text-blue-600 hover:underline break-all"
+                                >
+                                    {editChannelPartnerData.WebsiteURL}
+                                </a>
+                            ) : "-"
+                        }
+                        />
+
+                    </div>
+
+                </div>
+
+                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center">
+                            <BadgeCheck className="w-5 h-5 text-emerald-600" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Business Information
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+
+                        <FieldItem label="Company Name" value={editChannelPartnerData?.CompanyName} />
+
+                        <FieldItem label="Firm Type" value={editChannelPartnerData?.FirmsType} />
+
+                        <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality} />
+
+                        <FieldItem label="RERA Number" value={editChannelPartnerData?.RERANumber} />
+
+                        <FieldItem label="Type" value={editChannelPartnerData?.Type} />
+
+                        <FieldItem label="Designation" value={editChannelPartnerData?.Designation} />
+
+                    </div>
+
+                </div>
+
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
+                            <MapPin className="w-5 h-5 text-orange-500" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Address Details
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-x-8 gap-y-6">
+
+                        <FieldItem label="Country" value={editChannelPartnerData?.CountryName} />
+
+                        <FieldItem label="State" value={editChannelPartnerData?.StateName} />
+
+                        <FieldItem label="District" value={editChannelPartnerData?.DistrictName} />
+
+                        <FieldItem label="City" value={editChannelPartnerData?.CityName} />
+                        <FieldItem label="Village" value={editChannelPartnerData?.VillageName} />
+
+
+                        <div className="col-span-3">
+                            <FieldItem label="Office Address" value={editChannelPartnerData?.OfficeAddress} />
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-xl bg-gray-50 flex items-center justify-center">
+                            <ChartNoAxesCombined className="w-5 h-5 text-gray-500" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Sales Matrix
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-6">
+
+                        <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry} />
+                        <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking} />
+
+                        <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
+                        <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.BrokerageAmount)} />
+                        <FieldItem label="Paid Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.PaidBrokerageAmount)} />
+                        <FieldItem label="No Of IBM" value={editChannelPartnerData?.NoOfIbm} />
+                        <FieldItem label="No Of OBM" value={editChannelPartnerData?.NoOfObm} />
+
                     </div>
                 </div>
 
-                {/*  RIGHT SIDE  */}
-                {/* RIGHT SIDE – TEAM MEMBERS */}
-                <div className="col-span-4">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
 
-                        {/* Header */}
-                        <div className="pb-3 border-b border-gray-300">
-                            <h4 className="text-lg font-semibold text-gray-900">
-                                Team Members <span className="text-gray-400 text-sm">({filteredTeamMembers.length})</span>
-                            </h4>
+                    <div className="flex items-center gap-3 mb-5">
+
+                        <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                            <FolderKanban className="w-5 h-5 text-sky-600" />
                         </div>
 
-                        {/* Team Member List */}
-                        <div className="mt-4 space-y-4 overflow-y-auto h-[1600px] thin-scroll">
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Assigned Projects
+                        </h2>
 
-                            {filteredTeamMembers.length === 0 && (
-                                <p className="text-sm text-gray-400 text-center">
-                                    <NoDataView message="No team members found" />
-                                </p>
-                            )}
+                    </div>
 
-                            {filteredTeamMembers.map((member, index) => (
-                                <div key={index} className="border border-gray-200 rounded-lg p-3 hover:shadow transition">
+                    <div className="grid grid-cols-12 gap-6">
 
-                                    <div className="flex items-start justify-between gap-2">
-                                        <h5 className="text-sm font-semibold text-gray-900 truncate">
-                                            {member.Name || '-'}
-                                        </h5>
+                        <div className="col-span-12">
 
-                                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                                            {member.Designation || '—'}
-                                        </span>
-                                    </div>
+                            <p className="text-xs font-semibold uppercase text-gray-400 mb-3">
+                                Primary Project
+                            </p>
 
+                            <div className="border border-gray-200 rounded-2xl bg-[#F5F7FF] p-4 flex gap-4">
 
-                                    <div className="mt-2 space-y-1">
+                                <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center">
+                                    <Building2 className="text-indigo-600" size={20} />
+                                </div>
 
-                                        <p className="text-xs text-gray-600 flex items-center gap-2">
-                                            <Phone className="h-4 w-4 text-gray-400 shrink-0" />
-                                            <span>{member.MobileNumber ? `${member.MobileNumberCountryCode || '+91'} ${member.MobileNumber}` : '-'}</span>
-                                        </p>
-
-
-                                        <p className="text-xs text-gray-600 flex items-center gap-2 break-all">
-                                            <Mail className="h-4 w-4 text-gray-400 shrink-0" />
-                                            <span>{member.EmailId || '-'}</span>
-                                        </p>
-
-
-                                    </div>
-
+                                <div>
+                                    <h4 className="font-semibold">
+                                        {editChannelPartnerData?.PrimaryProjectPortfolio || "-"}
+                                    </h4>
 
                                 </div>
-                            ))}
+
+                            </div>
+
                         </div>
+
+
+                        <div className="col-span-12">
+
+                            <p className="text-xs font-semibold uppercase text-gray-400 mb-3">
+                                Secondary Projects
+                            </p>
+
+                            <div className="grid grid-cols-4 gap-3">
+
+                                {(editChannelPartnerData?.SecondaryProjectPortfolio || "")
+                                    .split(",")
+                                    .filter(x => x.trim() !== "")
+                                    .map((item, index) => (
+
+                                        <div key={index} className="border border-gray-200 rounded-xl p-3 flex items-center gap-3"  >
+                                            <Building2 size={16} className="text-indigo-600" />
+
+                                            <span>{item.trim()}</span>
+
+                                        </div>
+
+                                    ))}
+
+                            </div>
+
+                        </div>
+
                     </div>
+
+                </div>
+
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                    <div className="flex items-center gap-3 mb-6">
+
+                        <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
+                            <FileBadge2 className="w-5 h-5 text-indigo-600" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Verification Documents
+                        </h2>
+
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-5">
+                        {[
+                            {
+                                title: "Aadhaar Card",
+                                number: editChannelPartnerData?.AadharCardNumber,
+                                url: editChannelPartnerData?.AadharCardURL,
+                            },
+                            {
+                                title: "PAN Card",
+                                number: editChannelPartnerData?.PanNumber,
+                                url: editChannelPartnerData?.PanCardURL,
+                            },
+                            {
+                                title: "GST Certificate",
+                                number: editChannelPartnerData?.GSTNumber,
+                                url: editChannelPartnerData?.GSTCertificateURL,
+                            },
+                        ].map((doc, index) => (
+
+                            <div key={index} className="rounded-2xl border border-gray-200 p-5" >
+
+                                <div className="flex justify-between items-start">
+
+                                    <div className="flex gap-3">
+
+                                        <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center">
+                                            <IdCard size={18} className="text-indigo-600" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">
+                                                <FieldItem label={doc.title} value={doc?.number} urls={doc?.url} isIcon />
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                    <span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full">
+                                        {doc?.url !== "" && doc?.url !== null ? "Verified" : "Not Verified"}
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                </div>
+
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
+                            <Users2 size={20} className="text-orange-500" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Team Members
+                        </h2>
+                    </div>
+
+                    {filteredTeamMembers.length === 0 ? (
+                        <NoDataView message="No team members found" />
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                            {filteredTeamMembers.map((member, index) => (
+                                <div
+                                    key={index}
+                                    className="border border-gray-200 rounded-xl p-4"
+                                >
+                                    <div className="flex items-center gap-3">
+
+                                        <div className="w-11 h-11 rounded-full bg-indigo-100 text-indigo-700 font-semibold flex items-center justify-center">
+                                            {getNameInitials(member.Name)}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0">
+
+                                            <h5 className="text-md font-semibold text-gray-900 truncate">
+                                                {member.Name}
+                                            </h5>
+
+                                            <p className="text-xs text-gray-500">
+                                                {member.Designation || "-"}
+                                            </p>
+                                        </div>
+
+                                    </div>
+
+                                    <div className="mt-4 space-y-2">
+
+                                        <div className="flex items-center gap-2 text-xs text-gray-600">
+                                            <Phone size={14} className="text-gray-400" />
+                                            <span>
+                                                {member.MobileNumber ? `${member.MobileNumberCountryCode || "+91"} ${member.MobileNumber}` : "-"}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 text-xs text-gray-600 break-all">
+                                            <Mail size={14} className="text-gray-400 shrink-0" />
+                                            <span>{member.EmailId || "-"}</span>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            ))}
+
+                        </div>
+                    )}
+
+                </div>
+
+                <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                    <div className="flex items-center gap-3 mb-5">
+                        <div className="w-11 h-11 rounded-xl bg-slate-50 flex items-center justify-center">
+                            <History className="w-5 h-5 text-slate-600" />
+                        </div>
+
+                        <h2 className="text-[16px] font-semibold text-slate-800">
+                            Action Details
+                        </h2>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+
+                        <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
+                        <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
+                        {editChannelPartnerData?.ModifiedBy && (
+                            <>
+                                <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
+                                <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
+                            </>
+                        )}
+
+                    </div>
+
                 </div>
 
             </div>

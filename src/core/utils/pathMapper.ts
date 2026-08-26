@@ -45,6 +45,11 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/category': '/category',
         '/document': '/document',
         '/reracategory': '/reraCategory',
+        '/testcategory': '/testCategory',
+        '/testdocument': '/testDocument',
+        '/drawingcategory': '/drawingCategory',
+        '/drawing': '/drawing',
+        
         '/rera': '/rera',
         '/siteprogress': '/siteProgress',
         '/building': '/building',
@@ -111,11 +116,14 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paytrackreport': '/payTrackReport',
         '/brokerage': '/brokerage',
         '/collectionreport': '/collectionReport',
-         '/dailycollectionreport': '/dailyCollectionReport',
+        '/dailycollectionreport': '/dailyCollectionReport',
 
         //MORE
         '/inwardoutward': '/inwardOutward',
         '/ticket': '/ticket',
+        '/otplogs': '/otpLogs',
+        '/taxtracker': '/taxTracker',
+
 
         //SETTING EXTRA
         '/companypolicy': '/companyPolicy',

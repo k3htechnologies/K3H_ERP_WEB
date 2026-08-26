@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
-import { Box, Building2, Car, ClipboardCheck, FileText, Folder } from "lucide-react";
+import { Box, Building2, Car, ClipboardCheck, FileText, Folder, Home, KeyRound, ReceiptIndianRupee, UserCog, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/ui/components/forms";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 interface Props {
     moduleApproval: any[];
@@ -61,6 +61,14 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
 
             // ✅ BOOKING
             case "Booking":
+            case "CRM Payment Ledger":
+            case "Booking Applicant Modification":
+            case "Flat Alteration":
+            case "Parking Modification":
+            case "Refund Payment Ledger":
+            case "Flat Handover":
+            case "Cancel Booking":
+
                 return [
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "Flat", label: "Flat", render: renderText },
@@ -76,6 +84,21 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "ProjectDocumentName", label: "Document", render: renderText },
                     { key: "ProjectDocumentCategory", label: "Category", render: renderText },
+
+                ];
+
+            // ✅ Budget
+            case "Budget":
+                return [
+                    { key: "ProjectName", label: "Project", render: renderText },
+
+                ];
+
+            // ✅ Budget
+            case "Term Sheet":
+                return [
+                    { key: "ProjectName", label: "Project", render: renderText },
+                    { key: "NameOfInstitutionBankNBFC", label: "Name Of Institution / Bank / NBFC", render: renderText },
 
                 ];
 
@@ -120,23 +143,65 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             icon: Folder,
             bg: "#FDF4FF",
             color: "#A21CAF"
+        },
+        "CRM Payment Ledger": {
+            icon: Wallet,
+            bg: "#EFF6FF",
+            color: "#2563EB"
+        },
+        "Booking Applicant Modification": {
+            icon: UserCog,
+            bg: "#ECFDF5",
+            color: "#059669"
+        },
+        "Flat Alteration": {
+            icon: Home,
+            bg: "#FEF3C7",
+            color: "#D97706"
+        },
+        "Parking Modification": {
+            icon: Car,
+            bg: "#F3E8FF",
+            color: "#7C3AED"
+        },
+        "Refund Payment Ledger": {
+            icon: ReceiptIndianRupee,
+            bg: "#FEE2E2",
+            color: "#DC2626"
+        },
+        "Flat Handover": {
+            icon: KeyRound,
+            bg: "#E0F2FE",
+            color: "#0284C7"
+        },
+        "Cancel Booking": {
+            icon: ClipboardCheck,
+            bg: "#FDF4FF",
+            color: "#A21CAF"
+        },
+        "Budget": {
+            icon: Wallet,
+            bg: "#ECFDF5",
+            color: "#059669"
+        },
+        "Term Sheet": {
+            icon: ClipboardCheck,
+            bg: "#FEF3C7",
+            color: "#D97706"
         }
+
     };
 
     return (
         <div className="space-y-3 pt-7">
-            <div
-                className="bg-white rounded-xl p-5 mt-5 flex flex-col border border-gray-100 h-[330px]"
-                style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
-            >
+            <div className="bg-white rounded-xl p-5 mt-5 flex flex-col border border-gray-100 h-[330px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }} >
 
                 <p className="text-md font-semibold text-gray-500 pb-3">
                     Pending Approvals
                 </p>
 
-                {/* GRID */}
                 {moduleSummary.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto thin-scroll pr-1">
 
                         {moduleSummary.map((item, index) => {
 
@@ -206,10 +271,10 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                         </Button>
                     </div>
                 }
-                size="xl"
+                size="xxl"
             >
                 {selectedModule?.data?.length > 0 ? (
-                    <DataTableWithOutBorder
+                    <DataTableWithHeaderRowDivider
                         data={selectedModule.data}
                         columns={getColumnsByModule(selectedModule?.moduleName)}
                         recordsPerPage={5}

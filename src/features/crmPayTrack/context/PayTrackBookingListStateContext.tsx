@@ -16,8 +16,11 @@ export type PayTrackBookingListState = {
   bookingType: string;
   bookingOtherChargesData?: BookingOtherChargesData[];
   bookingData?: PayTrackBookingData | null;
+  parkingNumber:string;
+  isFinalRegistrationCompleted:boolean;
   totalUnitCost: number;
   bookingApprovalStatus: string;
+  totalAmountRefundedAgainstBooking:number;
   flat: string;
   activeTab?: string;
   activeSubTab?: string;
@@ -39,8 +42,11 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
       bookingType: "",
       bookingOtherChargesData: [],
       bookingData: null,
+      parkingNumber:"",
+      isFinalRegistrationCompleted:false,
       totalUnitCost: 0,
       bookingApprovalStatus:"",
+      totalAmountRefundedAgainstBooking:0,
       flat: "",
       activeTab: undefined,
       activeSubTab: undefined,
@@ -62,8 +68,11 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
           flat: parsed.state.flat || "",
           totalUnitCost: parsed.state.totalUnitCost || 0,
           bookingApprovalStatus:parsed.state.bookingApprovalStatus || "",
+          totalAmountRefundedAgainstBooking:parsed.state.totalAmountRefundedAgainstBooking || 0,
           bookingOtherChargesData: parsed.state.bookingOtherChargesData || [],
           bookingData: parsed.state.bookingData || null,
+          parkingNumber:parsed.state.parkingNumber || "",
+          isFinalRegistrationCompleted:parsed.state.isFinalRegistrationCompleted || false,
           activeTab: parsed.state.activeTab,
           activeSubTab: parsed.state.activeSubTab,
           refreshKey: 0,
@@ -86,8 +95,11 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
     flat: "",
     totalUnitCost: 0,
     bookingApprovalStatus:"",
+    totalAmountRefundedAgainstBooking:0,
     bookingOtherChargesData: [],
     bookingData: null,
+    parkingNumber:"",
+    isFinalRegistrationCompleted:false,
     activeTab: undefined,
     activeSubTab: undefined,
     refreshKey: 0,
@@ -99,7 +111,7 @@ type PayTrackBookingListStateContextType = {
   updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => void;
+  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string,totalAmountRefundedAgainstBooking:number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData,parkingNumber?:string,isFinalRegistrationCompleted?:boolean) => void;
   clearPayTrackBookingContext: () => void;
   triggerRefresh: () => void;
 };
@@ -125,8 +137,11 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
         flat: "",
         totalUnitCost: 0,
         bookingApprovalStatus:"",
+        totalAmountRefundedAgainstBooking:0,
         bookingOtherChargesData: [],
         bookingData: null,
+        parkingNumber:"",
+        isFinalRegistrationCompleted:false,
         activeTab: undefined,
         activeSubTab: undefined,
         refreshKey: 0,
@@ -182,8 +197,11 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat: "",
       totalUnitCost: 0,
       bookingApprovalStatus:"",
+      totalAmountRefundedAgainstBooking:0,
       bookingOtherChargesData: [],
       bookingData: null,
+      parkingNumber:"",
+      isFinalRegistrationCompleted:false,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
@@ -191,7 +209,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
     setListState(defaultState);
   }, []);
 
-  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string,totalAmountRefundedAgainstBooking:number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData,parkingNumber?:string,isFinalRegistrationCompleted?:boolean) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
@@ -200,8 +218,11 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat,
       totalUnitCost,
       bookingApprovalStatus,
+      totalAmountRefundedAgainstBooking,
       bookingOtherChargesData: bookingOtherChargesData || [],
       bookingData: bookingData || null,
+      parkingNumber:parkingNumber ||"",
+      isFinalRegistrationCompleted:isFinalRegistrationCompleted ||false,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
@@ -217,8 +238,11 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat: "",
       totalUnitCost: 0,
       bookingApprovalStatus:"",
+      totalAmountRefundedAgainstBooking:0,
       bookingOtherChargesData: [],
       bookingData: null,
+      parkingNumber:"",
+      isFinalRegistrationCompleted:false,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,

@@ -4,12 +4,10 @@ import type {
     FilterWithPaginationBookingRequest,
     BookingListResponse,
     BookingSaveResponse,
-    CancelBookingRequest,
     BookingDeleteResponse,
     FilterWithPaginationChannelPartnerBookingRequest,
     FilterPaymentScheduleStagesRequest,
     PaymentScheduleStagesResponse,
-    UpdatePayTrackBookingRegistrationDateParking,
     BookingUpdateegistrationDateParkingResponse
 } from '@/features/booking/models/BookingModel'
 
@@ -34,9 +32,9 @@ export const bookingService = {
         }
     },
 
-    apiCallCancelBooking: async (params: CancelBookingRequest): Promise<E.Either<Failure, BookingDeleteResponse>> => {
+    apiCallCancelBooking: async (formData: FormData): Promise<E.Either<Failure, BookingDeleteResponse>> => {
         try {
-            return E.right(await bookingDatasource.cancelBooking(params));
+            return E.right(await bookingDatasource.cancelBooking(formData));
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code });
         }
@@ -57,9 +55,9 @@ export const bookingService = {
             return E.left({ message: error.message, code: error.code });
         }
     },
-    apiCallUpdatePayTrackBookingRegistrationDateParking: async (params: UpdatePayTrackBookingRegistrationDateParking): Promise<E.Either<Failure, BookingUpdateegistrationDateParkingResponse>> => {
+    apiCallUpdatePayTrackBookingRegistrationDateParking: async (formData: FormData): Promise<E.Either<Failure, BookingUpdateegistrationDateParkingResponse>> => {
         try {
-            return E.right(await bookingDatasource.updatePayTrackBookingRegistrationDateParking(params));
+            return E.right(await bookingDatasource.updatePayTrackBookingRegistrationDateParking(formData));
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code });
         }

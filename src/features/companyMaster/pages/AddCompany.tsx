@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
-import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyDocumentFile, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
+import { calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyDocumentFile, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -152,14 +152,15 @@ const AddCompany: React.FC = () => {
 
   const [companyPartnerAadhaarCardURLFiles, setCompanyPartnerAadhaarCardURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerAadhaarCardURLs, setRemovedCompanyPartnerAadhaarCardURLs] = useState<string[]>([]);
-
+  const [companyPartnerAadhaarCardURL, setCompanyPartnerAadhaarCardURL] = useState<string>();
 
   const [companyPartnerPANURLFiles, setCompanyPartnerPANURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerPANURLs, setRemovedCompanyPartnerPANURLs] = useState<string[]>([]);
-
+  const [companyPartnerPANURL, setCompanyPartnerPANURL] = useState<string>();
 
   const [companyPartnerPhotoURLFiles, setCompanyPartnerPhotoURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerPhotoURLs, setRemovedCompanyPartnerPhotoURLs] = useState<string[]>([]);
+  const [companyPartnerPhotoURL, setCompanyPartnerPhotoURL] = useState<string>();
 
   //ERROR SET UP
   const [errorsCompanyPartner, setErrorsCompanyPartner] = useState<{ [k: string]: string }>({});
@@ -384,9 +385,9 @@ const AddCompany: React.FC = () => {
 
     // Email
     if (!formData.EmailId?.trim()) {
-      newErrors.EmailId = "Email Id is required.";
+      newErrors.EmailId = "E-Mail ID is required.";
     } else if (!isValidEmail(formData.EmailId?.trim())) {
-      newErrors.EmailId = "Enter a Valid E-mail Address";
+      newErrors.EmailId = "Enter a Valid E-Mail ID";
     }
 
 
@@ -565,10 +566,8 @@ const AddCompany: React.FC = () => {
           navigate("/companyMaster");
 
         } else {
-
           addToast({ type: 'error', title: response.left.message });
         }
-
         return response
       },
       undefined,
@@ -579,13 +578,10 @@ const AddCompany: React.FC = () => {
       Number(companyId) === 0 ? 'Add Company Master' : 'Update Company Master...'
     )
   }
-
-
   //#endregion
 
 
   //#region EDIT DEPARTMENT MASTER
-
   const handleEditCompanyPartner = useCallback((row: PartnerDetailsWithFiles, index: number) => {
 
     const partnerData: AddUpdateCompanyPartnerRequest = {
@@ -613,7 +609,7 @@ const AddCompany: React.FC = () => {
 
     // PHOTO
     setCompanyPartnerPhotoURLFiles(row._photoFiles ?? []);
-    setRemovedCompanyPartnerPhotoURLs([]); // always reset
+    setRemovedCompanyPartnerPhotoURLs([]);
 
     // AADHAR
     setCompanyPartnerAadhaarCardURLFiles(row._aadharCardFiles ?? []);
@@ -625,8 +621,6 @@ const AddCompany: React.FC = () => {
 
     setIsAddUpdateCompanyPartnerModalOpen(true);
   }, []);
-
-
 
   //#endregion
 
@@ -649,21 +643,104 @@ const AddCompany: React.FC = () => {
         key: 'FullName',
         label: 'Full Name',
         width: '25',
-        sortable: true,
+        sortable: false,
         fixed: 'left',
         align: 'left',
-        render: (value, row, index) => {
+        render: (value) => {
+          return (
+            <TooltipText
+              text={value || "-"}
+              maxWidth="250px"
+              tooltipThreshold={25}
+            />
+          );
+
+        }
+      },
+
+      {
+        key: 'DateOfBirth',
+        label: 'Date of Birth',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+      },
+      {
+        key: 'Gender',
+        label: 'Gender',
+        width: '10',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-',
+      },
+      {
+        key: 'MobileNumber',
+        label: 'Mobile Number',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-',
+      },
+      {
+        key: 'EmailId',
+        label: 'E-Mail ID',
+        width: '20',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-',
+      },
+      {
+        key: 'PartnerPercentage',
+        label: 'Share (%)',
+        width: '10',
+        sortable: false,
+        align: 'center',
+        render: (value) => (value !== null && value !== undefined ? value : '-'),
+      },
+      {
+        key: 'PanNumber',
+        label: 'PAN Number',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PanCardURL)}
+              title="PAN Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+      {
+        key: 'AadharCardNumber',
+        label: 'Aadhaar Number',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value: string, row: any) => {
+
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.AadharCardURL)}
+              title="Aadhar Document"
+              triggerLabel={value || '-'}
+            />
+          );
+        }
+      },
+      {
+        key: "Actions",
+        label: "Actions",
+        width: '15',
+        sortable: false,
+        fixed: "right",
+        align: "center",
+        render: (_value, row, index) => {
           return (
             <div className="flex items-center justify-between w-full gap-1">
-
-              <TooltipText
-                text={value || "-"}
-                maxWidth="250px"
-                tooltipThreshold={25}
-              />
-
-
-              {/* RIGHT: actions */}
               <div className="flex items-center gap-1 shrink-0">
                 <Button
 
@@ -700,83 +777,6 @@ const AddCompany: React.FC = () => {
           );
 
         }
-      },
-
-      {
-        key: 'DateOfBirth',
-        label: 'Date of Birth',
-        width: '15',
-        sortable: false,
-        align: 'center',
-        render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
-      },
-      {
-        key: 'Gender',
-        label: 'Gender',
-        width: '10',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-',
-      },
-      {
-        key: 'MobileNumber',
-        label: 'Mobile Number',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-',
-      },
-      {
-        key: 'EmailId',
-        label: 'Email ID',
-        width: '20',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-',
-      },
-      {
-        key: 'PartnerPercentage',
-        label: 'Share (%)',
-        width: '10',
-        sortable: false,
-        align: 'center',
-        render: (value) => (value !== null && value !== undefined ? value : '-'),
-      },
-      {
-        key: 'PanNumber',
-        label: 'PAN Number',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value: string, row: any) => {
-          return (
-            <MultiImageViewer
-              images={parseDocumentUrls(row.PanCardURL)}
-              title="PAN Document"
-              triggerLabel={value || '-'}
-            />
-          );
-        }
-      },
-
-
-      {
-        key: 'AadharCardNumber',
-        label: 'Aadhaar Number',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value: string, row: any) => {
-
-          return (
-            <MultiImageViewer
-              images={parseDocumentUrls(row.AadharCardURL)}
-              title="Aadhar Document"
-              triggerLabel={value || '-'}
-            />
-          );
-        }
-
       }
     ],
     [handleEditCompanyPartner, handleConfirmationDialogBoxOpenCompanyPartner, companyPartnerList]
@@ -794,6 +794,24 @@ const AddCompany: React.FC = () => {
   };
 
   //#endregion 
+
+  const ALLOWED_DOC_EXTENSIONS = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+
+  const hasInvalidFileFormat = (
+    files: (File | string)[] = [],
+    extraUrl?: string
+  ) => {
+    const allFiles = extraUrl ? [...files, extraUrl] : files;
+
+    return allFiles.some((file) => {
+      const name = typeof file === 'string' ? file : file.name;
+      const extension = name.split('.').pop()?.toLowerCase() || '';
+      return extension && !ALLOWED_DOC_EXTENSIONS.includes(extension);
+    });
+  };
+
+  const invalidFormatMessage = (label: string) =>
+    `${label} Uploaded files must be in a valid format (PDF, DOC, DOCX, JPG, JPEG, PNG).`;
 
   //#region ADD UPDATE COMPANY PARTNER DATA
 
@@ -868,9 +886,9 @@ const AddCompany: React.FC = () => {
     }
 
     if (!formDataCompanyPartner.EmailId?.trim()) {
-      newErrorsCompanyPartner.EmailId = 'E-mail Id is required'
+      newErrorsCompanyPartner.EmailId = 'E-Mail ID is required'
     } else if (!isValidEmail(formDataCompanyPartner.EmailId.trim())) {
-      newErrorsCompanyPartner.EmailId = 'Enter a Valid E-mail Id'
+      newErrorsCompanyPartner.EmailId = 'Enter a Valid E-Mail ID'
     }
 
 
@@ -913,7 +931,6 @@ const AddCompany: React.FC = () => {
     if (hasPanFile && !hasPanNumber) {
       newErrorsCompanyPartner.PanNumber = "PAN Card Number is required";
     }
-
 
     // ===== Aadhaar =====
 
@@ -969,17 +986,17 @@ const AddCompany: React.FC = () => {
       return
     }
 
-    const mergedPhotoFiles = editingCompanyPartnerMasterData
-      ? mergeFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, removedCompanyPartnerPhotoURLs)
-      : companyPartnerPhotoURLFiles.slice();
+    const finalRemovedPhotoURLs = editingCompanyPartnerMasterData ? calculateRemovedFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, removedCompanyPartnerPhotoURLs) : removedCompanyPartnerPhotoURLs;
 
-    const mergedAadharFiles = editingCompanyPartnerMasterData
-      ? mergeFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, removedCompanyPartnerAadhaarCardURLs)
-      : companyPartnerAadhaarCardURLFiles.slice();
+    const mergedPhotoFiles = editingCompanyPartnerMasterData ? mergeFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, finalRemovedPhotoURLs) : companyPartnerPhotoURLFiles.slice();
 
-    const mergedPanFiles = editingCompanyPartnerMasterData
-      ? mergeFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, removedCompanyPartnerPANURLs)
-      : companyPartnerPANURLFiles.slice();
+    const finalRemovedAadharURLs = editingCompanyPartnerMasterData ? calculateRemovedFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, removedCompanyPartnerAadhaarCardURLs) : removedCompanyPartnerAadhaarCardURLs;
+
+    const mergedAadharFiles = editingCompanyPartnerMasterData ? mergeFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, finalRemovedAadharURLs) : companyPartnerAadhaarCardURLFiles.slice();
+
+    const finalRemovedPanCardURLs = editingCompanyPartnerMasterData ? calculateRemovedFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, removedCompanyPartnerPANURLs) : removedCompanyPartnerPANURLs;
+
+    const mergedPanFiles = editingCompanyPartnerMasterData ? mergeFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, finalRemovedPanCardURLs) : companyPartnerPANURLFiles.slice();
 
     const partnerToSave: CompanyPartnerData & {
       _photoFiles?: (File | string)[];
@@ -1022,9 +1039,9 @@ const AddCompany: React.FC = () => {
       _aadharCardFiles: mergedAadharFiles,
 
       // -------- REMOVED URLS ----------
-      RemovePhotoURL: removedCompanyPartnerPhotoURLs.join(','),
-      RemovePanCardURL: removedCompanyPartnerPANURLs.join(','),
-      RemoveAadharCardURL: removedCompanyPartnerAadhaarCardURLs.join(','),
+      RemovePhotoURL: finalRemovedPhotoURLs.join(","),
+      RemovePanCardURL: finalRemovedPanCardURLs.join(','),
+      RemoveAadharCardURL: finalRemovedAadharURLs.join(','),
 
       CreatedById: editingCompanyPartnerMasterData?.row.CreatedById ?? 0,
       CreatedBy: editingCompanyPartnerMasterData?.row.CreatedBy || '',
@@ -1053,6 +1070,9 @@ const AddCompany: React.FC = () => {
     setCompanyPartnerPhotoURLFiles([]);
     setRemovedCompanyPartnerPhotoURLs([]);
     setRemovedCompanyPartnerAadhaarCardURLs([]);
+    setCompanyPartnerPANURL('');
+    setCompanyPartnerAadhaarCardURL('');
+    setCompanyPartnerPhotoURL('')
     setRemovedCompanyPartnerPANURLs([]);
   };
 
@@ -1200,12 +1220,12 @@ const AddCompany: React.FC = () => {
       addFilesWithExisting(fd, prefix, realPartner._photoFiles, 'PhotoURL');
       addFilesWithExisting(fd, prefix, realPartner._panCardFiles, 'PanCardURL');
       addFilesWithExisting(fd, prefix, realPartner._aadharCardFiles, 'AadharCardURL');
+      
     });
 
     return fd;
   };
   //#region 
-
 
   return (
 
@@ -1292,7 +1312,7 @@ const AddCompany: React.FC = () => {
             <div>
 
               <Input
-                label='Email Id'
+                label='E-Mail ID'
                 required
                 type="text"
                 value={formData.EmailId}
@@ -1302,7 +1322,7 @@ const AddCompany: React.FC = () => {
                   const emailId = filterEmail(e.target.value);
                   handleFieldChange('EmailId', emailId)
                 }}
-                placeholder="Enter Valid E-mail Id"
+                placeholder="Enter Valid E-Mail ID"
               />
 
             </div>
@@ -1353,7 +1373,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select GST Certificate'
                 error={errors.GSTCertificateURL}
                 value={gstGSTCertificateFiles}
-                onChange={setGSTCertificateFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("GST Certificate") });
+                    return;
+                  }
+                  setGSTCertificateFiles(files);
+                }}
                 availableFilesURL={gSTCertificateURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
@@ -1392,7 +1418,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select Pan Card'
                 error={errors.PanCardURL}
                 value={panURLFiles}
-                onChange={setPANURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("Pan Card") });
+                    return;
+                  }
+                  setPANURLFiles(files);
+                }}
                 availableFilesURL={panURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
@@ -1433,7 +1465,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select CIN'
                 value={cinURLFiles}
                 error={errors.CINURL}
-                onChange={setCINURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("CIN") });
+                    return;
+                  }
+                  setCINURLFiles(files);
+                }}
                 availableFilesURL={cinURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1474,7 +1512,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select TAN'
                 value={tanURLFiles}
                 error={errors.TANURL}
-                onChange={setTANURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("TAN") });
+                    return;
+                  }
+                  setTANURLFiles(files);
+                }}
                 availableFilesURL={tanURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1656,7 +1700,13 @@ const AddCompany: React.FC = () => {
                 required
                 error={errors.CompanyLetterheadHeaderURL}
                 value={companyLetterHeadHeaderFiles}
-                onChange={setCompanyLetterHeadHeaderFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Header") });
+                    return;
+                  }
+                  setCompanyLetterHeadHeaderFiles(files);
+                }}
                 availableFilesURL={companyLetterHeadHeaderURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1682,7 +1732,14 @@ const AddCompany: React.FC = () => {
                 required
                 value={companyLetterHeadFooterFiles}
                 error={errors.CompanyLetterheadFooterURL}
-                onChange={setCompanyLetterHeadFooterFiles}
+                onChange={(files) => {
+                  
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Footer") });
+                    return;
+                  }
+                  setCompanyLetterHeadFooterFiles(files);
+                }}
                 availableFilesURL={companyLetterHeadFooterURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1776,6 +1833,9 @@ const AddCompany: React.FC = () => {
           setRemovedCompanyPartnerPhotoURLs([]);
           setRemovedCompanyPartnerAadhaarCardURLs([]);
           setRemovedCompanyPartnerPANURLs([]);
+          setCompanyPartnerPANURL('');
+          setCompanyPartnerAadhaarCardURL('');
+          setCompanyPartnerPhotoURL('')
           setErrorsCompanyPartner({});
 
         }}
@@ -1789,6 +1849,9 @@ const AddCompany: React.FC = () => {
           setRemovedCompanyPartnerPhotoURLs([]);
           setRemovedCompanyPartnerAadhaarCardURLs([]);
           setRemovedCompanyPartnerPANURLs([]);
+          setCompanyPartnerPANURL('');
+          setCompanyPartnerAadhaarCardURL('');
+          setCompanyPartnerPhotoURL('')
           setErrorsCompanyPartner({});
 
         }}
@@ -1890,7 +1953,7 @@ const AddCompany: React.FC = () => {
 
 
             <Input
-              label='Email Id'
+              label='E-Mail ID'
               required
               error={errorsCompanyPartner.EmailId}
               type="text"
@@ -1899,7 +1962,7 @@ const AddCompany: React.FC = () => {
               onChange={e =>
                 handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
               }
-              placeholder="Enter E-mail Id"
+              placeholder="Enter E-Mail ID"
             />
 
 
@@ -1925,6 +1988,7 @@ const AddCompany: React.FC = () => {
               error={errorsCompanyPartner.PanCardURL}
               value={companyPartnerPANURLFiles}
               onChange={setCompanyPartnerPANURLFiles}
+              availableFilesURL={companyPartnerPANURL ?? ""}
               allowedTypes={[
                 "image/jpeg",
                 "image/png",
@@ -1959,6 +2023,7 @@ const AddCompany: React.FC = () => {
               required
               error={errorsCompanyPartner.AadharCardURL}
               value={companyPartnerAadhaarCardURLFiles}
+              availableFilesURL={companyPartnerAadhaarCardURL ?? ""}
               onChange={setCompanyPartnerAadhaarCardURLFiles}
               allowedTypes={[
                 "image/jpeg",
@@ -1980,6 +2045,7 @@ const AddCompany: React.FC = () => {
               error={errorsCompanyPartner.PhotoURL}
               value={companyPartnerPhotoURLFiles}
               onChange={setCompanyPartnerPhotoURLFiles}
+              availableFilesURL={companyPartnerPhotoURL ?? ""}
               allowedTypes={[
                 "image/jpeg",
                 "image/png",

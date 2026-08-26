@@ -234,14 +234,14 @@ export const ViewBooking: React.FC = () => {
             },
             {
                 key: "Date",
-                label: "Date / Stage",
+                label: "Date / Stage (Milestone)",
                 sortable: false,
 
                 width: "30",
                 align: "center",
                 render: (_value, row) => {
                     if (row.isTotal) return <span className={boldIfTotal(row)}>TOTAL</span>;
-                    
+
                     if (row.Type === "Date" && row.Date) {
 
                         return formatDate_dd_MonthName_yy(row.Date);
@@ -622,6 +622,21 @@ export const ViewBooking: React.FC = () => {
                             </section>
                         </div>
 
+                        <div className="pt-5">
+                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Address Details
+                                </h4>
+                                <div className="space-y-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Communication Address" value={getSafeString(bookingData.CommunicationAddress)} />
+                                        <FieldItem label="Permanent Address" value={getSafeString(bookingData.PermanentAddress)} />
+
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Project Details */}
@@ -861,7 +876,7 @@ export const ViewBooking: React.FC = () => {
 
                         <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Flat Alteration Remarks
+                                Unit / Modulation / Customization Remark
                             </h4>
                             <div className="grid grid-cols-1 gap-4">
                                 <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />

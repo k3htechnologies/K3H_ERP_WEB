@@ -6,6 +6,8 @@ import { fetchMaterialMasterDropdown } from '@/features/materialMaster/materialM
 import { fetchUOMMasterDropdown } from '@/features/uomMaster/uomMasterDropdown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { AddUpdateSubMaterialMasterRequest } from '@/features/subMaterialMaster/models/SubMaterialMasterModel';
+import { filterNumbers } from '@/core/utils/fileValidation';
+import Checkbox from '@/ui/components/forms/Checkbox';
 
 interface SubMaterialMasterFormModalProps {
   isOpen: boolean;
@@ -97,6 +99,26 @@ export const SubMaterialMasterFormModal: React.FC<SubMaterialMasterFormModalProp
               }}
               initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
               error={errors.UomMasterId}
+            />
+          </div>
+          <div>
+            <Input
+              label='Lead Time (Days)'
+              required
+              error={errors.LeadTimeInDays}
+              type="text"
+              value={formData.LeadTimeInDays}
+              maxLength={5}
+              rightIcon={<span className="text-gray-500">Days</span>}
+              onChange={(e) => onFieldChange('LeadTimeInDays', filterNumbers(e.target.value))}
+              placeholder="Enter Lead Time"
+            />
+          </div>
+          <div>
+            <Checkbox
+              label="Is Tolerant?"
+              checked={formData.IsTolerant}
+              onChange={(e) => onFieldChange('IsTolerant', e.target.checked)}
             />
           </div>
         </div>

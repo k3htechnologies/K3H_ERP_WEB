@@ -1,5 +1,4 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
-
 export interface FilterWithPaginationInwardAndOutWardRequest {
     PageSize?: number
     PageNumber?: number
@@ -12,8 +11,8 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
     DeliveryStatus?: string;
     SenderMobileNumber?: string;
     ReceiverMobileNumber?: string;
-    FromDate?: string
-    ToDate?: string
+    FromDate?: string;
+    ToDate?: string;
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -26,40 +25,36 @@ export interface InwardAndOutWardData {
     InwardOutwardDate: string | null,
     DocumentType: string | null,
     EmployeeId: string | null,
-    DocumentURL: string,
+    DocumentURL: string | null,
     Amount: number | 0,
     DeliveryType: string | null,
-    AcknowledgementSignatureURL: string,
-    AcknowledgementBy: string | null,
+    ReceiversSignature: string,
+    ReceivedBy: string | null,
     ChequeNo: string | null,
     Priority: string | null,
     DocumentDescription: string | null,
     DeliveryMode: string | null,
     DeliveryStatus: string | null,
-    AcknowledgementURL: string,
+    AcknowledgementSignatureURL: string | null,
+    AcknowledgementURL: string | null,
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null
-    InVoiceDate: string | null,
+    InvoiceDate: string | null,
     DepartmentName: string | null,
     InwardNumber: number | 0,
-    InVoiceNumber: number | 0,
+    InvoiceNumber: string | null,
     HandOverDate: string | null,
     HandOverTo: string | null,
-
     SenderName: string | null,
     SenderEmailId: string | null,
-    SenderMobileNumber: string | null,
-    SenderMobileNumberCountryCode: string | null
+    SenderMobileNo: string | null,
     SenderAddress: string | null,
-
     ReceiverName: string | null,
     ReceiverEmailId: string | null,
-    ReceiverMobileNumber: string | null
-    ReceiverMobileNumberCountryCode: string | null
+    ReceiverMobileNo: string | null
     ReceiverAddress: string | null
-
     InwardOutwardRevertHistory: InwardOutwardRevertHistory[];
-
+    InwardOutwardDocumentHistory: InwardOutwardDocumentHistory[];
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -67,49 +62,55 @@ export interface InwardAndOutWardData {
     ModifiedBy: string | ''
     ModifiedDate: string | null
     LastModifiedBy: string | ''
-    LastModifiedDate: string | null
-}
-
-export interface AddUpdateInwardAndOutWardRequest {
-    InwardOutwardId: number | 0,
-    UniqueKey: string | null
-    DocumentTitle: string | null,
-    InwardOutwardDate: string | null,
-    DocumentType: string | null,
-    EmployeeId: string | null,
-    DocumentURL: File[] | null,
-    RemoveDocumentURL: string | ''
-    Amount: number | 0,
-    DeliveryType: string | null,
-    AcknowledgementSignatureURL: File[] | null,
-    RemoveAcknowledgementSignatureURL: string | ''
+    LastModifiedDate: string | null,
+    ChequeNumber: string | null
     AcknowledgementBy: string | null,
-    ChequeNo: string | null,
-    Priority: string | null,
-    DocumentDescription: string | null,
-    DeliveryMode: string | null,
-    DeliveryStatus: string | null,
-    AcknowledgementURL: File[] | null,
-    RemoveAcknowledgementURL: string | ''
-    AcknowledgementRemark: string | null,
-    EmployeeNames: string | null
-    InVoiceDate: string | null,
-    InwardNumber: number | 0,
-    InVoiceNumber: number | null,
-    HandOverDate: string | null,
-    HandOverTo: string | null,
-
-    SenderName: string | null,
-    SenderEmailId: string | null,
     SenderMobileNumber: string | null,
-    SenderMobileNumberCountryCode: string | null
-    SenderAddress: string | null,
+    SenderMobileNumberCountryCode: string | null,
+    ReceiverMobileNumber: string | null,
+    ReceiverMobileNumberCountryCode: string | null,
+    HandoverPersonMobileNumber: string | null,
+    HandoverPersonMobileNumberCountryCode: string | null,
+}
+export interface AddUpdateInwardAndOutWardRequest {
+    InwardOutwardId: number;
+    UniqueKey: string | null;
+    InvoiceNumber: string | null;
+    InvoiceDate: string | null;
+    DeliveryType: string | null;
+    DocumentType: string | null;
+    ChequeNumber: string | null;
+    DocumentTitle: string | null;
+    Amount: number;
+    InwardOutwardDate: string | null;
+    SenderName: string | null;
+    SenderAddress: string | null;
+    SenderMobileNumber: string | null;
+    SenderMobileNumberCountryCode: string | null;
+    SenderEmailId: string | null;
+    ReceiverName: string | null;
+    ReceiverAddress: string | null;
+    ReceiverMobileNumber: string | null;
+    ReceiverMobileNumberCountryCode: string | null;
+    ReceiverEmailId: string | null;
+    HandOverTo: string | null;
+    HandOverDate: string | null;
+    HandoverPersonMobileNumber: string | null;
+    HandoverPersonMobileNumberCountryCode: string | null;
 
-    ReceiverName: string | null,
-    ReceiverEmailId: string | null,
-    ReceiverMobileNumber: string | null
-    ReceiverMobileNumberCountryCode: string | null
-    ReceiverAddress: string | null
+    DocumentURL: File[] | null;
+    RemoveDocumentURL: string;
+    DocumentDescription: string | null;
+    EmployeeId: string | null;
+    DeliveryMode: string | null;
+    DeliveryStatus: string | null;
+    AcknowledgementBy: string | null;
+    AcknowledgementURL: File[] | null;
+    RemoveAcknowledgementURL: string;
+    AcknowledgementSignatureURL: File[] | null;
+    RemoveAcknowledgementSignatureURL: string;
+    AcknowledgementRemark: string | null;
+    CreatedById?: number | 0
 }
 
 export interface DeleteInwardAndOutWardRequest {
@@ -125,15 +126,17 @@ export interface InwardOutwardRevertHistory {
     RevertRemark: string | null
     RevertDocumentURL: string | null
 }
-
-
+export interface InwardOutwardDocumentHistory {
+    DeliveryStatus: string | null
+    DeliveryDate: string | null
+}
 export interface AddRevertInwardOutwardData {
     InwardOutwardRevertId: number | 0,
     InwardOutwardId: number | 0,
     UniqueKey: string | null
     RevertDate: string | null
     RevertRemark: string | null
-    RevertDocumentURL: string | null
+    RevertDocumentURL: File[] | null
 }
 
 export interface FilterWithPaginationSenderReceiverByMobileNoRequest {
@@ -141,7 +144,6 @@ export interface FilterWithPaginationSenderReceiverByMobileNoRequest {
     PageNumber?: number
     MobileNumber?: string
 }
-
 export interface SenderReceiverByMobileNoData {
     MobileNumber: string | null
     Name: string | null,

@@ -3,7 +3,6 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { BuildingApi } from '@/features/building/api/BuildingApi'
 import type {
     FilterWithPaginationBuildingRequest,
-    AddUpdateBuildingRequest,
     BuildingListResponse,
     DeleteBuildingRequest,
     BuildingDeleteResponse,
@@ -22,7 +21,7 @@ import type {
 export abstract class BuildingDatasource {
 
     abstract pullBuilding(params: FilterWithPaginationBuildingRequest): Promise<BuildingListResponse>;
-    abstract addUpdateBuilding(data: AddUpdateBuildingRequest): Promise<BuildingSaveResponse>;
+    abstract addUpdateBuilding(formData: FormData): Promise<BuildingSaveResponse>;
     abstract deleteBuilding(params: DeleteBuildingRequest): Promise<BuildingDeleteResponse>;
 
     abstract pullBuildingDetails(params: FilterWithPaginationBuildingDetailsRequest): Promise<BuildingDetailsListResponse>;
@@ -54,6 +53,8 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
             if (params.RoadWidth?.trim()) queryParams.append('RoadWidth', params.RoadWidth.trim());
             if (params.CityName?.trim()) queryParams.append('CityName', params.CityName.trim());
             if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
+            if (params.WardName?.trim()) queryParams.append('WardName', params.WardName.trim());
+            if (params.Category?.trim()) queryParams.append('Category', params.Category.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -75,13 +76,13 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
         }
     }
 
-    async addUpdateBuilding(params: AddUpdateBuildingRequest): Promise<BuildingSaveResponse> {
+    async addUpdateBuilding(formData: FormData): Promise<BuildingSaveResponse> {
 
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 BuildingApi.ADD_UPDATE,
-                params
+                formData
             )
 
             return response
@@ -90,7 +91,7 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateBuilding(params);
+                return await this.addUpdateBuilding(formData);
             }
 
             throw error

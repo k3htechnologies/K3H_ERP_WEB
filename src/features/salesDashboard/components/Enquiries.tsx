@@ -216,7 +216,7 @@ export default function Enquiries({ enquiryData }: Props) {
     return (
         <div className="space-y-3">
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[410px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-white rounded-xl p-5  border border-gray-100 min-w-0 overflow-hidden flex flex-col">
 
 
                 <h3 className="font-semibold text-gray-500">Time-Out Enquiries <span className="text-sm font-normal text-gray-500">

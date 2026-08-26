@@ -52,6 +52,14 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'collectionReport'
         ,'ibmObmReport'
         ,'saleDashboard'
+        ,'aopAchievement'
+        ,'specificationmaster'
+        ,'termSheet'
+        ,'taxTracker'
+        ,'noticeSection'
+        ,'otpLogs'
+        ,'termSheetReport'
+        ,'gatePass'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

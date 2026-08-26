@@ -1,11 +1,12 @@
 import baseClient from "@/core/config/baseClient";
-import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestListResponse, FlatAlterationRequestSaveReponse } from "@/features/crmPayTrack/models/FlatAlterationRequestModel";
+import type { DeleteFlatAlterationRequest, FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestDeleteReponse, FlatAlterationRequestListResponse, FlatAlterationRequestSaveReponse } from "@/features/crmPayTrack/models/FlatAlterationRequestModel";
 import { FlatAlterationRequestApi } from "@/features/crmPayTrack/api/FlatAlterationRequestApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class FlatAlterationCrmDatasource {
     abstract pullFlatAlterationRequest(params: FilterWithPaginationFlatAlterationRequest, signal?: AbortSignal): Promise<FlatAlterationRequestListResponse>;
     abstract addUpdateFlatAlterationRequest(formData: FormData): Promise<FlatAlterationRequestSaveReponse>;
+    abstract deleteFlatAlterationRequest(params: DeleteFlatAlterationRequest): Promise<FlatAlterationRequestDeleteReponse>;
 }
 
 export class FlatAlterationCrmDatasourceImpl implements FlatAlterationCrmDatasource {
@@ -23,6 +24,7 @@ export class FlatAlterationCrmDatasourceImpl implements FlatAlterationCrmDatasou
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
+            if (params.TabName) queryParams.append('TabName', params.TabName);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${FlatAlterationRequestApi.PULL}?${queryParams.toString()}`, { signal }
@@ -45,10 +47,10 @@ export class FlatAlterationCrmDatasourceImpl implements FlatAlterationCrmDatasou
 
 
             return await this.k3hHttpClient.multipartRequestWithAuthentication(
-                            FlatAlterationRequestApi.ADD_UPDATE,
-                            formData
-                        )
-            
+                FlatAlterationRequestApi.ADD_UPDATE,
+                formData
+            )
+
 
         } catch (error) {
 
@@ -57,6 +59,35 @@ export class FlatAlterationCrmDatasourceImpl implements FlatAlterationCrmDatasou
             if (error instanceof TokenExpiredException) {
                 return await this.addUpdateFlatAlterationRequest(formData);
             }
+            throw error
+        }
+    }
+
+    async deleteFlatAlterationRequest(params: DeleteFlatAlterationRequest): Promise<FlatAlterationRequestDeleteReponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                FlatAlterationRequestId: (params.FlatAlterationRequestId ?? 0).toString(),
+                Uniquekey: params.Uniquekey ?? '',
+                BookingId: (params.BookingId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${FlatAlterationRequestApi.DELETE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE FLAT ALTERATION REQUEST :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteFlatAlterationRequest(params);
+
+            }
+
             throw error
         }
     }

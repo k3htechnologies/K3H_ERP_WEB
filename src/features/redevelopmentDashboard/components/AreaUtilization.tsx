@@ -1,20 +1,14 @@
-import React from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 interface Props {
   tenantData: any[];
 }
 
-const AreaUtilization: React.FC<Props> = ({ tenantData }) => {
+const COLORS = ["#2563EB", "#16A34A", "#F97316"];
 
-  // ================= SUM CALCULATIONS =================
+export default function AreaUtilization({ tenantData }: Props) {
+
+ // ================= SUM CALCULATIONS =================
 
   const existingCarpetArea = tenantData.reduce(
     (sum, x) => sum + Number(x.FlatCarpetAreaSqFt || 0),
@@ -37,56 +31,68 @@ const AreaUtilization: React.FC<Props> = ({ tenantData }) => {
     0
   );
 
-  // ================= CHART DATA =================
-
   const data = [
-    { name: "EXISTING CARPET AREA", value: existingCarpetArea },
-    { name: "FREE AREA OFFERED", value: freeAreaOffered },
-    { name: "EXTRA AREA PURCHASED", value: extraAreaPurchased },
+
+    { name: "Existing Carpet Area", value: existingCarpetArea },
+    { name: "Free Area Offered", value: freeAreaOffered },
+    { name: "Extra Area Purchased", value: extraAreaPurchased },
   ];
-
   return (
-    <div className="bg-white rounded-xl p-4" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div>
+      <div className="bg-white p-4 rounded-xl space-y-4 border border-gray-100 h-[387px]  flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+        <h3 className="text-sm text-gray-500 font-medium ml-3 mt-1">
+          Area Utilization Summary
+        </h3>
 
-      <h3 className="text-sm text-gray-500 font-medium mb-3">
-        Area Utilization Summary
-      </h3>
+        {data.length === 0 ? (
+          <div className="flex flex-col justify-center items-center flex-1">
+            <NoDataView />
+          </div>
+        ) : (
+          <div className="flex flex-col justify-center flex-1 gap-4 px-2">
+            {data.map((item, index) => {
 
-      <div className="h-[260px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart layout="vertical" data={data}>
+              const percentage =item.value===0 ? 0 : (item.value / item.value) * 100;
 
-            <XAxis type="number" tick={{ fontSize: 10 }} />
+              const color = COLORS[index % COLORS.length];
 
-            <YAxis
-              dataKey="name"
-              type="category"
-              tick={{ fontSize: 10 }}
-              width={200}
-            />
+              return (
+                <div key={index} className="flex flex-col gap-1">
 
-            <Tooltip formatter={(v: any) => `${Number(v).toLocaleString()} Sq.Ft`} />
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm text-slate-500 font-medium">
+                      {item.name}
+                    </span>
 
-            <Bar
-              dataKey="value"
-              radius={[0, 6, 6, 0]}
-              barSize={22}
-              fill="rgba(37,99,235,0.9)"
-              label={{
-                position: "insideRight",
-                fill: "#fff",
-                formatter: (value: any) =>
-                  `${Number(value).toLocaleString()} Sq.Ft`,
-                fontSize: 10,
-              }}
-            />
+                    <span className="text-sm font-semibold text-gray-800">
+                      {item.value} (Sq.Ft)
+                    </span>
+                  </div>
 
-          </BarChart>
-        </ResponsiveContainer>
+                  <div className="flex items-center gap-2">
+
+                    <div
+                      className="flex-1 rounded-md overflow-hidden"
+                      style={{ height: "14px", backgroundColor: "#e5e7eb" }}
+                    >
+                      <div
+                        style={{
+                          width: `${percentage}%`,
+                          height: "100%",
+                          backgroundColor: color,
+                          borderRadius: "6px",
+                          transition: "width 0.4s ease",
+                        }}
+                      />
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-
     </div>
   );
-};
-
-export default AreaUtilization;
+}

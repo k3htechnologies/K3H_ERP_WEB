@@ -1,7 +1,7 @@
 import type {
   AddUpdateProposedOfferExtraCarpetAreaRequest,
-  ProposedOfferCorpusDetailsWithPaymentStageData,
-  AddUpdateProposedOfferCorpusDetailsRequest,
+  ProposedOfferHardshipDetailsWithPaymentStageData,
+  AddUpdateProposedOfferHardshipDetailsRequest,
   ProposedOfferSecurityDepositDetailsWithPaymentStageData,
   AddUpdateProposedOfferSecurityDepositDetailsRequest,
   ProposedOfferShiftingDetailsWithPaymentStageData,
@@ -11,7 +11,13 @@ import type {
   AddUpdateProposedOfferParkingAllotmentRequest,
   AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest,
   AddUpdateProposedOfferProjectCompletionRequest,
-  AddUpdateProposedOfferRentDetailsRequest,
+  AddUpdateProposedOfferTemporaryAlternateAccommodationRequest,
+
+  // Ready Reckoner
+  AddUpdateAdditionalInformationRequest,
+  AddUpdateProposedOfferReadyReckonerRateRequest,
+  AddUpdateProposedOfferBankGuaranteeDetailsRequest,
+  ProposedOfferBankGuaranteeDetailsWithPaymentStageData,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
 //#region INITIAL FORM STATE - EXTRA CARPET AREA
@@ -22,25 +28,27 @@ export const initialFormStateExtraCarpetArea = (): AddUpdateProposedOfferExtraCa
   ProjectId: 0,
   ExtraCarpetAreaOfferedType: '',
   ResidentialExtraCarpetPercent: 0,
-  CommercialExtraCarpetPercent: 0
+  CommercialExtraCarpetPercent: 0,
+  Remark: ""
 });
 //#endregion
 
 //#region INITIAL FORM STATE - CORPUS DETAILS
-export const initialFormStateCorpusDetails = (): AddUpdateProposedOfferCorpusDetailsRequest => ({
-  ProposedOfferCorpusDetailsId: 0,
+export const initialFormStateHardshipDetails = (): AddUpdateProposedOfferHardshipDetailsRequest => ({
+  ProposedOfferHardshipDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  CorpusOfferedToResidentialAmount: 0,
-  CorpusOfferedToCommercialAmount: 0,
-  CorpusDetailsWithPaymentStageJSON: ''
+  HardshipOfferedToResidentialAmount: 0,
+  HardshipOfferedToCommercialAmount: 0,
+  HardshipDetailsWithPaymentStageJSON: '',
+  Remark: ""
 });
 //#endregion
 
 //#region INITIAL FORM STATE - CORPUS PAYMENT STAGE
-export const initialFormStateCorpusPaymentStage = (): ProposedOfferCorpusDetailsWithPaymentStageData => ({
-  ProposedOfferCorpusDetailsWithPaymentStageId: 0,
+export const initialFormStateHardshipPaymentStage = (): ProposedOfferHardshipDetailsWithPaymentStageData => ({
+  ProposedOfferHardshipDetailsWithPaymentStageId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
@@ -49,6 +57,8 @@ export const initialFormStateCorpusPaymentStage = (): ProposedOfferCorpusDetails
   StagePercentage: 0,
   StagePercentageText: '',
   Amount: 0,
+  UnitSqFtLumsum: '',
+  CarpetAreaSqFt: 0,
   CreatedById: 0,
   CreatedBy: '',
   CreatedDate: null,
@@ -67,6 +77,8 @@ export const initialFormStateSecurityDepositDetails = (): AddUpdateProposedOffer
   BuildingId: 0,
   ProjectId: 0,
   SecurityDepositToSocietyAmount: 0,
+  InterestAmount: 0,
+  Remark: "",
   SecurityDepositToSocietyWithPaymentStageJSON: ''
 });
 //#endregion
@@ -77,9 +89,42 @@ export const initialFormStateSecurityDepositPaymentStage = (): ProposedOfferSecu
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  Type: '',
   Stage: '',
   Amount: 0,
+  IsRelease: false,
+  CreatedById: 0,
+  CreatedBy: '',
+  CreatedDate: null,
+  ModifiedById: 0,
+  ModifiedBy: '',
+  ModifiedDate: null,
+  LastModifiedBy: '',
+  LastModifiedDate: null
+});
+//#endregion
+
+//#region INITIAL FORM STATE - BANK GUARANTEE DETAILS
+export const initialFormStateBankGuaranteeDetails = (): AddUpdateProposedOfferBankGuaranteeDetailsRequest => ({
+  ProposedOfferBankGuaranteeDetailsId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  BankGuaranteeAmount: 0,
+  AccountHolderName: '',
+  Remark: "",
+  BankGuaranteePaymentStageJSON: ''
+});
+//#endregion
+
+//#region INITIAL FORM STATE - BANK GUARANTEE PAYMENT STAGE
+export const initialFormStateBankGuaranteePaymentStage = (): ProposedOfferBankGuaranteeDetailsWithPaymentStageData => ({
+  ProposedOfferBankGuaranteeDetailsWithPaymentStageId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  Stage: '',
+  Amount: 0,
+  IsRelease: false,
   CreatedById: 0,
   CreatedBy: '',
   CreatedDate: null,
@@ -99,7 +144,8 @@ export const initialFormStateShiftingDetails = (): AddUpdateProposedOfferShiftin
   ProjectId: 0,
   ShiftingOfferedToResidentialAmount: 0,
   ShiftingOfferedToCommercialAmount: 0,
-  ShiftingDetailsWithPaymentStageJSON: ''
+  Remark: "",
+  ShiftingDetailsWithPaymentStageJSON: '',
 });
 //#endregion
 
@@ -134,7 +180,11 @@ export const initialFormStateLienToSocietyDetails = (): AddUpdateProposedOfferLi
   ResidentialAreaSqFt: 0,
   CommercialAreaSqFt: 0,
   NumberOfResidentialLienUnits: 0,
+  ResidentialInventoryFlatId: "",
   NumberOfCommercialLienUnits: 0,
+  CommercialInventoryFlatId: "",
+  Remark: "",
+
   LienToSocietyWithPaymentStageJSON: ''
 });
 //#endregion
@@ -167,7 +217,8 @@ export const initialFormStateParkingAllotment = (): AddUpdateProposedOfferParkin
   BuildingId: 0,
   ProjectId: 0,
   NumberOfParkingAllottedToMembers: 0,
-  TotalParkingPercentageAllottedToSociety: 0
+  TotalParkingPercentageAllottedToSociety: 0,
+  Remark: "",
 });
 //#endregion
 
@@ -194,20 +245,71 @@ export const initialFormStateProjectCompletion = (): AddUpdateProposedOfferProje
 //#endregion
 
 //#region INITIAL FORM STATE - RENT DETAILS
-export const initialFormStateRentDetails = (): AddUpdateProposedOfferRentDetailsRequest => ({
-  ProposedOfferRentDetailsId: 0,
+export const initialFormStateTemporaryAlternateAccommodation = (): AddUpdateProposedOfferTemporaryAlternateAccommodationRequest => ({
+  ProposedOfferTemporaryAlternateAccommodationDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  IsAdditionalRent: false,
+  IsAdditionalTemporaryAlternateAccommodation: false,
   Type: '',
   Tenure: '',
   Amount: 0,
   UnitSqFtLumsum: '',
   CarpetAreaSqFt: 0,
-  RentStartDate: '',
-  RentEndDate: '',
-  IsPayBrokerage: false
+  TemporaryAlternateAccommodationStartDate: '',
+  TemporaryAlternateAccommodationEndDate: '',
+  IsPayBrokerage: false,
+  IsPayTAA: false
 });
 //#endregion
+
+// #region INITIAL FORM STATE - READY RECKONER
+export const initialFormStateReadyReckonerRate = (): AddUpdateProposedOfferReadyReckonerRateRequest => ({
+  ProposedOfferReadyReckonerRateDetailsId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  ResidentialRate: 0,
+  CommercialRate: 0,
+  ShopRate: 0,
+  IndustrialRate: 0,
+  LandRate: 0,
+  EffectiveStartDate: '',
+  EffectiveEndDate: '',
+  FinancialYear: '',
+  Remark: '',
+});
+
+// #region INITIAL FORM STATE - ADDITIONAL INFORMATION
+export const initialFormStateAdditionalInformation = (): AddUpdateAdditionalInformationRequest => ({
+  ProposedOfferAdditionalInformationId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  TaxAndDutiesDetails: '',
+  TaxRemark: '',
+  PurchaseOfAdditonalAreaRemark: '',
+  AdditionalRemark: ''
+});
+//#endregion
+
+// #region INITIAL FORM STATE - RENT OFFERED DETAILS
+export const initialFormStateTemporaryAlternateAccommodationOfferedDetails = (): AddUpdateProposedOfferTemporaryAlternateAccommodationRequest => ({
+  ProposedOfferTemporaryAlternateAccommodationDetailsId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  IsAdditionalTemporaryAlternateAccommodation: true,
+  Type: "",
+  Tenure: "",
+  Amount: 0,
+  UnitSqFtLumsum: "",
+  CarpetAreaSqFt: 0,
+  TemporaryAlternateAccommodationStartDate: "",
+  TemporaryAlternateAccommodationEndDate: "",
+  IsPayBrokerage: false,
+  Remark: ""
+});
+//#endregion
+
 

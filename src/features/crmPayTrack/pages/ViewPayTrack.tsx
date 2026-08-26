@@ -24,7 +24,7 @@ export const ViewPayTrack: React.FC = () => {
   const navigate = useNavigate();
 
   const { listState, updateListState } = usePayTrackBookingListState();
-  const { bookingName, bookingType, flat, bookingData, bookingApprovalStatus } = listState;
+  const { bookingName, bookingType, flat, bookingData, bookingApprovalStatus, isFinalRegistrationCompleted } = listState;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -33,7 +33,7 @@ export const ViewPayTrack: React.FC = () => {
 
   const { projectId } = useProject();
 
-  const { canView: canOverviewView } = useMenuPermissions('/bookingPayTrack');
+  const { canView: canOverviewView, canAction } = useMenuPermissions('/bookingPayTrack');
 
   const { canView: canBankLoansView } = useMenuPermissions('/bankLoan');
 
@@ -75,7 +75,7 @@ export const ViewPayTrack: React.FC = () => {
   ].filter(Boolean) as { id: string; label: string }[];
 
 
-   const [activeTab, setActiveTab] = useState<string>((listState.activeTab || bookingTabList?.[0]?.id) ?? '');
+  const [activeTab, setActiveTab] = useState<string>((listState.activeTab || bookingTabList?.[0]?.id) ?? '');
 
   useEffect(() => {
     if (listState.activeTab && listState.activeTab !== activeTab) {
@@ -99,18 +99,19 @@ export const ViewPayTrack: React.FC = () => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+   <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
-      <div className="flex items-center justify-between pb-4">
+      <div className="flex items-center justify-between">
         <div className="flex-1">
           <HeaderActionBar
             titleText={`Booking Details : ${bookingName}`}
             subTitleText={bookingType ?? ""}
             subSubTitleText={flat ?? ""}
-            subSubSubTitleText={bookingApprovalStatus ?? ""}
+            subSubSubTitleText={bookingApprovalStatus.toUpperCase() === "APPROVED" ? "" : bookingApprovalStatus}
             cancelText="Back"
+
             EditText="Update Registration Date & Parking"
-            canAction={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
+            canAction={canAction  && activeTab === "BookingForm" && !isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
             onEdit={() => {
               setIsModalOpen(true);
             }}
@@ -122,11 +123,11 @@ export const ViewPayTrack: React.FC = () => {
             ExtraButtontitleTextIcon={Mail}
             ExtraButtonText="Message"
             onExtraButton={() => setWelcome('Message')}
-            canActionExtraButtonText={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
+            canActionExtraButtonText={canAction && activeTab === "BookingForm" && !isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
 
             ExtraExtraButtonText="Send E-Mail"
             onExtraExtraButton={() => setWelcome('E-Mail')}
-            canActionExtraExtraButton={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
+            canActionExtraExtraButton={canAction && activeTab === "BookingForm" && !isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
           />
         </div>
 

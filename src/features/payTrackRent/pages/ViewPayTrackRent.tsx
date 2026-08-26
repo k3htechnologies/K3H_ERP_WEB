@@ -16,7 +16,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { useNavigate } from 'react-router-dom';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { useRentListState } from '@/features/rent/context/RentListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
@@ -42,20 +42,14 @@ const LedgerCard: React.FC<LedgerCardProps> = ({ ledger, index, onDelete, onEdit
   return (
 
     <div className="w-full rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden" key={index}>
-      {/* HEADER SECTION */}
       <div className="flex items-start px-4 py-4 relative">
-        {/* Avatar/Icon */}
         <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center mr-4 flex-shrink-0">
           <span className="text-blue-600 font-semibold text-lg">₹</span>
         </div>
-
-        {/* Right section fields */}
         <div className="flex-1">
-          {/* TOP ROW */}
           <div className="grid grid-cols-4 gap-4">
             <FieldItem label="Payment Mode" value={ledger.PaymentMode || '-'} />
             <FieldItem label="Amount Type" value={ledger.AmountType || '-'} />
-            <FieldItem label="Payment Type" value={ledger.PaymentType || '-'} />
             <FieldItem
               label="Amount (₹)"
               value={ledger.PayAmount ? `₹${Number(ledger.PayAmount).toLocaleString('en-IN')}` : '-'}
@@ -63,7 +57,6 @@ const LedgerCard: React.FC<LedgerCardProps> = ({ ledger, index, onDelete, onEdit
           </div>
         </div>
 
-        {/* COLLAPSE BUTTON */}
         <Button
           onClick={toggle}
           type='button'
@@ -111,7 +104,6 @@ const LedgerCard: React.FC<LedgerCardProps> = ({ ledger, index, onDelete, onEdit
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-            {/* Bank Details */}
             <FieldItem label="Project Account Holder" value={ledger.ProjectBankAccountHolderName || '-'} />
             <FieldItem label="Project Bank Name" value={ledger.ProjectBankName || '-'} />
             <FieldItem label="Project Account Number" value={ledger.ProjectBankAccountNumber || '-'} />
@@ -122,31 +114,20 @@ const LedgerCard: React.FC<LedgerCardProps> = ({ ledger, index, onDelete, onEdit
           <div className="my-4 h-[0.5px] w-full bg-[#3333334f]" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Approval Status */}
             <FieldItem label="Approval Status" value={ledger.ApprovalStatus || '-'} />
-
-            {/* User Details */}
             <FieldItem label="Created By" value={ledger.CreatedBy || '-'} />
-            <FieldItem
-              label="Created Date"
-              value={ledger.CreatedDate ? formatDate_dd_MonthName_yy(ledger.CreatedDate) : '-'}
-            />
+            <FieldItem label="Created Date" value={ledger.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(ledger.CreatedDate) : '-'} />
             <FieldItem label="Modified By" value={ledger.ModifiedBy || '-'} />
-            <FieldItem
-              label="Modified Date"
-              value={ledger.ModifiedDate ? formatDate_dd_MonthName_yy(ledger.ModifiedDate) : '-'}
-            />
+            <FieldItem label="Modified Date" value={ledger.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(ledger.ModifiedDate) : '-'} />
           </div>
 
-          {/* Action Buttons */}
           {canAction && ledger.ApprovalStatus !== "Approved" && (
             <div className="mt-4 pt-4 border-t flex justify-end gap-2">
               {onEdit && (
                 <Button
                   color="blue"
                   size="sm"
-                  onClick={() => onEdit(ledger)}
-                >
+                  onClick={() => onEdit(ledger)}>
                   Edit
                 </Button>
               )}
@@ -168,7 +149,6 @@ const LedgerCard: React.FC<LedgerCardProps> = ({ ledger, index, onDelete, onEdit
 };
 
 export const ViewPayTrackRent: React.FC = () => {
-  //#region STATE
   const [payTrackRentList, setPayTrackRentList] = useState<PayTrackRentLedgerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -180,8 +160,6 @@ export const ViewPayTrackRent: React.FC = () => {
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deletePayTrackRentData, setDeletePayTrackRentData] = useState<PayTrackRentLedgerData | null>(null)
-
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchPayTrackRent(value)
@@ -189,17 +167,12 @@ export const ViewPayTrackRent: React.FC = () => {
 
   const { projectId } = useProject();
   const { listState, clearPayTrackRentContext } = useRentListState();
-  const { buildingId, payTrackRentTenantApplicantId, tenantId, tenantApplicantId, totalAmount, paidTotalAmount } = listState;
-
-  // Get Flat Number and Applicant Name from first record or context
-  const flatNumber = payTrackRentList.length > 0 ? payTrackRentList[0]?.FlatNumber : '';
-  const applicantName = payTrackRentList.length > 0 ? payTrackRentList[0]?.ApplicantName : listState.payTrackRentTenantApplicantName || '';
+  const { buildingId, payTrackRentTenantApplicantId, tenantId, tenantApplicantId, totalAmount, paidTotalAmount, flatNumber, applicantName, unitType, carpetArea } = listState;
   const tenure = listState.tenure || '';
   const chargeType = listState.activeTab || '';
-  const flatCarpetAreaSqFt = payTrackRentList.length > 0 ? payTrackRentList[0]?.FlatCarpetAreaSqFt : 0;
-  const flatType = payTrackRentList.length > 0 ? payTrackRentList[0]?.FlatType : 0;
+  const flatCarpetAreaSqFt = carpetArea;
+  const flatType = unitType;
 
-  //#region DATA LOAD
   const loadPayTrackRent = useCallback(async (searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
@@ -214,7 +187,6 @@ export const ViewPayTrackRent: React.FC = () => {
           BuildingId: buildingId > 0 ? buildingId : undefined,
           TenantId: tenantId > 0 ? tenantId : undefined,
           TenantApplicantId: tenantApplicantId > 0 ? tenantApplicantId : undefined,
-          FlatNumber: searchtext?.trim() || undefined,
           ApplicantName: searchtext?.trim() || undefined,
           ChargeType: chargeType?.trim() || undefined,
           Tenure: tenure || null
@@ -239,31 +211,23 @@ export const ViewPayTrackRent: React.FC = () => {
     );
   }, [projectId, addToast, buildingId, payTrackRentTenantApplicantId, tenantId]);
 
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
     if (!projectId) return;
     loadPayTrackRent(searchTerm);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, buildingId, payTrackRentTenantApplicantId]);
 
-  // Clear context when component unmounts
   useEffect(() => {
     return () => {
       clearPayTrackRentContext();
     };
   }, [clearPayTrackRentContext]);
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
 
-  //#region SEARCH & CLEAR
   const searchPayTrackRent = async (searchValue: string) => {
     setSearchTerm(searchValue);
     await loadPayTrackRent(searchValue);
@@ -274,16 +238,12 @@ export const ViewPayTrackRent: React.FC = () => {
     debouncedSearch.cancel?.();
     loadPayTrackRent('');
   };
-  //#endregion
 
-  //#region HANDLE EDIT
   const handleEdit = (ledger: PayTrackRentLedgerData) => {
     if (!ledger.PayTrackRentId) return;
     navigate(`/rent/pay/${ledger.PayTrackRentId}`);
   };
-  //#endregion
 
-  //#region HANDLE DELETE
   const handleDelete = (ledger: PayTrackRentLedgerData) => {
     setDeletePayTrackRentData(ledger);
     setIsConfirmationDialogBoxOpen(true);
@@ -327,9 +287,7 @@ export const ViewPayTrackRent: React.FC = () => {
       'Deleting Pay Track Rent'
     );
   };
-  //#endregion
 
-  //#region EXPORT
   const handleExport = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -373,7 +331,7 @@ export const ViewPayTrackRent: React.FC = () => {
       `Exporting ${exportType}`
     );
   };
-  //#endregion
+
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -384,7 +342,7 @@ export const ViewPayTrackRent: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search by Flat Number or Applicant Name"
+        searchPlaceholder="Search by Account Holder Name"
         onSearchChange={(v) => {
           setSearchTerm(v)
           debouncedSearch(v)
@@ -394,29 +352,27 @@ export const ViewPayTrackRent: React.FC = () => {
         isShowAddButton={canAction && (totalAmount - paidTotalAmount) > 0}
         addTitle="Add"
         onAdd={() => navigate('/rent/pay')}
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && payTrackRentList.length > 0}
         onExportExcel={() => handleExport('Excel')}
         onExportPdf={() => handleExport('PDF')}
         exportLoading={isLoading}
       />
 
-      {/* Flat Number and Applicant Name Display */}
-      {(flatNumber || applicantName) && (
-        <div className="mt-4 mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <FieldItem label="Flat Number" value={flatNumber || '-'} />
-            <FieldItem label="Applicant Name" value={applicantName || '-'} />
-            <FieldItem label="Tenure" value={tenure || '-'} />
-            <FieldItem label="Charge Type" value={chargeType || '-'} />
-            <FieldItem label="Carpet Area (Sq Ft)" value={flatCarpetAreaSqFt ? `${flatCarpetAreaSqFt} Sq Ft` : '-'} />
-            <FieldItem label="Flat Type" value={flatType || '-'} />
-            <FieldItem label="Total Amount" value={totalAmount > 0 ? `₹${totalAmount}` : '-'} />
-            <FieldItem label="Paid Total Amount" value={paidTotalAmount > 0 ? `₹${paidTotalAmount}` : '-'} />
-          </div>
+      <div className=" mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <FieldItem label="Flat Number" value={flatNumber || '-'} />
+          <FieldItem label="Applicant Name" value={applicantName || '-'} />
+          {!["", "-"].includes(tenure?.trim() ?? "") && (
+            <FieldItem label="Tenure" value={tenure} />
+          )}
+          <FieldItem label="Charge Type" value={chargeType || '-'} />
+          <FieldItem label="Carpet Area (SqFt)" value={flatCarpetAreaSqFt ? `${flatCarpetAreaSqFt} SqFt` : '-'} />
+          <FieldItem label="Unit Type" value={flatType || '-'} />
+          <FieldItem label="Total Amount" value={totalAmount > 0 ? `₹${totalAmount}` : '-'} />
+          <FieldItem label="Paid Total Amount" value={paidTotalAmount > 0 ? `₹${paidTotalAmount}` : '-'} />
+
         </div>
-      )}
-
-
+      </div>
       {payTrackRentList.length > 0 ? (
         <div className="space-y-3">
           {payTrackRentList.map((ledger, idx) => (
@@ -455,9 +411,9 @@ export const ViewPayTrackRent: React.FC = () => {
         }}
         onConfirm={confirmDelete}
         loading={isLoading}
-        pageName='pay track rent'
-        title="Delete Pay Track Rent"
-        message={`Are you sure you want to delete this Pay Track Rent record?`}
+        pageName='pay track ledger'
+        title="Delete Pay Track Ledger"
+        message={`Are you sure you want to delete this Pay Track Ledger record?`}
       />
     </div>
   );

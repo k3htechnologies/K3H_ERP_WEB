@@ -22,7 +22,7 @@ import { getInitialFormState, getSubMaterialMasterColumns, REQUIRED_COLUMN_KEYS 
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const useSubMaterialMaster = () => {
-  //#region STATE MANAGEMENT
+  
   const [subMaterialMasterList, setSubMaterialMasterList] = useState<SubMaterialMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -36,26 +36,20 @@ export const useSubMaterialMaster = () => {
   const [viewSubMaterialMasterDetailsData, setViewSubMaterialMasterDetailsData] = useState<SubMaterialMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT SUB MATERIAL MASTER
   const [editingSubMaterialMasterData, setEditingSubMaterialMasterData] = useState<SubMaterialMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE SUB MATERIAL MASTER
   const [formData, setFormData] = useState<AddUpdateSubMaterialMasterRequest>(() => getInitialFormState());
 
-  //DELETE SUB MATERIAL MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
   const [deleteSubMaterialMasterDetailsData, setDeleteSubMaterialMasterDetailsData] = useState<SubMaterialMasterData | null>(null)
 
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeSubMaterialMasterColumnsModal, setIsShowCustomizeSubMaterialMasterColumnsModal] = useState(false);
 
   //EXCEL IMPORT 
@@ -99,7 +93,9 @@ export const useSubMaterialMaster = () => {
           Uniquekey: editingSubMaterialMasterData.Uniquekey || getInitialFormState().Uniquekey,
           MaterialMasterId: editingSubMaterialMasterData.MaterialMasterId || 0,
           SubMaterialName: editingSubMaterialMasterData.SubMaterialName || '',
-          UomMasterId: editingSubMaterialMasterData.UomMasterId || 0
+          UomMasterId: editingSubMaterialMasterData.UomMasterId || 0,
+          LeadTimeInDays: editingSubMaterialMasterData.LeadTimeInDays || 0,
+          IsTolerant: editingSubMaterialMasterData.IsTolerant || false
         });
 
         setDropdownLabels({
@@ -240,6 +236,7 @@ export const useSubMaterialMaster = () => {
     loadSubMaterials(1, filters, sort, searchTerm || undefined);
 
   }, [filters, searchTerm]);
+  
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -283,7 +280,9 @@ export const useSubMaterialMaster = () => {
       ...row,
       MaterialMasterId: row.MaterialMasterId || 0,
       SubMaterialName: row.SubMaterialName || '',
-      UomMasterId: row.UomMasterId || 0
+      UomMasterId: row.UomMasterId || 0,
+      LeadTimeInDays: row.LeadTimeInDays || 0,
+      IsTolerant: row.IsTolerant || false
     })
     setIsAddUpdateModalOpen(true);
   }, [])
@@ -347,12 +346,15 @@ export const useSubMaterialMaster = () => {
       newErrors.SubMaterialName = "Sub Material Name must be at least 3 characters long"
     }
 
-    if (formData.MaterialMasterId === 0) {
+    if (Number(formData.MaterialMasterId) === 0) {
       newErrors.MaterialMasterId = "Material is required";
     }
 
-    if (formData.UomMasterId === 0) {
+    if (Number(formData.UomMasterId) === 0) {
       newErrors.UomMasterId = "UOM is required";
+    }
+    if (!Number(formData.LeadTimeInDays) || Number(formData.LeadTimeInDays) < 0) {
+      newErrors.LeadTimeInDays = "Lead Time is required";
     }
 
     return {
@@ -367,7 +369,9 @@ export const useSubMaterialMaster = () => {
       Uniquekey: formData.Uniquekey,
       MaterialMasterId: formData.MaterialMasterId,
       SubMaterialName: formData.SubMaterialName,
-      UomMasterId: formData.UomMasterId
+      UomMasterId: formData.UomMasterId,
+      LeadTimeInDays: formData.LeadTimeInDays,
+      IsTolerant: formData.IsTolerant
     };
   };
 
@@ -439,7 +443,7 @@ export const useSubMaterialMaster = () => {
       setLoadingMessage,
       async () => {
         const params: FilterPullExcelSample = {
-          TableName: 'SUB MATERIAL MASTER'
+          TableName: 'MATERIAL MASTER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);

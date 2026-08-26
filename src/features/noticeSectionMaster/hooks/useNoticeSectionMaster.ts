@@ -13,10 +13,10 @@ import type { NoticeSectionMasterData } from '@/features/noticeSectionMaster/mod
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { handleExportFile } from "@/core/utils/exportFile";
+import { updateFilter } from "@/core/utils/filterHelper";
 
 export const useNoticeSectionMaster = () => {
 
-    // #region STATE MANAGEMENT
     const [noticeSectionMasterList, setNoticeSectionMasterList] = useState<NoticeSectionMasterData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -24,38 +24,32 @@ export const useNoticeSectionMaster = () => {
     const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
     const { addToast } = useToast();
     const [searchTerm, setSearchTerm] = useState('');
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchNoticeSectionMaster(value);
     }, 350)
 
-    // EDIT NOTICE SECTION MASTER
     const [editingNoticeSectionMasterData, setEditingNoticeSectionMasterData] = useState<NoticeSectionMasterData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [lastUpdatedRow, setLastUpdatedRow] = React.useState<string | number | null>(null);
 
-    //ADD UPDATE NOTICE SECTION MASTER
     const [formData, setFormData] = useState<AddUpdateNoticeSectionMasterRequest>(() => getInitialFormState());
 
-    //DELETE NOTICE SECTION MASTER STATES
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteNoticeSectionMasterDetailsData, setDeleteNoticeSectionMasterDetailsData] = useState<NoticeSectionMasterData | null>(null)
 
-    //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeNoticeSectionMasterColumnsModal, setIsShowCustomizeNoticeSectionMasterColumnsModal] = useState(false);
     const [viewNoticeSectionMasterDetailsData, setViewNoticeSectionMasterDetailsData] = useState<NoticeSectionMasterData | null>(null)
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-    //FILTER STATES
     const [filters, setFilters] = useState<FilterInfo>({});
+    const [showFilterPopup, setShowFilterPopup] = useState(false);
+    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-    //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-    //#region MENU PERMISSIONS
     const { canAction, canExport } = useMenuPermissions();
-    //#endregion
 
-    //#region INITIALIZATION
     const hasFetchedInitialNoticeSections = useRef(false)
 
     useEffect(() => {
@@ -87,15 +81,10 @@ export const useNoticeSectionMaster = () => {
     }, [isAddUpdateModalOpen, editingNoticeSectionMasterData]);
 
 
-    //#region TABLE COLUMN DEFINITION
-
     const noticeSectionMasterColumns = useMemo<TableColumn[]>(
         () => getNoticeSectionMasterColumns(),
         []
     )
-    //#endregion
-
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
     const fetchNoticeSectionList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadNoticeSections(page, filters, sort ?? sortInfo);
@@ -112,7 +101,7 @@ export const useNoticeSectionMaster = () => {
                     PageSize: pagination.pageSize,
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filterParams.NoticeSectionMasterId ? Number(filterParams.NoticeSectionMasterId) : 0,
-                    GovernmentCompliance: searchtext ?? filterParams.GovernmentCompliance ?? undefined,
+                    GovernmentCompliance: filterParams.GovernmentCompliance ?? undefined,
                     NoticeSection: searchtext ?? filterParams.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns)
                 }
@@ -145,9 +134,7 @@ export const useNoticeSectionMaster = () => {
             'Loading Notice Sections'
         )
     }
-    //#endregion
 
-    //#region SEARCH NOTICE SECTION 
     const searchNoticeSectionMaster = async (searchValue: string) => {
 
         setSearchTerm(searchValue);
@@ -161,9 +148,7 @@ export const useNoticeSectionMaster = () => {
 
         await loadNoticeSections(1, filters, sortInfo, searchValue)
     }
-    //#endregion
 
-    //#region CLEAR SEARCH NOTICE SECTION 
     const clearSearchNoticeSectionMaster = () => {
 
         debouncedSearch.cancel?.();
@@ -173,9 +158,6 @@ export const useNoticeSectionMaster = () => {
         loadNoticeSections(1, { NoticeSection: '' }, sortInfo, undefined);
     };
 
-    //#endregion
-
-    //#region EXPORT EXCEL | PDF
     const handleExportNoticeSectionMaster = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -250,17 +232,11 @@ export const useNoticeSectionMaster = () => {
         [noticeSectionMasterColumns, selectedNoticeSectionMasterColumnKeys]
     )
 
-    //#region VIEW EDIT
     const handleViewNoticeSectionMasterDetails = useCallback((row: NoticeSectionMasterData) => {
-
         setViewNoticeSectionMasterDetailsData(row);
-
         setIsViewModalOpen(true);
-
     }, [])
-    //#endregion
 
-    //#region EDIT NOTICE SECTION MASTER
     const handleEditNoticeSectionMaster = useCallback((row: NoticeSectionMasterData) => {
         setEditingNoticeSectionMasterData({
             ...row,
@@ -269,15 +245,28 @@ export const useNoticeSectionMaster = () => {
         })
         setIsAddUpdateModalOpen(true);
     }, [])
-    //#endregion
 
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: NoticeSectionMasterData) => {
         setDeleteNoticeSectionMasterDetailsData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, [])
-    //#endregion
 
+    const applyFilters = () => {
+        setFilters(tempFilters)
+        loadNoticeSections(1, tempFilters)
+        setShowFilterPopup(false)
+    }
+
+    const clearFilters = () => {
+        setTempFilters({})
+        setFilters({})
+        loadNoticeSections(1, {})
+        setShowFilterPopup(false)
+    }
+
+    const handleFilterChange = (key: string, value: string) => {
+        setTempFilters(prev => updateFilter(prev, key, value));
+    };
 
     const validateAddNoticeSectionMasterForm = (): {
         isValid: boolean
@@ -290,7 +279,7 @@ export const useNoticeSectionMaster = () => {
         }
 
         if (formData.GovernmentCompliance.trim() === "") {
-            newErrors.GovernmentCompliance = "Notice Type is required"
+            newErrors.GovernmentCompliance = "Government Compliance is required"
         }
 
         return {
@@ -298,7 +287,6 @@ export const useNoticeSectionMaster = () => {
             errors: newErrors
         }
     }
-
 
     const PushNoticeSectionMasterFormData = (): AddUpdateNoticeSectionMasterRequest => {
         return {
@@ -309,11 +297,8 @@ export const useNoticeSectionMaster = () => {
         };
     };
 
-    //#region ADD UPDATE EDIT NOTICE SECTION MASTER
     const handleFieldChange = (field: keyof AddUpdateNoticeSectionMasterRequest, value: any) => {
-
         setFormData((prev) => ({ ...prev, [field]: value }));
-
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -393,7 +378,9 @@ export const useNoticeSectionMaster = () => {
 
     const handleAddNoticeSectionModal = () => {
         setEditingNoticeSectionMasterData(null);
-        setFormData(getInitialFormState());
+        setFormData({
+            ...getInitialFormState(),
+        });
         setErrors({});
         setIsAddUpdateModalOpen(true);
     }
@@ -464,7 +451,6 @@ export const useNoticeSectionMaster = () => {
         )
     }
 
-
     return {
         noticeSectionMasterList,
         isLoading,
@@ -474,10 +460,10 @@ export const useNoticeSectionMaster = () => {
         searchTerm,
         canAction,
         canExport,
+        debouncedSearch,
         noticeSectionMasterColumns,
         visibleNoticeSectionMasterColumns,
         lastUpdatedRow,
-        filters,
         isShowCustomizeNoticeSectionMasterColumnsModal,
         requiredNoticeSectionMasterMasterColumnKeys,
         selectedNoticeSectionMasterColumnKeys,
@@ -488,6 +474,9 @@ export const useNoticeSectionMaster = () => {
         isConfirmationDialogBoxOpen,
         deleteNoticeSectionMasterDetailsData,
         isViewModalOpen,
+        filters,
+        showFilterPopup,
+        tempFilters,
         viewNoticeSectionMasterDetailsData,
 
         //Setters
@@ -505,6 +494,8 @@ export const useNoticeSectionMaster = () => {
         setDeleteNoticeSectionMasterDetailsData,
         setIsViewModalOpen,
         setViewNoticeSectionMasterDetailsData,
+        setShowFilterPopup,
+        setTempFilters,
 
         //Actions
         fetchNoticeSectionList,
@@ -513,14 +504,16 @@ export const useNoticeSectionMaster = () => {
         handleEditNoticeSectionMaster,
         handleViewNoticeSectionMasterDetails,
         handleConfirmationDialogBoxOpen,
+        applyFilters,
+        clearFilters,
         handleExportNoticeSectionMasterExcel,
         handleExportNoticeSectionMasterPdf,
-        debouncedSearch,
         clearSearchNoticeSectionMaster,
         searchNoticeSectionMaster,
         handleAddNoticeSectionModal,
         handleAddUpdateNoticeSectionMaster,
         handleFieldChange,
         handleDeleteNoticeSectionMaster,
+        handleFilterChange,
     }
 }

@@ -45,6 +45,8 @@ import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 interface ParkingGroupedByBuilding {
   BuildingNumber: string;
@@ -90,6 +92,7 @@ const Parking = () => {
     ParkingDimensions: null,
     IsEVChargingAvailable: false,
     ParkingStatus: null,
+    Remark: null,
     InventoryBuildingId: 0,
     InventoryFlatFloorBasementPodiumWingId: 0,
     InventoryFloorId: 0,
@@ -363,6 +366,7 @@ const Parking = () => {
       ParkingDimensions: parking.ParkingDimensions || null,
       IsEVChargingAvailable: parking.IsEVChargingAvailable || false,
       ParkingStatus: parking.ParkingStatus || null,
+      Remark: parking.Remark || null,
       InventoryBuildingId: parking.InventoryBuildingId,
       InventoryFlatFloorBasementPodiumWingId: parking.InventoryFlatFloorBasementPodiumWingId,
       InventoryFloorId: parking.InventoryFloorId,
@@ -610,6 +614,14 @@ const Parking = () => {
           if (!value) return "-";
           return <span className="text-[#135BEC] font-semibold">{value}</span>;
         },
+      },
+      {
+        key: "Remark",
+        label: "Remark",
+        width: "33",
+        sortable: false,
+        align: "left",
+        render: (value, row) => <TooltipText text={value || row.Remark || "-"} maxWidth="180px" tooltipThreshold={18} />,
       },
       {
         key: "actions",
@@ -1012,6 +1024,17 @@ const Parking = () => {
               disabled={disabled}
               onChange={(e) => handleFieldChange("IsEVChargingAvailable", e.target.checked ? true : false)}
             />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div>
+              <TextArea
+                label="Remark"
+                className='thin-scroll'
+                value={formData.Remark ?? ""}
+                placeholder="Enter Remark"
+                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+              />
+            </div>
           </div>
         </div>
       </Modal>

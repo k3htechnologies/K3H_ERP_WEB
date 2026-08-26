@@ -17,6 +17,7 @@ import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/component
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { data } from 'react-router-dom';
 
 export const PaymentSchedule: React.FC = () => {
     const [paymentScheduleCrmList, setPaymentScheduleCrmList] = useState<PaymentScheduleModelData[]>([]);
@@ -39,7 +40,6 @@ export const PaymentSchedule: React.FC = () => {
             loadPaymentScheduleCrmDetails();
         }
     }, [projectId, bookingId])
-
 
     const loadPaymentScheduleCrmDetails = async (searchText?: string) => {
         await runApiWithLoader(
@@ -79,7 +79,6 @@ export const PaymentSchedule: React.FC = () => {
             loadPaymentScheduleCrmDetails('');
             return;
         }
-
         loadPaymentScheduleCrmDetails(value);
     };
 
@@ -188,7 +187,7 @@ export const PaymentSchedule: React.FC = () => {
                 isTotal: true
             }
         ];
-    }, [filteredData, totals]);
+    }, [filteredData, totals,data]);
 
     const paymentScheduleTableColumns = useMemo<TableColumn[]>(() => {
 
@@ -197,7 +196,7 @@ export const PaymentSchedule: React.FC = () => {
         return [
             {
                 key: "Name",
-                label: 'Stage (Milestone)',
+                label: 'Stage / Milestone',
                 width: '14',
                 align: 'left',
                 render: (_value, row) => {
@@ -458,7 +457,7 @@ export const PaymentSchedule: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Name"
+                searchPlaceholder="Search By Stage / Milestone"
                 onSearchChange={handleSearchChange}
                 onClearSearch={handleClearSearch}
                 // EXPORT
@@ -471,6 +470,7 @@ export const PaymentSchedule: React.FC = () => {
 
             <DataTableExpandable
                 ref={dtRef}
+                key={`{${bookingId}-${searchTerm}-${dataWithTotal.length}`}
                 data={dataWithTotal}
                 columns={paymentScheduleTableColumns}
                 emptyMessage="No Payment Schedule Found"

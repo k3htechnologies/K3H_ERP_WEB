@@ -11,7 +11,6 @@ export interface RefundAmountDetailsData {
     Uniquekey: string | null;
     BookingId: number;
     ProjectId: number;
-    PaymentFor: string;
     PaymentMode: string;
     ProjectBankListMasterId: number;
     ProjectBankName: string | null;
@@ -24,13 +23,12 @@ export interface RefundAmountDetailsData {
     BankName: string | null;
     AccountNumber: string | null;
     IFSCCode: string | null;
-    AmountType: string | null;
-    PaymentType: string | null;
     RefundedAmount: number;
     TransactionChequeDemandDraftNumber: string | null;
     TransactionChequeDemandDraftURL: string | null;
     TransactionChequeDemandDraftDate: string | null;
-    PaymentReceiptURL: string | null;
+    ApprovalStatus: string;
+    IsApproval: boolean;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -44,7 +42,6 @@ export interface AddUpdateRefundAmountDetailsRequest {
     Uniquekey?: string | null;
     BookingId: number | null;
     ProjectId: number | null;
-    PaymentFor: string | null;
     PaymentMode: string | null;
     ProjectBankListMasterId: number;
     ProjectBankName: string | null;
@@ -55,13 +52,12 @@ export interface AddUpdateRefundAmountDetailsRequest {
     BankName: string | null;
     AccountNumber: string | null;
     IFSCCode: string | null;
-    AmountType: string | null;
     RefundedAmount: number;
     TransactionChequeDemandDraftNumber: string | null;
-    TransactionChequeDemandDraftURL: string | null;
     TransactionChequeDemandDraftDate: string | null;
-    PaymentReceiptURL: string | null;
-
+    TransactionChequeDemandDraftURL: string | null;
+    RemoveTransactionChequeDemandDraftURL: string | null;
+    
 }
 
 export interface DeleteRefundAmountDetailsRequest {

@@ -16,7 +16,7 @@ export const INITIAL_FORM_STATE: AddUpdateGatePassRequest = {
     RemovePhotoURL: "",
 };
 
-export const REQUIRED_COLUMN_KEYS: string[] = ['FullName', 'Address', 'Purpose', 'Actions'];
+export const REQUIRED_COLUMN_KEYS: string[] = ['FullName','Actions'];
 
 export const getInitialFormState = (): AddUpdateGatePassRequest => ({
     ...INITIAL_FORM_STATE

@@ -194,8 +194,12 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             isDisplayCurrentDate={!editingData}
                             value={formatDate_dd_mm_yyyy(formData.PassDateTime ?? '')}
                             error={errors.PassDateTime}
-                            onChange={(val) => {
+                           onChange={(val) => {
                                 const newDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
+                                if (!val || !newDate) {
+                                    onFieldChange('PassDateTime', '');
+                                    return;
+                                }
 
                                 const existingTime = formData.PassDateTime ? formData.PassDateTime.substring(11, 19) : '00:00:00';
 

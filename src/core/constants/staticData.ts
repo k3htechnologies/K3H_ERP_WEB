@@ -658,6 +658,7 @@ export const MASTER_DATA = {
     "Vacating Consent Letter",
     "Yadi Slip"
   ],
+  
   professionalType: ["Architect", "Engineer", "Real Estate Agent", "Advocate"],
 
   type: ["Person /Individual", "Legal Entity / Other"],

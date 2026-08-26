@@ -1,7 +1,7 @@
 import type { Failure } from '@/core/api/FailureResponse';
 
 import * as E from 'fp-ts/Either';
-import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, InwardOutwardRevertSaveResponse, SenderReceiverByMobileNoDataListResponse } from '@/features/inwardOutward/models/InwardOutwardModel';
+import type { DeleteInwardAndOutWardRequest, DeleteInwardOutwardRevertHistoryRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, InwardOutwardRevertSaveResponse, SenderReceiverByMobileNoDataListResponse } from '@/features/inwardOutward/models/InwardOutwardModel';
 import { InwardAndOutWardDatasourceImpl } from '@/features/inwardOutward/datasources/InwardOutwardDataSource';
 
 const InwardOutwardDatasource = new InwardAndOutWardDatasourceImpl();
@@ -56,6 +56,18 @@ export const inwardOutwardService = {
 
         }
     },
+
+    apiCallDeleteInwardOutwardRevertHistory: async (params: DeleteInwardOutwardRevertHistoryRequest): Promise<E.Either<Failure, InwardAndOutWardDeleteResponse>> => {
+        try {
+
+            return E.right(await InwardOutwardDatasource.deleteInwardOutwardRevertHistory(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
+
 
     apiCallPullSenderReceiverByMobileNo: async (params: FilterWithPaginationSenderReceiverByMobileNoRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, SenderReceiverByMobileNoDataListResponse>> => {
 

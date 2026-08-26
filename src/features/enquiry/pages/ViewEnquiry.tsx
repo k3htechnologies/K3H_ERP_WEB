@@ -416,7 +416,7 @@ const ViewEnquiry: React.FC = () => {
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Enquiry Code" value={safe(enquiryData?.SystemGeneratedCode)} />
-                                <FieldItem label="Mobile No" value={!safe(enquiryData?.MobileNumber) ? "-" :  `${enquiryData?.MobileNumberCountryCode ?? "+91"}  ${enquiryData?.MobileNumber}`} />
+                                <FieldItem label="Mobile No" value={!safe(enquiryData?.MobileNumber) ? "-" : `${enquiryData?.MobileNumberCountryCode ?? "+91"}  ${enquiryData?.MobileNumber}`} />
                                 <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
                                 <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
                                 <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
@@ -450,7 +450,7 @@ const ViewEnquiry: React.FC = () => {
                                         <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
                                         <FieldItem label="CP Code" value={safe(enquiryData?.ChannelPartnerCode)} />
                                         <FieldItem label="CP Name" value={safe(enquiryData?.ChannelPartnerName)} />
-                                        <FieldItem label="CP Mobile No" value={!safe(enquiryData?.ChannelPartnerMobileNumber) ? "-" :  `${enquiryData?.ChannelPartnerMobileNumberCountryCode || "+91"}  ${enquiryData?.ChannelPartnerMobileNumber}`} />
+                                        <FieldItem label="CP Mobile No" value={!safe(enquiryData?.ChannelPartnerMobileNumber) ? "-" : `${enquiryData?.ChannelPartnerMobileNumberCountryCode || "+91"}  ${enquiryData?.ChannelPartnerMobileNumber}`} />
                                         <FieldItem label="CP Designation" value={safe(enquiryData?.ChannelPartnerDesignation)} />
                                         <FieldItem label="CP Company Name" value={safe(enquiryData?.ChannelPartnerCompany)} />
                                         <FieldItem label="CP Firms Type" value={safe(enquiryData?.ChannelPartnerFirmsType)} />
@@ -458,9 +458,9 @@ const ViewEnquiry: React.FC = () => {
 
 
                                         {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="CP Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
-                                        
+
                                         {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="CP Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `${enquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode || "+91"} ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
-                                    
+
                                         {enquiryData?.ChannelPartnerTeamMemberEmailId && (<FieldItem label="CP Team Member E-Mail ID " value={safe(enquiryData?.ChannelPartnerTeamMemberEmailId)} />)}
                                     </>
                                 )}

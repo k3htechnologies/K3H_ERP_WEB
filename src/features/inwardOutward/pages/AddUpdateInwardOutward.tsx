@@ -88,6 +88,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
     const { canAction: canActionAcknowledgement } = useMenuPermissions("/inwardOutwardAcknowledgement");
     const { canAction: canActionInwardOutward } = useMenuPermissions("/inwardOutward");
+    const { canAction: canActionAdministrativeAccess } = useMenuPermissions("/inwardOutwardAdministrativeAccess");
 
     const loggedInUser = LocalStorageHelper.getStoredEmployeeData();
 
@@ -162,6 +163,8 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             InwardOutwardDate: e.InwardOutwardDate ?? prev.InwardOutwardDate,
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
                             HandOverTo: e.HandOverTo ?? prev.HandOverTo,
+                            HandoverPersonMobileNumber: e.HandoverPersonMobileNumber ?? prev.HandoverPersonMobileNumber,
+                            HandoverPersonMobileNumberCountryCode: e.HandoverPersonMobileNumberCountryCode ?? prev.HandoverPersonMobileNumberCountryCode,
                             DeliveryType: e.DeliveryType ?? prev.DeliveryType,
                             CreatedById: e.CreatedById ?? prev.CreatedById,
                         }));
@@ -474,7 +477,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                     handleFieldChange("DeliveryType", "Others");
                                     handleFieldChange("ChequeNumber", "");
                                 }}
-                                disabled={!(canEdit || canActionInwardOutward)}
+                                disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                             />
 
                             <RadioPill
@@ -485,7 +488,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 onChange={() => {
                                     handleFieldChange("DeliveryType", "Cheque");
                                 }}
-                                disabled={!(canEdit || canActionInwardOutward)}
+                                disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                             />
                         </div>
                     </div>
@@ -499,7 +502,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onChange={(e) => handleFieldChange('DocumentType', String(e))}
                             options={DOCUMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                             error={errors.DocumentType}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
 
                         />
                     </div>
@@ -513,7 +516,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.DocumentTitle}
                             maxLength={50}
                             placeholder="Enter Document title"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -539,7 +542,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             }}
                             placeholder="Enter Invoice Number"
                             maxLength={15}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -550,7 +553,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onChange={(val) => handleFieldChange('InvoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required={formData.DeliveryType === "Cheque"}
                             error={errors.InvoiceDate}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -564,7 +567,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.Amount}
                             maxLength={15}
                             placeholder="Enter Amount"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -621,7 +624,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.SenderName}
                             maxLength={50}
                             placeholder="Enter Sender Name"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -637,7 +640,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.SenderEmailId}
                             placeholder="Enter Sender E-Mail ID"
                             rightIcon={<Mail className="h-8 w-8" />}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -650,7 +653,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.SenderAddress}
                             maxLength={250}
                             placeholder="Enter Sender Address"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
                 </div>
@@ -690,7 +693,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.ReceiverName}
                             maxLength={50}
                             placeholder="Enter Receiver Name"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -706,7 +709,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.ReceiverEmailId}
                             placeholder="Enter Receiver E-Mail ID"
                             rightIcon={<Mail className="h-8 w-8" />}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -719,7 +722,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.ReceiverAddress}
                             maxLength={250}
                             placeholder="Enter Receiver Address"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
                 </div>
@@ -741,7 +744,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onRemoveExisting={(url) => {
                                 setRemovedDocumentURLs((prev) => [...prev, url]);
                             }}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
 
@@ -754,7 +757,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.DocumentDescription}
                             maxLength={500}
                             placeholder="Enter Document Description"
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
                 </div>
@@ -777,7 +780,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             }}
                             required
                             error={errors.EmployeeId}
-                            disabled={!(canEdit || canActionInwardOutward)}
+                            disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
                 </div>
@@ -788,7 +791,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <SinglePageSelection
                             label="Delivery Mode"
                             placeholder='Select Delivery Mode'
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={formData.DeliveryMode || ''}
                             onChange={(e) => handleFieldChange('DeliveryMode', String(e))}
                             options={DELIVERY_MODE.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -798,7 +801,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <SinglePageSelection
                             label="Delivery Status"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             placeholder='Select Delivery Status'
                             value={formData.DeliveryStatus || ''}
                             onChange={(e) => handleFieldChange('DeliveryStatus', String(e))}
@@ -813,7 +816,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div className="mt-2">
                         <Input
                             label="Acknowledged By"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={formData.AcknowledgementBy ?? ''}
                             onChange={e => handleFieldChange("AcknowledgementBy", e.target.value)}
                             maxLength={50}
@@ -825,7 +828,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <MultiFilePicker
                             label="Acknowledger's Signature"
                             placeholder="Select files"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={acknowledgementSignatureFiles}
                             onChange={setAcknowledgementSignatureFiles}
                             availableFilesURL={acknowledgementSignatureURL ?? ''}
@@ -842,7 +845,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <MultiFilePicker
                             label="Acknowledgement Document"
                             placeholder="select file"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={acknowledgementURLFiles}
                             onChange={setAcknowledgementURLFiles}
                             availableFilesURL={acknowledgementURL ?? ''}
@@ -860,7 +863,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div className="mt-2">
                         <Input
                             label="Handover To"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={formData.HandOverTo ?? ''}
                             onChange={e => handleFieldChange("HandOverTo", e.target.value)}
                             maxLength={50}
@@ -871,7 +874,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div className="mt-2">
                         <DatePickerInput
                             label="Handover Date"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={formatDate_dd_mm_yyyy(formData.HandOverDate ?? '')}
                             minDate={new Date(new Date().setDate(new Date().getDate() - 2))}
                             onChange={(val) => handleFieldChange('HandOverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
@@ -884,7 +887,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 label="Handover Person's Mobile Number"
                                 mobileNumber={formData.HandoverPersonMobileNumber ?? ""}
                                 countryCode={formData.HandoverPersonMobileNumberCountryCode ?? "+91"}
-                                disabled={!canActionAcknowledgement}
+                                disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                                 onMobileChange={(value) =>
                                     handleFieldChange("HandoverPersonMobileNumber", value)
                                 }
@@ -900,7 +903,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div className="mt-2">
                         <TextArea
                             label="Remark"
-                            disabled={!canActionAcknowledgement}
+                            disabled={!canActionAcknowledgement && !canActionAdministrativeAccess}
                             value={formData.AcknowledgementRemark ?? ''}
                             onChange={e => handleFieldChange("AcknowledgementRemark", e.target.value)}
                             placeholder="Enter Remark"
@@ -914,7 +917,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 saveText={formData.InwardOutwardId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
-                canAction={canActionInwardOutward || canActionAcknowledgement}
+                canAction={canActionInwardOutward || canActionAcknowledgement || canActionAdministrativeAccess}
                 onSave={() => {
                     handleAddUpdateInward();
                 }}

@@ -1,6 +1,6 @@
 import baseClient from "@/core/config/baseClient"
 import { TokenExpiredException } from "@/core/config/baseClientexceptions"
-import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, InwardOutwardRevertSaveResponse, SenderReceiverByMobileNoDataListResponse } from "@/features/inwardOutward/models/InwardOutwardModel"
+import type { DeleteInwardAndOutWardRequest, DeleteInwardOutwardRevertHistoryRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, InwardOutwardRevertSaveResponse, SenderReceiverByMobileNoDataListResponse } from "@/features/inwardOutward/models/InwardOutwardModel"
 import { InwardOutwardApi } from "@/features/inwardOutward/api/InwardOutwardApi"
 
 export abstract class InwardAndOutWardDatasource {
@@ -9,6 +9,7 @@ export abstract class InwardAndOutWardDatasource {
     abstract addUpdateInwardAndOutWard(data: FormData): Promise<InwardAndOutWardSaveResponse>;
     abstract deleteInwardAndOutWardRequest(params: DeleteInwardAndOutWardRequest): Promise<InwardAndOutWardDeleteResponse>;
     abstract addRevertInwardAndOutWard(data: FormData): Promise<InwardOutwardRevertSaveResponse>;
+    abstract deleteInwardOutwardRevertHistory(params: DeleteInwardOutwardRevertHistoryRequest): Promise<InwardAndOutWardDeleteResponse>;
     abstract pullSenderReceiverByMobileNoData(params: FilterWithPaginationSenderReceiverByMobileNoRequest, signal?: AbortSignal): Promise<SenderReceiverByMobileNoDataListResponse>;
 
 }
@@ -105,6 +106,30 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
 
             if (error === TokenExpiredException) {
                 await this.addRevertInwardAndOutWard(formData);
+            }
+            throw error
+        }
+    }
+
+    async deleteInwardOutwardRevertHistory(params: DeleteInwardOutwardRevertHistoryRequest): Promise<InwardAndOutWardDeleteResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                InwardOutwardId: params.InwardOutwardId.toString(),
+                InwardOutwardRevertId: params.InwardOutwardRevertId.toString(),
+                Uniquekey: params.Uniquekey ?? '',
+            })
+
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(`${InwardOutwardApi.DELETE_REVERT}?${queryParams.toString()}`)
+
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE INWARD OUTWARD REVERT :', error)
+
+            if (error === TokenExpiredException) {
+
+                await this.deleteInwardOutwardRevertHistory(params);
+
             }
             throw error
         }

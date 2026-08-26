@@ -17,9 +17,9 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useNavigate } from "react-router-dom";
-import type { DeleteProjectRedevelopmentRequest, FilterWithPaginationProjectRedevelopmentRequest, ProjectRedevelopmentData } from "../models/ProjectRedevelopmentModel";
-import { projectRedevelopmentService } from "../services/ProjectRedevelopmentService";
-import { useProjectRedevelopmentListState } from "../context/ProjectRedevelopmentListStateContext";
+import type { DeleteProjectRedevelopmentRequest, FilterWithPaginationProjectRedevelopmentRequest, ProjectRedevelopmentData } from "@/features/projectLead/models/ProjectRedevelopmentModel";
+import { projectRedevelopmentService } from "@/features/projectLead/services/ProjectRedevelopmentService";
+import { useProjectRedevelopmentListState } from "@/features/projectLead/context/ProjectRedevelopmentListStateContext";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Trash2 } from "lucide-react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
@@ -38,7 +38,6 @@ export const ProjectRedevelopment: React.FC = () => {
     const [isShowCustomizeProjectRedevelopmentColumnsModal, setIsShowCustomizeProjectRedevelopmentColumnsModal] = useState(false);
     const [deleteProjectRedevelopmentData, setDeleteProjectRedevelopmentData] = useState<ProjectRedevelopmentData | null>(null);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-
     const { listState, updateListState } = useProjectRedevelopmentListState();
     const { searchTerm, filters, sortInfo } = listState;
     const navigate = useNavigate();
@@ -84,7 +83,8 @@ export const ProjectRedevelopment: React.FC = () => {
                     TypeOfLandTenure: filterParams.TypeOfLandTenure?.trim() || undefined,
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, ProjectRedevelopmentColumns)
+                    SortBy: getSortByParam(sortInfo ?? null, ProjectRedevelopmentColumns),
+                    IsCheckPermission: false
                 }
 
                 const response = await projectRedevelopmentService.apiCallPullProjectRedevelopment(params);
@@ -233,7 +233,7 @@ export const ProjectRedevelopment: React.FC = () => {
             key: "BuildingName",
             label: "Building Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             fixed: "left",
             render: (value, row) => (
@@ -263,7 +263,7 @@ export const ProjectRedevelopment: React.FC = () => {
             key: "CountryName",
             label: "Country Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -271,7 +271,7 @@ export const ProjectRedevelopment: React.FC = () => {
             key: "StateName",
             label: "State Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -279,7 +279,7 @@ export const ProjectRedevelopment: React.FC = () => {
             key: "DistrictName",
             label: "District Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -287,7 +287,7 @@ export const ProjectRedevelopment: React.FC = () => {
             key: "CityName",
             label: "City Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -381,7 +381,7 @@ export const ProjectRedevelopment: React.FC = () => {
             key: "ContactPersonName",
             label: "Contact Person Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -424,14 +424,6 @@ export const ProjectRedevelopment: React.FC = () => {
             sortable: false,
             align: "left",
             render: (value) => value || "-"
-        },
-        {
-            key: "Frontage",
-            label: "Frontage",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
         },
         {
             key: "PlotDepth",
@@ -495,7 +487,7 @@ export const ProjectRedevelopment: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ?? "-"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "IsFireSafetyProvisionPresent",
@@ -503,7 +495,7 @@ export const ProjectRedevelopment: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ?? "-"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "IsPlotUnderLitigationStay",
@@ -511,7 +503,7 @@ export const ProjectRedevelopment: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ?? "-"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "ConstructionType",
@@ -520,6 +512,14 @@ export const ProjectRedevelopment: React.FC = () => {
             sortable: false,
             align: "left",
             render: (value) => value ?? "-",
+        },
+        {
+            key: "IsConveyanceDeed",
+            label: "Conveyance Deed",
+            width: "15",
+            sortable: false,
+            align: "center",
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "Remarks",
@@ -536,14 +536,6 @@ export const ProjectRedevelopment: React.FC = () => {
             ),
         },
         {
-            key: "IsConveyanceDeed",
-            label: "Conveyance Deed",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value ?? "-",
-        },
-        {
             key: "Actions",
             label: "Actions",
             width: "15",
@@ -556,20 +548,17 @@ export const ProjectRedevelopment: React.FC = () => {
                 return (
                     <div>
                         <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (!row?.IsDelete) return;
-                                handleConfirmationDialogBoxOpen(row);
-                            }}
                             color="transparent"
-                            isborderRadius
                             size="sm"
-                            disabled={!row?.IsDelete}
                             style={{
-                                color: row?.IsDelete ? 'red' : '#9CA3AF',
-                                cursor: row?.IsDelete ? 'pointer' : 'not-allowed',
-                                opacity: row?.IsDelete ? 1 : 0.5
+                                color: 'red',
+                                padding: '0px 8px'
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleConfirmationDialogBoxOpen(row)
+
                             }}
                             title="Delete Project Redevelopment"
                         >

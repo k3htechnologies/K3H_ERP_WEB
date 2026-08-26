@@ -47,7 +47,7 @@ export interface ProjectLandData {
     PlotShape: string | null;
     Frontage: number | 0;
     PlotDepth: number | 0;
-    RoadWidth: number | 0;
+    RoadWidth: string | null;
     SoilType: string | null;
     ExistingGroundCondition: string | null;
     IsLandConvertedToNonAgricultural: boolean;
@@ -65,12 +65,9 @@ export interface ProjectLandData {
     DistanceFromRailwayStationKM: number | 0;
     DistanceFromAirportKM: number | 0;
     TotalNumberOfTreesonSite: number | 0;
-    PhotoURL: string;
-    RemovePhotoURL: string | null;
+    PhotoURL: string | null;
     Remark: string | null;
     ClientRegistrationId: number | 0;
-    IsActive: boolean;
-    IsDeleted: boolean;
     CreatedById: number | 0;
     CreatedBy: string;
     CreatedDate: string | null;
@@ -107,7 +104,7 @@ export interface AddUpdateProjectLandData {
     PlotShape: string | null;
     Frontage: number | 0;
     PlotDepth: number | 0;
-    RoadWidth: number | 0;
+    RoadWidth: string | null;
     SoilType: string | null;
     ExistingGroundCondition: string | null;
     IsLandConvertedToNonAgricultural: boolean;
@@ -125,8 +122,8 @@ export interface AddUpdateProjectLandData {
     DistanceFromRailwayStationKM: number | 0;
     DistanceFromAirportKM: number | 0;
     TotalNumberOfTreesonSite: number | 0;
-    PhotoURL: string;
-    RemovePhotoURL: string | null;
+    PhotoURL: string | null;
+    RemovePhotoURL: string | "";
     Remark: string | null;
 }
 

@@ -4,7 +4,7 @@ export interface FilterWithPaginationProjectRedevelopmentRequest {
     PageSize: number;
     PageNumber: number;
     ProjectRedevelopmentId?: number;
-    IsCheckPermission?: number;
+    IsCheckPermission?: boolean;
     BuildingName?: string;
     BuildingAddress?: string;
     ContactPersonName?: string;
@@ -52,7 +52,7 @@ export interface ProjectRedevelopmentData {
     PlotShape: string | null;
     Frontage: number | 0;
     PlotDepth: number | 0;
-    RoadWidth: number | 0;
+    RoadWidth: string | null;
     NumberOfExistingBuildingsWings: number | 0;
     NumberOfFloorsPerWing: number | 0;
     TotalBuildUpArea: number | 0;
@@ -66,8 +66,6 @@ export interface ProjectRedevelopmentData {
     PhotoURL: string | null;
     IsConveyanceDeed: boolean;
     ClientRegistrationId: number | 0;
-    IsActive: boolean;
-    IsDeleted: boolean;
     CreatedById: number | 0;
     CreatedBy: string | "";
     CreatedDate: string | null;
@@ -106,7 +104,7 @@ export interface AddUpdateProjectRedevelopmentData {
     PlotShape: string | null;
     Frontage: number | 0;
     PlotDepth: number | 0;
-    RoadWidth: number | 0;
+    RoadWidth: string | null;
     NumberOfExistingBuildingsWings: number | 0;
     NumberOfFloorsPerWing: number | 0;
     TotalBuildUpArea: number | 0;
@@ -118,6 +116,7 @@ export interface AddUpdateProjectRedevelopmentData {
     ConstructionType: string | null;
     Remarks: string | null;
     PhotoURL: string | null;
+    RemovePhotoURL: string | "";
     IsConveyanceDeed: boolean;
 }
 

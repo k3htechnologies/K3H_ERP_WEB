@@ -19,9 +19,9 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useNavigate } from "react-router-dom";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Trash2 } from "lucide-react";
-import type { DeleteProjectLandRequest, FilterWithPaginationProjectLandRequest, ProjectLandData } from "../models/ProjectLandModel";
-import { projectLandService } from "../services/ProjectLandService";
-import { useProjectLandListState } from "../context/ProjectLandListStateContext";
+import type { DeleteProjectLandRequest, FilterWithPaginationProjectLandRequest, ProjectLandData } from "@/features/projectLead/models/ProjectLandModel";
+import { projectLandService } from "@/features/projectLead/services/ProjectLandService";
+import { useProjectLandListState } from "@/features/projectLead/context/ProjectLandListStateContext";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 
@@ -38,7 +38,6 @@ export const ProjectLand: React.FC = () => {
     const [isShowCustomizeProjectLandColumnsModal, setIsShowCustomizeProjectLandColumnsModal] = useState(false);
     const [deleteProjectLandData, setDeleteProjectLandData] = useState<ProjectLandData | null>(null);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-
     const { listState, updateListState } = useProjectLandListState();
     const { searchTerm, filters, sortInfo } = listState;
     const navigate = useNavigate();
@@ -105,7 +104,7 @@ export const ProjectLand: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message }),
             undefined,
-            'Loading Project Lead'
+            'Loading Project Land'
         )
     }
 
@@ -212,7 +211,7 @@ export const ProjectLand: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Deleting Project Lead",
+            "Deleting Project Land",
         );
     };
 
@@ -234,7 +233,7 @@ export const ProjectLand: React.FC = () => {
             key: "LandOwnerName",
             label: "Land Owner Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             fixed: "left",
             render: (value, row) => (
@@ -264,7 +263,7 @@ export const ProjectLand: React.FC = () => {
             key: "CountryName",
             label: "Country Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -272,7 +271,7 @@ export const ProjectLand: React.FC = () => {
             key: "StateName",
             label: "State Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -280,7 +279,7 @@ export const ProjectLand: React.FC = () => {
             key: "DistrictName",
             label: "District Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -288,7 +287,7 @@ export const ProjectLand: React.FC = () => {
             key: "CityName",
             label: "City Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -304,7 +303,7 @@ export const ProjectLand: React.FC = () => {
             key: "PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber",
             label: "Plot Number / CTS Number",
             width: "20",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -350,7 +349,7 @@ export const ProjectLand: React.FC = () => {
             key: "ContactPersonName",
             label: "Contact Person Name",
             width: "15",
-            sortable: false,
+            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
@@ -376,7 +375,7 @@ export const ProjectLand: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "IsFencingBoundaryWallPresent",
@@ -384,7 +383,7 @@ export const ProjectLand: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "PlotShape",
@@ -393,14 +392,6 @@ export const ProjectLand: React.FC = () => {
             sortable: false,
             align: "left",
             render: (value) => value || "-"
-        },
-        {
-            key: "Frontage",
-            label: "Frontage",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
         },
         {
             key: "PlotDepth",
@@ -440,7 +431,7 @@ export const ProjectLand: React.FC = () => {
             width: "20",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "IsAccessRoadAvailable",
@@ -448,7 +439,7 @@ export const ProjectLand: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "IsElectricityConnectionNearby",
@@ -456,7 +447,7 @@ export const ProjectLand: React.FC = () => {
             width: "20",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "IsUnderLitigationOrStayOrder",
@@ -464,7 +455,7 @@ export const ProjectLand: React.FC = () => {
             width: "20",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "Is712Available",
@@ -472,7 +463,7 @@ export const ProjectLand: React.FC = () => {
             width: "15",
             sortable: false,
             align: "center",
-            render: (value) => value ? "Yes" : "No"
+            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "FSIPermissible",
@@ -581,20 +572,17 @@ export const ProjectLand: React.FC = () => {
                 return (
                     <div>
                         <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                if (!row?.IsDelete) return;
-                                handleConfirmationDialogBoxOpen(row);
-                            }}
                             color="transparent"
-                            isborderRadius
                             size="sm"
-                            disabled={!row?.IsDelete}
                             style={{
-                                color: row?.IsDelete ? 'red' : '#9CA3AF',
-                                cursor: row?.IsDelete ? 'pointer' : 'not-allowed',
-                                opacity: row?.IsDelete ? 1 : 0.5
+                                color: 'red',
+                                padding: '0px 8px'
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleConfirmationDialogBoxOpen(row)
+
                             }}
                             title="Delete Project Land"
                         >
@@ -728,7 +716,7 @@ export const ProjectLand: React.FC = () => {
                 data={ProjectLandForTable}
                 columns={VisibleProjectLandColumns}
                 pagination={ProjectLandPaginationInfo}
-                emptyMessage="No Project Lead Data Found"
+                emptyMessage="No Project Land Data Found"
                 fixedHeight={true}
                 recordsPerPage={20}
                 className="flex-1"
@@ -760,7 +748,7 @@ export const ProjectLand: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Project Lead Data"
+                title="Filter - Project Land Data"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();

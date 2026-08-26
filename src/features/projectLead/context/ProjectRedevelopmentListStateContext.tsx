@@ -29,7 +29,7 @@ const getInitialState = (): ProjectRedevelopmentListState => {
             };
         }
     } catch (error) {
-        console.error('Error loading Project Lead list state:', error);
+        console.error('Error loading Project Redevelopment list state:', error);
     }
 
     return {
@@ -49,7 +49,7 @@ type ProjectRedevelopmentListStateContextType = {
     updateListState: (updates: Partial<ProjectRedevelopmentListState>) => void;
     resetFilters: () => void;
     resetToDefault: () => void;
-    setProjectRedevelopmentContext: (ProjectRedevelopmentId: number, ActivityType: string, Uniquekey: string) => void;
+    setProjectRedevelopmentContext: (ProjectRedevelopmentId: number, BuildingName: string, Uniquekey: string) => void;
     clearProjectRedevelopmentContext: () => void;
 };
 
@@ -63,7 +63,7 @@ export const ProjectRedevelopmentListStateProvider = ({ children }: { children: 
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(listState));
         } catch (error) {
-            console.error('Error saving Project Lead list state:', error);
+            console.error('Error saving Project Redevelopment list state:', error);
         }
     }, [listState]);
 

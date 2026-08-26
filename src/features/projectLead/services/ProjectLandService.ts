@@ -1,7 +1,7 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import { ProjectLandDatasourceImpl } from "../datasources/ProjectLandDatasource";
-import type { DeleteProjectLandRequest, DeleteProjectLandResponse, FilterWithPaginationProjectLandRequest, ProjectLandListResponse, ProjectLandSaveResponse, } from "../models/ProjectLandModel";
+import { ProjectLandDatasourceImpl } from "@/features/projectLead/datasources/ProjectLandDatasource";
+import type { DeleteProjectLandRequest, DeleteProjectLandResponse, FilterWithPaginationProjectLandRequest, ProjectLandListResponse, ProjectLandSaveResponse, } from "@/features/projectLead/models/ProjectLandModel";
 
 export const ProjectLandDataSource = new ProjectLandDatasourceImpl();
 

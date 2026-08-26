@@ -206,7 +206,6 @@ import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
 import NewProposedPlan from '@/features/proposedOffer/pages/NewProposedPlan';
 import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
 import CameraPlayer from '@/features/cameraPlayer/pages/CameraPlayer';
-import LeadModel from '@/features/projectLead/pages/LeadModel';
 import ViewProjectLead from '@/features/projectLead/pages/ViewProjectLead';
 import { ProjectLandListStateProvider } from '@/features/projectLead/context/ProjectLandListStateContext';
 import { ProjectRedevelopmentListStateProvider } from '@/features/projectLead/context/ProjectRedevelopmentListStateContext';
@@ -546,12 +545,10 @@ function App() {
 
             <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
               <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
-            <Route path="projectLead/addProjectLand/:ProjectLandId? " element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
-            <Route path="projectLead/addProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+            <Route path="projectLead/addProjectLand/:ProjectLandId?" element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectRedevelopment/:ProjectRedevelopmentId?" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
             <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
             <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
-
-            <Route path='leadModel' element={<LeadModel />} />
 
             {/* MORE */}
             <Route path='otplogs' element={<OTPLogs />} />

@@ -1,19 +1,21 @@
-import { CONSTRUCTION_TYPE_OPTIONS, EXISTING_BUILDING_TYPE_OPTIONS, LAND_TENURE_TYPE_OPTIONS, PLOT_SHAPE_OPTIONS } from "@/core/constants";
+import { CONSTRUCTION_TYPE_OPTIONS, EXISTING_BUILDING_TYPE_OPTIONS, LAND_TENURE_TYPE_OPTIONS, PLOT_SHAPE_OPTIONS, ROAD_WIDTH } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Input } from "@/ui/components/forms";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import React, { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
-import type { AddUpdateProjectRedevelopmentData, FilterWithPaginationProjectRedevelopmentRequest } from "../models/ProjectRedevelopmentModel";
+import type { AddUpdateProjectRedevelopmentData, FilterWithPaginationProjectRedevelopmentRequest } from "@/features/projectLead/models/ProjectRedevelopmentModel";
 import useToast from "@/core/hooks/useToast";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { runApiWithLoader } from "@/core/utils";
-import { projectRedevelopmentService } from "../services/ProjectRedevelopmentService";
+import { projectRedevelopmentService } from "@/features/projectLead/services/ProjectRedevelopmentService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 
 const initialRedevelopmentFormState = (): AddUpdateProjectRedevelopmentData => ({
     ProjectRedevelopmentId: 0,
@@ -42,7 +44,7 @@ const initialRedevelopmentFormState = (): AddUpdateProjectRedevelopmentData => (
     PlotShape: "",
     Frontage: 0,
     PlotDepth: 0,
-    RoadWidth: 0,
+    RoadWidth: "",
     NumberOfExistingBuildingsWings: 0,
     NumberOfFloorsPerWing: 0,
     TotalBuildUpArea: 0,
@@ -54,6 +56,7 @@ const initialRedevelopmentFormState = (): AddUpdateProjectRedevelopmentData => (
     ConstructionType: "",
     Remarks: "",
     PhotoURL: "",
+    RemovePhotoURL: "",
     IsConveyanceDeed: false,
 });
 
@@ -70,6 +73,10 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
     const { ProjectRedevelopmentId } = useParams<{ ProjectRedevelopmentId?: string }>();
     const projectRedevelopmentId = ProjectRedevelopmentId ? Number(ProjectRedevelopmentId) : 0;
     const isAddMode = projectRedevelopmentId === 0;
+
+    const [photoURLFiles, setPhotoURLFiles] = useState<(File | string)[]>([]);
+    const [removePhotoUrls, SetRemovePhotoUrls] = useState<string[]>([]);
+    const [photoURL, setPhotoURL] = useState<string>();
 
     const {
         isLoading: isLocationLoading,
@@ -114,6 +121,8 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         if (!isAddMode) {
             LoadProjectRedevelopment();
         }
+        setSelectedCountryId(1);
+        handleFieldChange("CountryMasterId", 1);
     }, [projectRedevelopmentId]);
 
     const LoadProjectRedevelopment = async () => {
@@ -172,8 +181,8 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             IsFireSafetyProvisionPresent: e.IsFireSafetyProvisionPresent ?? prev.IsFireSafetyProvisionPresent,
                             IsPlotUnderLitigationStay: e.IsPlotUnderLitigationStay ?? prev.IsPlotUnderLitigationStay,
                             ConstructionType: e.ConstructionType ?? prev.ConstructionType,
-                            Remarks: e.Remarks ?? prev.Remarks,
                             PhotoURL: e.PhotoURL ?? prev.PhotoURL,
+                            Remarks: e.Remarks ?? prev.Remarks,
                             IsConveyanceDeed: e.IsConveyanceDeed ?? prev.IsConveyanceDeed,
                         }));
                         setSelectedCountryId(e.CountryMasterId ?? null);
@@ -181,7 +190,13 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         setSelectedDistrictId(e.DistrictMasterId ?? null);
                         setSelectedCityId(e.CityMasterId ?? null);
                     }
+                    setPhotoURL(e.PhotoURL ?? "")
+                    setPhotoURLFiles([])
+                    SetRemovePhotoUrls([]);
                 } else {
+                    setPhotoURL('')
+                    setPhotoURLFiles([])
+                    SetRemovePhotoUrls([]);
                     addToast({ type: 'error', title: response.left.message });
                 }
                 return response;
@@ -205,6 +220,8 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
 
         if (!RedevelopmentformData.BuildingName?.trim()) {
             newErrors.BuildingName = "Building Name is required.";
+        } else if (RedevelopmentformData.BuildingName.trim().length > 50) {
+            newErrors.BuildingName = "Building Name must be at most 50 characters";
         }
         if (!RedevelopmentformData.BuildingAddress?.trim()) {
             newErrors.BuildingAddress = "Building Address is required.";
@@ -227,9 +244,6 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         if (!RedevelopmentformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber?.trim()) {
             newErrors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber = "Plot Number / CTS Number / Survey Number / Subdivision Number is required.";
         }
-        if (!RedevelopmentformData.WardNumberZone?.trim()) {
-            newErrors.WardNumberZone = "Ward Number is required.";
-        }
         if (!RedevelopmentformData.TotalPlotAreaSqM) {
             newErrors.TotalPlotAreaSqM = "Total Plot Area is required.";
         }
@@ -248,17 +262,18 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         if (!RedevelopmentformData.IdentificationLocation?.trim()) {
             newErrors.IdentificationLocation = "Identification And Location is required.";
         }
-        if (!RedevelopmentformData.LatitudeLongitude?.trim()) {
-            newErrors.LatitudeLongitude = "Latitude And Longitude is required.";
-        }
         if (!RedevelopmentformData.ContactPersonName?.trim()) {
             newErrors.ContactPersonName = "Contact Person Name is required.";
+        } else if (RedevelopmentformData.ContactPersonName.trim().length > 50) {
+            newErrors.ContactPersonName = "Contact Person Name must be at most 50 characters";
+        }
+        if (RedevelopmentformData.ContactPersonEmail && !isValidEmail(RedevelopmentformData.ContactPersonEmail)) {
+            newErrors.ContactPersonEmail = "Enter a Valid E-mail Id";
         }
         if (!RedevelopmentformData.ContactPersonMobile?.trim()) {
             newErrors.ContactPersonMobile = "Contact Person Mobile Number is required.";
-        }
-        if (!RedevelopmentformData.ContactPersonEmail?.trim()) {
-            newErrors.ContactPersonEmail = "Contact Person Email is required.";
+        } else if (!isValidMobile(RedevelopmentformData.ContactPersonMobile)) {
+            newErrors.ContactPersonMobile = "Enter a valid 10-digit mobile number";
         }
         if (!RedevelopmentformData.PercentageMemberInFavor) {
             newErrors.PercentageMemberInFavor = "Percentage of Member in Favor is required.";
@@ -268,9 +283,6 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         }
         if (!RedevelopmentformData.PlotShape) {
             newErrors.PlotShape = "Plot Shape is required.";
-        }
-        if (!RedevelopmentformData.Frontage) {
-            newErrors.Frontage = "Frontage is required.";
         }
         if (!RedevelopmentformData.PlotDepth) {
             newErrors.PlotDepth = "Depth Of The Plot is required.";
@@ -298,6 +310,10 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         }
         if (!RedevelopmentformData.Remarks?.trim()) {
             newErrors.Remarks = "Remarks is required.";
+        }
+
+        if (!hasAnyDocumentFile(photoURLFiles, photoURL, removePhotoUrls)) {
+            newErrors.PhotoURL = "File is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -335,7 +351,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         fd.append("PlotShape", RedevelopmentformData.PlotShape ?? "");
         fd.append("Frontage", String(RedevelopmentformData.Frontage ?? 0));
         fd.append("PlotDepth", String(RedevelopmentformData.PlotDepth ?? 0));
-        fd.append("RoadWidth", String(RedevelopmentformData.RoadWidth ?? 0));
+        fd.append("RoadWidth", RedevelopmentformData.RoadWidth ?? "");
         fd.append("NumberOfExistingBuildingsWings", String(RedevelopmentformData.NumberOfExistingBuildingsWings ?? 0));
         fd.append("NumberOfFloorsPerWing", String(RedevelopmentformData.NumberOfFloorsPerWing ?? 0));
         fd.append("TotalBuildUpArea", String(RedevelopmentformData.TotalBuildUpArea ?? 0));
@@ -346,13 +362,22 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         fd.append("IsPlotUnderLitigationStay", String(RedevelopmentformData.IsPlotUnderLitigationStay ?? false));
         fd.append("ConstructionType", RedevelopmentformData.ConstructionType ?? "");
         fd.append("Remarks", RedevelopmentformData.Remarks ?? "");
-        fd.append("PhotoURL", RedevelopmentformData.PhotoURL ?? "");
         fd.append("IsConveyanceDeed", String(RedevelopmentformData.IsConveyanceDeed ?? false));
+
+        photoURLFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("PhotoURL", file);
+            }
+        });
+
+        fd.append("RemovePhotoURL", removePhotoUrls.join(","));
 
         return fd;
     };
 
     const handleProjectLeaddUpdateProjectRedevelopment = async () => {
+        console.log("Add clicked", RedevelopmentformData); // temp debug
+
         setErrors({});
 
         const validation = ValidateAddUpdateProjectRedevelopment();
@@ -420,7 +445,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.BuildingName ?? ""}
                             onChange={(e) => handleFieldChange("BuildingName", e.target.value)}
                             placeholder="Enter Building Name"
-                            maxLength={250}
+                            maxLength={50}
                             error={errors.BuildingName}
                         />
                     </div>
@@ -434,7 +459,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.BuildingAddress ?? ""}
                             onChange={(e) => handleFieldChange("BuildingAddress", e.target.value)}
                             placeholder="Enter Building Address"
-                            maxLength={250}
+                            maxLength={150}
                             error={errors.BuildingAddress}
                         />
                     </div>
@@ -576,9 +601,9 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             required
                             label="Pin Code"
                             value={RedevelopmentformData.PinCode ?? ""}
-                            onChange={(e) => handleFieldChange("PinCode", e.target.value)}
+                            onChange={(e) => handleFieldChange("PinCode", filterNumbers(e.target.value))}
                             placeholder="Enter Pin Code"
-                            maxLength={250}
+                            maxLength={6}
                             error={errors.PinCode}
                         />
                     </div>
@@ -601,7 +626,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber ?? ""}
                             onChange={(e) => handleFieldChange("PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber", e.target.value)}
                             placeholder="Enter Plot Number"
-                            maxLength={250}
+                            maxLength={60}
                             error={errors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber}
                         />
                     </div>
@@ -609,13 +634,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
-                            label="Ward Number"
+                            label="Ward Number Zone"
                             value={RedevelopmentformData.WardNumberZone ?? ""}
                             onChange={(e) => handleFieldChange("WardNumberZone", e.target.value)}
                             placeholder="Enter Ward Number"
-                            maxLength={250}
-                            error={errors.WardNumberZone}
+                            maxLength={50}
                         />
                     </div>
 
@@ -623,11 +646,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Plot Area"
+                            label="Total Plot Area (in Sq. m.)"
                             value={RedevelopmentformData.TotalPlotAreaSqM ?? ""}
-                            onChange={(e) => handleFieldChange("TotalPlotAreaSqM", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("TotalPlotAreaSqM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Plot Area"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.TotalPlotAreaSqM}
                         />
                     </div>
@@ -640,7 +663,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.YearOfOriginalConstruction ?? ""}
                             onChange={(e) => handleFieldChange("YearOfOriginalConstruction", Number(e.target.value))}
                             placeholder="Enter Year of Original Construction"
-                            maxLength={250}
+                            maxLength={2}
                             error={errors.YearOfOriginalConstruction}
                         />
                     </div>
@@ -663,9 +686,9 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             required
                             label="Number of Existing Floors"
                             value={RedevelopmentformData.NumberOfExistingFloors ?? ""}
-                            onChange={(e) => handleFieldChange("NumberOfExistingFloors", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("NumberOfExistingFloors", filterNumbers(e.target.value))}
                             placeholder="Enter Number of Existing Floors"
-                            maxLength={250}
+                            maxLength={2}
                             error={errors.NumberOfExistingFloors}
                         />
                     </div>
@@ -674,11 +697,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Number of Existing Flats"
+                            label="Total Number of Existing Flats / Units"
                             value={RedevelopmentformData.TotalNumberExistingFlatsUnits ?? ""}
-                            onChange={(e) => handleFieldChange("TotalNumberExistingFlatsUnits", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("TotalNumberExistingFlatsUnits", filterNumbers(e.target.value))}
                             placeholder="Enter Total Number of Existing Flats"
-                            maxLength={250}
+                            maxLength={3}
                             error={errors.TotalNumberExistingFlatsUnits}
                         />
                     </div>
@@ -691,7 +714,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.IdentificationLocation ?? ""}
                             onChange={(e) => handleFieldChange("IdentificationLocation", e.target.value)}
                             placeholder="Enter Identification And Location"
-                            maxLength={250}
+                            maxLength={50}
                             error={errors.IdentificationLocation}
                         />
                     </div>
@@ -699,13 +722,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
-                            label="Latitude And Longitude"
+                            label="Latitude & Longitude (For GIS Mapping)"
                             value={RedevelopmentformData.LatitudeLongitude ?? ""}
                             onChange={(e) => handleFieldChange("LatitudeLongitude", e.target.value)}
                             placeholder="Enter Latitude And Longitude"
-                            maxLength={250}
-                            error={errors.LatitudeLongitude}
+                            maxLength={20}
                         />
                     </div>
 
@@ -714,7 +735,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
 
             <div className="space-y-4 pt-5">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                    Society Contact
+                    Contact Information
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -727,7 +748,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.ContactPersonName ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonName", e.target.value)}
                             placeholder="Enter Contact Person Name"
-                            maxLength={250}
+                            maxLength={50}
                             error={errors.ContactPersonName}
                         />
                     </div>
@@ -740,7 +761,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.ContactPersonMobile ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonMobile", e.target.value)}
                             placeholder="Enter Contact Person Mobile Number"
-                            maxLength={250}
+                            maxLength={10}
                             error={errors.ContactPersonMobile}
                         />
                     </div>
@@ -748,12 +769,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
                             label="Contact Person Email"
                             value={RedevelopmentformData.ContactPersonEmail ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonEmail", e.target.value)}
                             placeholder="Enter Contact Person Email"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.ContactPersonEmail}
                         />
                     </div>
@@ -766,7 +786,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.PercentageMemberInFavor ?? ""}
                             onChange={(e) => handleFieldChange("PercentageMemberInFavor", Number(e.target.value))}
                             placeholder="Enter Percentage Of Member In Favor"
-                            maxLength={250}
+                            maxLength={3}
                             error={errors.PercentageMemberInFavor}
                         />
                     </div>
@@ -809,37 +829,23 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Frontage"
-                            value={RedevelopmentformData.Frontage ?? ""}
-                            onChange={(e) => handleFieldChange("Frontage", Number(e.target.value))}
-                            placeholder="Enter Frontage"
-                            maxLength={250}
-                            error={errors.Frontage}
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            type="text"
-                            required
                             label="Depth Of The Plot"
                             value={RedevelopmentformData.PlotDepth ?? ""}
-                            onChange={(e) => handleFieldChange("PlotDepth", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("PlotDepth", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Depth Of The Plot"
-                            maxLength={250}
+                            maxLength={15}
                             error={errors.PlotDepth}
                         />
                     </div>
 
                     <div>
-                        <Input
-                            type="text"
-                            required
+                        <SinglePageSelection
                             label="Road Width In Front Of Plot"
+                            placeholder="Select Road Width"
+                            required
                             value={RedevelopmentformData.RoadWidth ?? ""}
-                            onChange={(e) => handleFieldChange("RoadWidth", Number(e.target.value))}
-                            placeholder="Enter Road Width In Front Of Plot"
-                            maxLength={250}
+                            onChange={(e) => handleFieldChange('RoadWidth', String(e))}
+                            options={ROAD_WIDTH.map((opt) => ({ label: opt.name, value: opt.id }))}
                             error={errors.RoadWidth}
                         />
                     </div>
@@ -858,11 +864,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Number Of Existing Building Wings"
+                            label="Number of Existing Building / Wings"
                             value={RedevelopmentformData.NumberOfExistingBuildingsWings ?? ""}
-                            onChange={(e) => handleFieldChange("NumberOfExistingBuildingsWings", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("NumberOfExistingBuildingsWings", filterNumbers(e.target.value))}
                             placeholder="Enter Number Of Existing Building Wings"
-                            maxLength={250}
+                            maxLength={2}
                             error={errors.NumberOfExistingBuildingsWings}
                         />
                     </div>
@@ -873,9 +879,9 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             required
                             label="Number Of Floor Per Wings"
                             value={RedevelopmentformData.NumberOfFloorsPerWing ?? ""}
-                            onChange={(e) => handleFieldChange("NumberOfFloorsPerWing", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("NumberOfFloorsPerWing", filterNumbers(e.target.value))}
                             placeholder="Enter Number Of Floor Per Wings"
-                            maxLength={250}
+                            maxLength={2}
                             error={errors.NumberOfFloorsPerWing}
                         />
                     </div>
@@ -884,11 +890,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Build Up Area"
+                            label="Total Build-Up Area (sq.Ft)"
                             value={RedevelopmentformData.TotalBuildUpArea ?? ""}
-                            onChange={(e) => handleFieldChange("TotalBuildUpArea", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("TotalBuildUpArea", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Build Up Area"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.TotalBuildUpArea}
                         />
                     </div>
@@ -897,11 +903,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Carpet Area"
+                            label="Total Carpet Area (sq.Ft)"
                             value={RedevelopmentformData.TotalCarpetArea ?? ""}
-                            onChange={(e) => handleFieldChange("TotalCarpetArea", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("TotalCarpetArea", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Carpet Area"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.TotalCarpetArea}
                         />
                     </div>
@@ -910,11 +916,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Common Area"
+                            label="Total Common Area (sq.Ft)"
                             value={RedevelopmentformData.TotalCommonArea ?? ""}
-                            onChange={(e) => handleFieldChange("TotalCommonArea", Number(e.target.value))}
+                            onChange={(e) => handleFieldChange("TotalCommonArea", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Common Area"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.TotalCommonArea}
                         />
                     </div>
@@ -974,6 +980,24 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     </div>
 
                 </div>
+            </div>
+
+            <div className="space-y-4 pt-3 pb-4">
+                <MultiFilePicker
+                    label="Building Photo"
+                    placeholder="Select Files"
+                    required
+                    error={errors.PhotoURL}
+                    value={photoURLFiles}
+                    onChange={setPhotoURLFiles}
+                    availableFilesURL={photoURL ?? ""}
+                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                    maxFiles={5}
+                    maxSizeMB={50}
+                    onRemoveExisting={(url) => {
+                        SetRemovePhotoUrls((prev) => [...prev, url]);
+                    }}
+                />
             </div>
 
             <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-2">

@@ -1,6 +1,6 @@
-import { ProjectRedevelopmentDatasourceImpl } from "../datasources/ProjectRedevelopmentDatasource";
+import { ProjectRedevelopmentDatasourceImpl } from "@/features/projectLead/datasources/ProjectRedevelopmentDatasource";
 import * as E from 'fp-ts/Either';
-import type { DeleteProjectRedevelopmentRequest, DeleteProjectRedevelopmentResponse, FilterWithPaginationProjectRedevelopmentRequest, ProjectRedevelopmentListResponse, ProjectRedevelopmentSaveResponse } from "../models/ProjectRedevelopmentModel";
+import type { DeleteProjectRedevelopmentRequest, DeleteProjectRedevelopmentResponse, FilterWithPaginationProjectRedevelopmentRequest, ProjectRedevelopmentListResponse, ProjectRedevelopmentSaveResponse } from "@/features/projectLead/models/ProjectRedevelopmentModel";
 import type { Failure } from "@/core/api/FailureResponse";
 
 export const ProjectRedevelopmentDataSource = new ProjectRedevelopmentDatasourceImpl();

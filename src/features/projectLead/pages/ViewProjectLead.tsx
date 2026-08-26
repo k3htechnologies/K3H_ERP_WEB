@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
-import ProjectRedevelopment from "../components/ProjectRedevelopment";
-import ProjectLand from "../components/ProjectLand";
+import ProjectRedevelopment from "@/features/projectLead/components/ProjectRedevelopment";
+import ProjectLand from "@/features/projectLead/components/ProjectLand";
 import { useLocation } from "react-router-dom";
 
 export const ViewProjectLead: React.FC = () => {

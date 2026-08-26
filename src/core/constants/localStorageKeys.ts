@@ -120,7 +120,7 @@ export const LOCAL_STORAGE_KEYS = {
     PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS: 'projectProfessionalDetails.selectedColumns',
 
     //LEAD
-    PROJECT_LAND_SELECTED_COLUMNS: 'projectLead.selectedColumns',
+    PROJECT_LAND_SELECTED_COLUMNS: 'projectLand.selectedColumns',
     PROJECT_REDEVELOPMENT_SELECTED_COLUMNS: 'projectLead.selectedColumns',
 
 } as const

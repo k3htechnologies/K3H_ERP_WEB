@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteProjectLandRequest, DeleteProjectLandResponse, FilterWithPaginationProjectLandRequest, ProjectLandListResponse, ProjectLandSaveResponse } from "../models/ProjectLandModel";
-import { ProjectLandApi } from "../api/ProjectLandApi";
+import type { DeleteProjectLandRequest, DeleteProjectLandResponse, FilterWithPaginationProjectLandRequest, ProjectLandListResponse, ProjectLandSaveResponse } from "@/features/projectLead/models/ProjectLandModel";
+import { ProjectLandApi } from "@/features/projectLead/api/ProjectLandApi";
 
 export abstract class ProjectLandDatasource {
     abstract pullProjectLand(params: FilterWithPaginationProjectLandRequest, signal?: AbortSignal): Promise<ProjectLandListResponse>;

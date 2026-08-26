@@ -55,6 +55,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'aopAchievement'
         , 'specificationmaster'
         , 'lead'
+        , 'projectLead'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

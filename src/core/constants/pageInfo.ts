@@ -594,10 +594,10 @@ export const getPageInfo = (path: string) => {
                 title: "Budget",
                 description: 'Overview of your system and key metrics',
             }
-        //LEAD
-        case 'lead':
+        //PROJECT LEAD
+        case 'projectLead':
             return {
-                title: "Lead",
+                title: "Project Lead",
                 description: 'Overview of your system and key metrics',
             }
         default:

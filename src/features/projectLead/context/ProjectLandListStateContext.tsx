@@ -29,7 +29,7 @@ const getInitialState = (): ProjectLandListState => {
             };
         }
     } catch (error) {
-        console.error('Error loading Project Lead list state:', error);
+        console.error('Error loading Project Land list state:', error);
     }
 
     return {
@@ -49,7 +49,7 @@ type ProjectLandListStateContextType = {
     updateListState: (updates: Partial<ProjectLandListState>) => void;
     resetFilters: () => void;
     resetToDefault: () => void;
-    setProjectLandContext: (ProjectLandId: number, ActivityType: string, Uniquekey: string) => void;
+    setProjectLandContext: (ProjectLandId: number, LandOwnerName: string, Uniquekey: string) => void;
     clearProjectLandContext: () => void;
 };
 
@@ -63,7 +63,7 @@ export const ProjectLandListStateProvider = ({ children }: { children: ReactNode
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(listState));
         } catch (error) {
-            console.error('Error saving Project Lead list state:', error);
+            console.error('Error saving Project Land list state:', error);
         }
     }, [listState]);
 

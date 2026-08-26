@@ -4,7 +4,7 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import {
     EXISTING_GROUND_CONDITION_OPTIONS,
-    LAND_OWNERSHIP_TYPE_OPTIONS, LAND_TENURE_TYPE_OPTIONS, PLOT_SHAPE_OPTIONS, SOIL_TYPE_OPTIONS, SURROUNDING_LAND_USE_OPTIONS, WATER_SUPPLY_AVAILABLE_OPTIONS,
+    LAND_OWNERSHIP_TYPE_OPTIONS, LAND_TENURE_TYPE_OPTIONS, PLOT_SHAPE_OPTIONS, ROAD_WIDTH, SOIL_TYPE_OPTIONS, SURROUNDING_LAND_USE_OPTIONS, WATER_SUPPLY_AVAILABLE_OPTIONS,
 } from "@/core/constants";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import Checkbox from "@/ui/components/forms/Checkbox";
@@ -15,8 +15,10 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Loader } from "@/core/utils/loader";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import type { AddUpdateProjectLandData, FilterWithPaginationProjectLandRequest } from "../models/ProjectLandModel";
-import { projectLandService } from "../services/ProjectLandService";
+import type { AddUpdateProjectLandData, FilterWithPaginationProjectLandRequest } from "@/features/projectLead/models/ProjectLandModel";
+import { projectLandService } from "@/features/projectLead/services/ProjectLandService";
+import { filterNumbersWithDecimal, hasAnyDocumentFile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 
 const initialLandFormState = (): AddUpdateProjectLandData => ({
     ProjectLandId: 0,
@@ -41,7 +43,7 @@ const initialLandFormState = (): AddUpdateProjectLandData => ({
     PlotShape: "",
     Frontage: 0,
     PlotDepth: 0,
-    RoadWidth: 0,
+    RoadWidth: "",
     IsAnyPowerofAttorneyInvolved: false,
     IsFencingBoundaryWallPresent: false,
     SoilType: "",
@@ -60,7 +62,7 @@ const initialLandFormState = (): AddUpdateProjectLandData => ({
     DistanceFromAirportKM: 0,
     TotalNumberOfTreesonSite: 0,
     PhotoURL: "",
-    RemovePhotoURL: null,
+    RemovePhotoURL: "",
     Remark: "",
 });
 
@@ -76,6 +78,10 @@ export const AddUpdateProjectLand: React.FC = () => {
     const { ProjectLandId } = useParams<{ ProjectLandId?: string }>();
     const projectLandId = ProjectLandId ? Number(ProjectLandId) : 0;
     const isAddMode = projectLandId === 0;
+
+    const [photoURLFiles, setPhotoURLFiles] = useState<(File | string)[]>([]);
+    const [removePhotoUrls, SetRemovePhotoUrls] = useState<string[]>([]);
+    const [photoURL, setPhotoURL] = useState<string>();
 
     const {
         isLoading: isLocationLoading,
@@ -120,6 +126,8 @@ export const AddUpdateProjectLand: React.FC = () => {
         if (!isAddMode) {
             LoadProjectLandData();
         }
+        setSelectedCountryId(1);
+        handleFieldChange("CountryMasterId", 1);
     }, [ProjectLandId]);
 
     const LoadProjectLandData = async () => {
@@ -183,15 +191,20 @@ export const AddUpdateProjectLand: React.FC = () => {
                             DistanceFromAirportKM: e.DistanceFromAirportKM ?? prev.DistanceFromAirportKM,
                             TotalNumberOfTreesonSite: e.TotalNumberOfTreesonSite ?? prev.TotalNumberOfTreesonSite,
                             PhotoURL: e.PhotoURL ?? prev.PhotoURL,
-                            RemovePhotoURL: e.RemovePhotoURL ?? prev.RemovePhotoURL,
                             Remark: e.Remark ?? prev.Remark,
                         }));
-                        setSelectedCountryId(e.CityMasterId ?? null);
+                        setSelectedCountryId(e.CountryMasterId ?? null);
                         setSelectedStateId(e.StateMasterId ?? null);
                         setSelectedDistrictId(e.DistrictMasterId ?? null);
                         setSelectedCityId(e.CityMasterId ?? null);
                     }
+                    setPhotoURL(e.PhotoURL ?? "")
+                    setPhotoURLFiles([])
+                    SetRemovePhotoUrls([]);
                 } else {
+                    setPhotoURL('')
+                    setPhotoURLFiles([])
+                    SetRemovePhotoUrls([]);
                     addToast({ type: 'error', title: response.left.message });
                 }
                 return response;
@@ -201,7 +214,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Project Lead'
+            'Loading Project Land'
         );
     };
 
@@ -216,6 +229,8 @@ export const AddUpdateProjectLand: React.FC = () => {
 
         if (!LandformData.LandOwnerName) {
             newErrors.LandOwnerName = 'Land Owner Name is required.';
+        } else if (LandformData.LandOwnerName.trim().length > 50) {
+            newErrors.LandOwnerName = "Land Owner Name must be at most 50 characters";
         }
         if (!LandformData.LandAddress) {
             newErrors.LandAddress = "Land Address is required";
@@ -238,32 +253,27 @@ export const AddUpdateProjectLand: React.FC = () => {
         if (!LandformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber) {
             newErrors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber = "Plot Number  is required"
         }
-        if (!LandformData.WardNumberZone) {
-            newErrors.WardNumberZone = "Ward Number  is required"
-        }
         if (!LandformData.TotalPlotAreaSqM) {
             newErrors.TotalPlotAreaSqM = "Total Plot Area is required"
         }
         if (!LandformData.IdentificationLocation) {
             newErrors.IdentificationLocation = "Identification And Location is required"
         }
-        if (!LandformData.LatitudeLongitude) {
-            newErrors.LatitudeLongitude = "Latitude And Longitude is required"
-        }
         if (!LandformData.ContactPersonName) {
             newErrors.ContactPersonName = "Contact Person For Land Name is required"
+        } else if (LandformData.ContactPersonName.trim().length > 50) {
+            newErrors.ContactPersonName = "Contact Person Name must be at most 50 characters";
         }
-        if (!LandformData.ContactPersonMobile) {
-            newErrors.ContactPersonMobile = "Contact Person Mobile Number is required"
+        if (LandformData.ContactPersonEmail && !isValidEmail(LandformData.ContactPersonEmail)) {
+            newErrors.ContactPersonEmail = "Enter a Valid E-mail Id";
         }
-        if (!LandformData.ContactPersonEmail) {
-            newErrors.ContactPersonEmail = "Contact Person Email is required"
+        if (!LandformData.ContactPersonMobile?.trim()) {
+            newErrors.ContactPersonMobile = "Contact Person Mobile Number is required.";
+        } else if (!isValidMobile(LandformData.ContactPersonMobile)) {
+            newErrors.ContactPersonMobile = "Enter a valid 10-digit mobile number";
         }
         if (!LandformData.PlotShape) {
             newErrors.PlotShape = "Plot Shape is required"
-        }
-        if (!LandformData.Frontage) {
-            newErrors.Frontage = "Frontage is required"
         }
         if (!LandformData.PlotDepth) {
             newErrors.PlotDepth = "Depth Of The Plotis required"
@@ -298,6 +308,9 @@ export const AddUpdateProjectLand: React.FC = () => {
         if (!LandformData.Remark) {
             newErrors.Remark = "Remarks is required"
         }
+        if (!hasAnyDocumentFile(photoURLFiles, photoURL, removePhotoUrls)) {
+            newErrors.PhotoURL = "File is required.";
+        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -330,7 +343,7 @@ export const AddUpdateProjectLand: React.FC = () => {
         fd.append("PlotShape", LandformData.PlotShape ?? "");
         fd.append("Frontage", String(LandformData.Frontage ?? 0));
         fd.append("PlotDepth", String(LandformData.PlotDepth ?? 0));
-        fd.append("RoadWidth", String(LandformData.RoadWidth ?? 0));
+        fd.append("RoadWidth", LandformData.RoadWidth ?? "");
         fd.append("IsAnyPowerofAttorneyInvolved", String(LandformData.IsAnyPowerofAttorneyInvolved ?? false));
         fd.append("IsFencingBoundaryWallPresent", String(LandformData.IsFencingBoundaryWallPresent ?? false));
         fd.append("SoilType", LandformData.SoilType ?? "");
@@ -349,9 +362,15 @@ export const AddUpdateProjectLand: React.FC = () => {
         fd.append("DistanceFromRailwayStationKM", String(LandformData.DistanceFromRailwayStationKM ?? 0));
         fd.append("DistanceFromAirportKM", String(LandformData.DistanceFromAirportKM ?? 0));
         fd.append("TotalNumberOfTreesonSite", String(LandformData.TotalNumberOfTreesonSite ?? 0));
-        fd.append("PhotoURL", LandformData.PhotoURL ?? "");
-        fd.append("RemovePhotoURL", LandformData.RemovePhotoURL ?? "");
         fd.append("Remark", LandformData.Remark ?? "");
+
+        photoURLFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("PhotoURL", file);
+            }
+        });
+
+        fd.append("RemovePhotoURL", removePhotoUrls.join(","));
 
         return fd;
     };
@@ -384,6 +403,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                         state: { activeTab: "Land" }
                     });
 
+                    setPhotoURL("");
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -394,7 +414,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            isAddMode ? 'Add Project Lead' : "Update Project Lead"
+            isAddMode ? 'Add Project Land' : "Update Project Land"
         );
     };
 
@@ -424,7 +444,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.LandOwnerName ?? ""}
                             onChange={(e) => handleFieldChange("LandOwnerName", e.target.value)}
                             placeholder="Enter Land Owner Name"
-                            maxLength={250}
+                            maxLength={50}
                             error={errors.LandOwnerName}
                         />
                     </div>
@@ -438,7 +458,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.LandAddress ?? ""}
                             onChange={(e) => handleFieldChange("LandAddress", e.target.value)}
                             placeholder="Enter Land Address"
-                            maxLength={250}
+                            maxLength={150}
                             error={errors.LandAddress}
                         />
                     </div>
@@ -582,7 +602,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.PinCode ?? ""}
                             onChange={(e) => handleFieldChange("PinCode", e.target.value)}
                             placeholder="Enter Pin Code"
-                            maxLength={250}
+                            maxLength={6}
                             error={errors.PinCode}
                         />
                     </div>
@@ -605,7 +625,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber ?? ""}
                             onChange={(e) => handleFieldChange("PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber", e.target.value)}
                             placeholder="Enter Plot Number"
-                            maxLength={250}
+                            maxLength={60}
                             error={errors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber}
                         />
                     </div>
@@ -613,13 +633,10 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
                             label="Ward Number / Zone"
                             value={LandformData.WardNumberZone ?? ""}
                             onChange={(e) => handleFieldChange("WardNumberZone", e.target.value)}
                             placeholder="Enter Ward Number"
-                            maxLength={250}
-                            error={errors.WardNumberZone}
                         />
                     </div>
 
@@ -627,11 +644,11 @@ export const AddUpdateProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Plot Area (in Sq. m.)"
+                            label="Total Plot Area (in Sq.m)"
                             value={LandformData.TotalPlotAreaSqM ?? ""}
-                            onChange={(e) => handleFieldChange("TotalPlotAreaSqM", e.target.value)}
+                            onChange={(e) => handleFieldChange("TotalPlotAreaSqM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Plot Area"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.TotalPlotAreaSqM}
                         />
                     </div>
@@ -644,7 +661,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.IdentificationLocation ?? ""}
                             onChange={(e) => handleFieldChange("IdentificationLocation", e.target.value)}
                             placeholder="Enter Identification And Location"
-                            maxLength={250}
+                            maxLength={50}
                             error={errors.IdentificationLocation}
                         />
                     </div>
@@ -652,13 +669,10 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
                             label="Latitude & Longitude (For GIS Mapping)"
                             value={LandformData.LatitudeLongitude ?? ""}
                             onChange={(e) => handleFieldChange("LatitudeLongitude", e.target.value)}
                             placeholder="Enter Latitude And Longitude"
-                            maxLength={250}
-                            error={errors.LatitudeLongitude}
                         />
                     </div>
 
@@ -667,7 +681,7 @@ export const AddUpdateProjectLand: React.FC = () => {
 
             <div className="space-y-4 pt-5">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                    Society Contact
+                    Contact Information
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -680,7 +694,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.ContactPersonName ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonName", e.target.value)}
                             placeholder="Enter Contact Person For Land Name"
-                            maxLength={250}
+                            maxLength={50}
                             error={errors.ContactPersonName}
                         />
                     </div>
@@ -693,7 +707,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.ContactPersonMobile ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonMobile", e.target.value)}
                             placeholder="Enter Contact Person Mobile Number"
-                            maxLength={250}
+                            maxLength={10}
                             error={errors.ContactPersonMobile}
                         />
                     </div>
@@ -701,12 +715,11 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
                             label="Contact Person Email"
                             value={LandformData.ContactPersonEmail ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonEmail", e.target.value)}
                             placeholder="Enter Contact Person Email"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.ContactPersonEmail}
                         />
                     </div>
@@ -751,37 +764,23 @@ export const AddUpdateProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Frontage (Road Facing Width)"
-                            value={LandformData.Frontage ?? ""}
-                            onChange={(e) => handleFieldChange("Frontage", e.target.value)}
-                            placeholder="Enter Frontage"
-                            maxLength={250}
-                            error={errors.Frontage}
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            type="text"
-                            required
                             label="Depth Of The Plot"
                             value={LandformData.PlotDepth ?? ""}
-                            onChange={(e) => handleFieldChange("PlotDepth", e.target.value)}
+                            onChange={(e) => handleFieldChange("PlotDepth", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Depth Of The Plot"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.PlotDepth}
                         />
                     </div>
 
                     <div>
-                        <Input
-                            type="text"
-                            required
+                        <SinglePageSelection
                             label="Road Width In Front Of Plot"
+                            placeholder="Select Road Width"
+                            required
                             value={LandformData.RoadWidth ?? ""}
-                            onChange={(e) => handleFieldChange("RoadWidth", e.target.value)}
-                            placeholder="Enter Road Width In Front Of Plot"
-                            maxLength={250}
+                            onChange={(e) => handleFieldChange('RoadWidth', String(e))}
+                            options={ROAD_WIDTH.map((opt) => ({ label: opt.name, value: opt.id }))}
                             error={errors.RoadWidth}
                         />
                     </div>
@@ -825,7 +824,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                     />
 
                     <Checkbox
-                        label="Electricity Connection Nearby"
+                        label="Electricity Connection Nearby?"
                         checked={LandformData.IsElectricityConnectionNearby ?? false}
                         onChange={(e) => handleFieldChange("IsElectricityConnectionNearby", e.target.checked)}
                     />
@@ -851,14 +850,14 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.FSIPermissible ?? ""}
                             onChange={(e) => handleFieldChange("FSIPermissible", e.target.value)}
                             placeholder="Enter FSI Permissible"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.FSIPermissible}
                         />
                     </div>
 
                     <div>
                         <SinglePageSelection
-                            label="Water Supply Available"
+                            label="Type Water Supply Available"
                             required
                             placeholder="Select Water Supply Available"
                             value={LandformData.WaterSupplyAvailable ?? ""}
@@ -904,11 +903,11 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Distance From Nearest Town"
+                            label="Distance From Nearest Town (KM)"
                             value={LandformData.DistanceFromNearestTownKM ?? ""}
-                            onChange={(e) => handleFieldChange("DistanceFromNearestTownKM", e.target.value)}
+                            onChange={(e) => handleFieldChange("DistanceFromNearestTownKM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Nearest Town (KM)"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.DistanceFromNearestTownKM}
                         />
                     </div>
@@ -916,11 +915,11 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Distance From Highway"
+                            label="Distance From Highway (KM)"
                             value={LandformData.DistanceFromHighwayKM ?? ""}
-                            onChange={(e) => handleFieldChange("DistanceFromHighwayKM", e.target.value)}
+                            onChange={(e) => handleFieldChange("DistanceFromHighwayKM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Highway (KM)"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.DistanceFromHighwayKM}
                         />
                     </div>
@@ -928,11 +927,11 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Distance From Railway Station"
+                            label="Distance From Railway Station (KM)"
                             value={LandformData.DistanceFromRailwayStationKM ?? ""}
-                            onChange={(e) => handleFieldChange("DistanceFromRailwayStationKM", e.target.value)}
+                            onChange={(e) => handleFieldChange("DistanceFromRailwayStationKM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Railway Station (KM)"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.DistanceFromRailwayStationKM}
                         />
                     </div>
@@ -940,11 +939,11 @@ export const AddUpdateProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Distance From Airport"
+                            label="Distance From Airport (KM)"
                             value={LandformData.DistanceFromAirportKM ?? ""}
-                            onChange={(e) => handleFieldChange("DistanceFromAirportKM", e.target.value)}
+                            onChange={(e) => handleFieldChange("DistanceFromAirportKM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Airport (KM)"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.DistanceFromAirportKM}
                         />
                     </div>
@@ -956,7 +955,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                             value={LandformData.TotalNumberOfTreesonSite ?? ""}
                             onChange={(e) => handleFieldChange("TotalNumberOfTreesonSite", e.target.value)}
                             placeholder="Enter Total Number Of Trees On Site"
-                            maxLength={250}
+                            maxLength={20}
                             error={errors.TotalNumberOfTreesonSite}
                         />
                     </div>
@@ -983,6 +982,24 @@ export const AddUpdateProjectLand: React.FC = () => {
                     </div>
 
                 </div>
+            </div>
+
+            <div className="space-y-4 pt-3 pb-4">
+                <MultiFilePicker
+                    label="Photo"
+                    placeholder="Select Files"
+                    required
+                    error={errors.PhotoURL}
+                    value={photoURLFiles}
+                    onChange={setPhotoURLFiles}
+                    availableFilesURL={photoURL ?? ""}
+                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                    maxFiles={5}
+                    maxSizeMB={50}
+                    onRemoveExisting={(url) => {
+                        SetRemovePhotoUrls((prev) => [...prev, url]);
+                    }}
+                />
             </div>
 
             <BottomActionBar

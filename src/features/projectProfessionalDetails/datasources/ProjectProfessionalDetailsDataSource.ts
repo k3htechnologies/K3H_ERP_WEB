@@ -22,11 +22,14 @@ export class ProjectProfessionalDetailsDatasourceImpl implements ProjectProfessi
             })
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
+            if (params.ProjectProfessionalDetailsId) queryParams.append('ProjectProfessionalDetailsId', params.ProjectProfessionalDetailsId.toString());
+            if (params.ProfessionalType) queryParams.append("ProfessionalType", params.ProfessionalType);
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${ProjectProfessionalDetailsApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            return response
         } catch (error: any) {
 
             console.error('ERROR: PULL PROJECT PROFESSIONAL DETAILS:', error);
@@ -39,20 +42,19 @@ export class ProjectProfessionalDetailsDatasourceImpl implements ProjectProfessi
         }
     }
 
-    async addUpdateprojectProfessionalDetails(data: AddUpdateProjectProfessionalDetails): Promise<ProjectProfessionalDetailsSaveResponse> {
+    async addUpdateprojectProfessionalDetails(params: AddUpdateProjectProfessionalDetails): Promise<ProjectProfessionalDetailsSaveResponse> {
         try {
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            return await this.k3hHttpClient.postRequestWithAuthentication(
                 ProjectProfessionalDetailsApi.ADD_UPDATE,
-                data
+                params
             )
-            return response
         } catch (error: any) {
 
             console.error('ERROR : ADD UPDATE PROJECT PROFESSIONAL DETAILS:', error);
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateprojectProfessionalDetails(data);
+                return await this.addUpdateprojectProfessionalDetails(params);
             }
             throw error
         }
@@ -61,13 +63,14 @@ export class ProjectProfessionalDetailsDatasourceImpl implements ProjectProfessi
     async deleteProjectProfessionalDetails(params: DeleteProjectProfessionalDetailsRequest): Promise<ProjectProfessionalDetailsResponse> {
         try {
             const queryParams = new URLSearchParams({
+                ProjectProfessionalDetailsId: (params.ProjectProfessionalDetailsId ?? 0).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
+                Uniquekey: (params.Uniquekey ?? 0),
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${ProjectProfessionalDetailsApi.DELETE}${queryParams.toString()}`
             )
-            return response
         } catch (error: any) {
 
             console.error('ERROR: DELETE PROJECT PROFESSIONAL DETAILS: ', error);

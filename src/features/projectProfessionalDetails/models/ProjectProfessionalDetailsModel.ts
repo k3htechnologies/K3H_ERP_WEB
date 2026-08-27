@@ -19,7 +19,7 @@ export interface ProjectProfessionalDetailsData {
     Type: string | null
     CompanyName: string | null
     FirstName: string | null
-    MiddelName: string | null
+    MiddleName: string | null
     LastName: string | null
     Designation: string | null
     UnitNumber: string | null
@@ -53,11 +53,11 @@ export interface AddUpdateProjectProfessionalDetails {
     Type: string | null
     CompanyName: string | null
     FirstName: string | null
-    MiddelName: string | null
+    MiddleName: string | null
     LastName: string | null
     Designation: string | null
     UnitNumber: string | null
-    BuldingName: string | null
+    BuildingName: string | null
     StreetName: string | null
     Locality: string | null
     LandMark: string | null

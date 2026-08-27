@@ -106,7 +106,7 @@ const ViewProjectProfessionalDetails: React.FC = () => {
                                 <FieldItem label="Registration Number" value={projectProfessionalDetailsData?.RegistrationNumber} />
                                 <FieldItem label="Type" value={projectProfessionalDetailsData?.Type} />
                                 <FieldItem label="First Name" value={projectProfessionalDetailsData?.FirstName} />
-                                <FieldItem label="Middel Name" value={projectProfessionalDetailsData?.MiddelName} />
+                                <FieldItem label="Middel Name" value={projectProfessionalDetailsData?.MiddleName} />
                                 <FieldItem label="Last Name" value={projectProfessionalDetailsData?.LastName} />
                             </div>
                         </div>

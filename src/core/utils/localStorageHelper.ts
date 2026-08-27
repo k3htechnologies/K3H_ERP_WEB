@@ -1564,7 +1564,6 @@ export const LocalStorageHelper = {
     }
   },
 
-  // Project Professional
   //#region PROJECT PROFESSIONAL DETAILS
   storeProjectProfessionalDetailsTableColumns: (columns: string): void => {
     try {

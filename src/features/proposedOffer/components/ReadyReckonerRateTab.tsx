@@ -525,7 +525,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                             label="Zone"
                             required
                             type="text"
-
                             value={formDataReadyReckonerRate.Zone || ''}
                             onChange={(e) => {
                                 handleFieldChangeReadyReckonerRate('Zone', e.target.value);
@@ -551,7 +550,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
 
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
 
-
                         <SinglePageSelection
                             label="Financial Year"
                             placeholder="Select Financial Year"
@@ -566,16 +564,15 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 value: opt.id,
                             }))}
                         />
+
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                         <div>
                             <DatePickerInput
                                 label="Effective Start Date *"
                                 value={formatDate_dd_mm_yyyy(formDataReadyReckonerRate.EffectiveStartDate)}
                                 error={errorsReadyReckonerRate.EffectiveStartDate}
                                 onChange={(val) => handleFieldChangeReadyReckonerRate('EffectiveStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-
                             />
                         </div>
                         <div>
@@ -661,9 +658,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 placeholder="Enter Land Rate"
                             />
                         </div>
-
-
-
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
@@ -676,7 +670,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                             />
                         </div>
                     </div>
-
                 </div>
             </Modal>
 
@@ -690,8 +683,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                 loading={isLoading}
                 pageName='ready reckoner'
             />
-
-
         </>
     );
 };

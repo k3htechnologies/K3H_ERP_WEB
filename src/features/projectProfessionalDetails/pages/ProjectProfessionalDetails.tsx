@@ -35,7 +35,9 @@ export const ProjectProfessionalDetails: React.FC = () => {
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const { pagination, setPagination } = usePagination(20);
     const [isShowCustomizeColumnsModal, setIsShowCustomizeColumnsModal] = useState(false);
-    const { canAction, canExport } = useMenuPermissions();
+    const { canAction, canExport } = useMenuPermissions('/');
+
+    console.log('CanAction', canAction);
     const navigate = useNavigate();
     const { listState, resetFilters, clearProjectProfessionalDetailsContext, updateListState } = useProjectProfessionalDetailsListState();
     const { page, filters, sortInfo, searchTerm } = listState;
@@ -222,8 +224,8 @@ export const ProjectProfessionalDetails: React.FC = () => {
                 render: value => value || ""
             },
             {
-                key: "BuldingName",
-                label: "Bulding Name",
+                key: "BuildingName",
+                label: "Building Name",
                 width: '30',
                 align: 'right',
                 sortable: true,
@@ -332,7 +334,7 @@ export const ProjectProfessionalDetails: React.FC = () => {
         setTempFilters((prev) => updateFilter(prev, key, value));
     };
 
-    const requiredProjectProfessionalDetailsColumnKeys: string[] = ["Title", "Actions"];
+    const requiredProjectProfessionalDetailsColumnKeys: string[] = ["ProfessionalType", "BuildingName", "Actions"];
 
     const allProjectProfessionalDetailsColumnKeys: string[] = ProjectProfessionalDetailsColunm.map((c) => c.key);
 
@@ -443,7 +445,7 @@ export const ProjectProfessionalDetails: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter -Project Professional Details"
+                title="Filter - Project Professional Details"
                 onSubmit={(e) => {
                     e.preventDefault();
                     updateListState({ filters: tempFilters, page: 1 });
@@ -477,7 +479,6 @@ export const ProjectProfessionalDetails: React.FC = () => {
                             placeholder="Enter Type"
                         />
                     </div>
-
                 </div>
             </Modal>
 

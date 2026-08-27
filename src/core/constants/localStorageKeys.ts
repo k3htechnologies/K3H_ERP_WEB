@@ -124,9 +124,6 @@ export const LOCAL_STORAGE_KEYS = {
     // PROJECT PROFESSIONAL DETAILS
     PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS: 'projectProfessionalDetails.selectedColumns',
 
-
-
-
 } as const
 
 export const LOCAL_STORAGE_FOR_STATE_KEYS = {

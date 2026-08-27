@@ -24,11 +24,11 @@ const initialFormState = (): AddUpdateProjectProfessionalDetails => ({
     Type: "",
     CompanyName: "",
     FirstName: "",
-    MiddelName: "",
+    MiddleName: "",
     LastName: "",
     Designation: "",
     UnitNumber: "",
-    BuldingName: "",
+    BuildingName: "",
     StreetName: "",
     Locality: "",
     LandMark: "",
@@ -71,6 +71,8 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
     const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null);
     const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null);
     const { canAction } = useMenuPermissions('/projectProfessionalDetails');
+
+    console.log('Project Professional Details Can Action', canAction);
 
     const countryOptions = countries.map((c) => ({ label: c.name, value: c.id }));
 
@@ -139,11 +141,11 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                             Type: e.Type ?? prev.Type,
                             CompanyName: e.CompanyName ?? prev.CompanyName,
                             FirstName: e.FirstName ?? prev.FirstName,
-                            MiddelName: e.MiddelName ?? prev.MiddelName,
+                            MiddleName: e.MiddleName ?? prev.MiddleName,
                             LastName: e.LastName ?? prev.LastName,
                             Designation: e.Designation ?? prev.Designation,
                             UnitNumber: e.UnitNumber ?? prev.UnitNumber,
-                            BuldingName: e.BuldingName ?? prev.BuldingName,
+                            BuldingName: e.BuldingName ?? prev.BuildingName,
                             StreetName: e.StreetName ?? prev.StreetName,
                             Locality: e.Locality ?? prev.Locality,
                             LandMark: e.LandMark ?? prev.LandMark,
@@ -193,8 +195,8 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
         if (!formData.FirstName) {
             newErrors.FirstName = 'First Name is required.';
         }
-        if (!formData.MiddelName) {
-            newErrors.MiddelName = 'Middel Name is required.';
+        if (!formData.MiddleName) {
+            newErrors.MiddleName = 'Middel Name is required.';
         }
         if (!formData.LastName) {
             newErrors.LastName = 'Last Name is required.';
@@ -205,8 +207,8 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
         if (!formData.UnitNumber) {
             newErrors.UnitNumber = 'Unit Number is required.';
         }
-        if (!formData.BuldingName) {
-            newErrors.BuldingName = 'Bulding Name is required.';
+        if (!formData.BuildingName) {
+            newErrors.BuildingName = 'Building Name is required.';
         }
         if (!formData.StreetName) {
             newErrors.StreetName = 'Street Name is required.';
@@ -244,6 +246,21 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
         if (!formData.EmailId) {
             newErrors.EmailId = 'Email Id is required.';
         }
+
+        if (formData.Type === "Person /Individual") {
+            if (!formData.FirstName) {
+                newErrors.FirstName = 'First Name is required.';
+            }
+            if (!formData.MiddleName) {
+                newErrors.MiddleName = 'Middel Name is required.';
+            }
+            if (!formData.LastName) {
+                newErrors.LastName = 'Last Name is required.';
+            }
+            if (!formData.Designation) {
+                newErrors.Designation = 'Designation is required.';
+            }
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -260,11 +277,11 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
             Type: formData.Type ?? "",
             CompanyName: formData.CompanyName ?? "",
             FirstName: formData.FirstName ?? "",
-            MiddelName: formData.MiddelName ?? "",
+            MiddleName: formData.MiddleName ?? "",
             LastName: formData.LastName ?? "",
             Designation: formData.Designation ?? "",
             UnitNumber: formData.UnitNumber ?? "",
-            BuldingName: formData.BuldingName ?? "",
+            BuildingName: formData.BuildingName ?? "",
             StreetName: formData.StreetName ?? "",
             Locality: formData.Locality ?? "",
             LandMark: formData.LandMark ?? "",
@@ -331,7 +348,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-gray-900 border-b border-gray-300 pb-2">Personal Details</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Personal Details</h3>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -381,10 +398,10 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                             <>
                                 <div>
                                     <Input
-                                        label="First Name"
+                                        label="Executive Officer First Name"
                                         required
                                         type="text"
-                                        placeholder="First Name"
+                                        placeholder="Executive Officer First Name"
                                         value={formData.FirstName ?? ""}
                                         onChange={(e) => handleFieldChange("FirstName", e.target.value)}
                                         error={errors.FirstName}
@@ -394,26 +411,38 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
 
                                 <div>
                                     <Input
-                                        label="Middel Name"
+                                        label="Executive Officer Middle Name"
                                         required
                                         type="text"
-                                        placeholder="Middel Name"
-                                        value={formData.MiddelName ?? ""}
-                                        onChange={(e) => handleFieldChange("MiddelName", e.target.value)}
-                                        error={errors.MiddelName}
+                                        placeholder="Executive Officer Middle Name"
+                                        value={formData.MiddleName ?? ""}
+                                        onChange={(e) => handleFieldChange("MiddleName", e.target.value)}
+                                        error={errors.MiddleName}
                                         maxLength={200}
                                     />
                                 </div>
 
                                 <div>
                                     <Input
-                                        label="Last Name"
+                                        label="Executive Officer Last Name"
                                         required
                                         type="text"
-                                        placeholder="Last Name"
+                                        placeholder="Executive Officer Last Name"
                                         value={formData.LastName ?? ""}
                                         onChange={(e) => handleFieldChange("LastName", e.target.value)}
                                         error={errors.LastName}
+                                        maxLength={200}
+                                    />
+                                </div>
+                                <div>
+                                    <Input
+                                        label="Designation"
+                                        required
+                                        type="text"
+                                        placeholder="Designation"
+                                        value={formData.Designation ?? ""}
+                                        onChange={(e) => handleFieldChange("Designation", e.target.value)}
+                                        error={errors.Designation}
                                         maxLength={200}
                                     />
                                 </div>
@@ -434,7 +463,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                         )}
                     </div>
 
-                    <h3 className="text-lg font-gray-900 border-b border-gray-300 pb-2">Communication  Address</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Communication  Address</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         <div>
@@ -442,7 +471,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                                 label="Unit Number"
                                 required
                                 type="text"
-                                placeholder="Unit Number"
+                                placeholder="Enter Unit Number"
                                 value={formData.UnitNumber ?? ""}
                                 onChange={(e) => handleFieldChange("UnitNumber", e.target.value)}
                                 error={errors.UnitNumber}
@@ -452,13 +481,13 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
 
                         <div>
                             <Input
-                                label="Bulding Name"
+                                label="Building Name"
                                 required
                                 type="text"
-                                placeholder="Bulding Name"
-                                value={formData.BuldingName ?? ""}
-                                onChange={(e) => handleFieldChange("BuldingName", e.target.value)}
-                                error={errors.BuldingName}
+                                placeholder="Enter Building Name"
+                                value={formData.BuildingName ?? ""}
+                                onChange={(e) => handleFieldChange("BuildingName", e.target.value)}
+                                error={errors.BuildingName}
                                 maxLength={200}
                             />
                         </div>
@@ -468,7 +497,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                                 label="Street Name"
                                 required
                                 type="text"
-                                placeholder="Street Name"
+                                placeholder="Enter Street Name"
                                 value={formData.StreetName ?? ""}
                                 onChange={(e) => handleFieldChange("StreetName", e.target.value)}
                                 error={errors.StreetName}
@@ -481,7 +510,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                                 label="Locality"
                                 required
                                 type="text"
-                                placeholder="Locality"
+                                placeholder="Enter Locality"
                                 value={formData.Locality ?? ""}
                                 onChange={(e) => handleFieldChange("Locality", e.target.value)}
                                 error={errors.Locality}
@@ -491,10 +520,10 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
 
                         <div>
                             <Input
-                                label="LandMark"
+                                label="Landmark"
                                 required
                                 type="text"
-                                placeholder="LandMark"
+                                placeholder="Enter Landmark"
                                 value={formData.LandMark ?? ""}
                                 onChange={(e) => handleFieldChange("LandMark", e.target.value)}
                                 error={errors.LandMark}
@@ -683,14 +712,15 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                         </div>
                     </div>
 
-                    <h3 className="text-lg font-gray-900 border-b border-gray-300 pb-2">Contact Details</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Contact Details</h3>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <Input
                                 label="Primary Contact Number"
                                 required
                                 type="text"
-                                placeholder="Primary Contact Number"
+                                placeholder="Enter Primary Contact Number"
                                 value={formData.PrimaryContactNumber ?? ""}
                                 onChange={(e) => handleFieldChange("PrimaryContactNumber", e.target.value)}
                                 error={errors.PrimaryContactNumber}
@@ -703,7 +733,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                                 label="Alternate Contact Number"
                                 required
                                 type="text"
-                                placeholder="Alternate Contact Number"
+                                placeholder="Enter Alternate Contact Number"
                                 value={formData.AlternateContactNumber ?? ""}
                                 onChange={(e) => handleFieldChange("AlternateContactNumber", e.target.value)}
                                 error={errors.AlternateContactNumber}
@@ -716,7 +746,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                                 label="Office Landline Number"
                                 required
                                 type="text"
-                                placeholder="Office Landline Number"
+                                placeholder="Enter Office Landline Number"
                                 value={formData.OfficeLandlineNumber ?? ""}
                                 onChange={(e) => handleFieldChange("OfficeLandlineNumber", e.target.value)}
                                 error={errors.OfficeLandlineNumber}
@@ -729,7 +759,7 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
                                 label="Email Id"
                                 required
                                 type="text"
-                                placeholder="EmailId"
+                                placeholder="Enter Email-Id"
                                 value={formData.EmailId ?? ""}
                                 onChange={(e) => handleFieldChange("EmailId", e.target.value)}
                                 error={errors.EmailId}
@@ -754,4 +784,4 @@ export const AddUpdateProjectProfessionalDetail: React.FC = () => {
         </div>
     )
 }
-export default AddUpdateProjectProfessionalDetail;
+export default AddUpdateProjectProfessionalDetail; 

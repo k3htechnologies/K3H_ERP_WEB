@@ -32,6 +32,7 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
     sortInfo,
     onSort,
     onView,
+    onEdit,
     onDelete,
     onLogout,
     onBell,
@@ -41,11 +42,11 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
 }) => {
 
     const tableColumns = useMemo<TableColumn[]>(() => {
-        
+
         return columns.map(col => {
 
             if (col.key === 'Actions') {
-                
+
                 return {
                     ...col,
 
@@ -57,69 +58,72 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
 
                         const isBellDisabled = !canAction || !!row.OutDateTime;
 
-                        <div className="flex items-center justify-center gap-2">
-                            
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (isDisabled) return;
-                                    onDelete(row);
-                                }}
-                                color="transparent"
-                                isborderRadius
-                                disabled={isDisabled}
-                                size="sm"
-                                style={{
-                                    color: isDisabled ? "#9CA3AF" : "red",
-                                    padding: "4px 8px",
-                                    cursor: isDisabled ? "not-allowed" : "pointer",
-                                    opacity: isDisabled ? 0.5 : 1,
-                                }}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                        return (
+                            <div className="flex items-center justify-center gap-2">
 
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (isOutDisabled) return;
-                                    onLogout(row);
-                                }}
-                                color="transparent"
-                                isborderRadius
-                                disabled={isOutDisabled}
-                                size="sm"
-                                style={{
-                                    color: isOutDisabled ? "#9CA3AF" : "red",
-                                    padding: "4px 8px",
-                                    cursor: isOutDisabled ? "not-allowed" : "pointer",
-                                    opacity: isOutDisabled ? 0.5 : 1,
-                                }}>
-                                <LogOut className="h-4 w-4" />
-                            </Button>
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (isDisabled) return;
+                                        onDelete(row);
+                                    }}
+                                    color="transparent"
+                                    isborderRadius
+                                    disabled={isDisabled}
+                                    size="sm"
+                                    style={{
+                                        color: isDisabled ? "#9CA3AF" : "red",
+                                        padding: "4px 8px",
+                                        cursor: isDisabled ? "not-allowed" : "pointer",
+                                        opacity: isDisabled ? 0.5 : 1,
+                                    }}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
 
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    if (isBellDisabled) return;
-                                    onBell(row);
-                                }}
-                                color="transparent"
-                                isborderRadius
-                                disabled={isBellDisabled}
-                                size="sm"
-                                style={{
-                                    color: isBellDisabled ? "#9CA3AF" : "red",
-                                    padding: "4px 8px",
-                                    cursor: isBellDisabled ? "not-allowed" : "pointer",
-                                    opacity: isBellDisabled ? 0.5 : 1,
-                                }}>
-                                <Bell className="h-4 w-4" />
-                            </Button>
-                        </div>
+
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (isOutDisabled) return;
+                                        onLogout(row);
+                                    }}
+                                    color="transparent"
+                                    isborderRadius
+                                    disabled={isOutDisabled}
+                                    size="sm"
+                                    style={{
+                                        color: isOutDisabled ? "#9CA3AF" : "red",
+                                        padding: "4px 8px",
+                                        cursor: isOutDisabled ? "not-allowed" : "pointer",
+                                        opacity: isOutDisabled ? 0.5 : 1,
+                                    }}>
+                                    <LogOut className="h-4 w-4" />
+                                </Button>
+
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        if (isBellDisabled) return;
+                                        onBell(row);
+                                    }}
+                                    color="transparent"
+                                    isborderRadius
+                                    disabled={isBellDisabled}
+                                    size="sm"
+                                    style={{
+                                        color: isBellDisabled ? "#9CA3AF" : "red",
+                                        padding: "4px 8px",
+                                        cursor: isBellDisabled ? "not-allowed" : "pointer",
+                                        opacity: isBellDisabled ? 0.5 : 1,
+                                    }}>
+                                    <Bell className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        );
                     },
                 };
             }
@@ -261,7 +265,8 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
             return col;
         });
 
-    }, [columns, canAction, onView, onDelete]);
+
+    }, [columns, canAction, onView, onEdit, onDelete, onLogout, onBell]);
 
     return (
         <DataTable
@@ -281,3 +286,4 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
     );
 };
 
+//Gate-pass Table

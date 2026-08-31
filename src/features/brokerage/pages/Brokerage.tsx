@@ -146,7 +146,6 @@ export const Brokerage: React.FC = () => {
         setTempFilters({});
     };
 
-
     const handleExportBrokerageBooking = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -211,10 +210,9 @@ export const Brokerage: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-        [pagination, handlePageChange]
-    )
-    const BrokerageBookingForTable = useMemo(() => BrokerageBookingList, [BrokerageBookingList]);
+        [pagination, handlePageChange])
 
+    const BrokerageBookingForTable = useMemo(() => BrokerageBookingList, [BrokerageBookingList]);
 
     const handleViewBrokerageBookingDetails = useCallback((row: BrokerageBookingData) => {
 
@@ -223,12 +221,11 @@ export const Brokerage: React.FC = () => {
             bookingName: row.ApplicantName ?? "",
             cpName: row.ChannelPartnerName ?? "",
             cpMobileNumber: row.ChannelPartnerMobileNumber ?? "",
-            cpCompany: row.ChannelPartnerCompany ?? ""
+            cpCompany: row.ChannelPartnerCompany ?? "",
         });
+
         navigate("/brokerage/brokerageInvoice/view");
-
     }, [navigate]);
-
 
     const BrokerageBookingColumns = useMemo<TableColumn[]>(() => [
         {
@@ -301,7 +298,7 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'left',
-           render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
+            render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: "UnitGroup",
@@ -544,7 +541,7 @@ export const Brokerage: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Brokerage Booking"
+                title="Filter - Brokerage "
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -582,6 +579,7 @@ export const Brokerage: React.FC = () => {
                             value={tempFilters.ChannelPartnerMobileNumber || ''}
                             onChange={e => handleFilterChange('ChannelPartnerMobileNumber', e.target.value)}
                             placeholder="Enter CP Mobile Number"
+                            maxLength={10}
                         />
                     </div>
                     <div>
@@ -601,6 +599,7 @@ export const Brokerage: React.FC = () => {
                             value={tempFilters.ApplicantMobileNumber || ''}
                             onChange={e => handleFilterChange('ApplicantMobileNumber', e.target.value)}
                             placeholder="Enter Mobile Number"
+                            maxLength={10}
                         />
                     </div>
                     <div>
@@ -625,17 +624,7 @@ export const Brokerage: React.FC = () => {
 
                     <div>
                         <Input
-                            label='Floor'
-                            type="text"
-                            value={tempFilters.Floor || ''}
-                            onChange={e => handleFilterChange('Floor', e.target.value)}
-                            placeholder="Enter Floor"
-                        />
-                    </div>
-                    <div>
-                        <Input
                             label='Agreement Value'
-                            type="number"
                             value={tempFilters.AgreementValue || ''}
                             onChange={e => handleFilterChange('AgreementValue', e.target.value)}
                             placeholder="Enter Agreement Value"

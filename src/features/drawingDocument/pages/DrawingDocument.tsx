@@ -637,8 +637,7 @@ const DrawingDocument: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value) => value
-
+       render: (value) => <TooltipText text={value} maxWidth="220px" tooltipThreshold={18} />,
       },
       {
         key: "DrawingDocumentRemark",

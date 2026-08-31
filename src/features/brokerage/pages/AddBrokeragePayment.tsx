@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -13,10 +13,10 @@ import { PaidBrokerageBookingService } from "@/features/brokerage/services/PaidB
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants";
+import { INVOICE_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     PaidBrokerageBookingId: 0,
@@ -44,10 +44,15 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
     const [transactionReceiptURLFiles, setTransactionReceiptURLFiles] = useState<(File | string)[]>([]);
     const [removeTransactionReceiptURLUrls, SetRemoveTransactionReceiptURLUrls] = useState<string[]>([]);
-    const [transactionReceiptURL, ] = useState<string>();
-
+    const [transactionReceiptURL,] = useState<string>();
     const navigate = useNavigate();
 
+    const location = useLocation();
+    const routeState = (location.state as { InvoiceAmount?: number; PaidAmount?: number }) || {};
+    const invoiceAmount = Number(routeState.InvoiceAmount || 0);
+    const alreadyPaidAmount = Number(routeState.PaidAmount || 0);
+    const pendingAmount = invoiceAmount - alreadyPaidAmount;
+    const [currentPendingAmount, setCurrentPendingAmount] = useState(0);
     const { BrokerageInvoiceId } = useParams<{
         BrokerageInvoiceId?: string;
     }>();
@@ -71,8 +76,35 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     //#endregion
 
     //#region HANDLE FIELD CHANGE EVENT
-    const handleFieldChange = (field: keyof AddUpdatePaidBrokerageBookingRequest, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+    const handleFieldChange = (
+        field: keyof AddUpdatePaidBrokerageBookingRequest,
+        value: any
+    ) => {
+        setFormData((prev) => {
+            const updated = { ...prev, [field]: value };
+
+            if (field === "PaymentType") {
+                if (value === "Full") {
+                    updated.AmountPaid = pendingAmount;
+                    setCurrentPendingAmount(0);
+                }
+
+                if (value === "Partial") {
+                    updated.AmountPaid = 0;
+                    setCurrentPendingAmount(pendingAmount);
+                }
+            }
+
+            if (field === "AmountPaid") {
+                const paid = Number(value) || 0;
+
+                setCurrentPendingAmount(
+                    Math.max(pendingAmount - paid, 0)
+                );
+            }
+
+            return updated;
+        });
 
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -80,7 +112,6 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     };
     //#endregion
 
-   
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateAddPaidBrokerageForm = (): {
 
@@ -106,10 +137,12 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
             newErrors.AmountPaid = "Amount is required";
         } else if (formData.AmountPaid <= 0) {
             newErrors.AmountPaid = "Amount cannot be zero or negative";
+        } else if (pendingAmount > 0 && Number(formData.AmountPaid) > pendingAmount) {
+            newErrors.AmountPaid = `Amount cannot be greater than pending amount of ₹${pendingAmount.toLocaleString('en-IN')}`;
         }
 
         if (!formData.TransactionNumber) {
-            newErrors.TransactionNumber = 'Transaction Number is required.';
+            newErrors.TransactionNumber = 'Transaction / Cheque / Demand draft No is required.';
         }
 
         if (Number(formData.TDSAmount) != 0 && (Number(formData.TDSAmount) || 0) >= (Number(formData.AmountPaid) || 0)) {
@@ -117,7 +150,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         }
 
         if (!hasAnyDocumentFile(transactionReceiptURLFiles, transactionReceiptURL, removeTransactionReceiptURLUrls)) {
-            newErrors.TransactionReceiptURL = "Transaction Receipt is required";
+            newErrors.TransactionReceiptURL = "Transaction / Cheque / Demand Draft Image is required";
         }
 
         return {
@@ -237,7 +270,6 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                             handleFieldChange("BankListMasterId", null);
                                             return;
                                         }
-
                                         handleFieldChange("BankListMasterId", Number(item.value));
                                     }}
                                     error={errors.BankListMasterId}
@@ -247,11 +279,11 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Payment Type"
-                                    placeholder='Select Payment Type'
+                                    placeholder="Select Payment Type"
                                     required
-                                    value={formData.PaymentType || ''}
-                                    onChange={(e) => handleFieldChange('PaymentType', String(e))}
-                                    options={PAYMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                    value={formData.PaymentType || ""}
+                                    onChange={(e) => handleFieldChange("PaymentType", String(e))}
+                                    options={INVOICE_PAYMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id, }))}
                                     error={errors.PaymentType}
                                 />
                             </div>
@@ -261,17 +293,23 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                             <div>
                                 <Input
-                                    label='Amount (₹)'
+                                    label="Amount (₹)"
                                     required
                                     type="text"
                                     value={formData.AmountPaid}
                                     placeholder="Enter Amount"
                                     maxLength={15}
-                                    onChange={(e) => {
-                                        const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("AmountPaid", (digits));
-                                    }}
+                                    disabled={formData.PaymentType === "Full"}
+                                    onChange={(e) => handleFieldChange("AmountPaid", filterNumbersWithDecimal(e.target.value) || 0)}
                                     error={errors.AmountPaid}
+                                />
+                            </div>
+
+                            <div>
+                                <Input
+                                    label="Pending Amount"
+                                    value={currentPendingAmount.toFixed(2)}
+                                    disabled
                                 />
                             </div>
 
@@ -294,10 +332,10 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Transaction / Cheque Number'
+                                    label='Transaction / Cheque / Demand draft No.'
                                     value={formData.TransactionNumber ?? ""}
                                     onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
-                                    placeholder="Enter Transaction Number"
+                                    placeholder="Enter Transaction / Cheque / Demand draft No"
                                     maxLength={15}
                                     error={errors.TransactionNumber}
                                 />
@@ -305,8 +343,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                             <div>
                                 <MultiFilePicker
-                                    label="Transaction / Cheque Receipt"
-                                    placeholder="Select Transaction / Cheque Receipt"
+                                    label="Transaction / Cheque / Demand Draft Image"
+                                    placeholder="Select Transaction / Cheque / Demand Draft Image"
                                     required
                                     value={transactionReceiptURLFiles}
                                     onChange={setTransactionReceiptURLFiles}

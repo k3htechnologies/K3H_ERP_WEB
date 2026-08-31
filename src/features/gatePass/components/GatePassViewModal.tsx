@@ -123,6 +123,7 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
                     :
                     ''}
                 <div className="flex justify-between items-center">
+                    
                     {canAction && data.IsDelete && (
                         <>
                             <Button

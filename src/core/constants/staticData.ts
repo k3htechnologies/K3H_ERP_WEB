@@ -730,6 +730,9 @@ export const MASTER_DATA = {
   surroundingLandUse: ["Agricultural", "Residential", "Industrial", "Vacant"],
 
   landOwnerShipType: ["Individual", "Joint", "Trust", "Company", "Government", "Society"],
+
+  inVoicePaymentType: ['Full', 'Partial'],
+
 } as const;
 
 // ============================================================================
@@ -875,6 +878,8 @@ export const EXISTING_GROUND_CONDITION_OPTIONS = toOptions(MASTER_DATA.existingG
 export const WATER_SUPPLY_AVAILABLE_OPTIONS = toOptions(MASTER_DATA.waterSupplyAvailable);
 export const SURROUNDING_LAND_USE_OPTIONS = toOptions(MASTER_DATA.surroundingLandUse);
 export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipType);
+export const INVOICE_PAYMENT_TYPE = toOptions(MASTER_DATA.inVoicePaymentType);
+
 
 
 // ============================================================================

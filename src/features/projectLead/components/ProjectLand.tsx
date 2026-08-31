@@ -261,7 +261,7 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "CountryName",
-            label: "Country Name",
+            label: "Country",
             width: "15",
             sortable: true,
             align: "left",
@@ -269,7 +269,7 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "StateName",
-            label: "State Name",
+            label: "State",
             width: "15",
             sortable: true,
             align: "left",
@@ -277,7 +277,7 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "DistrictName",
-            label: "District Name",
+            label: "District",
             width: "15",
             sortable: true,
             align: "left",
@@ -285,7 +285,7 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "CityName",
-            label: "City Name",
+            label: "City",
             width: "15",
             sortable: true,
             align: "left",
@@ -301,7 +301,7 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber",
-            label: "Plot Number / CTS Number",
+            label: "Plot / CTS / Survey / Subdivision Number",
             width: "20",
             sortable: true,
             align: "left",
@@ -309,7 +309,7 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "WardNumberZone",
-            label: "Ward Number Zone",
+            label: "Ward Number (Zone)",
             width: "15",
             sortable: false,
             align: "left",
@@ -317,35 +317,14 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "TotalPlotAreaSqM",
-            label: "Total Plot Area (Sq. M)",
+            label: "Total Plot Area (SqMt)",
             width: "15",
             sortable: false,
             align: "right",
             render: (value) => value ?? "-"
         },
-        {
-            key: "IdentificationLocation",
-            label: "Identification Location",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => (
-                <TooltipText
-                    text={value || "-"}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            ),
-        },
-        {
-            key: "LatitudeLongitude",
-            label: "Latitude / Longitude",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
+        
+         {
             key: "ContactPersonName",
             label: "Contact Person Name",
             width: "15",
@@ -355,35 +334,19 @@ export const ProjectLand: React.FC = () => {
         },
         {
             key: "ContactPersonMobile",
-            label: "Contact Person Mobile",
+            label: "Contact Person Mobile Number",
             width: "15",
             sortable: false,
             align: "left",
-            render: (value) => value || "-"
+             render: (value) => (value ? `+91 ${value}` : "-"),
         },
         {
             key: "ContactPersonEmail",
-            label: "Contact Person Email",
+            label: "Contact Person E-Mail ID",
             width: "15",
             sortable: false,
             align: "left",
             render: (value) => value || "-"
-        },
-        {
-            key: "IsAnyPowerofAttorneyInvolved",
-            label: "Power Of Attorney Involved",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "IsFencingBoundaryWallPresent",
-            label: "Fencing Boundary Wall Present",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "PlotShape",
@@ -409,156 +372,7 @@ export const ProjectLand: React.FC = () => {
             align: "right",
             render: (value) => value ?? "-"
         },
-        {
-            key: "SoilType",
-            label: "Soil Type",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
-            key: "ExistingGroundCondition",
-            label: "Existing Ground Condition",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
-            key: "IsLandConvertedToNonAgricultural",
-            label: "Land Converted To Non-Agricultural",
-            width: "20",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "IsAccessRoadAvailable",
-            label: "Access Road Available",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "IsElectricityConnectionNearby",
-            label: "Electricity Connection Nearby",
-            width: "20",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "IsUnderLitigationOrStayOrder",
-            label: "Under Litigation Stay Order",
-            width: "20",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "Is712Available",
-            label: "7/12 Available",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "FSIPermissible",
-            label: "FSI Permissible",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
-        },
-        {
-            key: "WaterSupplyAvailable",
-            label: "Water Supply Available",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
-            key: "SurroundingLandUse",
-            label: "Surrounding Land Use",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
-            key: "TypeOfLandTenureType",
-            label: "Type Of Land Tenure",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
-            key: "LandOwnershipType",
-            label: "Land Ownership Type",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
-        },
-        {
-            key: "DistanceFromNearestTownKM",
-            label: "Distance From Nearest Town (KM)",
-            width: "20",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
-        },
-        {
-            key: "DistanceFromHighwayKM",
-            label: "Distance From Highway (KM)",
-            width: "20",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
-        },
-        {
-            key: "DistanceFromRailwayStationKM",
-            label: "Distance From Railway Station (KM)",
-            width: "20",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
-        },
-        {
-            key: "DistanceFromAirportKM",
-            label: "Distance From Airport (KM)",
-            width: "20",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
-        },
-        {
-            key: "TotalNumberOfTreesonSite",
-            label: "Total Number Of Trees On Site",
-            width: "20",
-            sortable: false,
-            align: "right",
-            render: (value) => value ?? "-"
-        },
-        {
-            key: "Remark",
-            label: "Remark",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => (
-                <TooltipText
-                    text={value || "-"}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            ),
-        },
+       
         {
             key: "Actions",
             label: "Actions",
@@ -748,7 +562,7 @@ export const ProjectLand: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Project Land Data"
+                title="Filter - Project Land"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -796,7 +610,7 @@ export const ProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Contact Person Mobile"
+                            label="Contact Person Mobile Number"
                             value={tempFilters.ContactPersonMobile || ""}
                             onChange={e => handleFilterChange("ContactPersonMobile", e.target.value)}
                             placeholder="Enter Contact Person Mobile"
@@ -829,7 +643,7 @@ export const ProjectLand: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Ward Number Zone"
+                            label="Ward Number (Zone)"
                             value={tempFilters.WardNumberZone || ""}
                             onChange={e => handleFilterChange("WardNumberZone", e.target.value)}
                             placeholder="Enter Ward Number Zone"

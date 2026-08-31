@@ -9,7 +9,7 @@ import { useProjectRedevelopmentListState } from "@/features/projectLead/context
 import { runApiWithLoader } from "@/core/utils";
 import { projectRedevelopmentService } from "@/features/projectLead/services/ProjectRedevelopmentService";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { ContactRound, History, Mail, MapPin, MessageSquareText, Phone, Ruler, Warehouse } from "lucide-react";
+import { ContactRound, History, MapPin, MessageSquareText, Ruler, Warehouse } from "lucide-react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import ImageCarousel from "@/ui/components/ImageViewer/ImageCarousel";
@@ -73,10 +73,9 @@ export const ViewProjectRedevelopment: React.FC = () => {
 
             <div className="px-5 py-5">
                 <HeaderActionBar
-                    titleText={
-                        ProjectRedevelopmentData?.BuildingName ??
-                        "Redevelopment Details"
-                    }
+                    titleText="Building Name : "
+                    subTitleText={ProjectRedevelopmentData?.BuildingName ?? ""}
+
                     cancelText="Cancel"
                     canAction={canAction}
                     EditText="Edit"
@@ -101,40 +100,44 @@ export const ViewProjectRedevelopment: React.FC = () => {
                 <div className="grid grid-cols-1 gap-6 pt-5">
                     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
                         <div className="flex items-start gap-5">
-                            <div className="relative w-full max-w-[220px] h-[150px] rounded-2xl overflow-hidden bg-gray-100 shrink-0">
-                                <ImageCarousel
-                                    images={ProjectRedevelopmentData?.PhotoURL ?? ""}
-                                    thumbHeight="h-full"
-                                />
 
-                                <div className="absolute top-2 right-2 z-20">
-                                    <FieldItem
-                                        label=""
-                                        urls={ProjectRedevelopmentData?.PhotoURL}
-                                        isIcon
-                                        isSetValue={false}
+                            <div className="w-full lg:w-[240px] shrink-0">
+                                <div className="relative w-full lg:w-[220px] h-[200px] lg:h-[150px] rounded-xl overflow-hidden">
+                                    <ImageCarousel
+                                        images={ProjectRedevelopmentData?.PhotoURL ?? ""}
+                                        thumbHeight="h-full"
                                     />
+
+                                    <div className="absolute top-2 right-2 z-20">
+                                        <FieldItem
+                                            label=""
+                                            urls={ProjectRedevelopmentData?.PhotoURL}
+                                            isIcon
+                                            isSetValue={false}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFF4FF] text-[#464554] font-medium text-xs  mt-2">
+                                    <MapPin className="text-[#4648D4]" size={18} />
+                                    {ProjectRedevelopmentData?.CityName}, {ProjectRedevelopmentData?.StateName}
                                 </div>
                             </div>
 
+
                             <div className="flex-1 min-w-0 py-2">
-                                <h2 className="text-xl font-semibold text-slate-800 mt-1 truncate">
+
+                                <h2 className="text-xl font-semibold text-slate-800 truncate">
                                     {ProjectRedevelopmentData?.BuildingName || "-"}
                                 </h2>
 
-                                <div className="mt-2">
-                                    <p className="text-md text-gray-600 leading-6 mt-1">
-                                        {ProjectRedevelopmentData?.BuildingAddress || "-"}
-                                    </p>
+
+                                <div className="pt-2">
+                                    <FieldItem label="Plot / CTS / Survey / Subdivision Number" value={ProjectRedevelopmentData?.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber} isRow />
+
                                 </div>
 
-                                <div className="pt-3">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                                            Plot / CTS Number :
-                                            {ProjectRedevelopmentData?.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber || "-"}
-                                        </span>
-                                    </div>
+                                <div className="mt-2">
+                                    <FieldItem label="Address" value={ProjectRedevelopmentData?.BuildingAddress} isRow />
                                 </div>
 
                             </div>
@@ -171,8 +174,8 @@ export const ViewProjectRedevelopment: React.FC = () => {
                             <span>State</span>
                             <span>District</span>
                             <span>City</span>
-                            <span>Ward Number</span>
                             <span>Pin Code</span>
+                            <span>Ward Number</span>
                         </div>
 
                         <div className="border-t border-gray-300"></div>
@@ -181,8 +184,8 @@ export const ViewProjectRedevelopment: React.FC = () => {
                             <span>{ProjectRedevelopmentData?.StateName || "-"}</span>
                             <span>{ProjectRedevelopmentData?.DistrictName || "-"}</span>
                             <span>{ProjectRedevelopmentData?.CityName || "-"}</span>
-                            <span>{ProjectRedevelopmentData?.WardNumberZone}</span>
                             <span>{ProjectRedevelopmentData?.PinCode || "-"}</span>
+                            <span>{ProjectRedevelopmentData?.WardNumberZone}</span>
                         </div>
                     </div>
                 </div>
@@ -204,15 +207,15 @@ export const ViewProjectRedevelopment: React.FC = () => {
                         <FieldItem label="Existing Building Type" value={ProjectRedevelopmentData?.ExistingBuildingType} />
                         <FieldItem label="Construction Type" value={ProjectRedevelopmentData?.ConstructionType} />
                         <FieldItem label="Year Of Original Construction" value={ProjectRedevelopmentData?.YearOfOriginalConstruction} />
-                        <FieldItem label="Total Plot Area (in Sq. m.)" value={ProjectRedevelopmentData?.TotalPlotAreaSqM} />
-                        <FieldItem label="Total Carpet Area (sq.Ft)" value={ProjectRedevelopmentData?.TotalCarpetArea} />
-                        <FieldItem label="Total Build-Up Area (sq.Ft)" value={ProjectRedevelopmentData?.TotalBuildUpArea} />
-                        <FieldItem label="Total Common Area (sq.Ft)" value={ProjectRedevelopmentData?.TotalCommonArea} />
+                        <FieldItem label="Total Plot Area (SqMt)" value={ProjectRedevelopmentData?.TotalPlotAreaSqM} />
+                        <FieldItem label="Total Carpet Area (SqFt)" value={ProjectRedevelopmentData?.TotalCarpetArea} />
+                        <FieldItem label="Total Build-Up Area (SqFt)" value={ProjectRedevelopmentData?.TotalBuildUpArea} />
+                        <FieldItem label="Total Common Area (SqFt)" value={ProjectRedevelopmentData?.TotalCommonArea} />
                         <FieldItem label="Number of Existing Building / Wings" value={ProjectRedevelopmentData?.NumberOfExistingBuildingsWings} />
                         <FieldItem label="Number of Existing Floors" value={ProjectRedevelopmentData?.NumberOfExistingFloors} />
                         <FieldItem label="Number Of Floor Per Wings" value={ProjectRedevelopmentData?.NumberOfFloorsPerWing} />
                         <FieldItem label="Total Number of Existing Flats / Units" value={ProjectRedevelopmentData?.TotalNumberExistingFlatsUnits} />
-                        <FieldItem label="Percentage Member In Favor" value={ProjectRedevelopmentData?.PercentageMemberInFavor} />
+                        <FieldItem label="Member In Favor (%)" value={ProjectRedevelopmentData?.PercentageMemberInFavor} />
                         <FieldItem label="Plot Under Litigation / Stay" value={ProjectRedevelopmentData?.IsPlotUnderLitigationStay === true ? "Yes" : "No"} />
                         <FieldItem label="Lift Available" value={ProjectRedevelopmentData?.IsLiftAvailable === true ? "Yes" : "No"} />
                         <FieldItem label="Fire Safety Provision Present" value={ProjectRedevelopmentData?.IsFireSafetyProvisionPresent === true ? "Yes" : "No"} />
@@ -237,7 +240,7 @@ export const ViewProjectRedevelopment: React.FC = () => {
                         <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-2 gap-6">
                             <FieldItem label="Plot Shape" value={ProjectRedevelopmentData?.PlotShape} />
                             <FieldItem label="Depth Of The Plot" value={ProjectRedevelopmentData?.PlotDepth} />
-                            <FieldItem label="Road Width In Front Of Plot" value={ProjectRedevelopmentData?.RoadWidth} />
+                            <FieldItem label="Road Width" value={ProjectRedevelopmentData?.RoadWidth} />
                         </div>
                     </div>
 
@@ -253,28 +256,11 @@ export const ViewProjectRedevelopment: React.FC = () => {
                             </h2>
                         </div>
 
-                        <div className="bg-[#F9F9FB] rounded-2xl border border-gray-200 p-4">
-                            <p className="text-sm text-gray-500">
-                                Contact Person
-                            </p>
-
-                            <p className="text-[15px] font-semibold text-slate-800 mt-1">
-                                {ProjectRedevelopmentData?.ContactPersonName || "-"}
-                            </p>
-
-                            <div className="flex items-center gap-2 mt-2">
-                                <Phone size={15} className="text-blue-600" />
-                                <span className="text-sm font-medium text-slate-700">
-                                    {ProjectRedevelopmentData?.ContactPersonMobile || "-"}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 mt-2">
-                                <Mail size={15} className="text-indigo-600" />
-                                <span className="text-sm font-medium text-slate-700">
-                                    {ProjectRedevelopmentData?.ContactPersonEmail || "-"}
-                                </span>
-                            </div>
+                        <div className="flex flex-col gap-4">
+                             <FieldItem label="Name" value={ProjectRedevelopmentData?.ContactPersonName ?? '-'} isRow />
+                             <FieldItem label="Mobile No" value={`+91 ${ProjectRedevelopmentData?.ContactPersonMobile}`} isRow  />
+                             <FieldItem label="E -Mail ID" value={`+91 ${ProjectRedevelopmentData?.ContactPersonEmail}`} isRow  />
+                            
                         </div>
                     </div>
 
@@ -289,7 +275,7 @@ export const ViewProjectRedevelopment: React.FC = () => {
                         </div>
 
                         <h2 className="text-[16px] font-semibold text-slate-800">
-                            Remarks
+                            Additional Information
                         </h2>
                     </div>
 

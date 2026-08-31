@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import type { AddUpdateGatePassRequest } from '@/features/gatePass/models/GatePassModel';
 import { Input } from '@/ui/components/forms';
@@ -60,17 +60,6 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
 
     const isDateSelected = Boolean(formData.PassDateTime && formData.PassDateTime.trim() !== "");
 
-    useEffect(() => {
-
-        if (!editingData && isDateSelected && formData.PassDateTime) {
-
-            const currentTime = new Date().toTimeString().slice(0, 5);
-
-            const existingDate = formData.PassDateTime.substring(0, 10);
-
-            onFieldChange("PassDateTime", `${existingDate}T${currentTime}:00`);
-        }
-    }, [isDateSelected]);
 
     return (
         <Modal
@@ -191,8 +180,8 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             label="Appointment Date"
                             required
                             minDate={editingData ? undefined : new Date(new Date().setDate(new Date().getDate()))}
-                            isDisplayCurrentDate={!editingData}
                             value={formatDate_dd_mm_yyyy(formData.PassDateTime ?? '')}
+                            isDisplayCurrentDate
                             error={errors.PassDateTime}
                            onChange={(val) => {
                                 const newDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);

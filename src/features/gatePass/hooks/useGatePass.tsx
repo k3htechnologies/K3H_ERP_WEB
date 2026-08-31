@@ -404,14 +404,6 @@ export const useGatePass = () => {
 
     const PushGatePassFormData = (): FormData => {
 
-        const now = new Date();
-
-        now.setMinutes(now.getMinutes() + 2);
-
-        const currentDateTime =
-            `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}` +
-            `T${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
-
         const fd = new FormData();
         fd.append("ExternalId", formData.ExternalId.toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");
@@ -421,7 +413,7 @@ export const useGatePass = () => {
         fd.append("Purpose", formData.Purpose.trim() ?? "");
         fd.append("Remark", formData.Remark.trim() ?? "");
         fd.append("EmployeeId", formData.EmployeeId.toString());
-        fd.append("PassDateTime", currentDateTime);
+        fd.append("PassDateTime", formData.PassDateTime);
         fd.append("NoOfParticipants", formData.NoOfParticipants.toString() ?? "");
 
         photoFiles.forEach((file) => {

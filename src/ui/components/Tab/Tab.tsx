@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { COLORS } from "@/core/constants";
+import { useViewportHeight } from "@/core/utils/useViewportHeight";
 
 export interface TabItem {
   id: string;
   label: string;
+  count?: number;
 }
 
 interface TabsProps {
@@ -28,6 +30,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const verticalTabHeight = useViewportHeight(255, 350, 900);
 
   useEffect(() => {
     if (defaultActive) {
@@ -106,25 +109,32 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (isvertical) {
     return (
-      <div className="flex flex-col gap-2 w-full">
-        {tabs.map((tab) => {
-          const isActive = active === tab.id;
+      <div className="w-full overflow-y-auto thin-scroll" style={{ maxHeight: verticalTabHeight}} >
+        <div className="flex flex-col gap-2 w-full">
+          {tabs.map((tab) => {
 
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => handleChange(tab)}
-              className={`w-full text-left px-4 py-3 rounded-lg font-medium text-sm transition
-              ${isActive
-                  ? "bg-blue-400 text-white border border-blue-300"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300"
-                }`}
-            >
-              {tab.label}
-            </button>
-          );
-        })}
+            const isActive = active === tab.id;
+
+            return (
+              <div key={tab.id} className="border-b border-gray-100 last:border-b-0" >
+                <button
+                  type="button"
+                  onClick={() => handleChange(tab)}
+                  className={`w-full flex items-center justify-between text-left px-4 py-3 rounded-lg text-sm transition
+                                    ${isActive ? "bg-[#2563EB] text-white font-medium" : "text-gray-700 font-normal"}`}
+                >
+                  <span>{tab.label}</span>
+
+                  <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>
+                    {tab.count ?? 0}
+                  </span>
+                  
+                </button>
+              </div>
+            );
+
+          })}
+        </div>
       </div>
     );
   }

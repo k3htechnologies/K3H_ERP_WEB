@@ -261,15 +261,14 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "CountryName",
-            label: "Country Name",
+            label: "Country",
             width: "15",
-            sortable: true,
             align: "left",
             render: (value) => value || "-"
         },
         {
             key: "StateName",
-            label: "State Name",
+            label: "State",
             width: "15",
             sortable: true,
             align: "left",
@@ -277,7 +276,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "DistrictName",
-            label: "District Name",
+            label: "District",
             width: "15",
             sortable: true,
             align: "left",
@@ -285,7 +284,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "CityName",
-            label: "City Name",
+            label: "City",
             width: "15",
             sortable: true,
             align: "left",
@@ -301,7 +300,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber",
-            label: "Plot Number / CTS Number",
+            label: "Plot / CTS /Survey /Sub Division Number",
             width: "20",
             sortable: false,
             align: "left",
@@ -309,7 +308,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "WardNumberZone",
-            label: "Ward Number Zone",
+            label: "Ward Number (Zone)",
             width: "15",
             sortable: false,
             align: "left",
@@ -317,7 +316,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "TotalPlotAreaSqM",
-            label: "Total Plot Area (Sq. M)",
+            label: "Total Plot Area (SqMt)",
             width: "15",
             sortable: false,
             align: "right",
@@ -349,33 +348,11 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "TotalNumberExistingFlatsUnits",
-            label: "Total Number Existing Flats Units",
+            label: "Total Number Existing Flats / Units",
             width: "15",
             sortable: false,
             align: "right",
             render: (value) => value ?? "-"
-        },
-        {
-            key: "IdentificationLocation",
-            label: "Identification Location",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: (value) => (
-                <TooltipText
-                    text={value || "-"}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            ),
-        },
-        {
-            key: "LatitudeLongitude",
-            label: "Latitude / Longitude",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: (value) => value || "-"
         },
         {
             key: "ContactPersonName",
@@ -387,15 +364,15 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "ContactPersonMobile",
-            label: "Contact Person Mobile",
+            label: "Contact Person Mobile Number",
             width: "15",
             sortable: false,
             align: "left",
-            render: (value) => value || "-"
+             render: (value) => (value ? `+91 ${value}` : "-"),
         },
         {
             key: "ContactPersonEmail",
-            label: "Contact Person Email",
+            label: "Contact Person E-Mail ID",
             width: "15",
             sortable: false,
             align: "left",
@@ -403,7 +380,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "PercentageMemberInFavor",
-            label: "Percentage Member In Favor",
+            label: "Member In Favor (%)",
             width: "15",
             sortable: false,
             align: "right",
@@ -443,7 +420,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "NumberOfExistingBuildingsWings",
-            label: "Number Of Existing Buildings Wings",
+            label: "Number Of Existing Buildings / Wings",
             width: "15",
             sortable: false,
             align: "right",
@@ -459,7 +436,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "TotalBuildUpArea",
-            label: "Total Build Up Area",
+            label: "Total Build Up Area (SqFt)",
             width: "15",
             sortable: false,
             align: "right",
@@ -467,7 +444,7 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "TotalCarpetArea",
-            label: "Total Carpet Area",
+            label: "Total Carpet Area (SqFt)",
             width: "15",
             sortable: false,
             align: "right",
@@ -475,35 +452,11 @@ export const ProjectRedevelopment: React.FC = () => {
         },
         {
             key: "TotalCommonArea",
-            label: "Total Common Area",
+            label: "Total Common Area (SqFt)",
             width: "15",
             sortable: false,
             align: "right",
             render: (value) => value ?? "-"
-        },
-        {
-            key: "IsLiftAvailable",
-            label: "Lift Available",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "IsFireSafetyProvisionPresent",
-            label: "Fire Safety Provision Present",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "IsPlotUnderLitigationStay",
-            label: "Plot Under Litigation Stay",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
         },
         {
             key: "ConstructionType",
@@ -512,28 +465,6 @@ export const ProjectRedevelopment: React.FC = () => {
             sortable: false,
             align: "left",
             render: (value) => value ?? "-",
-        },
-        {
-            key: "IsConveyanceDeed",
-            label: "Conveyance Deed",
-            width: "15",
-            sortable: false,
-            align: "center",
-            render: (value) => value === true ? "Yes" : value === false ? "No" : "-"
-        },
-        {
-            key: "Remarks",
-            label: "Remarks",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: (value) => (
-                <TooltipText
-                    text={value || "-"}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            ),
         },
         {
             key: "Actions",
@@ -724,7 +655,7 @@ export const ProjectRedevelopment: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Project Redevelopment Data"
+                title="Filter - Project Redevelopment"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -771,7 +702,7 @@ export const ProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Contact Person Mobile"
+                            label="Contact Person Mobile Number"
                             value={tempFilters.ContactPersonMobile}
                             onChange={e => handleFilterChange("ContactPersonMobile", e.target.value)}
                             placeholder="Enter Contact Person Mobile"
@@ -801,7 +732,7 @@ export const ProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Ward Number Zone"
+                            label="Ward Number (Zone)"
                             value={tempFilters.WardNumberZone}
                             onChange={e => handleFilterChange("WardNumberZone", e.target.value)}
                             placeholder="Enter Ward Number Zone"

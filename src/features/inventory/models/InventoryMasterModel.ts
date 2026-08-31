@@ -46,6 +46,7 @@ export interface InventoryFloorData {
     Floor: string;
     SlabHeight: number;
     ParkingCount: number;
+    DrawingCount: number;
     InventoryFlatData: InventoryFlatData[];
 }
 

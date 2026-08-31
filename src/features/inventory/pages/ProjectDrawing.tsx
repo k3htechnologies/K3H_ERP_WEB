@@ -102,13 +102,18 @@ const ProjectDrawing: React.FC = () => {
 
         const categories = Array.from(new Set(drawingDocumentList.map((item: any) => item.DrawingDocumentCategory).filter(Boolean)));
 
-        return categories.map((category) => ({
-            id: String(category),
-            label: String(category),
-        }));
+        return categories.map((category) => {
+
+            const count = drawingDocumentList.filter((item: any) => String(item.DrawingDocumentCategory).toUpperCase() === String(category).toUpperCase()).length;
+
+            return {
+                id: String(category),
+                label: String(category),
+                count: count,
+            };
+        });
 
     }, [drawingDocumentList]);
-
 
     const activeCategoryDocuments = useMemo(() => {
 
@@ -127,7 +132,7 @@ const ProjectDrawing: React.FC = () => {
             width: "30",
             sortable: false,
             align: "left",
-            fixed:"left",
+            fixed: "left",
             render: (value) => (
                 <span className="text-sm font-medium text-gray-800">
                     {value ? String(value).split("~")[0].trim() : "-"}
@@ -276,21 +281,30 @@ const ProjectDrawing: React.FC = () => {
                 EditText="Edit"
                 isLoading={isLoading}
             />
-
-
-
+            
             <div className="flex gap-5 items-start pt-5">
 
                 {drawingCategoryTabs.length > 0 && (
-                    <div className="w-100 shrink-0 flex flex-col gap-2">
-                        <Tabs
-                            tabs={drawingCategoryTabs}
-                            defaultActive={activeCategory}
-                            isvertical
-                            onTabChange={(tab) => {
-                                setActiveCategory(tab.id);
-                            }}
-                        />
+                    <div className="w-100 shrink-0 flex flex-col gap-2 bg-white">
+
+                        <div className="px-7 py-4">
+                            <h2 className="text-[15px] font-semibold text-slate-800">
+                                Drawing Category
+                            </h2>
+                        </div>
+
+                        <div className="pr-3 pl-3">
+
+                            <Tabs
+                                tabs={drawingCategoryTabs}
+                                defaultActive={activeCategory}
+                                isvertical
+                                onTabChange={(tab) => {
+                                    setActiveCategory(tab.id);
+                                }}
+                            />
+
+                        </div>
                     </div>
                 )}
 

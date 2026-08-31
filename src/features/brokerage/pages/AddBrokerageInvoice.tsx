@@ -95,12 +95,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     }, [bookingId, projectId, brokerageInvoiceId]);
 
     const fetchBrokerageInvoiceDetails = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationBrokerageInvoiceRequest = {
                     PageNumber: 1,
                     PageSize: 1,
@@ -188,8 +186,17 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         if (!formData.AccountNumber) {
             newErrors.AccountNumber = 'Account Number is required.';
         }
+        if (!formData.DueDate) {
+            newErrors.DueDate = 'Due Date is required.';
+
+        }
+        if (!formData.Remark?.trim()) {
+            newErrors.Remark = "Remarks is required.";
+        } else if (formData.Remark.trim().length > 250) {
+            newErrors.Remark = "Remark must be at most 250 characters";
+        }
         if (!formData.AccountName) {
-            newErrors.AccountName = 'Account Name is required.';
+            newErrors.AccountName = 'Account Holder Name is required.';
         }
 
         if (!formData.IFSCCode?.trim()) {
@@ -199,8 +206,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (!isValidIFSC(formData.IFSCCode.trim())) {
             newErrors.IFSCCode = 'Enter a valid IFSC Code'
         }
-
-
         if (!formData.AccountNumber?.trim()) {
             newErrors.AccountNumber = "Account Number is required.";
         } else if (formData.AccountNumber.trim().length > 18) {
@@ -212,7 +217,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (formData.InvoiceAmount <= 0) {
             newErrors.InvoiceAmount = "Invoice Amount cannot be zero or negative";
         }
-
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -322,6 +326,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     error={errors.InvoiceNumber}
                                 />
                             </div>
+
                             <div>
                                 <DatePickerInput
                                     label="Invoice Date"
@@ -374,10 +379,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Account Name'
+                                    label='Account Holder Name'
                                     value={formData.AccountName ?? ""}
                                     onChange={(e) => handleFieldChange("AccountName", e.target.value)}
-                                    placeholder="Enter Account Name"
+                                    placeholder="Enter Account Holder Name"
                                     maxLength={50}
                                     error={errors.AccountName}
                                 />
@@ -399,12 +404,11 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     error={errors.AccountNumber}
                                     placeholder="Enter Account Number"
                                     required
-                                    maxLength={15}
+                                    maxLength={18}
                                 />
                             </div>
 
                             <div>
-
                                 <Input
                                     label="Invoice Amount (₹)"
                                     value={formData.InvoiceAmount?.toString() ?? ""}
@@ -427,21 +431,27 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                             <div>
                                 <DatePickerInput
                                     label="Due Date"
+                                    required
                                     value={formatDate_dd_mm_yyyy(formData.DueDate)}
                                     onChange={(val) => handleFieldChange('DueDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    minDate={new Date(new Date().setDate(new Date().getDate()))}
                                     error={errors.DueDate}
                                 />
                             </div>
+
                         </div>
 
                         <div>
                             <TextArea
                                 label="Remarks"
+                                required
                                 className='thin-scroll'
                                 value={formData.Remark ?? ""}
                                 placeholder="Enter Remarks"
                                 onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                error={errors.Remark} />
+                                error={errors.Remark}
+                                maxLength={250}
+                            />
                         </div>
                     </div>
                 </form>

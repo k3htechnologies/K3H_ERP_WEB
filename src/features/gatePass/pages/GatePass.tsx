@@ -278,8 +278,8 @@ export const GatePass: React.FC = () => {
                 onConfirm={() => handleOutGatePass('Bell')}
                 loading={isLoading}
                 pageName="Gate Pass Bell"
-                title="You are about to notify the visitor?"
-                message="A notification will be sent to the visitor at reception. Do you want to continue?"
+                title="Notify Appointment person"
+                message="The appointment contact will be notified that their visitor has arrived at reception"
                 confirmText="Notify"
             />
         </div>

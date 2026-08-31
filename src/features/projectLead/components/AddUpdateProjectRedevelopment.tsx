@@ -14,8 +14,9 @@ import { projectRedevelopmentService } from "@/features/projectLead/services/Pro
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import { allowPercentage, filterGoogleMapsUrl, filterMobile, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidEmail, isValidGoogleMapsUrl, isValidMobile } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { Phone } from "lucide-react";
 
 const initialRedevelopmentFormState = (): AddUpdateProjectRedevelopmentData => ({
     ProjectRedevelopmentId: 0,
@@ -220,8 +221,8 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
 
         if (!RedevelopmentformData.BuildingName?.trim()) {
             newErrors.BuildingName = "Building Name is required.";
-        } else if (RedevelopmentformData.BuildingName.trim().length > 50) {
-            newErrors.BuildingName = "Building Name must be at most 50 characters";
+        } else if (RedevelopmentformData.BuildingName.trim().length > 100) {
+            newErrors.BuildingName = "Building Name must be at most 100 characters";
         }
         if (!RedevelopmentformData.BuildingAddress?.trim()) {
             newErrors.BuildingAddress = "Building Address is required.";
@@ -257,11 +258,15 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
             newErrors.NumberOfExistingFloors = "Number of Existing Floors is required.";
         }
         if (!RedevelopmentformData.TotalNumberExistingFlatsUnits) {
-            newErrors.TotalNumberExistingFlatsUnits = "Total Number of Existing Flats is required.";
+            newErrors.TotalNumberExistingFlatsUnits = "Total Number of Existing Flats / Units is required.";
         }
         if (!RedevelopmentformData.IdentificationLocation?.trim()) {
             newErrors.IdentificationLocation = "Identification And Location is required.";
+        } else if (!isValidGoogleMapsUrl(RedevelopmentformData.IdentificationLocation.trim())) {
+            newErrors.IdentificationLocation = 'Enter a valid Google Location'
         }
+
+
         if (!RedevelopmentformData.ContactPersonName?.trim()) {
             newErrors.ContactPersonName = "Contact Person Name is required.";
         } else if (RedevelopmentformData.ContactPersonName.trim().length > 50) {
@@ -291,13 +296,13 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
             newErrors.RoadWidth = "Road Width In Front Of Plot is required.";
         }
         if (!RedevelopmentformData.NumberOfExistingBuildingsWings) {
-            newErrors.NumberOfExistingBuildingsWings = "Number Of Existing Building Wings is required.";
+            newErrors.NumberOfExistingBuildingsWings = "Number Of Existing Building / Wings is required.";
         }
         if (!RedevelopmentformData.NumberOfFloorsPerWing) {
             newErrors.NumberOfFloorsPerWing = "Number Of Floors Per Wing is required.";
         }
         if (!RedevelopmentformData.TotalBuildUpArea) {
-            newErrors.TotalBuildUpArea = "Total Build Up Area is required.";
+            newErrors.TotalBuildUpArea = "Total Build-Up Area is required.";
         }
         if (!RedevelopmentformData.TotalCarpetArea) {
             newErrors.TotalCarpetArea = "Total Carpet Area is required.";
@@ -308,12 +313,9 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         if (!RedevelopmentformData.ConstructionType) {
             newErrors.ConstructionType = "Construction Type is required.";
         }
-        if (!RedevelopmentformData.Remarks?.trim()) {
-            newErrors.Remarks = "Remarks is required.";
-        }
 
         if (!hasAnyDocumentFile(photoURLFiles, photoURL, removePhotoUrls)) {
-            newErrors.PhotoURL = "File is required.";
+            newErrors.PhotoURL = "Building Photo is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -431,9 +433,9 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
-            <div className="space-y-4 pt-5">
+            <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                    Property Details
+                    Redevelopment : Property Details
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
@@ -445,27 +447,15 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.BuildingName ?? ""}
                             onChange={(e) => handleFieldChange("BuildingName", e.target.value)}
                             placeholder="Enter Building Name"
-                            maxLength={50}
+                            maxLength={100}
                             error={errors.BuildingName}
                         />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                    <div>
-                        <TextArea
-                            required
-                            label="Building Address"
-                            value={RedevelopmentformData.BuildingAddress ?? ""}
-                            onChange={(e) => handleFieldChange("BuildingAddress", e.target.value)}
-                            placeholder="Enter Building Address"
-                            maxLength={150}
-                            error={errors.BuildingAddress}
-                        />
-                    </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
 
                     <div>
                         <SinglePageSelection
@@ -607,7 +597,49 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             error={errors.PinCode}
                         />
                     </div>
+                    <div>
+                        <Input
+                            type="text"
+                            required
+                            label="Plot / CTS / Survey / Subdivision Number"
+                            value={RedevelopmentformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber ?? ""}
+                            onChange={(e) => handleFieldChange("PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber", e.target.value)}
+                            placeholder="Enter Plot Number"
+                            maxLength={100}
+                            error={errors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber}
+                        />
+                    </div>
+                    <div>
+                        <MultiFilePicker
+                            label="Building Photo"
+                            placeholder="Select Files"
+                            required
+                            error={errors.PhotoURL}
+                            value={photoURLFiles}
+                            onChange={setPhotoURLFiles}
+                            availableFilesURL={photoURL ?? ""}
+                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                            maxFiles={5}
+                            maxSizeMB={50}
+                            onRemoveExisting={(url) => {
+                                SetRemovePhotoUrls((prev) => [...prev, url]);
+                            }}
+                        />
+                    </div>
 
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                    <div>
+                        <TextArea
+                            required
+                            label="Building Address"
+                            value={RedevelopmentformData.BuildingAddress ?? ""}
+                            onChange={(e) => handleFieldChange("BuildingAddress", e.target.value)}
+                            placeholder="Enter Building Address"
+                            maxLength={250}
+                            error={errors.BuildingAddress}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -616,28 +648,15 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     Plot Information
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
                         <Input
                             type="text"
-                            required
-                            label="Plot Number / CTS Number / Survey Number / Subdivision Number"
-                            value={RedevelopmentformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber ?? ""}
-                            onChange={(e) => handleFieldChange("PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber", e.target.value)}
-                            placeholder="Enter Plot Number"
-                            maxLength={60}
-                            error={errors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber}
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            type="text"
-                            label="Ward Number Zone"
+                            label="Ward Number (Zone)"
                             value={RedevelopmentformData.WardNumberZone ?? ""}
                             onChange={(e) => handleFieldChange("WardNumberZone", e.target.value)}
-                            placeholder="Enter Ward Number"
+                            placeholder="Enter Ward Number (Zone)"
                             maxLength={50}
                         />
                     </div>
@@ -646,11 +665,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Plot Area (in Sq. m.)"
+                            label="Total Plot Area (SqMt)"
                             value={RedevelopmentformData.TotalPlotAreaSqM ?? ""}
                             onChange={(e) => handleFieldChange("TotalPlotAreaSqM", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Plot Area"
-                            maxLength={20}
+                            rightIcon="SqMt"
                             error={errors.TotalPlotAreaSqM}
                         />
                     </div>
@@ -663,7 +682,6 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.YearOfOriginalConstruction ?? ""}
                             onChange={(e) => handleFieldChange("YearOfOriginalConstruction", Number(e.target.value))}
                             placeholder="Enter Year of Original Construction"
-                            maxLength={2}
                             error={errors.YearOfOriginalConstruction}
                         />
                     </div>
@@ -706,18 +724,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         />
                     </div>
 
-                    <div>
-                        <Input
-                            type="text"
-                            required
-                            label="Identification And Location"
-                            value={RedevelopmentformData.IdentificationLocation ?? ""}
-                            onChange={(e) => handleFieldChange("IdentificationLocation", e.target.value)}
-                            placeholder="Enter Identification And Location"
-                            maxLength={50}
-                            error={errors.IdentificationLocation}
-                        />
-                    </div>
+
 
                     <div>
                         <Input
@@ -726,7 +733,18 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.LatitudeLongitude ?? ""}
                             onChange={(e) => handleFieldChange("LatitudeLongitude", e.target.value)}
                             placeholder="Enter Latitude And Longitude"
-                            maxLength={20}
+                            maxLength={50}
+                        />
+                    </div>
+                    <div>
+                        <TextArea
+                            label="Identification And Location"
+                            required
+                            value={RedevelopmentformData.IdentificationLocation ?? ""}
+                            onChange={e => handleFieldChange('IdentificationLocation', filterGoogleMapsUrl(e.target.value))}
+                            className="thin-scroll"
+                            error={errors.IdentificationLocation}
+                            placeholder="Enter Identification And Location"
                         />
                     </div>
 
@@ -738,7 +756,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     Contact Information
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
                         <Input
@@ -748,7 +766,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.ContactPersonName ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonName", e.target.value)}
                             placeholder="Enter Contact Person Name"
-                            maxLength={50}
+                            maxLength={100}
                             error={errors.ContactPersonName}
                         />
                     </div>
@@ -756,11 +774,13 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
+                            leftIcon="+91"
                             required
                             label="Contact Person Mobile Number"
                             value={RedevelopmentformData.ContactPersonMobile ?? ""}
-                            onChange={(e) => handleFieldChange("ContactPersonMobile", e.target.value)}
+                            onChange={(e) => handleFieldChange("ContactPersonMobile", filterMobile(e.target.value))}
                             placeholder="Enter Contact Person Mobile Number"
+                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                             maxLength={10}
                             error={errors.ContactPersonMobile}
                         />
@@ -769,26 +789,33 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Contact Person Email"
+                            label="Contact Person E-Mail ID"
                             value={RedevelopmentformData.ContactPersonEmail ?? ""}
                             onChange={(e) => handleFieldChange("ContactPersonEmail", e.target.value)}
-                            placeholder="Enter Contact Person Email"
-                            maxLength={20}
+                            placeholder="Enter Contact Person E-Mail ID"
+                            maxLength={250}
                             error={errors.ContactPersonEmail}
                         />
                     </div>
 
                     <div>
+
                         <Input
-                            type="text"
-                            required
-                            label="Percentage of Member in Favor (%)"
                             value={RedevelopmentformData.PercentageMemberInFavor ?? ""}
-                            onChange={(e) => handleFieldChange("PercentageMemberInFavor", Number(e.target.value))}
-                            placeholder="Enter Percentage Of Member In Favor"
-                            maxLength={3}
+                            label="Percentage of Member in Favor (%)"
+                            required
                             error={errors.PercentageMemberInFavor}
+                            placeholder="Enter Percentage of Member in Favor (%)"
+                            onChange={(e) => {
+                                const val = allowPercentage(e.target.value);
+                                if (val !== null) {
+                                    handleFieldChange("PercentageMemberInFavor", filterNumbersWithDecimal(e.target.value));
+                                }
+                            }}
+
+                            rightIcon="%"
                         />
+
                     </div>
 
                 </div>
@@ -799,7 +826,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     Land & Plot Characteristics
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
                         <SinglePageSelection
@@ -840,7 +867,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
 
                     <div>
                         <SinglePageSelection
-                            label="Road Width In Front Of Plot"
+                            label="Road Width"
                             placeholder="Select Road Width"
                             required
                             value={RedevelopmentformData.RoadWidth ?? ""}
@@ -858,7 +885,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                     Building Structure
                 </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
                         <Input
@@ -890,11 +917,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Build-Up Area (sq.Ft)"
+                            label="Total Build-Up Area (SqFt)"
                             value={RedevelopmentformData.TotalBuildUpArea ?? ""}
                             onChange={(e) => handleFieldChange("TotalBuildUpArea", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Build Up Area"
-                            maxLength={20}
+                            rightIcon="SqFt"
                             error={errors.TotalBuildUpArea}
                         />
                     </div>
@@ -903,11 +930,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Carpet Area (sq.Ft)"
+                            label="Total Carpet Area (SqFt)"
                             value={RedevelopmentformData.TotalCarpetArea ?? ""}
                             onChange={(e) => handleFieldChange("TotalCarpetArea", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Carpet Area"
-                            maxLength={20}
+                            rightIcon="SqFt"
                             error={errors.TotalCarpetArea}
                         />
                     </div>
@@ -916,11 +943,11 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            label="Total Common Area (sq.Ft)"
+                            label="Total Common Area (SqFt)"
                             value={RedevelopmentformData.TotalCommonArea ?? ""}
                             onChange={(e) => handleFieldChange("TotalCommonArea", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter Total Common Area"
-                            maxLength={20}
+                            rightIcon="SqFt"
                             error={errors.TotalCommonArea}
                         />
                     </div>
@@ -941,40 +968,44 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
 
                 <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-2">
                     <Checkbox
-                        label="Is Lift Available"
+                        label="Lift Available?"
                         checked={RedevelopmentformData.IsLiftAvailable ?? false}
                         onChange={(e) => handleFieldChange("IsLiftAvailable", e.target.checked)}
                     />
 
                     <Checkbox
-                        label="Fire Safety Provisions Present"
+                        label="Fire Safety Provisions Present?"
                         checked={RedevelopmentformData.IsFireSafetyProvisionPresent ?? false}
                         onChange={(e) => handleFieldChange("IsFireSafetyProvisionPresent", e.target.checked)}
                     />
 
                     <Checkbox
-                        label="Plot Under Litigation Stay"
+                        label="Plot Under Litigation / Stay Orders?"
                         checked={RedevelopmentformData.IsPlotUnderLitigationStay ?? false}
                         onChange={(e) => handleFieldChange("IsPlotUnderLitigationStay", e.target.checked)}
+                    />
+
+                    <Checkbox
+                        label="Conveyance Deed?"
+                        checked={RedevelopmentformData.IsConveyanceDeed ?? false}
+                        onChange={(e) => handleFieldChange("IsConveyanceDeed", e.target.checked)}
                     />
                 </div>
             </div>
 
             <div className="space-y-4 pt-5">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                    Additional Info
+                    Additional Information
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
 
                     <div>
                         <TextArea
-                            required
                             label="Remarks"
                             value={RedevelopmentformData.Remarks ?? ""}
                             onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                             placeholder="Enter Remarks"
-                            maxLength={250}
                             error={errors.Remarks}
                         />
                     </div>
@@ -982,31 +1013,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                 </div>
             </div>
 
-            <div className="space-y-4 pt-3 pb-4">
-                <MultiFilePicker
-                    label="Building Photo"
-                    placeholder="Select Files"
-                    required
-                    error={errors.PhotoURL}
-                    value={photoURLFiles}
-                    onChange={setPhotoURLFiles}
-                    availableFilesURL={photoURL ?? ""}
-                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                    maxFiles={5}
-                    maxSizeMB={50}
-                    onRemoveExisting={(url) => {
-                        SetRemovePhotoUrls((prev) => [...prev, url]);
-                    }}
-                />
-            </div>
 
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-2">
-                <Checkbox
-                    label="Conveyance Deed"
-                    checked={RedevelopmentformData.IsConveyanceDeed ?? false}
-                    onChange={(e) => handleFieldChange("IsConveyanceDeed", e.target.checked)}
-                />
-            </div>
 
             <BottomActionBar
                 cancelText="Cancel"

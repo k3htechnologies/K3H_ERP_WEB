@@ -88,10 +88,10 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
   }, [photoUrl]);
 
   return (
-    <section className="flex min-h-0 min-w-0 flex-col rounded-lg bg-white p-4 lg:h-full">
+    <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg bg-white p-4">
       {candidate ? (
         <>
-          <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <div className="shrink-0 px-[15px] pt-[14px]">
               <h2 className="text-sm font-medium tracking-[0.6px] text-[#7B838D]">
                 Candidate Details

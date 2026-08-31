@@ -463,7 +463,7 @@ export const JobApplicationDetails: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-[calc(100dvh-96px)] min-w-0 flex-col rounded-lg border border-gray-200 bg-white p-5 text-sm shadow-sm lg:h-[calc(100dvh-88px)] lg:min-h-0 lg:overflow-hidden">
+    <div className="flex min-h-[calc(100dvh-96px)] min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white p-5 text-sm shadow-sm lg:h-[calc(100dvh-88px)] lg:min-h-0">
       <Loader loading={isLoading} title={loadingMessage}>
         <div />
       </Loader>
@@ -481,7 +481,7 @@ export const JobApplicationDetails: React.FC = () => {
       </div>
 
       <div className="mt-5 min-h-0 w-full flex-1">
-        <div className="grid min-h-0 grid-cols-1 items-stretch gap-5 rounded-lg bg-[#FAFBFC] lg:h-full lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid min-h-0 grid-cols-1 items-stretch gap-5 overflow-hidden rounded-lg bg-[#FAFBFC] lg:h-full lg:grid-cols-[260px_minmax(0,1fr)]">
           <CandidateStageSidebar
             stages={CANDIDATE_STAGES}
             counts={stageCounts}
@@ -489,7 +489,7 @@ export const JobApplicationDetails: React.FC = () => {
             onStageChange={handleStageFilterChange}
           />
 
-          <div className="flex min-h-0 min-w-0 flex-col lg:h-full">
+          <div className="flex min-h-0 min-w-0 flex-col overflow-hidden lg:h-full">
             <nav
               aria-label="Job opening breadcrumb"
               className="mb-3 flex min-h-5 shrink-0 flex-wrap items-center gap-x-[11px] gap-y-1 lg:mb-[17px] lg:h-5 lg:flex-nowrap"
@@ -515,7 +515,7 @@ export const JobApplicationDetails: React.FC = () => {
               </div>
             </nav>
 
-            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 items-stretch gap-3 lg:grid-cols-[1.044fr_1fr] lg:gap-[18px]">
+            <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 grid-rows-1 items-stretch gap-3 overflow-hidden lg:grid-cols-[1.044fr_1fr] lg:gap-[18px]">
               <CandidateListPanel
                 candidates={filteredCandidates}
                 selectedCandidateId={selectedCandidateId}

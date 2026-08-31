@@ -1,87 +1,75 @@
 import React from "react"
-import { ChevronRight, Edit, Plus, Trash2 } from "lucide-react"
+import { Briefcase, Clock3, Edit, MapPin, Trash2 } from "lucide-react"
 import NoDataView from "@/ui/components/NoDataView/NoDataView"
 import Pagination, { type PaginationInfo } from "@/ui/components/Pagination/Pagination"
-import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import { Button } from "@/ui/components/forms"
-import type { JobDepartmentData } from "@/features/hireSpace/JobRoleMaster/models/JobRoleMasterModel"
 import type { JobOpeningData } from "@/features/hireSpace/jobOpening/models/JobOpeningModel"
+import {
+  getJobOpeningApplicationsCount,
+  getJobOpeningEmploymentTypeLabel,
+  getJobOpeningExperienceLabel,
+  getJobOpeningWorkModeLabel,
+} from "@/features/hireSpace/jobOpening/utils/jobOpeningUtils"
 
 interface JobOpeningRoleListProps {
-  department: JobDepartmentData
   jobOpenings: JobOpeningData[]
   pagination: PaginationInfo
   canAction: boolean
-  onAddJobOpening: () => void
   onViewJobOpening: (jobOpening: JobOpeningData) => void
   onEditJobOpening: (jobOpening: JobOpeningData) => void
   onDeleteJobOpening: (jobOpening: JobOpeningData) => void
 }
 
 export const JobOpeningRoleList: React.FC<JobOpeningRoleListProps> = ({
-  department,
   jobOpenings,
   pagination,
   canAction,
-  onAddJobOpening,
   onViewJobOpening,
   onEditJobOpening,
   onDeleteJobOpening,
 }) => (
-  <section className="flex min-h-0 min-w-0 flex-col rounded-lg bg-white p-4">
-    <div className="flex shrink-0 items-center justify-between gap-4 pb-4">
-      <div className="flex min-w-0 items-center gap-2 text-base font-semibold text-[#292D32]">
-        <span className="shrink-0">Job Openings</span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-[#7B838D]" />
-        <TooltipText
-          text={department.DepartmentName || "-"}
-          maxWidth="260px"
-          tooltipThreshold={28}
-          isApplyBgTextColor
-          tooltipClassName="text-base font-semibold text-[#292D32]"
-        />
-      </div>
-
-      {canAction && (
-        <Button color="blue" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={onAddJobOpening}>
-          Add Opening
-        </Button>
-      )}
-    </div>
-
-    <div className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+  <section className="rounded-lg bg-white">
+    <div className="thin-scroll min-h-0 flex-1 overflow-y-auto">
       {jobOpenings.length === 0 ? (
         <NoDataView message="No Job Openings Found" />
       ) : (
-        jobOpenings.map((jobOpening) => {
+        jobOpenings.map((jobOpening, index) => {
           const isActive = jobOpening.JobRoleStatus !== false
           const roleName = jobOpening.JobRoleName || jobOpening.RoleName || "Untitled Role"
+          const departmentName = jobOpening.DepartmentName?.trim() || "-"
+          const applicationsCount = getJobOpeningApplicationsCount(jobOpening)
+          const isLast = index === jobOpenings.length - 1
 
           return (
-            <div
+            <article
               key={jobOpening.UniqueKey || jobOpening.JobOpeningMasterId}
-              className="flex min-h-[53px] items-center justify-between gap-4 rounded-lg border border-[#C9D3E1] bg-white px-4 py-3 transition-colors hover:border-[#9FB7D8] hover:bg-[#FBFDFF]"
+              className={`px-1 py-4 ${isLast ? "" : "border-b border-[#E8ECF1]"}`}
             >
-              <div className="min-w-0 flex-1">
-                <TooltipText
-                  text={roleName}
-                  maxWidth="560px"
-                  tooltipThreshold={48}
-                  onClick={() => onViewJobOpening(jobOpening)}
-                />
-              </div>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => onViewJobOpening(jobOpening)}
+                    className="text-left text-base font-semibold text-[#1A1D1F] hover:text-[#135BEC]"
+                  >
+                    {roleName}
+                  </button>
 
-              <div className="flex shrink-0 items-center justify-end gap-2">
-                <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium uppercase leading-none tracking-[0.3px] ${
-                    isActive ? "bg-[#DDF8E7] text-[#16A55B]" : "bg-[#F1F3F5] text-[#667085]"
-                  }`}
-                >
-                  {isActive ? "Active" : "Inactive"}
-                </span>
+                  <span className="rounded bg-[#E8F0FF] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.3px] text-[#135BEC]">
+                    {departmentName}
+                  </span>
+
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-medium uppercase leading-none tracking-[0.3px] ${
+                      isActive ? "bg-[#DDF8E7] text-[#16A55B]" : "bg-[#F1F3F5] text-[#667085]"
+                    }`}
+                  >
+                    {isActive ? "Active" : "Inactive"}
+                  </span>
+                </div>
 
                 {canAction && (
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     <Button
                       color="transparent"
                       size="sm"
@@ -89,7 +77,7 @@ export const JobOpeningRoleList: React.FC<JobOpeningRoleListProps> = ({
                       title="Edit"
                       onClick={() => onEditJobOpening(jobOpening)}
                     >
-                      <Edit className="h-4 w-4" />
+                      <Edit className="h-4 w-4 text-[#606775]" />
                     </Button>
                     <Button
                       color="transparent"
@@ -98,19 +86,48 @@ export const JobOpeningRoleList: React.FC<JobOpeningRoleListProps> = ({
                       title="Delete"
                       onClick={() => onDeleteJobOpening(jobOpening)}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
                 )}
               </div>
-            </div>
+
+              <p className="mt-2 text-sm text-[#606775]">
+                Total Openings: {jobOpening.NumberOfOpenings ?? 0}
+              </p>
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-4 text-sm text-[#606775]">
+                  <span className="flex items-center gap-1.5">
+                    <Briefcase className="h-3.5 w-3.5 shrink-0" />
+                    {getJobOpeningExperienceLabel(jobOpening)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 shrink-0" />
+                    {getJobOpeningWorkModeLabel(jobOpening)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Clock3 className="h-3.5 w-3.5 shrink-0" />
+                    {getJobOpeningEmploymentTypeLabel(jobOpening)}
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => onViewJobOpening(jobOpening)}
+                  className="text-sm font-medium text-[#135BEC] hover:underline"
+                >
+                  • {applicationsCount} {applicationsCount === 1 ? "Application" : "Applications"}
+                </button>
+              </div>
+            </article>
           )
         })
       )}
     </div>
 
     {pagination.totalPages > 1 && (
-      <div className="mt-3 shrink-0">
+      <div className="mt-3 shrink-0 border-t border-[#E8ECF1] pt-3">
         <Pagination pagination={pagination} />
       </div>
     )}

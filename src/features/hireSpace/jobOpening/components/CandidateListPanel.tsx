@@ -29,19 +29,19 @@ export const CandidateListPanel: React.FC<CandidateListPanelProps> = ({
   selectedCandidateId,
   onCandidateSelect,
 }) => (
-  <section className="flex min-h-0 min-w-0 flex-col rounded-lg bg-white p-4 lg:h-full">
+  <section className="flex h-full min-h-0 min-w-0 flex-col overflow-hidden rounded-lg bg-white p-4">
     <h2 className="shrink-0 pb-3 text-base font-semibold text-[#292D32]">
       Candidates
     </h2>
 
-    <div className="min-h-0 flex-1">
+    <div className="thin-scroll min-h-0 flex-1 overflow-y-auto pr-1">
       <PaginationCard
         data={candidates}
         rowKey="CandidateId"
         selectedRowKey={selectedCandidateId}
         onRowClick={(candidate: CandidateData) => onCandidateSelect(Number(candidate.CandidateId) || 0)}
         emptyMessage="No candidates match this filter"
-        maxHeight="100%"
+        maxHeight="none"
         header={(candidate: CandidateData) => {
           const name = getCandidateName(candidate);
           const photoUrl = getCandidatePhoto(candidate);

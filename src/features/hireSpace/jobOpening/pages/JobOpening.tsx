@@ -10,7 +10,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import type { JobDepartmentData } from '@/features/hireSpace/JobRoleMaster/models/JobRoleMasterModel';
 import { JobRoleMasterService } from '@/features/hireSpace/JobRoleMaster/services/JobRoleMasterService';
-import { JobOpeningDepartmentPanel, JobOpeningRoleList } from '@/features/hireSpace/jobOpening/components';
+import { JobOpeningDepartmentPanel, ALL_DEPARTMENT, JobOpeningRoleList } from '@/features/hireSpace/jobOpening/components';
 import { ACTIVE_INACTIVE_OPTIONS } from '@/core/constants';
 import { useJobOpeningListState } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
 import type {
@@ -57,7 +57,10 @@ export const JobOpening: React.FC = () => {
 
 
   const selectedDepartment = useMemo(
-    () => departments.find((department) => department.DepartmentId === departmentId) ?? null,
+    () => {
+      if (departmentId === 0) return ALL_DEPARTMENT
+      return departments.find((department) => department.DepartmentId === departmentId) ?? null
+    },
     [departmentId, departments],
   );
 
@@ -68,15 +71,34 @@ export const JobOpening: React.FC = () => {
       async () => {
         const response = await JobRoleMasterService.apiCallPullJobDepartment();
         const departmentList = E.isRight(response) ? (response.right.Data ?? []) : [];
-        const initialDepartment =
-          departmentList.find((department) => department.DepartmentId === departmentId) ?? departmentList[0];
 
         setDepartments(departmentList);
-        updateListState({
-          departmentId: initialDepartment?.DepartmentId ?? 0,
-          departmentName: initialDepartment?.DepartmentName ?? '',
-          page: initialDepartment ? listState.page : 1,
-        });
+
+        if (departmentId === 0) {
+          updateListState({
+            departmentId: 0,
+            departmentName: 'All',
+            page: listState.page,
+          });
+          return departmentList;
+        }
+
+        const matchedDepartment =
+          departmentList.find((department) => department.DepartmentId === departmentId) ?? departmentList[0];
+
+        if (matchedDepartment) {
+          updateListState({
+            departmentId: matchedDepartment.DepartmentId,
+            departmentName: matchedDepartment.DepartmentName,
+            page: listState.page,
+          });
+        } else {
+          updateListState({
+            departmentId: 0,
+            departmentName: 'All',
+            page: 1,
+          });
+        }
 
         return departmentList;
       },
@@ -96,7 +118,7 @@ export const JobOpening: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          DepartmentMasterId: departmentId,
+          DepartmentMasterId: departmentId > 0 ? departmentId : undefined,
           RoleName: filterParams.RoleName?.trim() || undefined,
           DepartmentName: filterParams.Department?.trim() || undefined,
           JobRoleStatus: filterParams.Status === 'active' ? true : filterParams.Status === 'inactive' ? false : undefined,
@@ -134,8 +156,6 @@ export const JobOpening: React.FC = () => {
   }, [loadDepartments]);
 
   useEffect(() => {
-    if (!departmentId) return;
-
     setPagination({ currentPage: listState.page });
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
@@ -312,8 +332,6 @@ export const JobOpening: React.FC = () => {
 
 
   const handleExportJobOpening = async (exportType: 'Excel' | 'PDF') => {
-    if (!departmentId) return;
-
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -322,7 +340,7 @@ export const JobOpening: React.FC = () => {
           PageNumber: 1,
           PageSize: Math.max(pagination.totalRecords, pagination.pageSize),
           IsCheckPermission: true,
-          DepartmentMasterId: departmentId,
+          DepartmentMasterId: departmentId > 0 ? departmentId : undefined,
           RoleName: searchTerm.trim() || filters.RoleName?.trim() || undefined,
           DepartmentName: filters.Department?.trim() || undefined,
           JobRoleStatus: filters.Status === 'active' ? true : filters.Status === 'inactive' ? false : undefined,
@@ -362,7 +380,12 @@ export const JobOpening: React.FC = () => {
           setShowFilterPopup(true);
         }}
         isShowCustomizeButton={false}
-        isShowExportButton={canExport && jobOpeningList.length > 0}
+        isShowImportButton={false}
+        isShowAddExtraButton={false}
+        isShowAddButton={canAction}
+        addTitle="Add Opening"
+        onAdd={handleAddJobOpening}
+        isShowExportButton={canExport}
         onExportExcel={() => handleExportJobOpening('Excel')}
         onExportPdf={() => handleExportJobOpening('PDF')}
         exportLoading={isLoading}
@@ -371,8 +394,8 @@ export const JobOpening: React.FC = () => {
       {departments.length === 0 && !isLoading ? (
         <NoDataView message="No Departments Found" />
       ) : selectedDepartment ? (
-        <div className="grid grid-cols-1 gap-5 rounded-lg bg-[#FAFBFC] lg:grid-cols-[260px_minmax(0,1fr)]">
-          <div>
+        <div className="mt-5 rounded-lg bg-[#FAFBFC] p-4">
+          <div className="mb-4">
             <JobOpeningDepartmentPanel
               departments={departments}
               selectedDepartmentId={selectedDepartment.DepartmentId}
@@ -381,11 +404,9 @@ export const JobOpening: React.FC = () => {
           </div>
 
           <JobOpeningRoleList
-            department={selectedDepartment}
             jobOpenings={jobOpeningList}
             pagination={paginationInfo}
             canAction={canAction}
-            onAddJobOpening={handleAddJobOpening}
             onViewJobOpening={handleViewJobOpening}
             onEditJobOpening={handleEditJobOpening}
             onDeleteJobOpening={handleConfirmationDialogBoxOpen}

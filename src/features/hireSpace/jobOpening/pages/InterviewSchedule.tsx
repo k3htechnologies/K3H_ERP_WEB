@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import * as E from "fp-ts/Either";
-import { BriefcaseBusiness, CalendarDays, Clock3, UserRound } from "lucide-react";
+import { BriefcaseBusiness, CalendarDays, Clock3, Edit, UserRound } from "lucide-react";
 import {
   convert_dd_mm_yyyy_To_Yyyy_mm_dd,
   formatDate_dd_mm_yyyy,
@@ -167,60 +167,6 @@ export const InterviewSchedule: React.FC = () => {
       });
   }, [interviews]);
 
-  const pipelineColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: "CandidateName",
-        label: "Candidate",
-        render: (_value, item: CandidateInterviewData) => {
-          const candidateName = getInterviewCandidateName(item, passedCandidate, candidateId);
-
-          return (
-            <div className="flex items-center gap-3">
-              <span className="flex h-7 w-7 flex-none items-center justify-center overflow-hidden rounded-full bg-[#DDEAFF] text-xs font-bold text-[#4770A5]">
-                {item.Photograph ? (
-                  <img src={item.Photograph} alt={candidateName} className="h-full w-full object-cover" />
-                ) : (
-                  getNameInitials(candidateName)
-                )}
-              </span>
-              <span className="align-middle text-xs font-normal text-slate-700">{candidateName}</span>
-            </div>
-          );
-        },
-      },
-      {
-        key: "RoleName",
-        label: "Position",
-        render: (_value, item: CandidateInterviewData) => getInterviewRoleName(item, passedCandidate, candidateId),
-      },
-      {
-        key: "InterviewPanelName",
-        label: "Interviewer",
-        render: (_value, item: CandidateInterviewData) => item.InterviewPanelName?.trim() || "-",
-      },
-      {
-        key: "InterviewDate",
-        label: "Date & Time",
-        render: (_value, item: CandidateInterviewData) => getInterviewDateTimeLabel(item),
-      },
-      {
-        key: "InterviewStatus",
-        label: "Status",
-        align: "center",
-        render: (_value, item: CandidateInterviewData) => {
-          const status = item.InterviewStatus?.trim() || "Scheduled";
-          return (
-            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getInterviewStatusBadgeClass(status)}`}>
-              {status}
-            </span>
-          );
-        },
-      },
-    ],
-    [candidateId, passedCandidate],
-  );
-
   const isSelectedDateToday = isToday(selectedDate);
   const selectedDateHeading = isSelectedDateToday
     ? "Upcoming Today"
@@ -298,6 +244,85 @@ export const InterviewSchedule: React.FC = () => {
     });
     setIsScheduleModalOpen(true);
   }, [candidateId, passedCandidate, selectedDate]);
+
+  const pipelineColumns = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: "CandidateName",
+        label: "Candidate",
+        truncate: false,
+        render: (_value, item: CandidateInterviewData) => {
+          const candidateName = getInterviewCandidateName(item, passedCandidate, candidateId);
+
+          return (
+            <div className="flex items-center gap-3">
+              <span className="flex h-7 w-7 flex-none items-center justify-center overflow-hidden rounded-full bg-[#DDEAFF] text-xs font-bold text-[#4770A5]">
+                {item.Photograph ? (
+                  <img src={item.Photograph} alt={candidateName} className="h-full w-full object-cover" />
+                ) : (
+                  getNameInitials(candidateName)
+                )}
+              </span>
+              <span className="align-middle text-xs font-normal text-slate-700">{candidateName}</span>
+            </div>
+          );
+        },
+      },
+      {
+        key: "RoleName",
+        label: "Position",
+        render: (_value, item: CandidateInterviewData) => getInterviewRoleName(item, passedCandidate, candidateId),
+      },
+      {
+        key: "InterviewPanelName",
+        label: "Interviewer",
+        render: (_value, item: CandidateInterviewData) => item.InterviewPanelName?.trim() || "-",
+      },
+      {
+        key: "InterviewDate",
+        label: "Date & Time",
+        render: (_value, item: CandidateInterviewData) => getInterviewDateTimeLabel(item),
+      },
+      {
+        key: "InterviewStatus",
+        label: "Status",
+        align: "center",
+        render: (_value, item: CandidateInterviewData) => {
+          const status = item.InterviewStatus?.trim() || "Scheduled";
+          return (
+            <span className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${getInterviewStatusBadgeClass(status)}`}>
+              {status}
+            </span>
+          );
+        },
+      },
+      ...(canAction
+        ? [
+            {
+              key: "actions",
+              label: "Action",
+              align: "center" as const,
+              width: "80px",
+              truncate: false,
+              render: (_value: unknown, item: CandidateInterviewData) => (
+                <Button
+                  type="button"
+                  onClick={() => openEditScheduleModal(item)}
+                  aria-label="Edit interview"
+                  title="Edit"
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                >
+                  <Edit className="h-4 w-4" aria-hidden="true" />
+                </Button>
+              ),
+            },
+          ]
+        : []),
+    ],
+    [canAction, candidateId, openEditScheduleModal, passedCandidate],
+  );
 
   const handleEventClick = useCallback(
     (calendarEvent: CalendarEvent) => {
@@ -514,9 +539,8 @@ export const InterviewSchedule: React.FC = () => {
             <DataTable
               data={pipelineInterviews}
               columns={pipelineColumns}
-              onRowClick={canAction ? (row) => openEditScheduleModal(row as CandidateInterviewData) : undefined}
+              rowKey="InterviewId"
               emptyMessage="No upcoming interviews scheduled"
-              variant="minimal"
             />
           </div>
         </div>

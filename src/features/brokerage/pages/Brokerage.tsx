@@ -222,6 +222,10 @@ export const Brokerage: React.FC = () => {
             cpName: row.ChannelPartnerName ?? "",
             cpMobileNumber: row.ChannelPartnerMobileNumber ?? "",
             cpCompany: row.ChannelPartnerCompany ?? "",
+            agreementValue: row.AgreementValue,
+            brokerageAmount: row.BrokerageAmount,
+            invoiceAmount: row.InvoiceAmount,
+            paymentPaidAmount: row.PaymentPaidAmount
         });
 
         navigate("/brokerage/brokerageInvoice/view");
@@ -255,7 +259,7 @@ export const Brokerage: React.FC = () => {
 
         {
             key: 'ChannelPartnerMobileNumber',
-            label: 'Cp Mobile Number',
+            label: 'CP Mobile Number',
             width: '15',
             sortable: false,
             align: 'left',
@@ -277,14 +281,6 @@ export const Brokerage: React.FC = () => {
             )
         },
         {
-            key: 'ProjectName',
-            label: 'Project Name',
-            width: '25',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        {
             key: 'ApplicantName',
             label: 'Applicant Name',
             width: '25',
@@ -294,7 +290,7 @@ export const Brokerage: React.FC = () => {
         },
         {
             key: 'ApplicantMobileNumber',
-            label: 'Mobile Number',
+            label: 'Applicant Mobile Number',
             width: '25',
             sortable: false,
             align: 'left',
@@ -359,7 +355,7 @@ export const Brokerage: React.FC = () => {
                     width: '25',
                     sortable: false,
                     align: 'left',
-                    render: (value) => value ? `${value} Sq ft` : '-'
+                    render: (value) => value ? `${value} Sq Ft` : '-'
                 },
             ]
         },
@@ -391,14 +387,14 @@ export const Brokerage: React.FC = () => {
                 },
                 {
                     key: "InvoiceAmount",
-                    label: "Raise Invoice (₹)",
+                    label: "Raised Invoice(₹)",
                     align: "right",
                     render: value => value ? formatCurrency(value) : '0'
                 },
 
                 {
                     key: "PaymentPaidAmount",
-                    label: "Account Paid (₹)",
+                    label: "Amount Paid (₹)",
                     align: "right",
                     render: value => value ? formatCurrency(value) : '0'
                 },

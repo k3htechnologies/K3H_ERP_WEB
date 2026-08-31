@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -11,18 +11,22 @@ import { Loader } from "@/core/utils/loader";
 import type { AddUpdatePaidBrokerageBookingRequest } from "@/features/brokerage/models/PaidBrokerageBookingModel";
 import { PaidBrokerageBookingService } from "@/features/brokerage/services/PaidBrokerageBookingService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { INVOICE_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
 import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import type { ProjectWithBankDetails } from "@/features/projectMaster/models/ProjectMasterModel";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     PaidBrokerageBookingId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
-    BankListMasterId: 0,
+    ProjectBankListMasterId: 0,
     BookingId: 0,
     BrokerageInvoiceId: 0,
     PaymentMode: '',
@@ -32,7 +36,7 @@ const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     TransactionReceiptURL: '',
     RemoveTransactionReceiptURL: '',
     TransactionNumber: '',
-    BankName: ''
+    ProjectBankName: ''
 })
 
 export const AddUpdatePaidBrokerageBooking: React.FC = () => {
@@ -41,14 +45,14 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdatePaidBrokerageBookingRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-
+    const [projectWithBankData, setProjectWithBankData] = useState<ProjectWithBankDetails | null>(null);
     const [transactionReceiptURLFiles, setTransactionReceiptURLFiles] = useState<(File | string)[]>([]);
     const [removeTransactionReceiptURLUrls, SetRemoveTransactionReceiptURLUrls] = useState<string[]>([]);
     const [transactionReceiptURL,] = useState<string>();
     const navigate = useNavigate();
 
     const location = useLocation();
-    const routeState = (location.state as { InvoiceAmount?: number; PaidAmount?: number }) || {};
+    const routeState = (location.state as { InvoiceAmount?: number; PaidAmount?: number, InvoiceNumber: string, InvoiceDate: string }) || {};
     const invoiceAmount = Number(routeState.InvoiceAmount || 0);
     const alreadyPaidAmount = Number(routeState.PaidAmount || 0);
     const pendingAmount = invoiceAmount - alreadyPaidAmount;
@@ -74,6 +78,17 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/makePayment');
     //#endregion
+
+    const fetchProjectBankList = useCallback(async (pageNumber: number, params?: { value?: string }) => {
+        return fetchProjectBankDropdown(pageNumber, {
+            projectId: projectId || 0,
+            bankName: params?.value || ""
+        });
+    }, [projectId]);
+
+    const [dropdownLabels, setDropdownLabels] = useState<{
+        projectBankName?: string;
+    }>({});
 
     //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (
@@ -126,8 +141,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         if (!formData.PaymentMode) {
             newErrors.PaymentMode = 'Payment Mode is required.';
         }
-        if (!formData.BankListMasterId) {
-            newErrors.BankListMasterId = "Bank Name is required";
+        if (!formData.ProjectBankListMasterId) {
+            newErrors.ProjectBankListMasterId = "Project Bank Name is required";
         }
         if (!formData.PaymentType) {
             newErrors.PaymentType = 'Payment Type is required.';
@@ -167,7 +182,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("ProjectId", projectId!.toString());
         fd.append("BookingId", currentBookingId.toString());
-        fd.append("BankListMasterId", formData.BankListMasterId.toString());
+        fd.append("ProjectBankListMasterId", formData.ProjectBankListMasterId.toString());
         fd.append("BrokerageInvoiceId", currentBrokerageInvoiceId.toString());
         fd.append("PaymentMode", formData.PaymentMode ?? "");
         fd.append("PaymentType", formData.PaymentType ?? "");
@@ -240,11 +255,79 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                 <form onSubmit={handleAddUpdatePaidBrokerageBooking}>
 
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                            <FieldItem label="Invoice Number" value={routeState.InvoiceNumber} />
+                            <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(routeState.InvoiceDate)} />
+                            <FieldItem label="Invoice Amount" value={routeState.InvoiceAmount} />
+                            <FieldItem label="Paid Invoice Amount" value={routeState.PaidAmount} />
+                            <FieldItem label="Pending Amount" value={pendingAmount} />
+                        </div>
+                    </div>
+
                     {/* Paid Amount Details */}
 
                     <div className="space-y-4 pb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Make Payment</h3>
+
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Developer Bank Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Project Bank Name"
+                                    title="Select Project Bank Name"
+                                    size="lg"
+                                    dataFetchCallBack={fetchProjectBankList}
+                                    onSelected={(item) => {
+                                        if (!item) {
+                                            handleFieldChange("ProjectBankListMasterId", null);
+                                            setProjectWithBankData(null);
+                                            setDropdownLabels((prev) => ({
+                                                ...prev,
+                                                projectBankName: "",
+                                            }));
+                                            return;
+                                        }
+                                        handleFieldChange("ProjectBankListMasterId", Number(item.value));
+
+                                        setProjectWithBankData(item as unknown as ProjectWithBankDetails);
+                                    }}
+                                    initialValue={createDropdownInitialValue(formData.ProjectBankListMasterId, dropdownLabels.projectBankName)}
+                                    error={errors.ProjectBankListMasterId}
+                                />
+                            </div>
+
+                            {projectWithBankData && Number(formData.ProjectBankListMasterId) > 0 && (
+                                <>
+                                    <div>
+                                        <Input
+                                            label="Account Number"
+                                            placeholder="Enter Account Number"
+                                            value={projectWithBankData?.AccountNumber || ""}
+                                            disabled
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input label="IFSC Code" placeholder="Enter IFSC Code" value={projectWithBankData?.IFSCCode || ""} disabled />
+                                    </div>
+
+                                    <div>
+                                        <Input label="Branch" placeholder="Enter Branch" value={projectWithBankData?.Branch || ""} disabled />
+                                    </div>
+
+                                    <div>
+                                        <Input label="Account Type" placeholder="Enter Account Type" value={projectWithBankData?.AcType || ""} disabled />
+                                    </div>
+
+                                    <div>
+                                        <Input label="Nature Of Account" placeholder="Enter Nature Of Account" value={projectWithBankData?.NatureOfAccount || ""} disabled />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Make Payment</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                             <div>
                                 <SinglePageSelection
@@ -255,24 +338,6 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     onChange={(e) => handleFieldChange('PaymentMode', String(e))}
                                     options={PAYMENT_MODE.map((opt) => ({ label: opt.name, value: opt.id }))}
                                     error={errors.PaymentMode}
-                                />
-                            </div>
-
-                            <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Bank Name"
-                                    required
-                                    title="Select Bank"
-                                    size="lg"
-                                    dataFetchCallBack={fetchBankListMasterDropdown}
-                                    onSelected={(item) => {
-                                        if (!item) {
-                                            handleFieldChange("BankListMasterId", null);
-                                            return;
-                                        }
-                                        handleFieldChange("BankListMasterId", Number(item.value));
-                                    }}
-                                    error={errors.BankListMasterId}
                                 />
                             </div>
 
@@ -320,10 +385,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     value={formData.TDSAmount}
                                     placeholder="Enter TDS Amount"
                                     maxLength={15}
-                                    onChange={(e) => {
-                                        const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("TDSAmount", (digits));
-                                    }}
+                                    onChange={(e) => handleFieldChange("TDSAmount", filterNumbersWithDecimal(e.target.value) || 0)}
                                     error={errors.TDSAmount}
                                 />
                             </div>
@@ -332,10 +394,10 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Transaction / Cheque / Demand draft No.'
+                                    label='Transaction / Cheque / Demand Draft No'
                                     value={formData.TransactionNumber ?? ""}
                                     onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
-                                    placeholder="Enter Transaction / Cheque / Demand draft No"
+                                    placeholder="Enter Transaction / Cheque / Demand Draft No"
                                     maxLength={15}
                                     error={errors.TransactionNumber}
                                 />

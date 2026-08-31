@@ -19,6 +19,8 @@ import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListM
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { filterIFSC, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidIFSC } from "@/core/utils/fileValidation";
 import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
     BrokerageInvoiceId: 0,
@@ -58,6 +60,8 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     const { BrokerageInvoiceId } = useParams<{ BrokerageInvoiceId?: string }>();
 
     const brokerageInvoiceId = BrokerageInvoiceId ? Number(BrokerageInvoiceId) : 0;
+
+    const brokerageAmount = Number(listState.brokerageAmount) || 0;
 
     const isAddMode = brokerageInvoiceId === 0;
 
@@ -216,6 +220,8 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             newErrors.InvoiceAmount = "Invoice Amount is required";
         } else if (formData.InvoiceAmount <= 0) {
             newErrors.InvoiceAmount = "Invoice Amount cannot be zero or negative";
+        } else if (Number(formData.InvoiceAmount) > brokerageAmount) {
+            newErrors.InvoiceAmount = `Invoice amount exceeds the brokerage amount ₹${brokerageAmount.toLocaleString('en-IN')}`;
         }
 
         return {
@@ -295,6 +301,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     };
     //#endregion
 
+    const BrokerageAmount = Number(listState.brokerageAmount) || 0
+    const paidBrokerageAmount = Number(listState.paymentPaidAmount) || 0
+    const PendingAmount = BrokerageAmount - paidBrokerageAmount
+
     //#region
     return (
 
@@ -308,7 +318,19 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
                 <form onSubmit={handleAddUpdateBrokerageInvoice}>
 
-                    {/* Basic Brokerage Invoice Details */}
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                            <FieldItem label="CP Name" value={listState.cpName} />
+                            <FieldItem label="CP Company" value={listState.cpCompany} />
+                            <FieldItem label="CP Mobile Number" value={listState.cpMobileNumber} />
+                            <FieldItem label="Agreement Value" value={formatCurrency(listState.agreementValue)} />
+                            <FieldItem label="Brokerage Amount" value={formatCurrency(listState.brokerageAmount)} />
+                            <FieldItem label="Invoice Amount" value={formatCurrency(listState.invoiceAmount)} />
+                            <FieldItem label="Payment Paid Amount" value={formatCurrency(listState.paymentPaidAmount)} />
+                            <FieldItem label="Pending Amount" value={formatCurrency(PendingAmount)} />
+
+                        </div>
+                    </div>
 
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Add Invoice</h3>

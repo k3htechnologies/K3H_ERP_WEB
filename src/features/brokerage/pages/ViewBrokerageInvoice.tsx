@@ -49,6 +49,9 @@ export const ViewBrokerageInvoice: React.FC = () => {
     const [isConfirmationDialogBoxOpenForPayment, setIsConfirmationDialogBoxOpenForPayment] = useState(false)
     const [deletePaidBrokerageBookingData, setDeletePaidBrokerageBookingData] = useState<PaidBrokerageBookingData | null>(null)
 
+    const { canView: canInVoiceView } = useMenuPermissions('/invoice');
+
+    const { canView: canMakePaymentView } = useMenuPermissions('/makePayment');
 
     const { projectId } = useProject();
 
@@ -69,12 +72,14 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
     const bookingId = listState.bookingId || '';
 
-    const brokerageTabList = [
-        { id: "Invoice", label: "Invoice" },
-        { id: "Payment", label: "Payment" },
-    ];
+    const brokerageTabList: { id: string; label: string }[] = [
 
-    const [activeTab, setActiveTab] = useState<string>(brokerageTabList[0].id);
+        canInVoiceView ? { id: "Invoice", label: "Invoice" } : null,
+        canMakePaymentView ? { id: "Payment", label: "Payment" } : null,
+
+    ].filter(Boolean) as { id: string; label: string }[];
+
+    const [activeTab, setActiveTab] = useState<string>(brokerageTabList[0]?.id ?? "");
 
     const [searchInvoiceNumber, setSearchInvoiceNumber] = useState('')
     const debouncedSearchForInvoiceNumber = useDebouncedCallback((value: string) => {
@@ -111,7 +116,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationBrokerageInvoiceRequest = {
                     PageNumber: page,
-                    PageSize: 10,
+                    PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
                     InvoiceNumber: searchText,
@@ -162,8 +167,13 @@ export const ViewBrokerageInvoice: React.FC = () => {
         navigate(`/brokerage/brokerageInvoice/add/${BrokerageInvoiceId}`);
     };
 
-    const handleAddPaidBrokerageBooking = (BrokerageInvoiceId: number) => {
-        navigate(`/brokerage/PaidBrokerageBooking/add/${BrokerageInvoiceId}`);
+    const handleAddPaidBrokerageBooking = (row: BrokerageInvoiceData) => {
+        navigate(`/brokerage/PaidBrokerageBooking/add/${row.BrokerageInvoiceId}`, {
+            state: {
+                InvoiceAmount: Number(row.InvoiceAmount || 0),
+                PaidAmount: Number(row.PaymentAmount || 0),
+            },
+        });
     };
 
 
@@ -297,7 +307,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
         setInvoiceAmount(row?.InvoiceAmount ?? 0);
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
-
     };
 
     const brokerageInvoiceColumns = useMemo<TableColumn[]>(
@@ -602,9 +611,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     await loadBrokerageInvoice(1, searchInvoiceNumber?.trim() || "");
 
                 } else {
-
                     addToast({ type: "error", title: response.left.message });
-
                 }
 
                 return response;
@@ -628,15 +635,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 subSubTitleText={channelPartnerCompanyName}
                 onCancel={() => handleBackToListBrokerage()}
                 cancelText="Cancel"
-                EditText="Add"
-
-                canAction={canAction && activeTab === "Invoice" ? true : false}
-                onEdit={() => {
-                    if (activeTab === "Invoice") {
-                        handleAddBrokerageInvoice(0);
-                    }
-
-                }}
                 isLoading={isLoading}
             />
 
@@ -670,6 +668,9 @@ export const ViewBrokerageInvoice: React.FC = () => {
                         }}
                         onClearSearch={clearSearchByInvoiceNumber}
 
+                        isShowAddButton={canAction && activeTab === "Invoice" ? true : false}
+                        addTitle="Add"
+                        onAdd={() => handleAddBrokerageInvoice(0)}
 
                         // EXPORT
                         isShowExportButton={canExport && brokerageInvoiceListForTable.length > 0}
@@ -689,7 +690,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
                         expandable={{
                             keyField: 'BrokerageInvoiceId',
                             alwaysFetchOnOpen: false,
-
                             fetchRow: async (row) => {
                                 return row;
                             },
@@ -705,12 +705,11 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                                         <div className="flex justify-between items-center">
                                             <div className="text-sm text-gray-700">
-                                               <FieldItem label="Account Holder Name" value={row.AccountName} isRow/>
-                                               
-                                               <FieldItem label="Invoice Amount" value={formatCurrency(row.InvoiceAmount)} isRow/>
+                                                <FieldItem label="Account Holder Name" value={row.AccountName} isRow />
 
-                                               <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row.InvoiceDate ?? '')} isRow/>
+                                                <FieldItem label="Invoice Amount" value={formatCurrency(row.InvoiceAmount)} isRow />
 
+                                                <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row.InvoiceDate ?? '')} isRow />
                                             </div>
 
                                             <div className="flex items-center gap-2">
@@ -721,7 +720,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                                             <Button
                                                                 color="green"
                                                                 size="sm"
-                                                                onClick={() => handleAddPaidBrokerageBooking(row.BrokerageInvoiceId)}
+                                                                onClick={() => handleAddPaidBrokerageBooking(row)}
                                                             >
                                                                 Make Payment
                                                             </Button>
@@ -740,10 +739,10 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                             <div className="space-y-3">
                                                 <h3 className="font-semibold mb-2">Invoice Details</h3>
 
-                                               
+
                                                 <FieldItem label="Account Number" value={row.AccountNumber} />
                                                 <FieldItem label="Bank Name" value={row.BankName} />
-                                                 <FieldItem label="Remark" value={row.Remark} />
+                                                <FieldItem label="Remark" value={row.Remark} />
                                             </div>
 
                                             <div className="space-y-3">
@@ -765,7 +764,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                 );
                             },
 
@@ -777,8 +776,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
             )}
 
             {activeTab === 'Payment' && (
-
-
                 <div className="space-y-3 pt-5">
 
                     <TableActionToolbar
@@ -789,7 +786,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
                             debouncedSearchForPaidInvoiceNumber(v)
                         }}
                         onClearSearch={clearSearchByPaidInvoiceNumber}
-
 
                         // EXPORT
                         isShowExportButton={canMakePaymentExport && paidBrokerageBookingList.length > 0}
@@ -809,27 +805,28 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                     </div>
 
                                     <div className="flex items-center gap-2">
-
-                                        <Button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (!canMakePaymentAction) return;
-                                                handleConfirmationDialogBoxOpenForPayment(data);
-                                            }}
-                                            color="transparent"
-                                            isborderRadius
-                                            disabled={!canMakePaymentAction}
-                                            size="sm"
-                                            style={{
-                                                color: canMakePaymentAction ? "red" : "#9CA3AF",
-                                                cursor: canMakePaymentAction ? "pointer" : "not-allowed",
-                                                opacity: canMakePaymentAction ? 1 : 0.5,
-                                            }}
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        {i === 0 && (
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (!canMakePaymentAction) return;
+                                                    handleConfirmationDialogBoxOpenForPayment(data);
+                                                }}
+                                                color="transparent"
+                                                isborderRadius
+                                                disabled={!canMakePaymentAction}
+                                                size="sm"
+                                                style={{
+                                                    color: canMakePaymentAction ? "red" : "#9CA3AF",
+                                                    cursor: canMakePaymentAction ? "pointer" : "not-allowed",
+                                                    opacity: canMakePaymentAction ? 1 : 0.5,
+                                                }}
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -851,7 +848,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                     <FieldItem label="TDS Amount" value={formatCurrency(data.TDSAmount)} />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 pb-4">
                                     <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
                                     <FieldItem
                                         label="Created Date"
@@ -861,32 +858,16 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                                 : '-'
                                         }
                                     />
-                                    <FieldItem label="Modified By" value={getSafeString(data.ModifiedBy)} />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-
-                                    <FieldItem
-                                        label="Modified Date"
-                                        value={
-                                            data.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate)
-                                                : '-'
-                                        }
-                                    />
                                 </div>
 
                             </section>
                         ))
                     ) : (
                         <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message="No Data Found" />
+                            <NoDataView message="No payment data found" />
                         </section>
                     )}
-
-
                 </div>
-
             )}
 
             <DeleteDialog
@@ -916,7 +897,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 title='Invoice'
                 titleText={channelPartnerName ?? ""}
                 subTitleText={channelPartnerCompanyName ?? ""}
-                subSubTitleText={invoiceAmount?.toString() ?? ""}
+                subSubTitleText={`₹ ${invoiceAmount?.toString() ?? 0}`}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest} />
 
@@ -927,7 +908,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 actionType={approvalActionType}
                 titleText={channelPartnerName ?? ""}
                 subTitleText={channelPartnerCompanyName ?? ""}
-                subSubTitleText={invoiceAmount?.toString() ?? ""}
+                subSubTitleText={`₹ ${invoiceAmount?.toString() ?? 0}`}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />

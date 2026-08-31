@@ -440,9 +440,21 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["LEVEL 1","LEVEL 2","LEVEL 3","LEVEL 4","LEVEL 5","LEVEL 6","LEVEL 7","LEVEL 8","LEVEL 9","LEVEL 10", "GROUND LEVEL"],
+  parkingSubCategory_PuzzleParking: [
+    "LEVEL 1",
+    "LEVEL 2",
+    "LEVEL 3",
+    "LEVEL 4",
+    "LEVEL 5",
+    "LEVEL 6",
+    "LEVEL 7",
+    "LEVEL 8",
+    "LEVEL 9",
+    "LEVEL 10",
+    "GROUND LEVEL",
+  ],
 
-  parkingSubCategory_TowerParking: ["ROTATING","TO 1", "GROUND"],
+  parkingSubCategory_TowerParking: ["ROTATING", "TO 1", "GROUND"],
 
   parkingSubCategory_PitPuzzleParking: ["PIT 1", "GROUND"],
 
@@ -533,7 +545,7 @@ export const MASTER_DATA = {
     "Agreement Value GST",
     "Agreement Value TDS",
     "Other Charges Value",
-    "Other Charges GST"
+    "Other Charges GST",
   ],
 
   paymentReceivedFrom: ["Bank", "Owner"],
@@ -571,7 +583,6 @@ export const MASTER_DATA = {
 
   reasonForInactivity: ["Firm Closed", "Key SPOC left", "Brokerage Pending", "Did not like project/brand"],
 
-
   platform: ["ERP", "Application", "Website"],
 
   module: [
@@ -604,18 +615,123 @@ export const MASTER_DATA = {
     "Between 201 And 300",
     "Between 301 And 400",
     "Between 401 And 500",
-    "Above 501"
+    "Above 501",
   ],
 
   channelPartnerCategory: ["P1", "P2", "P3", "P4"],
 
   ibmObmReportStage: ["IBM", "OBM"],
 
-  noticeType: ['Income Tax', 'GST'],
+  noticeType: [
+    "GST (Goverment Service Tax)",
+    "Income Tax",
+    "PF (Provident Fund)",
+    "ESIC (Employee State Insurance)",
+    "PT (Profession Tax)",
+    "Other",
+  ],
 
   budgetLevelType: ["L1", "L2", "L3"],
 
-    tenderPaymentMode: ["Cheque", "Cash", "Demand Draft", "IMPS", "NEFT", "Pay Order", "RTGS", "UPI"],
+  aopStatus: ["AOP", "NON - AOP", "EXPIRED", "EXPIRE SOON"],
+
+  tenderPaymentMode: ["Cheque", "Cash", "Demand Draft", "IMPS", "NEFT", "Pay Order", "RTGS", "UPI"],
+
+  tenantDocumentTypes: [
+    "33 (38) Notice",
+    "79 / A Consent",
+    "Additional Document (If Any)",
+    "Affidavit",
+    "Assessment Bill",
+    "Consent For Cluster (If Applicable)",
+    "Developer Format Consent",
+    "Electric NOC",
+    "Electricity Bill",
+    "Eligible / Non Eligible (Form 3 & 4)",
+    "Extra Area Purchase Letter",
+    "Extra Purchase Payment Schedule",
+    "Gas Bill",
+    "Maintenance Bill",
+    "MGL NOC",
+    "MHADA Verified Consent",
+    "Notarized Kararnama",
+    "PAAA Floor Plan",
+    "Photo Pass",
+    "Photo Pass Receipt",
+    "POA (Admission)",
+    "Ration Card (If Applicable)",
+    "Registered PAAA",
+    "Rent Receipt (If Applicable)",
+    "Repossession Letter",
+    "Repossession Undertaking",
+    "Sales Agreement",
+    "Share Certificate",
+    "Transfer Documents",
+    "Unit Plan",
+    "Vacant Possession Letter",
+    "Vacating Consent Letter",
+    "Yadi Slip",
+  ],
+
+  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30"],
+
+  termSheetDocument: [
+    "Board Resolution",
+    "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
+    "Deed Of Corporate Guarantee",
+    "Deed Of Hypothecation",
+    "Deed Of Personal Guarantee",
+    "Demand Promissory Note",
+    "Disbursement Request Letter as per format of NBFC or Bank",
+    "Escrow Agreement",
+    "Indenture of Mortgage",
+    "Loan Agreement",
+    "Other documents as per Sanction Letter",
+    "PDC to be given as per Sanction Letter",
+    "Power Of Attorney",
+    "Promoters Undertaking",
+  ],
+
+  authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
+
+  orderStatusOptions: ["Favourable", "Non-Favourable"],
+
+  requestTypeOptions: ["Reply", "Order", "Notice", "Close-Notice"],
+
+  termSheetTypeOptions: [
+    "Construction Finance (CF)",
+    "Loan Against Property (LAP)",
+    "Lease Rental Discounting (LRD)",
+    "Overdraft Facility (OD)",
+  ],
+
+  termSheetApprovalStatus: ["Term Sheet", "Sanction", "Closed"],
+
+  termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
+
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending"],
+
+  vendorType: ["Material", "Contractor", "Both"],
+
+  purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"],
+
+  landTenureType: ["Leasehold", "Freehold", "Collectors Land", "MHADA", "SRA", "BMC", "Builder"],
+
+  plotShape: ["Rectangular", "Irregular", "L - Shape", "Circle"],
+
+  constructionType: ["RCC", "Load - Bearing"],
+
+  soilType: ["Clay", "Black Cotton", "Sandy", "Rocky"],
+
+  existingGroundConditions: ["Vacant", "Barren", "Vegetation", "Encroachements"],
+
+  waterSupplyAvailable: ["Borewell", "Municipal"],
+
+  surroundingLandUse: ["Agricultural", "Residential", "Industrial", "Vacant"],
+
+  landOwnerShipType: ["Individual", "Joint", "Trust", "Company", "Government", "Society"],
+
+  inVoicePaymentType: ['Full', 'Partial'],
 
 } as const;
 
@@ -710,7 +826,6 @@ export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
 export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
-export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
 export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
@@ -722,15 +837,15 @@ export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
-export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
-export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
-export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
 export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
 export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
 export const CALL_STATUS_OPTIONS = toOptions(MASTER_DATA.callStatus);
 export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
+export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
+export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
+export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
 export const REASON_FOR_INAACTIVITY = toOptions(MASTER_DATA.reasonForInactivity);
 export const PLATFORM_OPTIONS = toOptions(MASTER_DATA.platform);
 export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
@@ -741,6 +856,30 @@ export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPar
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
+export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
+export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
+export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
+export const FINANCIAL_YEAR = toOptions(MASTER_DATA.financialYear);
+export const TERM_SHEET_DOCUMENT = toOptions(MASTER_DATA.termSheetDocument);
+export const AUTHORITY_OPTIONS = toOptions(MASTER_DATA.authorityOptions);
+export const ORDER_STATUS_OPTIONS = toOptions(MASTER_DATA.orderStatusOptions);
+export const REQUEST_TYPE_OPTIONS = toOptions(MASTER_DATA.requestTypeOptions);
+export const TERM_SHEET_TYPE_OPTIONS = toOptions(MASTER_DATA.termSheetTypeOptions);
+export const TERM_SHEET_APPROVAL_OPTIONS = toOptions(MASTER_DATA.termSheetApprovalStatus);
+export const TERM_SHEET_DSRA_TERM_OPTIONS = toOptions(MASTER_DATA.termSheetDSRATerm);
+export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
+export const VENDOR_TYPE_OPTIONS = toOptions(MASTER_DATA.vendorType);
+export const PURPOSE_OPTIONS = toOptions(MASTER_DATA.purposeOptions);
+export const LAND_TENURE_TYPE_OPTIONS = toOptions(MASTER_DATA.landTenureType);
+export const PLOT_SHAPE_OPTIONS = toOptions(MASTER_DATA.plotShape);
+export const CONSTRUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.constructionType);
+export const SOIL_TYPE_OPTIONS = toOptions(MASTER_DATA.soilType);
+export const EXISTING_GROUND_CONDITION_OPTIONS = toOptions(MASTER_DATA.existingGroundConditions);
+export const WATER_SUPPLY_AVAILABLE_OPTIONS = toOptions(MASTER_DATA.waterSupplyAvailable);
+export const SURROUNDING_LAND_USE_OPTIONS = toOptions(MASTER_DATA.surroundingLandUse);
+export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipType);
+export const INVOICE_PAYMENT_TYPE = toOptions(MASTER_DATA.inVoicePaymentType);
+
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)
 // ============================================================================

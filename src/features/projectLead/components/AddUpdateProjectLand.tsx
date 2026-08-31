@@ -268,8 +268,9 @@ export const AddUpdateProjectLand: React.FC = () => {
         } else if (LandformData.ContactPersonName.trim().length > 50) {
             newErrors.ContactPersonName = "Contact Person Name must be at most 50 characters";
         }
+
         if (LandformData.ContactPersonEmail && !isValidEmail(LandformData.ContactPersonEmail)) {
-            newErrors.ContactPersonEmail = "Enter a Valid E-mail Id";
+            newErrors.ContactPersonEmail = "Enter a Valid E-Mail ID";
         }
         if (!LandformData.ContactPersonMobile?.trim()) {
             newErrors.ContactPersonMobile = "Contact Person Mobile Number is required.";
@@ -321,7 +322,7 @@ export const AddUpdateProjectLand: React.FC = () => {
         fd.append("PinCode", LandformData.PinCode ?? "");
         fd.append("PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber", LandformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber ?? "");
         fd.append("WardNumberZone", LandformData.WardNumberZone ?? "");
-        fd.append("TotalPlotAreaSqM", String(LandformData.TotalPlotAreaSqM ?? 0));
+        fd.append("TotalPlotAreaSqM", String(LandformData.TotalPlotAreaSqM || 0));
         fd.append("LandOwnerName", LandformData.LandOwnerName ?? "");
         fd.append("LandAddress", LandformData.LandAddress ?? "");
         fd.append("IdentificationLocation", LandformData.IdentificationLocation ?? "");
@@ -331,8 +332,8 @@ export const AddUpdateProjectLand: React.FC = () => {
         fd.append("ContactPersonEmail", LandformData.ContactPersonEmail ?? "");
         fd.append("TypeOfLandTenureType", LandformData.TypeOfLandTenureType ?? "");
         fd.append("PlotShape", LandformData.PlotShape ?? "");
-        fd.append("Frontage", String(LandformData.Frontage ?? 0));
-        fd.append("PlotDepth", String(LandformData.PlotDepth ?? 0));
+        fd.append("Frontage", String(LandformData.Frontage || 0));
+        fd.append("PlotDepth", String(LandformData.PlotDepth || 0));
         fd.append("RoadWidth", LandformData.RoadWidth ?? "");
         fd.append("IsAnyPowerofAttorneyInvolved", String(LandformData.IsAnyPowerofAttorneyInvolved ?? false));
         fd.append("IsFencingBoundaryWallPresent", String(LandformData.IsFencingBoundaryWallPresent ?? false));
@@ -343,15 +344,15 @@ export const AddUpdateProjectLand: React.FC = () => {
         fd.append("IsElectricityConnectionNearby", String(LandformData.IsElectricityConnectionNearby ?? false));
         fd.append("IsUnderLitigationOrStayOrder", String(LandformData.IsUnderLitigationOrStayOrder ?? false));
         fd.append("Is712Available", String(LandformData.Is712Available ?? false));
-        fd.append("FSIPermissible", String(LandformData.FSIPermissible ?? ""));
+        fd.append("FSIPermissible", String(LandformData.FSIPermissible || "0"));
         fd.append("WaterSupplyAvailable", LandformData.WaterSupplyAvailable ?? "");
         fd.append("SurroundingLandUse", LandformData.SurroundingLandUse ?? "");
         fd.append("LandOwnershipType", LandformData.LandOwnershipType ?? "");
-        fd.append("DistanceFromNearestTownKM", String(LandformData.DistanceFromNearestTownKM ?? 0));
-        fd.append("DistanceFromHighwayKM", String(LandformData.DistanceFromHighwayKM ?? 0));
-        fd.append("DistanceFromRailwayStationKM", String(LandformData.DistanceFromRailwayStationKM ?? 0));
-        fd.append("DistanceFromAirportKM", String(LandformData.DistanceFromAirportKM ?? 0));
-        fd.append("TotalNumberOfTreesonSite", String(LandformData.TotalNumberOfTreesonSite ?? 0));
+        fd.append("DistanceFromNearestTownKM", String(LandformData.DistanceFromNearestTownKM || 0));
+        fd.append("DistanceFromHighwayKM", String(LandformData.DistanceFromHighwayKM || 0));
+        fd.append("DistanceFromRailwayStationKM", String(LandformData.DistanceFromRailwayStationKM || 0));
+        fd.append("DistanceFromAirportKM", String(LandformData.DistanceFromAirportKM || 0));
+        fd.append("TotalNumberOfTreesonSite", String(LandformData.TotalNumberOfTreesonSite || 0));
         fd.append("Remark", LandformData.Remark ?? "");
 
         photoURLFiles.forEach((file) => {
@@ -802,7 +803,7 @@ export const AddUpdateProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="FSI Permissible (Base + TDR if allowed)"
-                            value={LandformData.FSIPermissible ?? ""}
+                            value={LandformData.FSIPermissible ?? 0}
                             onChange={(e) => handleFieldChange("FSIPermissible", filterNumbersWithDecimal(e.target.value))}
                             placeholder="Enter FSI Permissible"
                             maxLength={20}

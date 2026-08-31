@@ -165,24 +165,26 @@ export const ViewProjectLand: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-3">
+                        <div className="grid grid-cols-7 text-sm font-semibold text-gray-500 pb-3">
                             <span>Country</span>
                             <span>State</span>
                             <span>District</span>
                             <span>City</span>
                             <span>Pin Code</span>
                             <span>Ward Number</span>
+                            <span>Latitude Longitude</span>
                         </div>
 
                         <div className="border-t border-gray-300" />
 
-                        <div className="grid grid-cols-6 pt-4 text-sm font-medium text-slate-800">
+                        <div className="grid grid-cols-7 pt-4 text-sm font-medium text-slate-800">
                             <span>{ProjectLandData?.CountryName || "-"}</span>
                             <span>{ProjectLandData?.StateName || "-"}  </span>
-                            <span> {ProjectLandData?.DistrictName || "-"} </span>
-                            <span> {ProjectLandData?.CityName || "-"}  </span>
+                            <span>{ProjectLandData?.DistrictName || "-"} </span>
+                            <span>{ProjectLandData?.CityName || "-"}  </span>
                             <span>{ProjectLandData?.PinCode || "-"}  </span>
                             <span>{ProjectLandData?.WardNumberZone}</span>
+                            <span>{ProjectLandData?.LatitudeLongitude}</span>
                         </div>
                     </div>
                 </div>

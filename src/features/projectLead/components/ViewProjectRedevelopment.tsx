@@ -73,7 +73,7 @@ export const ViewProjectRedevelopment: React.FC = () => {
 
             <div className="px-5 py-5">
                 <HeaderActionBar
-                    titleText="Building Name : "
+                    titleText="Redevelopment : Building Name : "
                     subTitleText={ProjectRedevelopmentData?.BuildingName ?? ""}
 
                     cancelText="Cancel"
@@ -169,23 +169,25 @@ export const ViewProjectRedevelopment: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-2">
+                        <div className="grid grid-cols-7 text-sm font-semibold text-gray-500 pb-2">
                             <span>Country</span>
                             <span>State</span>
                             <span>District</span>
                             <span>City</span>
                             <span>Pin Code</span>
                             <span>Ward Number</span>
+                            <span>Latitude Longitude</span>
                         </div>
 
                         <div className="border-t border-gray-300"></div>
-                        <div className="grid grid-cols-6 pt-3 text-md font-medium text-slate-800">
+                        <div className="grid grid-cols-7 pt-3 text-md font-medium text-slate-800">
                             <span>{ProjectRedevelopmentData?.CountryName || "-"}</span>
                             <span>{ProjectRedevelopmentData?.StateName || "-"}</span>
                             <span>{ProjectRedevelopmentData?.DistrictName || "-"}</span>
                             <span>{ProjectRedevelopmentData?.CityName || "-"}</span>
                             <span>{ProjectRedevelopmentData?.PinCode || "-"}</span>
                             <span>{ProjectRedevelopmentData?.WardNumberZone}</span>
+                            <span>{ProjectRedevelopmentData?.LatitudeLongitude}</span>
                         </div>
                     </div>
                 </div>
@@ -216,7 +218,7 @@ export const ViewProjectRedevelopment: React.FC = () => {
                         <FieldItem label="Number Of Floor Per Wings" value={ProjectRedevelopmentData?.NumberOfFloorsPerWing} />
                         <FieldItem label="Total Number of Existing Flats / Units" value={ProjectRedevelopmentData?.TotalNumberExistingFlatsUnits} />
                         <FieldItem label="Member In Favor (%)" value={ProjectRedevelopmentData?.PercentageMemberInFavor} />
-                        <FieldItem label="Plot Under Litigation / Stay" value={ProjectRedevelopmentData?.IsPlotUnderLitigationStay === true ? "Yes" : "No"} />
+                        <FieldItem label="Plot Under Litigation / Stay Order" value={ProjectRedevelopmentData?.IsPlotUnderLitigationStay === true ? "Yes" : "No"} />
                         <FieldItem label="Lift Available" value={ProjectRedevelopmentData?.IsLiftAvailable === true ? "Yes" : "No"} />
                         <FieldItem label="Fire Safety Provision Present" value={ProjectRedevelopmentData?.IsFireSafetyProvisionPresent === true ? "Yes" : "No"} />
                         <FieldItem label="Conveyance Deed" value={ProjectRedevelopmentData?.IsConveyanceDeed === true ? "Yes" : "No"} />
@@ -259,7 +261,7 @@ export const ViewProjectRedevelopment: React.FC = () => {
                         <div className="flex flex-col gap-4">
                              <FieldItem label="Name" value={ProjectRedevelopmentData?.ContactPersonName ?? '-'} isRow />
                              <FieldItem label="Mobile No" value={`+91 ${ProjectRedevelopmentData?.ContactPersonMobile}`} isRow  />
-                             <FieldItem label="E -Mail ID" value={`+91 ${ProjectRedevelopmentData?.ContactPersonEmail}`} isRow  />
+                             <FieldItem label="E-Mail ID" value={`${ProjectRedevelopmentData?.ContactPersonEmail}`} isRow  />
                             
                         </div>
                     </div>

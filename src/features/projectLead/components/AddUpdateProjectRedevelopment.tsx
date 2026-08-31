@@ -682,6 +682,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
                             value={RedevelopmentformData.YearOfOriginalConstruction ?? ""}
                             onChange={(e) => handleFieldChange("YearOfOriginalConstruction", Number(e.target.value))}
                             placeholder="Enter Year of Original Construction"
+                            maxLength={5}
                             error={errors.YearOfOriginalConstruction}
                         />
                     </div>

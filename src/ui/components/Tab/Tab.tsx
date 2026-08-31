@@ -121,8 +121,7 @@ export const Tabs: React.FC<TabsProps> = ({
                   type="button"
                   onClick={() => handleChange(tab)}
                   className={`w-full flex items-center justify-between text-left px-4 py-3 rounded-lg text-sm transition
-                                    ${isActive ? "bg-[#2563EB] text-white font-medium" : "text-gray-700 font-normal"}`}
-                >
+                                    ${isActive ? "bg-[#2563EB] text-white font-medium" : "text-gray-700 font-normal"}`}>
                   <span>{tab.label}</span>
 
                   <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>

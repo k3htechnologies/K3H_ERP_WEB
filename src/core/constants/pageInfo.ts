@@ -236,25 +236,25 @@ export const getPageInfo = (path: string) => {
                 title: 'Approval Document Category',
                 description: 'Categorize Approvals, Simplify Decisions',
             }
-            case 'testCategory':
+        case 'testCategory':
             return {
                 title: 'Test Document Category',
                 description: 'Categorize Test, Simplify Decisions',
             }
 
-            case 'testDocument':
+        case 'testDocument':
             return {
                 title: 'Test Document',
                 description: 'Efficient Test for Seamless Real Estate Operations',
             }
 
-            case 'drawingCategory':
+        case 'drawingCategory':
             return {
                 title: 'Drawing Document Category',
                 description: 'Categorize Drawing, Simplify Decisions',
             }
 
-             case 'drawing':
+        case 'drawing':
             return {
                 title: 'Drawing Document',
                 description: 'Efficient Drawing for Seamless Real Estate Operations',
@@ -603,26 +603,70 @@ export const getPageInfo = (path: string) => {
                 title: "Term Sheet",
                 description: "Manage and track term sheets for real estate transactions",
             }
-            
+
         case 'termSheetReport':
             return {
                 title: "Term Sheet Report",
                 description: "Manage and track term sheets for real estate transactions",
             }
 
-            //VISITOR MANAGEMENT
+        //VISITOR MANAGEMENT
         case 'gatePass':
             return {
                 title: "Gate Pass",
                 description: "Gate Pass",
             }
 
-            //PROJECT LEAD
+        //PROJECT LEAD
         case 'projectLead':
             return {
                 title: "Project Lead",
                 description: 'Overview of your system and key metrics',
             }
+
+        //  HIRESPACE & JON OPENING
+        case 'jobRoleMaster':
+            if (second === 'add') {
+                return {
+                    title: 'Add Job Role',
+                    description: 'Create a job role for the selected department',
+                }
+            }
+            if (second === 'edit') {
+                return {
+                    title: 'Edit Job Role',
+                    description: 'Update job role details',
+                }
+            }
+            if (second === 'view') {
+                return {
+                    title: 'Job Role Details',
+                    description: 'View complete job role information',
+                }
+            }
+            return {
+                title: 'Job Role Master',
+                description: 'Manage department-wise job roles',
+            }
+
+        case 'jobOpenings':
+            if (second === 'add') {
+                return {
+                    title: 'Add Job Opening',
+                    description: 'Create a new job opening for the selected department',
+                }
+            }
+            if (second === 'interviews') {
+                return {
+                    title: 'Schedule Interview',
+                    description: 'Schedule and manage candidate interviews',
+                }
+            }
+            return {
+                title: 'Job Openings',
+                description: 'Manage department-wise job openings and applications',
+            }
+
 
         default:
             return {

@@ -61,6 +61,8 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'termSheetReport'
         ,'gatePass'
         ,'projectLead'
+        ,'jobRoleMaster'
+        ,'jobOpenings'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

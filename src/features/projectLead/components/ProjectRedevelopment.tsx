@@ -62,6 +62,7 @@ export const ProjectRedevelopment: React.FC = () => {
             debouncedSearch.cancel?.()
         }
     }, [debouncedSearch])
+    
 
     const loadProjectRedevelopment = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
@@ -508,11 +509,11 @@ export const ProjectRedevelopment: React.FC = () => {
     };
 
     const clearFilters = () => {
+        debouncedSearch.cancel?.();
         setTempFilters({});
         updateListState({ filters: {}, page: 1, searchTerm: '', sortInfo: undefined });
-        loadProjectRedevelopment(1, {}, undefined);
-        navigate(location.pathname, { replace: true, state: {} });
     };
+    
 
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
@@ -672,7 +673,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Building Name"
-                            value={tempFilters.BuildingName || ""}
+                            value={tempFilters.BuildingName  ?? ""}
                             onChange={e => handleFilterChange("BuildingName", e.target.value)}
                             placeholder="Enter Building Name"
                             maxLength={100}
@@ -683,7 +684,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Building Address"
-                            value={tempFilters.BuildingAddress}
+                            value={tempFilters.BuildingAddress ?? ""}
                             onChange={e => handleFilterChange("BuildingAddress", e.target.value)}
                             placeholder="Enter Building Address"
                         />
@@ -693,7 +694,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Contact Person Name"
-                            value={tempFilters.ContactPersonName}
+                            value={tempFilters.ContactPersonName ?? ""}
                             onChange={e => handleFilterChange("ContactPersonName", e.target.value)}
                             placeholder="Enter Contact Person Name"
                         />
@@ -703,7 +704,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Contact Person Mobile Number"
-                            value={tempFilters.ContactPersonMobile}
+                            value={tempFilters.ContactPersonMobile ?? ""}
                             onChange={e => handleFilterChange("ContactPersonMobile", e.target.value)}
                             placeholder="Enter Contact Person Mobile"
                         />
@@ -713,7 +714,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Pin Code"
-                            value={tempFilters.PinCode}
+                            value={tempFilters.PinCode ?? ""}
                             onChange={e => handleFilterChange("PinCode", e.target.value)}
                             placeholder="Enter Pin Code"
                         />
@@ -723,7 +724,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Plot Number"
-                            value={tempFilters.PlotNumber}
+                            value={tempFilters.PlotNumber ?? ""}
                             onChange={e => handleFilterChange("PlotNumber", e.target.value)}
                             placeholder="Enter Plot Number"
                         />
@@ -733,7 +734,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Ward Number (Zone)"
-                            value={tempFilters.WardNumberZone}
+                            value={tempFilters.WardNumberZone ?? ""}
                             onChange={e => handleFilterChange("WardNumberZone", e.target.value)}
                             placeholder="Enter Ward Number Zone"
                         />
@@ -743,7 +744,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Existing Building Type"
-                            value={tempFilters.ExistingBuildingType}
+                            value={tempFilters.ExistingBuildingType ?? ""}
                             onChange={e => handleFilterChange("ExistingBuildingType", e.target.value)}
                             placeholder="Enter Existing Building Type"
                         />
@@ -753,7 +754,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Construction Type"
-                            value={tempFilters.ConstructionType}
+                            value={tempFilters.ConstructionType ?? ""}
                             onChange={e => handleFilterChange("ConstructionType", e.target.value)}
                             placeholder="Enter Construction Type"
                         />
@@ -763,7 +764,7 @@ export const ProjectRedevelopment: React.FC = () => {
                         <Input
                             type="text"
                             label="Type Of Land Tenure"
-                            value={tempFilters.TypeOfLandTenure}
+                            value={tempFilters.TypeOfLandTenure ?? ""}
                             onChange={e => handleFilterChange("TypeOfLandTenure", e.target.value)}
                             placeholder="Enter Type Of Land Tenure"
                         />
@@ -772,7 +773,7 @@ export const ProjectRedevelopment: React.FC = () => {
                     <div>
                         <DatePickerInput
                             label='From Date'
-                            value={tempFilters.FromDate || ''}
+                            value={tempFilters.FromDate ?? ''}
                             onChange={(value) => handleFilterChange('FromDate', value || '')}
                         />
                     </div>
@@ -780,7 +781,7 @@ export const ProjectRedevelopment: React.FC = () => {
                     <div>
                         <DatePickerInput
                             label='To Date'
-                            value={tempFilters.ToDate || ''}
+                            value={tempFilters.ToDate ?? ''}
                             onChange={(value) => handleFilterChange('ToDate', value || '')}
                         />
                     </div>

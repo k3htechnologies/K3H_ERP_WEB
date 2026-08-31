@@ -158,5 +158,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TAX_TRACKER: 'taxTracker.listState',
     PROJECT_LAND: 'projectLead.listState',
     PROJECT_REDEVELOPMENT: 'projectLead.listState',
+    JOB_ROLE_MASTER: 'jobRoleMaster.listState',
+    JOB_OPENING: 'jobOpening.listState',
 
 } as const

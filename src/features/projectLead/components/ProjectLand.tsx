@@ -263,7 +263,7 @@ export const ProjectLand: React.FC = () => {
             key: "CountryName",
             label: "Country",
             width: "15",
-            sortable: true,
+            sortable: false,
             align: "left",
             render: (value) => value || "-"
         },
@@ -303,7 +303,7 @@ export const ProjectLand: React.FC = () => {
             key: "PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber",
             label: "Plot / CTS / Survey / Subdivision Number",
             width: "20",
-            sortable: true,
+            sortable: false,
             align: "left",
             render: (value) => value || "-"
         },
@@ -579,7 +579,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Land Owner Name"
-                            value={tempFilters.LandOwnerName || ""}
+                            value={tempFilters.LandOwnerName ?? ""}
                             onChange={e => handleFilterChange("LandOwnerName", e.target.value)}
                             placeholder="Enter Land Owner Name"
                             maxLength={100}
@@ -590,7 +590,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Land Address"
-                            value={tempFilters.LandAddress}
+                            value={tempFilters.LandAddress ?? ""}
                             onChange={e => handleFilterChange("LandAddress", e.target.value)}
                             placeholder="Enter Land Address"
                         />
@@ -600,7 +600,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Contact Person Name"
-                            value={tempFilters.ContactPersonName || ""}
+                            value={tempFilters.ContactPersonName ?? ""}
                             onChange={e => handleFilterChange("ContactPersonName", e.target.value)}
                             placeholder="Enter Contact Person Name"
                             maxLength={100}
@@ -611,7 +611,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Contact Person Mobile Number"
-                            value={tempFilters.ContactPersonMobile || ""}
+                            value={tempFilters.ContactPersonMobile ?? ""}
                             onChange={e => handleFilterChange("ContactPersonMobile", e.target.value)}
                             placeholder="Enter Contact Person Mobile"
                             maxLength={100}
@@ -622,7 +622,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Pin Code"
-                            value={tempFilters.PinCode || ""}
+                            value={tempFilters.PinCode ?? ""}
                             onChange={e => handleFilterChange("PinCode", e.target.value)}
                             placeholder="Enter Pin Code"
                             maxLength={100}
@@ -633,7 +633,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Plot Number"
-                            value={tempFilters.PlotNumber || ""}
+                            value={tempFilters.PlotNumber ?? ""}
                             onChange={e => handleFilterChange("PlotNumber", e.target.value)}
                             placeholder="Enter Plot Number"
                             maxLength={100}
@@ -644,7 +644,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Ward Number (Zone)"
-                            value={tempFilters.WardNumberZone || ""}
+                            value={tempFilters.WardNumberZone ?? ""}
                             onChange={e => handleFilterChange("WardNumberZone", e.target.value)}
                             placeholder="Enter Ward Number Zone"
                             maxLength={100}
@@ -655,7 +655,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Plot Shape"
-                            value={tempFilters.PlotShape || ""}
+                            value={tempFilters.PlotShape ?? ""}
                             onChange={e => handleFilterChange("PlotShape", e.target.value)}
                             placeholder="Enter Plot Shape"
                             maxLength={100}
@@ -666,7 +666,7 @@ export const ProjectLand: React.FC = () => {
                         <Input
                             type="text"
                             label="Land Ownership Type"
-                            value={tempFilters.LandOwnershipType || ""}
+                            value={tempFilters.LandOwnershipType ?? ""}
                             onChange={e => handleFilterChange("LandOwnershipType", e.target.value)}
                             placeholder="Enter Land Ownership Type"
                             maxLength={100}
@@ -676,7 +676,7 @@ export const ProjectLand: React.FC = () => {
                     <div>
                         <DatePickerInput
                             label='From Date'
-                            value={tempFilters.FromDate || ''}
+                            value={tempFilters.FromDate ?? ''}
                             onChange={(value) => handleFilterChange('FromDate', value || '')}
                         />
                     </div>
@@ -684,7 +684,7 @@ export const ProjectLand: React.FC = () => {
                     <div>
                         <DatePickerInput
                             label='To Date'
-                            value={tempFilters.ToDate || ''}
+                            value={tempFilters.ToDate ?? ''}
                             onChange={(value) => handleFilterChange('ToDate', value || '')}
                         />
                     </div>

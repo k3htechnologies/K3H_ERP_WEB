@@ -224,6 +224,15 @@ import AddUpdateProjectRedevelopment from '@/features/projectLead/components/Add
 import { ViewProjectLand } from '@/features/projectLead/components/ViewProjectLand';
 import ViewProjectRedevelopment from '@/features/projectLead/components/ViewProjectRedevelopment';
 import ViewProjectLead from '@/features/projectLead/pages/ViewProjectLead';
+import { JobRoleMasterListStateProvider } from '@/features/hireSpace/JobRoleMaster/context/JobRoleMasterListStateContext';
+import JobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/JobRoleMaster';
+import AddUpdateJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/AddUpdateJobRoleMaster';
+import { JobOpeningListStateProvider } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
+import ViewJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/ViewJobRoleMaster';
+import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
+import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
+import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
+import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -551,12 +560,20 @@ function App() {
 
             {/* PROJECT LAND */}
             <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
-            <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
+              <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
             <Route path="projectLead/addProjectLand/:ProjectLandId?" element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
             <Route path="projectLead/addProjectRedevelopment/:ProjectRedevelopmentId?" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
             <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
             <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
 
+            {/* HIRESPACE & JON OPENING */}
+            <Route path="jobRoleMaster" element={<JobRoleMasterListStateProvider><JobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/add/:departmentId/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/view" element={<JobRoleMasterListStateProvider><ViewJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobOpenings" element={<JobOpeningListStateProvider><JobOpening /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/:departmentId/JobApplicationDetails/:jobOpeningMasterId" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

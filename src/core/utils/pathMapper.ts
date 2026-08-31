@@ -140,7 +140,12 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/gatepass': '/gatePass',
 
         //PROJECT LAND
-        '/projectlead': '/projectLead'
+        '/projectlead': '/projectLead',
+
+
+        //  HIRESPACE & JON OPENING
+        '/jobrolemaster': '/jobRoleMaster',
+        '/jobopenings': '/jobOpenings'
     }
 
 

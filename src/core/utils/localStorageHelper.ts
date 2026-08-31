@@ -1747,6 +1747,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_LAND);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_REDEVELOPMENT);
+       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_ROLE_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
 
 
 

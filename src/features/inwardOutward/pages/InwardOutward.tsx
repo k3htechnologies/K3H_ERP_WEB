@@ -40,6 +40,7 @@ const initialFormState = (): AddRevertInwardOutwardData => ({
     RevertDate: null,
     RevertDocumentURL: null,
     RevertRemark: '',
+    RemoveRevertDocumentURL: ''
 });
 
 export const InwardOutward: React.FC = () => {
@@ -291,7 +292,7 @@ export const InwardOutward: React.FC = () => {
                         UniqueKey: newRecord.UniqueKey,
                         RevertDate: newRecord.RevertDate,
                         RevertRemark: newRecord.RevertRemark,
-                        RevertDocumentURL: null,
+                        RevertDocumentURL: '',
                     };
 
                     setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
@@ -965,6 +966,7 @@ export const InwardOutward: React.FC = () => {
                                 isDisplayCurrentDate
                                 minDate={new Date(new Date().setDate(new Date().getDate()))}
                                 error={errors.RevertDate}
+                                disabled={true}
                             />
                         </div>
                         <div>

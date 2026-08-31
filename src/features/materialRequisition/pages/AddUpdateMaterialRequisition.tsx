@@ -87,7 +87,6 @@ export const AddUpdateMaterialRequisition = () => {
         if (!MaterialRequisitionId) return;
         (async () => {
             await loadDetailsdata();
-
         })();
     }, [MaterialRequisitionId]);
 
@@ -99,12 +98,10 @@ export const AddUpdateMaterialRequisition = () => {
 
     useEffect(() => {
         const uniqueMaterials = [
-            ...new Map(
-                (materialsubmaterialList || []).map(x => [
-                    x.MaterialMasterId,
-                    x
-                ])
-            ).values()];
+            ...new Map((materialsubmaterialList || []).map(x => [
+                x.MaterialMasterId,
+                x
+            ])).values()];
 
         setMaterialOptions(
             uniqueMaterials.map(x => ({
@@ -157,7 +154,6 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const loadDetailsdata = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -219,7 +215,6 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const handleAddMaterial = async () => {
-
         setErrors({});
         setDropdownMaterialResetKey(prev => prev + 1);
         setAddMaterialPopUp(true);
@@ -378,6 +373,7 @@ export const AddUpdateMaterialRequisition = () => {
     const PushMaterialRequisitionFormData = (): FormData => {
 
         const form = new FormData();
+
         form.append('MaterialRequisitionId', String(formData.MaterialRequisitionId ?? 0));
         form.append('Uniquekey', formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6');
         form.append('Remarks', formData.Remarks ?? '');
@@ -494,6 +490,7 @@ export const AddUpdateMaterialRequisition = () => {
                 const employeeData = LocalStorageHelper.getStoredEmployeeData();
                 const projectId = employeeData?.ProjectData?.[0]?.ProjectId ?? 0;
                 const ClientRegistrationId = Number(employeeData?.ClientRegistrationId);
+
                 const params: FilterWithPaginationMaterialSubMaterialMasterUOM = {
                     ProjectId: projectId,
                     ClientRegistrationId: ClientRegistrationId
@@ -591,6 +588,7 @@ export const AddUpdateMaterialRequisition = () => {
                         )}
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+
                         <div className="flex items-center justify-between pb-3">
                             <MultiFilePicker
                                 label="Upload Document"
@@ -628,14 +626,11 @@ export const AddUpdateMaterialRequisition = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={
-                        formData.MaterialRequisitionId &&
-                            formData.MaterialRequisitionId > 0 ? "Update" : "Add"
-                    }
+                    saveText={formData.MaterialRequisitionId && formData.MaterialRequisitionId > 0 ? "Update" : "Add"}
                     onCancel={() => navigate(-1)}
                     canAction={canAction}
                     onSave={() => {
-                         handleSave();
+                        handleSave();
                     }}
                     isLoading={isLoading}
                 />
@@ -852,8 +847,7 @@ export const AddUpdateMaterialRequisition = () => {
                                     MaterialQuantity: value === "" ? 0 : Number(value)
                                 }));
                             }}
-                            placeholder="Quantity"
-                            min={0}
+                            placeholder="Enter Quantity"
                             error={errors.MaterialQuantity}
                         />
 

@@ -81,7 +81,6 @@ const InvoicePayment: React.FC = () => {
     };
 
     const loadmaterialRequisitionGRNData = async () => {
-        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -422,7 +421,7 @@ const InvoicePayment: React.FC = () => {
                             <FieldItem label="Payment Type" value={item.PaymentType ?? ''} />
                             <FieldItem label="Payment Mode" value={item.PaymentMode ?? ''} />
                             <FieldItem label="Transaction Number" value={item.TransactionNumber ?? ''} />
-                            
+
                             <div>
                                 <p className="text-gray-500">Transaction Receipt</p>
                                 <MultiImageViewer

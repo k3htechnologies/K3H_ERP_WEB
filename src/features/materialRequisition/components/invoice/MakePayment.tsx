@@ -108,6 +108,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     };
 
     const validate = () => {
+
         const newErrors: any = {};
 
         if (!formData.PaymentMode) {
@@ -129,6 +130,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         }
         if (!formData.TDSAmount) {
             newErrors.TDSAmount = " TDS Amount is Required";
+
         } else if (toNumber(formData.TDSAmount) < 0) {
             newErrors.TDSAmount = "Invalid";
         }
@@ -164,11 +166,10 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             if (!formData.IFSCCode) {
                 newErrors.IFSCCode = "IFSC Code is required";
             } else if (formData.IFSCCode.trim().length !== 11) {
-                newErrors.IFSCCode =
-                    "IFSC Code must be 11 characters";
+                newErrors.IFSCCode = "IFSC Code must be 11 characters";
+
             } else if (!isValidIFSC(formData.IFSCCode)) {
-                newErrors.IFSCCode =
-                    "Enter valid IFSC Code";
+                newErrors.IFSCCode = "Enter valid IFSC Code";
             }
         }
 
@@ -190,6 +191,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     };
 
     const pushPaymentData = () => {
+
         const fd = new FormData();
 
         fd.append("ProjectId", String(projectId));
@@ -228,7 +230,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             setErrors(validation.errors);
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -243,10 +244,8 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     navigate(-1);
 
                 } else {
-
                     addToast({ type: "error", title: response.left?.message });
                 }
-
                 return response;
             }
         );
@@ -303,8 +302,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         MaterialRequisitionInvoiceId: Number(MaterialRequisitionInvoiceId)
                     };
 
-                    const response =
-                        await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
+                    const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
 
                     if (E.isRight(response)) {
 
@@ -329,26 +327,20 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         }
 
                     } else {
-
                         addToast({ type: "error", title: response.left.message });
-
                     }
-
                     return response;
                 },
                 undefined,
                 (error: any) => {
-
                     addToast({ type: "error", title: error.message });
-
                 },
                 undefined,
                 "Loading Invoice Data"
             );
         };
-
         fetchInvoiceData();
-
+        
     }, [MaterialRequisitionInvoiceId, projectId, currentMaterialRequisitionId]);
 
     return (

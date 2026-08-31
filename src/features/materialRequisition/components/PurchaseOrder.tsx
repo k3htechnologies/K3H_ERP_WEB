@@ -63,7 +63,6 @@ export const PurchaseOrder: React.FC = () => {
     }, [projectId, currentMaterialRequisitionId])
 
     const loadPurchaseOrder = async () => {
-        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -121,6 +120,7 @@ export const PurchaseOrder: React.FC = () => {
     }
 
     const validateGeneratePurchaseOrderForm = (): {
+
         isValid: boolean
         errors: { [key: string]: string }
     } => {
@@ -191,6 +191,7 @@ export const PurchaseOrder: React.FC = () => {
     };
 
     const handleUploadPurchaseOrder = async (e: React.ChangeEvent<HTMLInputElement>) => {
+
         const file = e.target.files?.[0];
         if (!file) return;
 

@@ -102,7 +102,6 @@ export const FinalizedVendor: React.FC = () => {
     }
 
     const loadSelectedVendor = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -185,7 +184,6 @@ export const FinalizedVendor: React.FC = () => {
     };
 
     const finalizeVendor = async (vendorId: string) => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -231,8 +229,7 @@ export const FinalizedVendor: React.FC = () => {
 
                     const selected =
                         materialRequisitionVendorFinalizedList.filter(v =>
-                            selectedVendorIds.includes(v.VendorId)
-                        )
+                            selectedVendorIds.includes(v.VendorId))
 
                     setMaterialRequisitionVendorSelectedList(selected)
 
@@ -245,7 +242,6 @@ export const FinalizedVendor: React.FC = () => {
                     await loadSelectedVendor()
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }

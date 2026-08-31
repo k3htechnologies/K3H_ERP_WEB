@@ -54,12 +54,14 @@ export const ViewMaterialRequisition: React.FC = () => {
     const currentUniquekey = listState.Uniquekey
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
+
         { id: "Overview", label: "Overview" },
         { id: "Details", label: "Details" },
         canFinalizedVendorView ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
         canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
         { id: "GRN", label: "GRN" },
         canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
+
     ].filter(Boolean) as { id: string; label: string }[];
 
     const handleBackToListMaterialRequisition = () => {
@@ -191,7 +193,6 @@ export const ViewMaterialRequisition: React.FC = () => {
     }
 
     const handleOpenRequisitionModal = () => {
-
         setEditableDetails(matrialRequisitionDetailData);
         setEditIsModalOpen(true);
     }

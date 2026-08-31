@@ -45,7 +45,6 @@ export const GRN: React.FC = () => {
         loadGRNData()
     }, [projectId, currentMaterialRequisitionId])
 
-
     const handleAddGRN = useCallback(() => {
         navigate('/grn/add');
     }, [navigate]);
@@ -301,7 +300,6 @@ export const GRN: React.FC = () => {
                             />
                         );
                     },
-
                     expandButton: { openText: "Hide", closeText: "Show" }
                 }}
             />
@@ -361,9 +359,10 @@ export const GRN: React.FC = () => {
                             ))}
                         </div>
                     )}
-                    
+
                 </div>
             </Modal>
+
         </div>
     )
 }

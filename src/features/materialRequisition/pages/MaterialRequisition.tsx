@@ -440,7 +440,6 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const handleAddMaterialRequisitionModal = useCallback(() => {
-
         navigate('/materialRequisition/add');
     }, [navigate]);
 
@@ -463,7 +462,6 @@ export const MaterialRequisition: React.FC = () => {
                     SystemGeneratedCode: searchTerm ?? filters?.SystemGeneratedCode ?? undefined,
                     FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
                     ToDate: filters?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
-
                     ExportType: exportType
                 };
 
@@ -518,7 +516,7 @@ export const MaterialRequisition: React.FC = () => {
                 data={materialRequisitionData}
                 columns={visibleMaterialRequisitionColumns}
                 pagination={MaterialRequisitionPaginationInfo}
-                emptyMessage="No Material Requisition Found"
+                emptyMessage="No Material Requisition Data Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"

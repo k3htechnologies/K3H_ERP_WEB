@@ -55,6 +55,7 @@ const initialFormState = (): MaterialRequisitionDetailGRN => ({
 })
 
 export const AddUpdateGRN = () => {
+
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [addMaterialPopUp, setAddMaterialPopUp] = useState(false);
@@ -190,7 +191,6 @@ export const AddUpdateGRN = () => {
     };
 
     const handleAddMaterial = async () => {
-
         setErrors({});
         setAddMaterialPopUp(true);
         setEditIndex(null);
@@ -534,6 +534,7 @@ export const AddUpdateGRN = () => {
     };
 
     const validateMaterialDetailsForm = (): {
+
         isValid: boolean;
         errors: { [key: string]: string };
     } => {
@@ -547,6 +548,7 @@ export const AddUpdateGRN = () => {
 
         if (!materialData.TotalReceivedMaterialQuantity)
             newErrors.TotalReceivedMaterialQuantity = "Received Quantity is required";
+
         else if (materialData.TotalReceivedMaterialQuantity > effectiveAllowedReceivedQuantity) {
             if (isToleranceAllowed) {
                 newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than allowed quantity ${effectiveAllowedReceivedQuantity} (${pendingQuantity} + ${tolerancePercentage}% tolerance).`;
@@ -592,7 +594,7 @@ export const AddUpdateGRN = () => {
             });
             return;
         }
-        
+
         const newItem: MaterialRequisitionDetailGRN = {
             ...materialData
         };
@@ -658,12 +660,7 @@ export const AddUpdateGRN = () => {
                                 label="Vehicle No."
                                 placeholder="Enter Vehicle No."
                                 value={formData.VehicleNumber ?? ""}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        VehicleNumber: e.target.value
-                                    }))
-                                }
+                                onChange={(e) => setFormData(prev => ({ ...prev, VehicleNumber: e.target.value }))}
                                 maxLength={10}
                                 error={errors.VehicleNumber}
                                 required
@@ -674,12 +671,7 @@ export const AddUpdateGRN = () => {
                                 label="Challan No."
                                 placeholder="Challan No."
                                 value={formData.ChallanNumber}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        ChallanNumber: filterChallanNumber(e.target.value)
-                                    }))
-                                }
+                                onChange={(e) => setFormData(prev => ({ ...prev, ChallanNumber: filterChallanNumber(e.target.value) }))}
                                 maxLength={15}
                                 error={errors.ChallanNumber}
                                 required
@@ -706,12 +698,7 @@ export const AddUpdateGRN = () => {
 
                         <div className="flex items-center justify-between pb-3">
                             <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        Remarks: e.target.value
-                                    }))
-                                }
+                                onChange={(e) => setFormData(prev => ({ ...prev, Remarks: e.target.value }))}
                                 placeholder="Enter Remark"
                                 error={errors.Remarks}
                                 required
@@ -861,8 +848,8 @@ export const AddUpdateGRN = () => {
                         disabled
                         value={`${pendingQuantity}`}
                         onChange={(e) => {
-                            const value = e.target.value;
 
+                            const value = e.target.value;
                             setMaterialData(prev => ({
                                 ...prev,
                                 MaterialQuantity: value === "" ? 0 : Number(value)
@@ -879,6 +866,7 @@ export const AddUpdateGRN = () => {
                         required
                         value={materialData.TotalReceivedMaterialQuantity}
                         onChange={(e) => {
+
                             const value = e.target.value;
                             setMaterialData(prev => ({
                                 ...prev,
@@ -908,5 +896,4 @@ export const AddUpdateGRN = () => {
         </>
     )
 }
-
-
+export default AddUpdateGRN;

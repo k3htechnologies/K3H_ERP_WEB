@@ -158,6 +158,7 @@ const CreateInvoice: React.FC = () => {
     };
 
     const validateAddInvoiceForm = (): {
+        
         isValid: boolean
         errors: { [key: string]: string }
     } => {

@@ -83,6 +83,7 @@ export const Details: React.FC = () => {
     const PushSplitMaterialRequisitionFormData = (): FormData => {
 
         const fd = new FormData();
+
         fd.append("ProjectId", Number(projectId).toString());
         fd.append("MaterialRequisitionId", currentMaterialRequisitionId.toString());
         fd.append("Uniquekey", currentUniquekey);
@@ -134,9 +135,7 @@ export const Details: React.FC = () => {
                     navigate("/materialRequisition");
 
                 } else {
-
                     addToast({ type: "error", title: response.left?.message });
-
                     setIsAddUpdateModalOpen(false)
                 }
                 return response;
@@ -201,7 +200,9 @@ export const Details: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4 mt-2">
+
                 <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>
+
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
@@ -223,6 +224,7 @@ export const Details: React.FC = () => {
             </div>
 
             <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+
                 <div className="flex justify-between">
                     <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
 
@@ -358,9 +360,7 @@ export const Details: React.FC = () => {
                 <div className="max-h-[400px] overflow-y-auto">
                     {selectedMaterials.map((item) => (
                         <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
-                            <Checkbox
-                                checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
-                            />
+                            <Checkbox checked={selectedIds.includes(item.MaterialRequisitionDetailId)} />
                             <p className="font-semibold">{item.SubMaterialName}</p>
                         </div>
                     ))}

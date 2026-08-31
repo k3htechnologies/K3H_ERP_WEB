@@ -17,7 +17,7 @@ import { materialRequisitionInvoiceService } from "@/features/materialRequisitio
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 export const Invoice: React.FC = () => {
-    
+
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
     const [invoiceSummaryData, setInvoiceSummaryData] = useState<MaterialRequisitionInvoiceSummaryData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -72,7 +72,7 @@ export const Invoice: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading GRN",
+            "Loading Invoice",
         );
     };
 
@@ -132,8 +132,7 @@ export const Invoice: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange,
         }),
-        [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
-    );
+        [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],);
 
     const InvoiceForTable = useMemo(() => invoiceList, [invoiceList]);
 
@@ -170,41 +169,35 @@ export const Invoice: React.FC = () => {
             align: 'center',
             render: (_value, row) => (
                 <div>
-                    {
-                        row.IsInvoiceCreated === false && (
-                            <Button
-                                color="blue"
-                                size="sm"
-                                onClick={() => handleCreateInvoice(row)}
-                            >
-                                Create Invoice
-                            </Button>
-                        )
-                    }
+                    {row.IsInvoiceCreated === false && (
+                        <Button
+                            color="blue"
+                            size="sm"
+                            onClick={() => handleCreateInvoice(row)}
+                        >
+                            Create Invoice
+                        </Button>
+                    )}
 
-                    {
-                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && (
-                            <Button
-                                color="blue"
-                                size="sm"
-                                onClick={() => handleMakePayment(row)}
-                            >
-                                Make Payment
-                            </Button>
-                        )
-                    }
+                    {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && (
+                        <Button
+                            color="blue"
+                            size="sm"
+                            onClick={() => handleMakePayment(row)}
+                        >
+                            Make Payment
+                        </Button>
+                    )}
 
-                    {
-                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && (
-                            <Button
-                                color="blue"
-                                size="sm"
-                                onClick={() => handleMakePayment(row)}
-                            >
-                                View Payment
-                            </Button>
-                        )
-                    }
+                    {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && (
+                        <Button
+                            color="blue"
+                            size="sm"
+                            onClick={() => handleMakePayment(row)}
+                        >
+                            View Payment
+                        </Button>
+                    )}
                 </div>
             )
         }

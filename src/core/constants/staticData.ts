@@ -696,7 +696,7 @@ export const MASTER_DATA = {
 
   orderStatusOptions: ["Favourable", "Non-Favourable"],
 
-  requestTypeOptions: ["Reply", "Order", "Notice", "Close-Notice"],
+  requestTypeOptions: ['Reply', 'Order', 'Appeal', 'Notice', 'Close-Notice', 'Others'],
 
   termSheetTypeOptions: [
     "Construction Finance (CF)",

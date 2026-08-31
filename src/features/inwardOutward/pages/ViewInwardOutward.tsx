@@ -45,6 +45,7 @@ const ViewInwardOutward: React.FC = () => {
         RevertDate: null,
         RevertDocumentURL: null,
         RevertRemark: '',
+        RemoveRevertDocumentURL: ''
     });
     const [revertEditErrors, setRevertEditErrors] = useState<{ [k: string]: string }>({});
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
@@ -175,6 +176,7 @@ const ViewInwardOutward: React.FC = () => {
             RevertDate: item.RevertDate ?? null,
             RevertDocumentURL: null,
             RevertRemark: item.RevertRemark ?? '',
+            RemoveRevertDocumentURL: ''
         });
         setRevertDocumentURL(item.RevertDocumentURL ?? "");
         setRevertDocumentURLFiles([]);
@@ -252,10 +254,7 @@ const ViewInwardOutward: React.FC = () => {
                     if (file instanceof File) fd.append("RevertDocumentURL", file);
                 });
 
-                const hasExisting = revertDocumentURL &&
-                    revertDocumentURL.trim() !== "" &&
-                    !removedRevertDocumentURLs.includes(revertDocumentURL);
-                if (hasExisting) fd.append("RevertDocumentURL", revertDocumentURL);
+                fd.append("RemoveRevertDocumentURL", removedRevertDocumentURLs.join(","));
 
                 const response = await inwardOutwardService.apiCallAddRevertInwardOutward(fd);
 
@@ -380,13 +379,12 @@ const ViewInwardOutward: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-
-                                        <FieldItem label="Acknowledgement Document" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />
-
-
+                                        {inwardOutwardData?.DocumentType === 'Inward' && <FieldItem label="Inward Document" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />}
+                                        {inwardOutwardData?.DocumentType === 'Outward' && <FieldItem label="Outward Document" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />}
                                     </div>
                                     <div className="mt-2">
-                                        <FieldItem label="Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />
+                                        {inwardOutwardData?.DocumentType === 'Inward' && <FieldItem label="Inward Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />}
+                                        {inwardOutwardData?.DocumentType === 'Outward' && <FieldItem label="Outward Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />}
                                     </div>
                                 </div>
                             </section>

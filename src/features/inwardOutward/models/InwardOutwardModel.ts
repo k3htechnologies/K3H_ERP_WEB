@@ -127,7 +127,7 @@ export interface InwardOutwardRevertHistory {
     InwardOutwardId: number
     RevertDate: string | null
     RevertRemark: string | null
-    RevertDocumentURL: string | null
+    RevertDocumentURL: string
 }
 export interface InwardOutwardDocumentHistory {
     DeliveryStatus: string | null
@@ -140,6 +140,7 @@ export interface AddRevertInwardOutwardData {
     RevertDate: string | null
     RevertRemark: string | null
     RevertDocumentURL: File[] | null
+    RemoveRevertDocumentURL: string | null
 }
 export interface DeleteInwardOutwardRevertHistoryRequest {
     InwardOutwardRevertId: number | 0,

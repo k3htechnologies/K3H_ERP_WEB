@@ -35,7 +35,7 @@ import type { FilterPullExcelSample } from "@/features/technical/models/Technica
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
-import { FileText, AlertTriangle } from "lucide-react";
+import { FileText, AlertTriangle, Copy } from "lucide-react";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import { useEmployeeListState } from "@/features/employeeMaster/context/EmployeeListStateContext";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
@@ -46,6 +46,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { filterNumbers } from "@/core/utils/fileValidation";
+import { copyToClipboard } from "@/core/utils/comman";
 
 export const EmployeeMaster: React.FC = () => {
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
@@ -614,6 +615,57 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: 'VillageName',
         label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'MPIN',
+        label: 'MPIN',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value) => {
+          return (
+            <div className="flex items-center gap-2">
+
+              {value && (
+                <TooltipText
+                  text={value || '-'}
+                  tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+              )}
+              
+              {value && (
+                <Button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const success = await copyToClipboard(value);
+                    if (success) {
+                      addToast({ type: 'success', title: `${value} Copied!` });
+                    }
+                  }}
+                  color="transparent"
+                  size="sm"
+                  style={{
+                    padding: '2px 6px',
+                    color: '#6B7280',
+                    cursor: 'pointer'
+                  }}
+                  title="Copy"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          );
+        }
+      },
+      {
+        key: 'MPIN',
+        label: 'MPIN',
         width: '15',
         sortable: false,
         align: 'left',

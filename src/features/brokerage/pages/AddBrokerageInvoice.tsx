@@ -217,7 +217,8 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (formData.InvoiceAmount <= 0) {
             newErrors.InvoiceAmount = "Invoice Amount cannot be zero or negative";
         } else if (Number(formData.InvoiceAmount) > brokerageAmount) {
-            newErrors.InvoiceAmount = `Invoice amount exceeds the brokerage amount ₹${brokerageAmount.toLocaleString('en-IN')}`;
+            var pendingAmount = Number(brokerageAmount) - Number(listState.invoiceAmount);
+            newErrors.InvoiceAmount = `Invoice amount exceeds the brokerage amount ₹${pendingAmount.toLocaleString('en-IN')}`;
         }
 
         return {
@@ -321,10 +322,9 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                             <FieldItem label="CP Mobile Number" value={listState.cpMobileNumber} />
                             <FieldItem label="Agreement Value" value={formatCurrency(listState.agreementValue)} />
                             <FieldItem label="Brokerage Amount" value={formatCurrency(listState.brokerageAmount)} />
-                            <FieldItem label="Invoice Amount" value={formatCurrency(listState.invoiceAmount)} />
+                            <FieldItem label="Generated Invoice Amount" value={formatCurrency(listState.invoiceAmount)} />
                             <FieldItem label="Payment Paid Amount" value={formatCurrency(listState.paymentPaidAmount)} />
                             <FieldItem label="Pending Amount" value={formatCurrency(PendingAmount)} />
-
                         </div>
                     </div>
 

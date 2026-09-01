@@ -335,7 +335,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Make Payment</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                             <div>
                                 <SinglePageSelection
@@ -360,9 +360,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     error={errors.PaymentType}
                                 />
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       
 
                             <div>
                                 <Input

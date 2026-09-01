@@ -555,7 +555,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* ================== BASIC DETAILS ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Basic Details
                             </h4>
@@ -625,7 +625,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                         </section>
                         {/* ================== ADDRESS ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Address
                             </h4>
@@ -652,7 +652,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                         </section>
 
                         {/* ================== EMPLOYEE INFO ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Employee Information
                             </h4>
@@ -698,6 +698,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                                             label="Id Card Issued Date"
                                             value={formatDate_dd_MonthName_yy(safe(employeeData!.IdCardIssuedDate))}
                                         />
+
+                                        <FieldItem label="MPIN" value={safe(employeeData!.MPIN)} />
                                     </div>
                                 </div>
                             </div>
@@ -705,7 +707,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
 
                         {/* ================== BANK DETAILS ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900  mb-4">
                                 Bank Details
                             </h4>
@@ -726,7 +728,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                         </section>
 
                         {/* ================== FAMILY DETAILS ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Emergency Contact Details
                             </h4>
@@ -753,7 +755,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                             </div>
                         </section>
                         {/* ================== ACTION DETAILS ================== */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Action Details
                             </h4>
@@ -785,7 +787,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                     <div className="lg:col-span-1 space-y-6">
 
                         {/* Reporting Structure example block */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
+                        <section className="bg-white rounded-xl p-6 border-[0.5px] border-[#3333334f]">
 
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Reporting Structure
@@ -956,7 +958,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-5">
 
                     {docsWithUrls.length === 0 && (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                        <section className="md:col-span-4 bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}
@@ -966,7 +968,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                             .filter(x => x?.trim()?.length);
 
                         return (
-                            <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+                            <div className="border border-gray-200 rounded-lg  flex flex-col h-full">
 
                                 <div className="flex items-start justify-between p-2 gap-2">
                                     <div className="flex flex-col">
@@ -1016,7 +1018,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === 'Assets' && assetMappingMasterList && (
                 <div className="space-y-4 pt-5">
                     {assetMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Assets Found' />
                         </section>
                     ) : (
@@ -1026,7 +1028,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 return (
                                     <>
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]" >
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Asset Details
                                             </h4>
@@ -1072,7 +1074,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === "Project" && (
                 <div className="space-y-4 pt-5">
                     {projectMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Project Found' />
                         </section>
                     ) : (
@@ -1104,7 +1106,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === 'Shift Policy' && shiftMappingMasterList && (
                 <div className="space-y-4 pt-5">
                     {shiftMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Shift Policy Found' />
                         </section>
                     ) : (
@@ -1117,7 +1119,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                             {/* ================= LEFT SIDE (2/3) ================= */}
                                             <div className="lg:col-span-2 space-y-6">
-                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                         Basic Shift Details
                                                     </h4>
@@ -1133,7 +1135,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                     </div>
                                                 </section>
                                                 {/* ================= SHIFT DURATION ================= */}
-                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                         Time Details
                                                     </h4>
@@ -1156,7 +1158,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                 </section>
 
                                                 {/* ================= HALF DAY AND ABSENCE RULES================= */}
-                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                         Advance Setting
                                                     </h4>
@@ -1195,7 +1197,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                             <div className="lg:col-span-1 space-y-6">
 
                                                 {/* ================= BREAK DETAILS ================= */}
-                                                <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                                                <section className="bg-white rounded-xl border border-gray-300  p-6">
 
                                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                         Break Details
@@ -1217,7 +1219,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                 </section>
 
 
-                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                         Time Allowed for Late Entry
                                                     </h4>
@@ -1231,7 +1233,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                     </div>
                                                 </section>
 
-                                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                         Remarks
                                                     </h4>
@@ -1260,7 +1262,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             {activeTab === 'Week Off Policy' && weekOffMappingMasterList && (
                 <div className="space-y-4 pt-5">
                     {weekOffMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Week Off Policy Found' />
                         </section>
                     ) : (
@@ -1270,7 +1272,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 return (
                                     <>
                                         {/* ================= BASIC DETAILS ================= */}
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Week Off Policy Details
                                             </h4>
@@ -1293,7 +1295,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                         </section>
 
                                         {/* ================= WEEK OFF DETAILS ================= */}
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                        <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Week Off Details
                                             </h4>

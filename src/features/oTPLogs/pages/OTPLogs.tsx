@@ -107,7 +107,7 @@ export const OTPLogs: React.FC = () => {
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         loadingOTPLogs(1, filters, sort, searchTerm);
-    }, [searchTerm]);
+    }, [filters,searchTerm]);
 
     const OTPLogsColumns = useMemo<TableColumn[]>(() => [
         {
@@ -173,7 +173,7 @@ export const OTPLogs: React.FC = () => {
 
     const handlePageChange = useCallback((page: number) => {
         loadingOTPLogs(page, filters, sortInfo, searchTerm);
-    }, [sortInfo, searchTerm]);
+    }, [sortInfo, filters,searchTerm]);
 
     const OTPLogsPaginationInfo: PaginationInfo = useMemo(
         () => ({

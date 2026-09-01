@@ -495,7 +495,7 @@ export const MASTER_DATA = {
     "Supreme Court of India",
   ],
 
-  paymentMode: ["Cheque", "Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
+  paymentMode: ["Cheque", 'Challan',"Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
 
   paymentType: ["Advance", "Late Fee", "Penalty", "Regular"],
 

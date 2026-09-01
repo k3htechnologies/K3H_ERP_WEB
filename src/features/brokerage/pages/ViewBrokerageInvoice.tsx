@@ -24,7 +24,7 @@ import type { PaginationInfo, TableColumn } from "@/ui/components/DataTable/Data
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { formatCurrency, getSafeString } from "@/core/utils/comman";
+import { formatCurrency } from "@/core/utils/comman";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { handleExportFile } from "@/core/utils/exportFile";
@@ -172,10 +172,11 @@ export const ViewBrokerageInvoice: React.FC = () => {
             state: {
                 InvoiceAmount: Number(row.InvoiceAmount || 0),
                 PaidAmount: Number(row.PaymentAmount || 0),
+                InvoiceNumber: row.InvoiceNumber,
+                InvoiceDate: row.InvoiceDate,
             },
         });
     };
-
 
     const handleConfirmationDialogBoxOpen = useCallback((row: BrokerageInvoiceData) => {
         setDeleteBrokerageInvoiceData(row)
@@ -625,6 +626,17 @@ export const ViewBrokerageInvoice: React.FC = () => {
         );
     };
 
+    const isFullyInvoiced = useMemo(() => {
+        const brokerageAmount = Number(listState.brokerageAmount || 0);
+
+        const totalInvoiceAmount = brokerageInvoiceList.reduce(
+            (total, invoice) => total + Number(invoice.InvoiceAmount || 0),
+            0
+        );
+
+        return totalInvoiceAmount >= brokerageAmount && brokerageAmount > 0;
+    }, [listState.brokerageAmount, brokerageInvoiceList]);
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6 ">
             <Loader loading={isLoading} title={loadingMessage}><div></div></Loader>
@@ -668,7 +680,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                         }}
                         onClearSearch={clearSearchByInvoiceNumber}
 
-                        isShowAddButton={canAction && activeTab === "Invoice" ? true : false}
+                        isShowAddButton={canAction && activeTab === "Invoice" && !isFullyInvoiced}
                         addTitle="Add"
                         onAdd={() => handleAddBrokerageInvoice(0)}
 
@@ -703,7 +715,8 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                 return (
 
                                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                        <div className="flex justify-between items-center">
+
+                                        <div className="flex justify-between items-start">
                                             <div className="text-sm text-gray-700">
                                                 <FieldItem label="Account Holder Name" value={row.AccountName} isRow />
 
@@ -718,16 +731,20 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
                                                         {pending > 0 ? (
                                                             <Button
-                                                                color="green"
                                                                 size="sm"
+                                                                style={{
+                                                                    color: '#FFFFFF',
+                                                                    padding: '4px 8px',
+                                                                    backgroundColor: '#135BEC'
+                                                                }}
                                                                 onClick={() => handleAddPaidBrokerageBooking(row)}
                                                             >
                                                                 Make Payment
                                                             </Button>
                                                         ) : (
-                                                            <span className="text-green-600 font-medium">
-                                                                Fully Paid
-                                                            </span>
+                                                            <div>
+                                                                <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-1 rounded-md inline-block">Fully Paid</span>
+                                                            </div>
                                                         )}
 
                                                     </div>
@@ -830,34 +847,52 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-                                    <FieldItem label="Bank Name" value={data.BankName} />
-                                    <FieldItem label="Payment Type" value={data.PaymentType} />
-                                    <FieldItem label="Payment Mode" value={data.PaymentMode} />
+                                <h3 className="col-span-3 font-semibold mt-4">
+                                    Developer Bank Details
+                                </h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                    <FieldItem label="Bank Name" value={data.ProjectBankName || "-"} isRow={false} />
+                                    <FieldItem label="Account Number" value={data.ProjectAccountNumber || "-"} isRow={false} />
+                                    <FieldItem label="IFSC Code" value={data.ProjectIFSCCode || "-"} isRow={false} />
+                                    <FieldItem label="Nature Of Account" value={data.ProjectNatureOfAccount || "-"} isRow={false} />
+                                    <FieldItem label="Account Type" value={data.ProjectAcType || "-"} isRow={false} />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                                    <FieldItem label="Account Number" value={data.AccountNumber} />
-                                    <FieldItem label="IFSC Code" value={data.IFSCCode} />
-                                    <FieldItem label="Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
-                                </div>
+                                <h3 className="col-span-3 font-semibold mt-4">
+                                    Customer Bank Details
+                                </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4" >
-                                    <FieldItem label="Transaction Number / Receipt" value={data.TransactionNumber} urls={data.TransactionReceiptURL} isIcon />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                    <FieldItem label="Payment Mode" value={data.PaymentMode || "-"} />
+                                    <FieldItem label="Payment Type" value={data.PaymentType || "-"} />
+                                    <FieldItem label="Account Number" value={data.AccountNumber || "-"} />
+                                    <FieldItem label="IFSC Code" value={data.IFSCCode || "-"} />
                                     <FieldItem label="Amount Paid" value={formatCurrency(data.AmountPaid)} />
                                     <FieldItem label="TDS Amount" value={formatCurrency(data.TDSAmount)} />
+
+                                    <FieldItem
+                                        label="Transaction / Cheque / Demand Draft No"
+                                        urls={data.TransactionReceiptURL}
+                                        value={data.TransactionNumber || "-"}
+                                        isIcon
+                                    />
+
+                                    <FieldItem
+                                        label="Transaction / Cheque / Demand Draft Date"
+                                        value={formatDate_dd_MonthName_yy(
+                                            data.TransactionChequeDemandDraftDate || "-"
+                                        )}
+                                    />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 pb-4">
-                                    <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
-                                    <FieldItem
-                                        label="Created Date"
-                                        value={
-                                            data.CreatedDate
-                                                ? formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate)
-                                                : '-'
-                                        }
-                                    />
+                                <h3 className="col-span-3 font-semibold mt-4">
+                                    Action Details
+                                </h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-2 pt-4">
+                                    <FieldItem label="Created By" value={data?.CreatedBy ?? "-"} />
+                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.CreatedDate ?? "-")} />
                                 </div>
 
                             </section>

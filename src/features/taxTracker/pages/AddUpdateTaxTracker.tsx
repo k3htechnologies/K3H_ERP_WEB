@@ -178,25 +178,25 @@ export const AddUpdateTaxTracker: React.FC = () => {
             newErrors.NoticeType = 'Notice Type is required.';
         }
         if (!formData.NoticeSectionMasterId) {
-            newErrors.NoticeSectionMasterId = 'Notice Section is required.';
+            newErrors.NoticeSectionMasterId = 'Notice U/S is required.';
         }
         if (!formData.Authority) {
-            newErrors.Authority = 'Authority is required.';
+            newErrors.Authority = 'Authority Type is required.';
         }
         if (!formData.OfficerName) {
             newErrors.OfficerName = 'Officer Name is required.';
         }
         if (!formData.OfficerAddress) {
-            newErrors.OfficerAddress = 'Officer Address is required.';
+            newErrors.OfficerAddress = 'Divisional Address is required.';
         }
         if (!formData.NoticeDate) {
             newErrors.NoticeDate = 'Notice Date is required.';
         }
         if (!formData.DueDate) {
-            newErrors.DueDate = 'Due Date is required.';
+            newErrors.DueDate = 'Reply Due Date is required.';
         }
         if (formData.DueDate && formData.NoticeDate && formData.DueDate < formData.NoticeDate) {
-            newErrors.DueDate = "Due Date should be greater than Notice Date.";
+            newErrors.DueDate = "Reply Due Date should be greater than Notice Date.";
         }
         if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs)) {
             newErrors.NoticeDocumentURL = "Notice Document is required.";
@@ -249,7 +249,6 @@ export const AddUpdateTaxTracker: React.FC = () => {
         return fd;
 
     }
-
 
     const handleAddUpdateTaxTracker = async () => {
         setErrors({});
@@ -387,13 +386,21 @@ export const AddUpdateTaxTracker: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Notice Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <Input type="text" label="Notice Title" placeholder="Enter Notice Title" required value={formData.NoticeType ?? ""} onChange={(e) => handleFieldChange("NoticeType", e.target.value)} error={errors.NoticeType} />
+                                <Input type="text"
+                                    label="Notice Title"
+                                    placeholder="Enter Notice Title"
+                                    required
+                                    value={formData.NoticeType ?? ""}
+                                    onChange={(e) => handleFieldChange("NoticeType", e.target.value)}
+                                    error={errors.NoticeType}
+
+                                />
                             </div>
 
                             <div>
                                 <SingleSelectDropdownWithPagination
                                     label="Notice U/S"
-                                    title="Select Notice Section"
+                                    title="Select Notice U/S"
                                     size="lg"
                                     required
                                     disabled={!formData.GovernmentCompliance}
@@ -420,17 +427,29 @@ export const AddUpdateTaxTracker: React.FC = () => {
                             </div>
 
                             <div>
-                                <DatePickerInput label="Notice Date" value={formatDate_dd_mm_yyyy(formData.NoticeDate)} onChange={(val) => handleFieldChange("NoticeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.NoticeDate} />
+                                <DatePickerInput
+                                    label="Notice Date"
+                                    value={formatDate_dd_mm_yyyy(formData.NoticeDate)}
+                                    onChange={(val) => {
+                                        const newNoticeDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
+                                        handleFieldChange("NoticeDate", newNoticeDate);
+                                        if (formData.DueDate && newNoticeDate && formData.DueDate < newNoticeDate) {
+                                            handleFieldChange("DueDate", null);
+                                        }
+                                    }}
+                                    required
+                                    minDate={new Date(new Date().setDate(new Date().getDate()))}
+                                    error={errors.NoticeDate}
+                                />
                             </div>
                             <div>
                                 <DatePickerInput
                                     label="Reply Due Date"
                                     value={formatDate_dd_mm_yyyy(formData.DueDate)}
-                                    minDate={new Date(new Date().setDate(new Date().getDate()))}
+                                    minDate={formData.NoticeDate ? new Date(formData.NoticeDate) : new Date()}
                                     onChange={(val) => handleFieldChange("DueDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                     required error={errors.DueDate} />
                             </div>
-
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Authorities Details</h3>

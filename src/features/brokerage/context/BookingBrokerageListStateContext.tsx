@@ -14,6 +14,10 @@ export type BookingBrokerageListState = {
   cpName: string;
   cpMobileNumber: string;
   cpCompany: string;
+  agreementValue: number;
+  brokerageAmount: number;
+  invoiceAmount: number;
+  paymentPaidAmount: number;
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage;
@@ -31,6 +35,10 @@ const getInitialState = (projectId: number | null): BookingBrokerageListState =>
       cpName: "",
       cpMobileNumber: "",
       cpCompany: "",
+      agreementValue: 0,
+      brokerageAmount: 0,
+      invoiceAmount: 0,
+      paymentPaidAmount: 0,
     };
   }
 
@@ -47,6 +55,11 @@ const getInitialState = (projectId: number | null): BookingBrokerageListState =>
           cpName: parsed.state.cpName || "",
           cpMobileNumber: parsed.state.cpMobileNumber || "",
           cpCompany: parsed.state.cpCompany || "",
+          agreementValue: parsed.state.agreementValue,
+          brokerageAmount: parsed.state.brokerageAmount,
+          invoiceAmount: parsed.state.invoiceAmount,
+          paymentPaidAmount: parsed.state.paymentPaidAmount,
+
         };
       }
     }
@@ -65,6 +78,10 @@ const getInitialState = (projectId: number | null): BookingBrokerageListState =>
     cpName: "",
     cpMobileNumber: "",
     cpCompany: "",
+    agreementValue: 0,
+    brokerageAmount: 0,
+    invoiceAmount: 0,
+    paymentPaidAmount: 0,
   };
 };
 
@@ -73,7 +90,7 @@ type BookingBrokerageListStateContextType = {
   updateListState: (updates: Partial<BookingBrokerageListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setBookingBrokerageContext: (bookingId: number, bookingName: string,cpName: string,cpMobileNumber: string,cpCompany: string) => void;
+  setBookingBrokerageContext: (bookingId: number, bookingName: string, cpName: string, cpMobileNumber: string, cpCompany: string, agreementValue: number, brokerageAmount: number, invoiceAmount: number, paymentPaidAmount: number) => void;
   clearBookingBrokerageContext: () => void;
 };
 
@@ -97,6 +114,10 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
         cpName: "",
         cpMobileNumber: "",
         cpCompany: "",
+        agreementValue: 0,
+        brokerageAmount: 0,
+        invoiceAmount: 0,
+        paymentPaidAmount: 0
       };
       setListState(defaultState);
       try {
@@ -148,18 +169,26 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
       cpName: "",
       cpMobileNumber: "",
       cpCompany: "",
+      agreementValue: 0,
+      brokerageAmount: 0,
+      invoiceAmount: 0,
+      paymentPaidAmount: 0,
     };
     setListState(defaultState);
   }, []);
 
-  const setBookingBrokerageContext = useCallback((bookingId: number, bookingName: string,cpName: string,cpMobileNumber: string,cpCompany: string) => {
+  const setBookingBrokerageContext = useCallback((bookingId: number, bookingName: string, cpName: string, cpMobileNumber: string, cpCompany: string, agreementValue: number, brokerageAmount: number, invoiceAmount: number, paymentPaidAmount: number) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
       bookingName,
       cpName,
       cpMobileNumber,
-      cpCompany
+      cpCompany,
+      agreementValue,
+      brokerageAmount,
+      invoiceAmount,
+      paymentPaidAmount
     }));
   }, []);
 
@@ -171,6 +200,10 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
       cpName: "",
       cpMobileNumber: "",
       cpCompany: "",
+      agreementValue: 0,
+      brokerageAmount: 0,
+      invoiceAmount: 0,
+      paymentPaidAmount: 0,
     }));
   }, []);
 

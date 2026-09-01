@@ -7,7 +7,7 @@ export interface FilterWithPaginationPaidBrokerageBookingRequest {
     BookingId?: number
     BrokerageInvoiceId?: number
     PaidBrokerageBookingId?: number
-    InvoiceNumber?:string| null
+    InvoiceNumber?: string | null
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -21,8 +21,12 @@ export interface PaidBrokerageBookingData {
     InvoiceNumber: string | ''
     InvoiceAmount: number | 0
     PaymentMode: string | null
-    BankListMasterId: number | 0
-    BankName: string | null
+    ProjectBankListMasterId: number;
+    ProjectBankName: string;
+    ProjectAccountNumber: string;
+    ProjectIFSCCode: string;
+    ProjectNatureOfAccount: string;
+    ProjectAcType: string;
     PaymentType: string | null
     AmountPaid: number | 0
     AccountNumber: string | null
@@ -31,6 +35,7 @@ export interface PaidBrokerageBookingData {
     TDSAmount: number | 0
     TransactionNumber: string | null
     TransactionReceiptURL: string | null
+    TransactionChequeDemandDraftDate: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -48,14 +53,15 @@ export interface AddUpdatePaidBrokerageBookingRequest {
     PaidBrokerageBookingId: number | 0
     BrokerageInvoiceId: number | 0
     PaymentMode: string | ''
-    BankListMasterId: number | 0
+    ProjectBankListMasterId: number | 0
     PaymentType: string | ''
     AmountPaid: number | 0
     TDSAmount: number | 0
     TransactionNumber: string | null
-    BankName: string | null
+    ProjectBankName: string | null
     TransactionReceiptURL: string | ''
     RemoveTransactionReceiptURL: string | ''
+    TransactionChequeDemandDraftDate: string | null
 }
 
 export interface DeletePaidBrokerageBookingRequest {

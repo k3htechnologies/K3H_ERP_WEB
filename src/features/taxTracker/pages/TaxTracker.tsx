@@ -99,6 +99,8 @@ export const TaxTracker: React.FC = () => {
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [searchTerm, setSearchTerm] = useState('');
 
+    const [selectedCompanyName, setSelectedCompanyName] = useState<string>("");
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchTaxTrackerRecords(value);
     }, 350);
@@ -160,7 +162,7 @@ export const TaxTracker: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setTaxTrackerList(response.right.Data);
-
+                    
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -362,7 +364,7 @@ export const TaxTracker: React.FC = () => {
             },
             {
                 key: 'NoticeSection',
-                label: 'Notice U / S',
+                label: 'Notice U/S',
                 width: '30',
                 fixed: 'left',
                 align: 'left',
@@ -492,7 +494,7 @@ export const TaxTracker: React.FC = () => {
         [handleConfirmationDialogBoxOpen, handleAddAppealModal, handleViewTaxTracker]
     );
 
-    const requiredTaxTrackerColumnKeys: string[] = ['NoticeType', 'GovernmentCompliance', 'Authority', 'NoticeDate', 'DueDate', 'NoticeStatus', 'Actions'];
+    const requiredTaxTrackerColumnKeys: string[] = ['CompanyName', 'NoticeType', 'Actions'];
 
     const allTaxTrackerColumnKeys: string[] = noticeSectionColumns.map(c => c.key);
 
@@ -538,6 +540,8 @@ export const TaxTracker: React.FC = () => {
                 };
 
                 const response = await taxTrackerService.apiCallDeleteTaxTracker(params);
+
+
 
                 if (E.isRight(response)) {
 
@@ -608,7 +612,7 @@ export const TaxTracker: React.FC = () => {
                     newErrors.AuthorityType = "Authority Type is required.";
 
                 if (!requestFormData.AmountUnderDisputeDate)
-                    newErrors.AmountUnderDisputeDate = "Notice Date is required.";
+                    newErrors.AmountUnderDisputeDate = "Date is required.";
 
                 if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
                     newErrors.NoticeDocumentURL = "Document is required.";
@@ -782,6 +786,7 @@ export const TaxTracker: React.FC = () => {
 
                 const response = await taxTrackerDocumentService.apiCallAddUpdateTaxTrackerDocument(payload);
 
+
                 if (E.isRight(response)) {
 
                     setTaxTrackerList((prev) =>
@@ -884,7 +889,7 @@ export const TaxTracker: React.FC = () => {
                     data={taxTrackerList}
                     columns={visibleTaxTrackerColumns}
                     pagination={taxTrackerPaginationInfo}
-                    emptyMessage="No Tax Tracker Found"
+                    emptyMessage="No Tax Tracker Data Found"
                     recordsPerPage={20}
                     className="flex-1"
                     sortInfo={sortInfo}
@@ -1313,7 +1318,7 @@ export const TaxTracker: React.FC = () => {
                 onClose={() => {
                     setShowFilterPopup(false);
                 }}
-                title="Filter By Notice Sections"
+                title="Filter By Tax Tracker"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -1335,17 +1340,16 @@ export const TaxTracker: React.FC = () => {
                                 dataFetchCallBack={fetchCompanyMasterDropdown}
                                 onSelected={(item) => {
                                     const companyId = item ? Number(item.value) : 0;
-                                    const companyName = item?.label || "";
+                                    setSelectedCompanyName(item?.label || "");
 
                                     setTempFilters((prev) => ({
                                         ...prev,
                                         CompanyId: companyId ? String(companyId) : "",
-                                        CompanyName: companyName || "",
                                     }));
                                 }}
                                 initialValue={
-                                    tempFilters.CompanyId && tempFilters.CompanyName
-                                        ? { value: tempFilters.CompanyId, label: tempFilters.CompanyName }
+                                    tempFilters.CompanyId && selectedCompanyName
+                                        ? { value: tempFilters.CompanyId, label: selectedCompanyName }
                                         : undefined
                                 }
                             />
@@ -1370,7 +1374,7 @@ export const TaxTracker: React.FC = () => {
                                 <Input
                                     label='Notice U/S'
                                     type="text"
-                                    value={tempFilters.NoticeSection}
+                                    value={tempFilters.NoticeSection || ''}
                                     maxLength={100}
                                     onChange={e => handleFilterChange("NoticeSection", e.target.value)}
                                     placeholder="Enter Notice U/S"
@@ -1393,7 +1397,7 @@ export const TaxTracker: React.FC = () => {
                                     value={tempFilters.FinancialYear || ''}
                                     onChange={e => handleFilterChange("FinancialYear", e.target.value)}
                                     placeholder="Enter Financial Year"
-                                    maxLength={7}
+                                    maxLength={9}
                                 />
                             </div>
                             <div className="mt-5">
@@ -1425,7 +1429,7 @@ export const TaxTracker: React.FC = () => {
 
                             <div className="mt-5">
                                 <SinglePageSelection
-                                    label="Status"
+                                    label="Notice Status"
                                     onChange={(e) => {
                                         setTempFilters({
                                             ...tempFilters,
@@ -1437,7 +1441,6 @@ export const TaxTracker: React.FC = () => {
                                     placeholder="Select Status"
                                 />
                             </div>
-
                         </div>
                     </div>
                 </div>

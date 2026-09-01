@@ -21,8 +21,12 @@ export interface PaidBrokerageBookingData {
     InvoiceNumber: string | ''
     InvoiceAmount: number | 0
     PaymentMode: string | null
-    ProjectBankListMasterId: number | 0
-    ProjectBankName: string | null
+    ProjectBankListMasterId: number;
+    ProjectBankName: string;
+    ProjectAccountNumber: string;
+    ProjectIFSCCode: string;
+    ProjectNatureOfAccount: string;
+    ProjectAcType: string;
     PaymentType: string | null
     AmountPaid: number | 0
     AccountNumber: string | null
@@ -31,6 +35,7 @@ export interface PaidBrokerageBookingData {
     TDSAmount: number | 0
     TransactionNumber: string | null
     TransactionReceiptURL: string | null
+    TransactionChequeDemandDraftDate: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -56,6 +61,7 @@ export interface AddUpdatePaidBrokerageBookingRequest {
     ProjectBankName: string | null
     TransactionReceiptURL: string | ''
     RemoveTransactionReceiptURL: string | ''
+    TransactionChequeDemandDraftDate: string | null
 }
 
 export interface DeletePaidBrokerageBookingRequest {

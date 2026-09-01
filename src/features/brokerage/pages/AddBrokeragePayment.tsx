@@ -18,9 +18,11 @@ import { useBookingBrokerageListState } from "@/features/brokerage/context/Booki
 import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import type { ProjectWithBankDetails } from "@/features/projectMaster/models/ProjectMasterModel";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     PaidBrokerageBookingId: 0,
@@ -36,7 +38,8 @@ const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     TransactionReceiptURL: '',
     RemoveTransactionReceiptURL: '',
     TransactionNumber: '',
-    ProjectBankName: ''
+    ProjectBankName: '',
+    TransactionChequeDemandDraftDate: "",
 })
 
 export const AddUpdatePaidBrokerageBooking: React.FC = () => {
@@ -147,6 +150,9 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         if (!formData.PaymentType) {
             newErrors.PaymentType = 'Payment Type is required.';
         }
+        if (!formData.TransactionChequeDemandDraftDate) {
+            newErrors.TransactionChequeDemandDraftDate = 'Transaction / Cheque / Demand Draft Date is required';
+        }
 
         if (!formData.AmountPaid) {
             newErrors.AmountPaid = "Amount is required";
@@ -189,6 +195,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         fd.append("TDSAmount", formData.TDSAmount.toString());
         fd.append("AmountPaid", formData.AmountPaid.toString());
         fd.append("TransactionNumber", formData.TransactionNumber ?? "");
+        fd.append("TransactionChequeDemandDraftDate", formData.TransactionChequeDemandDraftDate ?? "");
 
         transactionReceiptURLFiles.forEach((file) => {
             if (file instanceof File) {
@@ -259,9 +266,9 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
                             <FieldItem label="Invoice Number" value={routeState.InvoiceNumber} />
                             <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(routeState.InvoiceDate)} />
-                            <FieldItem label="Invoice Amount" value={routeState.InvoiceAmount} />
-                            <FieldItem label="Paid Invoice Amount" value={routeState.PaidAmount} />
-                            <FieldItem label="Pending Amount" value={pendingAmount} />
+                            <FieldItem label="Invoice Amount" value={formatCurrency(routeState.InvoiceAmount)} />
+                            <FieldItem label="Paid Invoice Amount" value={formatCurrency(routeState.PaidAmount)} />
+                            <FieldItem label="Pending Amount" value={formatCurrency(pendingAmount)} />
                         </div>
                     </div>
 
@@ -276,6 +283,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     label="Project Bank Name"
                                     title="Select Project Bank Name"
                                     size="lg"
+                                    required
                                     dataFetchCallBack={fetchProjectBankList}
                                     onSelected={(item) => {
                                         if (!item) {
@@ -372,7 +380,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                             <div>
                                 <Input
-                                    label="Pending Amount"
+                                    label="Pending Amount (₹)"
                                     value={currentPendingAmount.toFixed(2)}
                                     disabled
                                 />
@@ -419,6 +427,17 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     }}
                                 />
                             </div>
+
+                            <div>
+                                <DatePickerInput
+                                    label="Transaction / Cheque / Demand Draft Date"
+                                    required
+                                    value={formatDate_dd_mm_yyyy(formData.TransactionChequeDemandDraftDate)}
+                                    onChange={(val) => handleFieldChange('TransactionChequeDemandDraftDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    error={errors.TransactionChequeDemandDraftDate}
+                                />
+                            </div>
+
                         </div>
                     </div>
                 </form>

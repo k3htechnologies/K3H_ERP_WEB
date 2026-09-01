@@ -175,10 +175,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             newErrors.InvoiceNumber = 'Invoice Number is required';
         }
 
-        if (!formData.InvoiceDate) {
-            newErrors.InvoiceDate = 'Invoice Date is required';
-        }
-
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceURLUrls)) {
             newErrors.UploadInvoiceURL = "Invoice is required";
         }

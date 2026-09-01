@@ -438,7 +438,6 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                         }
                                     }}
                                     required
-                                    minDate={new Date(new Date().setDate(new Date().getDate()))}
                                     error={errors.NoticeDate}
                                 />
                             </div>

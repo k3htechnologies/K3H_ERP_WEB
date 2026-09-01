@@ -146,8 +146,8 @@ export const TaxTracker: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     GovernmentCompliance: filterParams.GovernmentCompliance,
-                    NoticeSection: searchtext ?? filterParams.NoticeSection ?? undefined,
-                    NoticeType: filterParams.NoticeType ?? "",
+                    NoticeSection: filterParams.NoticeSection ?? undefined,
+                    NoticeType: searchtext ?? filterParams.NoticeType ?? undefined,
                     Authority: filterParams.Authority ?? undefined,
                     FromNoticeDate: filterParams.FromNoticeDate ?? '',
                     ToNoticeDate: filterParams.ToNoticeDate ?? undefined,
@@ -162,7 +162,7 @@ export const TaxTracker: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setTaxTrackerList(response.right.Data);
-                    
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -358,7 +358,6 @@ export const TaxTracker: React.FC = () => {
                 key: 'GovernmentCompliance',
                 label: 'Government Compliance',
                 width: '30',
-                fixed: 'left',
                 align: 'left',
                 render: value => value || ''
             },
@@ -366,7 +365,6 @@ export const TaxTracker: React.FC = () => {
                 key: 'NoticeSection',
                 label: 'Notice U/S',
                 width: '30',
-                fixed: 'left',
                 align: 'left',
                 render: value => value || ''
             },
@@ -374,7 +372,6 @@ export const TaxTracker: React.FC = () => {
                 key: 'FinancialYear',
                 label: 'Financial Year',
                 width: '30',
-                fixed: 'left',
                 align: 'left',
                 render: value => value || ''
             },
@@ -383,7 +380,6 @@ export const TaxTracker: React.FC = () => {
                 key: 'Authority',
                 label: 'Authority',
                 width: '30',
-                fixed: 'left',
                 align: 'left',
                 render: value => value || ''
             },
@@ -392,7 +388,6 @@ export const TaxTracker: React.FC = () => {
                 key: 'NoticeDate',
                 label: 'Notice Date',
                 width: '30',
-                fixed: 'left',
                 align: 'left',
                 render: (value: any) => formatDate_dd_MonthName_yy(value),
 
@@ -401,7 +396,6 @@ export const TaxTracker: React.FC = () => {
                 key: 'DueDate',
                 label: 'Reply Due Date',
                 width: '30',
-                fixed: 'left',
                 align: 'left',
                 render: (value: any) => formatDate_dd_MonthName_yy(value),
 
@@ -448,18 +442,20 @@ export const TaxTracker: React.FC = () => {
                                     e.stopPropagation()
                                     if (!isClosed) handleAddAppealModal(row)
                                 }}
-                                color="transparent"
+                                color="blue"
+                                variant="solid"
+                                colorMode="extraLight"
                                 style={{
+                                    width: "35px", height: "35px",
                                     color: isClosed ? '#9ca3af' : 'blue',
                                     opacity: isClosed ? 0.5 : 1,
                                     cursor: isClosed ? 'not-allowed' : 'pointer',
                                 }}
-                                isborderRadius
                                 size="sm"
                                 title={isClosed ? 'Notice is closed' : 'Request Appeal'}
                                 disabled={isClosed}
+                                centerIcon={<Plus className="h-4 w-4" />}
                             >
-                                <Plus className="h-4 w-4" />
                             </Button>
 
                             {row?.IsDelete === true && (
@@ -472,19 +468,19 @@ export const TaxTracker: React.FC = () => {
                                             handleConfirmationDialogBoxOpen(row);
                                         }
                                     }}
-                                    color="transparent"
+                                    color="red"
+                                    variant="solid"
+                                    colorMode="extraLight"
                                     style={{
                                         color: row.IsDelete ? '#9ca3af' : 'red',
                                         opacity: row.IsDelete ? 0.5 : 1,
                                         cursor: row.IsDelete ? 'not-allowed' : 'pointer',
                                     }}
-                                    isborderRadius
                                     size="sm"
                                     title={row.IsDelete ? 'Notice is already deleted' : 'Delete Tax Notice'}
                                     disabled={row.IsDelete}
-                                >
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                    centerIcon={<Trash2 className="h-4 w-4" />}
+                                />
                             )}
                         </div>
                     )
@@ -493,6 +489,7 @@ export const TaxTracker: React.FC = () => {
         ],
         [handleConfirmationDialogBoxOpen, handleAddAppealModal, handleViewTaxTracker]
     );
+
 
     const requiredTaxTrackerColumnKeys: string[] = ['CompanyName', 'NoticeType', 'Actions'];
 
@@ -834,7 +831,7 @@ export const TaxTracker: React.FC = () => {
                     <TableActionToolbar
                         isShowSearchBar
                         searchTerm={searchTerm}
-                        searchPlaceholder="Search By Notice Type"
+                        searchPlaceholder="Search By Notice Title"
                         onSearchChange={v => {
                             setSearchTerm(v);
                             debouncedSearch(v);
@@ -1043,8 +1040,8 @@ export const TaxTracker: React.FC = () => {
                                         <div>
                                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
                                                 <div>
-                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Order Date</p>
-                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Date</p>
+                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
                                                         {lastOrderRecord.AmountUnderDisputeDate
                                                             ? formatDate_dd_MonthName_yy(lastOrderRecord.AmountUnderDisputeDate)
                                                             : '—'}
@@ -1052,15 +1049,15 @@ export const TaxTracker: React.FC = () => {
                                                 </div>
 
                                                 <div style={{ textAlign: 'left' }}>
-                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Order Status</p>
-                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Status</p>
+                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
                                                         {lastOrderRecord.OrderStatus || '—'}
                                                     </p>
                                                 </div>
 
                                                 <div>
-                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute</p>
-                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute</p>
+                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
                                                         {lastOrderRecord.AmountUnderDispute
                                                             ? (lastOrderRecord.AmountUnderDispute)
                                                             : '—'}
@@ -1068,8 +1065,8 @@ export const TaxTracker: React.FC = () => {
                                                 </div>
 
                                                 <div style={{ textAlign: 'left' }}>
-                                                    <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Authority Type</p>
-                                                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Authority Type</p>
+                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
                                                         {lastOrderRecord.AuthorityType || '—'}
                                                     </p>
                                                 </div>
@@ -1078,16 +1075,16 @@ export const TaxTracker: React.FC = () => {
 
                                             {/* Description */}
                                             <div style={{ marginTop: '12px' }}>
-                                                <p style={{ fontSize: '11px', color: '#6b7280', marginBottom: '2px' }}>Description</p>
-                                                <p style={{ fontSize: '13px', fontWeight: 600, color: '#111111f1' }}>
+                                                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Description</p>
+                                                <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
                                                     {lastOrderRecord.NoticeDescription || '—'}
                                                 </p>
                                             </div>
                                         </div>
 
                                         {lastOrderRecord.NoticeDocumentURL && (
-                                            <div className="mt-2">
-                                                <p style={{ fontSize: '11px', color: '#6b7280' }}>Order Document</p>
+                                            <div className="mt-3">
+                                                <p style={{ fontSize: '14px', color: '#6b7280' }}>Order Document</p>
                                                 <div className="inline-flex items-center gap-1 px-3 py-1.5 border rounded-md mt-3 text-xs font-medium cursor-pointer">
                                                     <MultiImageViewer
                                                         images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}

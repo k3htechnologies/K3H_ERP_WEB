@@ -125,7 +125,7 @@ export const getCardConfig = (orderStatus?: string, requestType?: string): CardC
 export const getNoticeStatusColor = (status: string = "") => {
     const map: Record<string, { bg: string; text: string }> = {
         "Reply Pending": { bg: "#ffedd5", text: "#C2410C" },
-        "Pending": { bg: "#d9f8e4ff", text: "#0cd092ff" },
+        "Pending": { bg: "#FFFEDA", text: "#7E4604" },
         "Reply Submitted": { bg: "#DBEAFE", text: "#1D4ED8" },
         "Favourable": { bg: "#F3E8FF", text: "#7E22CE" },
         "Non-Favourable": { bg: "#FEE2E2", text: "#B91C1C" },

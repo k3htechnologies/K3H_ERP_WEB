@@ -34,12 +34,12 @@ export const Invoice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
+
         loadMaterialRequisitionGRNData(1, {});
         loadmaterialRequisitionInvoiceSummary();
     }, [projectId, currentMaterialRequisitionId])
 
     const loadMaterialRequisitionGRNData = async (page: number, filterParams: FilterInfo,) => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -90,7 +90,6 @@ export const Invoice: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setInvoiceSummaryData(response.right.Data[0] ?? null);
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }

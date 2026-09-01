@@ -85,10 +85,8 @@ export const GRN: React.FC = () => {
                     SetGRN(data)
 
                     SetGRNData(data?.[0]?.MaterialRequisitionDetailGRNData ?? []);
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
-
                 }
                 return response;
             },
@@ -194,7 +192,6 @@ export const GRN: React.FC = () => {
                                     type="button"
                                     color="transparent"
                                     size="sm"
-
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -280,7 +277,6 @@ export const GRN: React.FC = () => {
                 columns={GRNColumns}
                 expandable={{
                     keyField: "MaterialRequisitionGRNId",
-
                     fetchRow: async (row: MaterialRequisitionGRNData) => {
                         return row?.MaterialRequisitionDetailGRNData ?? [];
                     },

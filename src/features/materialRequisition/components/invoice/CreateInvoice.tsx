@@ -74,12 +74,10 @@ const CreateInvoice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-
         loadMaterialRequisitionGRNData();
     }, [projectId, currentMaterialRequisitionId, MaterialRequisitionGRNId])
 
     const loadMaterialRequisitionGRNData = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -206,6 +204,7 @@ const CreateInvoice: React.FC = () => {
     const PushAddUpdateInvoiceData = (): FormData => {
 
         const fd = new FormData();
+        
         fd.append("MaterialRequisitionInvoiceId", formData.MaterialRequisitionInvoiceId.toString());
         fd.append("MaterialRequisitionId", Number(currentMaterialRequisitionId).toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");

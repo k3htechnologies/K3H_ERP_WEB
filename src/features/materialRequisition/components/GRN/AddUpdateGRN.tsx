@@ -85,9 +85,7 @@ export const AddUpdateGRN = () => {
 
     useEffect(() => {
         if (!MaterialRequisitionId) return;
-        (async () => {
-            await loadGRNData();
-        })();
+        loadGRNData();
     }, [MaterialRequisitionId]);
 
     useEffect(() => {
@@ -105,16 +103,13 @@ export const AddUpdateGRN = () => {
                 ])
             ).values()
         ];
-        setMaterialOptions(
-            materialdata.map(x => ({
-                label: x.MaterialName,
-                value: String(x.MaterialMasterId)
-            }))
-        );
+        setMaterialOptions(materialdata.map(x => ({
+            label: x.MaterialName,
+            value: String(x.MaterialMasterId)
+        })));
     }, [detailData]);
 
     const loadGRNData = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -129,6 +124,7 @@ export const AddUpdateGRN = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data;
                     const e = data?.[0];
 
@@ -145,37 +141,33 @@ export const AddUpdateGRN = () => {
 
                         }));
 
-                        setMaterialList(
-                            e.MaterialRequisitionDetailGRNData.map((x: any) => {
-
-                                const matched = detailData.find(
-                                    d =>
-                                        d.MaterialName === x.MaterialName &&
-                                        d.SubMaterialName === x.SubMaterialName
-                                );
-                                return {
-                                    MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId,
-                                    MaterialRequisitionDetailId: matched?.MaterialRequisitionDetailId ?? 0,
-                                    MaterialMasterId: matched?.MaterialMasterId ?? 0,
-                                    SubMaterialMasterId: matched?.SubMaterialMasterId ?? 0,
-                                    MaterialName: x.MaterialName,
-                                    SubMaterialName: x.SubMaterialName,
-                                    UomCode: matched?.UomCode ?? "",
-                                    UomMasterId: matched?.UomMasterId ?? 0,
-                                    MaterialQuantity: matched?.MaterialQuantity ?? 0,
-                                    TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
-                                    QualityAnalystRemark: x.QualityAnalystRemark,
-                                    TotalReceivedQuantityByRequisition: matched?.MaterialReceivedQuantityTillDate ?? 0,
-                                    IsTolerant: matched?.IsTolerant ?? false,
-                                    TolerancePercentage: matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
-                                };
-                            })
-                        );
+                        setMaterialList(e.MaterialRequisitionDetailGRNData.map((x: any) => {
+                            const matched = detailData.find(
+                                d =>
+                                    d.MaterialName === x.MaterialName &&
+                                    d.SubMaterialName === x.SubMaterialName
+                            );
+                            return {
+                                MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId,
+                                MaterialRequisitionDetailId: matched?.MaterialRequisitionDetailId ?? 0,
+                                MaterialMasterId: matched?.MaterialMasterId ?? 0,
+                                SubMaterialMasterId: matched?.SubMaterialMasterId ?? 0,
+                                MaterialName: x.MaterialName,
+                                SubMaterialName: x.SubMaterialName,
+                                UomCode: matched?.UomCode ?? "",
+                                UomMasterId: matched?.UomMasterId ?? 0,
+                                MaterialQuantity: matched?.MaterialQuantity ?? 0,
+                                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
+                                QualityAnalystRemark: x.QualityAnalystRemark,
+                                TotalReceivedQuantityByRequisition: matched?.MaterialReceivedQuantityTillDate ?? 0,
+                                IsTolerant: matched?.IsTolerant ?? false,
+                                TolerancePercentage: matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
+                            };
+                        }));
                         setuploadChallanURL(e.UploadChallanURL ?? undefined);
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
                     }
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -281,10 +273,9 @@ export const AddUpdateGRN = () => {
             label: "Action",
             align: "right",
             render: (_value, row) => {
-                const index = materialList.findIndex(
-                    x =>
-                        x.MaterialMasterId === row.MaterialMasterId &&
-                        x.SubMaterialMasterId === row.SubMaterialMasterId
+                const index = materialList.findIndex(x =>
+                    x.MaterialMasterId === row.MaterialMasterId &&
+                    x.SubMaterialMasterId === row.SubMaterialMasterId
                 );
 
                 return canAction ? (
@@ -333,8 +324,7 @@ export const AddUpdateGRN = () => {
     const subMaterialOptions = useMemo(() => {
         if (!materialData.MaterialMasterId) return [];
 
-        return detailData
-            .filter(x => x.MaterialMasterId === materialData.MaterialMasterId)
+        return detailData.filter(x => x.MaterialMasterId === materialData.MaterialMasterId)
             .map(x => ({
                 label: x.SubMaterialName,
                 value: String(x.SubMaterialMasterId)
@@ -356,11 +346,10 @@ export const AddUpdateGRN = () => {
         x.SubMaterialMasterId === materialData.SubMaterialMasterId
     );
 
-    const AddedQuantity = materialList
-        .filter(x =>
-            x.MaterialMasterId === materialData.MaterialMasterId &&
-            x.SubMaterialMasterId === materialData.SubMaterialMasterId
-        )
+    const AddedQuantity = materialList.filter(x =>
+        x.MaterialMasterId === materialData.MaterialMasterId &&
+        x.SubMaterialMasterId === materialData.SubMaterialMasterId
+    )
         .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
 
     const ReceivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
@@ -388,6 +377,7 @@ export const AddUpdateGRN = () => {
         : allowedReceivedQuantity;
 
     const validateMaterialRequisitionGRNForm = (): {
+
         isValid: boolean
         errors: { [key: string]: string }
     } => {
@@ -418,6 +408,7 @@ export const AddUpdateGRN = () => {
     const PushMaterialRequisitionGRNFormData = (): FormData => {
 
         const form = new FormData();
+
         form.append('MaterialRequisitionId', String(currentMaterialRequisitionId ?? 0));
         form.append('Uniquekey', formData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6");
         form.append('Remarks', formData.Remarks ?? '');
@@ -460,7 +451,6 @@ export const AddUpdateGRN = () => {
             setErrors(validation.errors);
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -517,9 +507,7 @@ export const AddUpdateGRN = () => {
                 if (E.isRight(apiResponse)) {
 
                     setMaterialSubMaterialList(apiResponse.right.Data.MaterialMasterSubMaterialMasterData);
-
                 } else {
-
                     addToast({ type: "error", title: "Error Fetching material list" });
                 }
             },

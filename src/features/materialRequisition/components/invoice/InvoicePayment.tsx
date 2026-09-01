@@ -74,7 +74,6 @@ const InvoicePayment: React.FC = () => {
             SubId: row.MaterialRequisitionInvoiceId ?? 0,
             ProjectId: projectId ?? 0,
         };
-
         setInvoiceNumber(row.InvoiceNumber);
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
@@ -129,7 +128,6 @@ const InvoicePayment: React.FC = () => {
             IsApproved: approvalActionType === "approve",
             Remarks: remark ?? null,
         };
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -148,7 +146,6 @@ const InvoicePayment: React.FC = () => {
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
-
                 return response;
             },
             undefined,
@@ -220,7 +217,6 @@ const InvoicePayment: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setPaymentData(response.right.Data);
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }

@@ -64,8 +64,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     const handleFieldChange = (field: string, value: any) => {
         setFormData(prev => {
             const updated = {
-                ...prev,
-                [field]: value
+                ...prev, [field]: value
             };
 
             if (field === "PaymentMode") {
@@ -95,14 +94,12 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     0
                 );
             }
-
             return updated;
         });
 
         if (errors[field]) {
             setErrors((prev: any) => ({
-                ...prev,
-                [field]: ""
+                ...prev, [field]: ""
             }));
         }
     };
@@ -114,7 +111,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         if (!formData.PaymentMode) {
             newErrors.PaymentMode = " Payment Mode is Required";
         }
-
         if (!formData.PaymentType) {
             newErrors.PaymentType = " Payment Type is Required";
         }
@@ -123,7 +119,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         } else if (toNumber(formData.AmountPaid) <= 0) {
             newErrors.AmountPaid = "Invalid Amount";
         }
-
         if (toNumber(formData.AmountPaid) > remainingInvoiceAmount) {
             newErrors.AmountPaid =
                 `Amount cannot exceed ₹${remainingInvoiceAmount}`;
@@ -138,24 +133,15 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             newErrors.TransactionNumber = " Transaction Number is Required";
         }
 
-        const bankTransferModes = [
-            "IMPS",
-            "NEFT",
-            "RTGS",
-            "Online Transfer"
-        ];
+        const bankTransferModes = ["IMPS", "NEFT", "RTGS", "Online Transfer"];
 
-        const ddChequeModes = [
-            "Cheque",
-            "Demand Draft"
-        ];
+        const ddChequeModes = ["Cheque", "Demand Draft"];
 
         if (bankTransferModes.includes(formData.PaymentMode)) {
 
             if (!formData.BankListMasterId) {
                 newErrors.BankListMasterId = "Bank Name is required";
             }
-
             if (!formData.AccountNumber) {
                 newErrors.AccountNumber = "Account Number is required";
             } else if (!isValidAccount(formData.AccountNumber)) {
@@ -215,10 +201,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             }
         });
 
-        fd.append(
-            "RemoveTransactionReceiptURL",
-            removedFiles.join(",")
-        );
+        fd.append("RemoveTransactionReceiptURL", removedFiles.join(","));
 
         return fd;
     };
@@ -340,7 +323,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             );
         };
         fetchInvoiceData();
-        
+
     }, [MaterialRequisitionInvoiceId, projectId, currentMaterialRequisitionId]);
 
     return (

@@ -78,7 +78,7 @@ export const ChannelPartner: React.FC = () => {
     setPagination({ currentPage: listState.page });
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadChannelPartner(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
+      loadChannelPartner(listState.page, { ChannelPartnerName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
       loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
     }
@@ -105,7 +105,7 @@ export const ChannelPartner: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
-          ChannelPartnerName: searchtext ?? filterParams.Name?.trim() ?? undefined,
+          ChannelPartnerName: searchtext ?? filterParams.ChannelPartnerName?.trim() ?? undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
           Designation: filterParams.Designation?.trim() || undefined,
           FirmsType: filterParams.FirmsType?.trim() || undefined,
@@ -156,20 +156,31 @@ export const ChannelPartner: React.FC = () => {
   //#endregion
 
   //#region SEARCH & CLEAR
+  // const searchChannelPartner = async (searchValue: string) => {
+
+  //   updateListState({ searchTerm: searchValue, page: 1 });
+
+  //   if (searchValue.trim() === '') {
+
+  //     updateListState({ filters: {}, searchTerm: '' });
+
+  //     fetchChannelPartnerList(1);
+
+  //     return
+  //   }
+
+  //   await loadChannelPartner(1, filters, sortInfo, searchValue);
+  // };
+
   const searchChannelPartner = async (searchValue: string) => {
+    updateListState({ searchTerm: searchValue });
 
-    updateListState({ searchTerm: searchValue, page: 1 });
-
-    if (searchValue.trim() === '') {
-
-      updateListState({ filters: {}, searchTerm: '' });
-
-      fetchChannelPartnerList(1);
-
-      return
+    if (searchValue.trim() === "") {
+      updateListState({ searchTerm: "", page: 1 });
+      return;
     }
 
-    await loadChannelPartner(1, filters, sortInfo, searchValue);
+    updateListState({ searchTerm: searchValue, page: 1 });
   };
 
   //#endregion
@@ -200,7 +211,7 @@ export const ChannelPartner: React.FC = () => {
         const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          ChannelPartnerName: filters.Name?.trim() || undefined,
+          ChannelPartnerName: filters.ChannelPartnerName?.trim() || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
           Designation: filters.Designation?.trim() || undefined,
           FirmsType: filters.FirmsType?.trim() || undefined,
@@ -851,8 +862,8 @@ export const ChannelPartner: React.FC = () => {
           <div>
             <Input type="text"
               label='Full Name'
-              value={tempFilters?.Name ?? ''}
-              onChange={e => handleFilterChange('Name', e.target.value)}
+              value={tempFilters?.ChannelPartnerName ?? ''}
+              onChange={e => handleFilterChange('ChannelPartnerName', e.target.value)}
               placeholder="Enter Full Name" />
           </div>
           <div>

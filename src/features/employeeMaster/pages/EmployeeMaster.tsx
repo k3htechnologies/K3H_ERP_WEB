@@ -623,8 +623,7 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: 'MPIN',
         label: 'MPIN',
-        sortable: true,
-        fixed: 'left',
+        sortable: false,
         align: 'left',
         render: (value) => {
           return (
@@ -662,14 +661,6 @@ export const EmployeeMaster: React.FC = () => {
             </div>
           );
         }
-      },
-      {
-        key: 'MPIN',
-        label: 'MPIN',
-        width: '15',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-'
       },
       {
         key: "LastLogin",

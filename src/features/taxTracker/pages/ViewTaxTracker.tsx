@@ -330,259 +330,268 @@ export const ViewTaxTracker: React.FC = () => {
                         value={detailsData?.Authority || '-'}
                     />
                 </div>
-                <div className="p-6">
+                <div className="p-4 -mt-6">
                     <FieldItem
                         label="Responsible Person"
                         value={detailsData?.ResponsiblePerson || '-'}
                     />
                 </div>
             </div>
-                <Accordion
-                    className="mt-5 space-y-3"
-                    items={noticeCycles.map((cycle) => ({
-                        key: cycle.cycleKey,
-                        title: `Cycle ${cycle.cycleNumber}`,
-                    }))}
-                    openMap={Object.fromEntries([...openCycles].map(k => [k, true]))}
-                    onToggle={(key) => {
-                        toggleCycle(key);
-                    }}
-                    renderItem={(item, isOpen, toggle) => {
-                        const cycle = noticeCycles.find(c => c.cycleKey === item.key)!;
-                        const noticeDocsInCycle = getNoticeDocsForCycle(cycle);
-                        const orderDocsInCycle = getOrderDocsForCycle(cycle);
-                        const cycleNotice = noticeDocsInCycle[0];
+            <Accordion
+                className="mt-5 space-y-3"
+                items={noticeCycles.map((cycle) => ({
+                    key: cycle.cycleKey,
+                    title: `Cycle ${cycle.cycleNumber}`,
+                }))}
+                openMap={Object.fromEntries([...openCycles].map(k => [k, true]))}
+                onToggle={(key) => {
+                    toggleCycle(key);
+                }}
+                renderItem={(item, isOpen, toggle) => {
+                    const cycle = noticeCycles.find(c => c.cycleKey === item.key)!;
+                    const noticeDocsInCycle = getNoticeDocsForCycle(cycle);
+                    const orderDocsInCycle = getOrderDocsForCycle(cycle);
+                    const cycleNotice = noticeDocsInCycle[0];
 
-                        return (
-                            <>
-                                <div
-                                    className="relative cursor-pointer overflow-hidden rounded-xl bg-white"
-                                    onClick={toggle}
-                                >
+                    return (
+                        <>
+                            <div
+                                className="relative cursor-pointer overflow-hidden rounded-xl bg-white"
+                                onClick={toggle}
+                            >
 
-                                    {!isOpen && <div className="absolute inset-y-0 left-0 w-1 bg-[#2563EB]" />}
-                                    <div className="flex items-center justify-between px-5 py-3 pl-6 pt-5">
-                                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
+                                {!isOpen && <div className="absolute inset-y-0 left-0 w-1 bg-[#2563EB]" />}
+                                <div className="flex items-center justify-between px-5 py-3 pl-6 pt-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
 
-                                            <FieldItem
-                                                label="Notice Date"
-                                                value={formatDate_dd_MonthName_yy(
-                                                    cycleNotice?.RequestType === "Notice"
-                                                        ? cycleNotice?.AmountUnderDisputeDate || ''
-                                                        : detailsData?.NoticeDate || ''
-                                                )}
-                                            />
 
-                                            <FieldItem
-                                                label="Notice Title"
-                                                value={detailsData?.NoticeType || '-'}
-                                            />
+
+
+                                        <FieldItem
+                                            label="Notice Title"
+                                            value={detailsData?.NoticeType || '-'}
+                                        />
+                                        <div className="-ml-2">
                                             <FieldItem
                                                 label="Government Compliance"
                                                 value={detailsData?.GovernmentCompliance || '-'}
                                             />
-
-                                            <FieldItem
-                                                label="Notice U/S"
-                                                value={detailsData?.NoticeSection || '-'}
-                                            />
-                                            <FieldItem
-                                                label="Reply Due Date"
-                                                value={formatDate_dd_MonthName_yy(detailsData?.DueDate || '')}
-                                            />
                                         </div>
-                                        <span className="ml-6 flex-shrink-0">
-                                            {isOpen ? (
-                                                <ChevronDownIcon className="h-5 w-5" />
-                                            ) : (
-                                                <ChevronRightIcon className="h-5 w-5" />
+
+                                        <FieldItem
+                                            label="Notice U/S"
+                                            value={detailsData?.NoticeSection || '-'}
+                                        />
+                                        <FieldItem
+                                            label="Notice Date"
+                                            value={formatDate_dd_MonthName_yy(
+                                                cycleNotice?.RequestType === "Notice"
+                                                    ? cycleNotice?.AmountUnderDisputeDate || ''
+                                                    : detailsData?.NoticeDate || ''
                                             )}
-                                        </span>
+                                        />
+                                        <FieldItem
+                                            label="Reply Due Date"
+                                            value={formatDate_dd_MonthName_yy(detailsData?.DueDate || '')}
+                                        />
                                     </div>
+                                    <span className="ml-6 flex-shrink-0">
+                                        {isOpen ? (
+                                            <ChevronDownIcon className="h-5 w-5" />
+                                        ) : (
+                                            <ChevronRightIcon className="h-5 w-5" />
+                                        )}
+                                    </span>
                                 </div>
+                            </div>
 
-                                {isOpen && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-3 pt-3 pb-3">
-                                        <div className="space-y-5">
+                            {isOpen && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-3 pt-3 pb-3 items-stretch">
+                                    <div className="space-y-3 flex flex-col">
 
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
-                                                <div className="bg-[#f3f0fe] px-3 py-2 border-b border-[#D0D7DE]">
-                                                    <h4 className="text-sm font-semibold text-[#8349df]">
-                                                        Authority Details
-                                                    </h4>
-                                                </div>
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
+                                            <div className="bg-[#f3f0fe] px-3 py-2 border-b border-[#D0D7DE]">
+                                                <h4 className="text-sm font-semibold text-[#8349df]">
+                                                    Authority Details
+                                                </h4>
+                                            </div>
 
-                                                {noticeDocsInCycle.map((item, key) => (
-                                                    <div key={key}>
-                                                        <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== noticeDocsInCycle.length - 1 && 'border-b border-gray-300'}`}>
-                                                            <FieldItem label="Officer Name" value={item?.OfficerName || '-'} />
+                                            {noticeDocsInCycle.map((item, key) => (
+                                                <div key={key}>
+                                                    <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== noticeDocsInCycle.length - 1 && 'border-b border-gray-300'}`}>
+                                                        <FieldItem label="Officer Name" value={item?.OfficerName || '-'} />
+
+                                                        <div className="col-span-2 ">
                                                             <FieldItem label="Divisional Address" value={item?.OfficerAddress || '-'} />
                                                         </div>
 
-
                                                     </div>
-                                                ))}
 
-                                                {!noticeDocsInCycle?.length && (
-                                                    <div className="p-4 bg-white grid grid-cols-3 gap-4">
-                                                        <FieldItem label="Notice U/S" value="-" />
-                                                        <FieldItem label="Due Date" value="-" />
-                                                        <FieldItem label="Notice Type" value="-" />
-                                                        <FieldItem label="Office Address" value="-" />
-                                                        <FieldItem label="Notice Date" value="-" />
-                                                        <FieldItem label="Created By" value="-" />
-                                                    </div>
-                                                )}
-                                            </section>
 
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
-                                                <div className="bg-[#ffffe4] px-3 py-2 border-b border-[#D0D7DE]">
-                                                    <h4 className="text-sm font-semibold text-[#8b7d3f]">
-                                                        Order Details
-                                                    </h4>
                                                 </div>
+                                            ))}
 
-                                                {orderDocsInCycle.map((item, key) => (
-                                                    <div key={key}>
-                                                        <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== orderDocsInCycle.length - 1 ? 'border-b border-gray-300' : ''}`}>
-                                                            <FieldItem
-                                                                label={
-                                                                    item?.OrderStatus === "Non-Favourable"
-                                                                        ? "Order Date"
-                                                                        : "Order Date"
-                                                                }
-                                                                value={
-                                                                    item?.AmountUnderDisputeDate
-                                                                        ? formatDate_dd_MonthName_yy(item.AmountUnderDisputeDate)
-                                                                        : "-"
-                                                                }
-                                                            />
-
-                                                            {item?.OrderStatus !== "Favourable" && (
-                                                                <FieldItem
-                                                                    label="Amount Under Dispute"
-                                                                    value={formatCurrency(item.AmountUnderDispute)}
-                                                                />
-                                                            )}
-
-                                                            {item?.OrderStatus === "Non-Favourable" && (
-                                                                <FieldItem
-                                                                    label="Authority Type"
-                                                                    value={item?.AuthorityType || "-"}
-                                                                />
-                                                            )}
-
-                                                            <FieldItem
-                                                                label="Order Status"
-                                                                value={
-                                                                    (() => {
-                                                                        const orderStatusColor = getNoticeStatusColor(item?.OrderStatus ?? "");
-                                                                        return (
-                                                                            <span
-                                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                                                style={{
-                                                                                    backgroundColor: orderStatusColor.bg,
-                                                                                    color: orderStatusColor.text,
-                                                                                }}
-                                                                            >
-                                                                                {item?.OrderStatus || "-"}
-                                                                            </span>
-                                                                        );
-                                                                    })()
-                                                                }
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                ))}
-
-                                                {(!orderDocsInCycle || orderDocsInCycle.length === 0) && (
-                                                    <div className="p-4 bg-white grid grid-cols-3 gap-4">
-                                                        <FieldItem label="Order Date" value="-" />
-                                                        <FieldItem label="Amount Under Dispute" value="-" />
-                                                        <FieldItem label="Order Status" value="-" />
-                                                    </div>
-                                                )}
-                                            </section>
-
-
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
-                                                <div className="bg-[#F5F8FD] px-3 py-2 border-b border-[#D9E1EC]">
-                                                    <h4 className="text-sm font-semibold text-[#123B7A]">Appeal Details</h4>
-                                                </div>
-
+                                            {!noticeDocsInCycle?.length && (
                                                 <div className="p-4 bg-white grid grid-cols-3 gap-4">
-                                                    <FieldItem
-                                                        label="Request Type"
-                                                        value={appealItem?.RequestType || "-"}
-                                                    />
-                                                    <FieldItem
-                                                        label="Appeal Due Date"
-                                                        value={appealItem?.AmountUnderDisputeDate ? formatDate_dd_MonthName_yy(appealItem.AmountUnderDisputeDate) : "-"}
-                                                    />
-                                                    <FieldItem
-                                                        label="Date Of Appeal"
-                                                        value={appealItem?.DateOfAppeal ? formatDate_dd_MonthName_yy(appealItem.DateOfAppeal) : "-"}
-                                                    />
-                                                    <FieldItem
-                                                        label="Status"
-                                                        value={
-                                                            appealItem?.NoticeStatus ? (
-                                                                <span
-                                                                    className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                                                                    style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
-                                                                >
-                                                                    {appealItem.NoticeStatus}
-                                                                </span>
-                                                            ) : "-"
-                                                        }
-                                                    />
+                                                    <FieldItem label="Notice U/S" value="-" />
+                                                    <FieldItem label="Due Date" value="-" />
+                                                    <FieldItem label="Notice Type" value="-" />
+                                                    <FieldItem label="Office Address" value="-" />
+                                                    <FieldItem label="Notice Date" value="-" />
+                                                    <FieldItem label="Created By" value="-" />
                                                 </div>
-                                            </section>
+                                            )}
+                                        </section>
 
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
-                                                <div className="bg-[#F5F8FD] px-3 py-2 border-b border-[#D9E1EC]">
-                                                    <h4 className="text-sm font-semibold text-[#5c5f63]">
-                                                        Other Details
-                                                    </h4>
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
+                                            <div className="bg-[#ffffe4] px-3 py-2 border-b border-[#D0D7DE]">
+                                                <h4 className="text-sm font-semibold text-[#8b7d3f]">
+                                                    Order Details
+                                                </h4>
+                                            </div>
+
+                                            {orderDocsInCycle.map((item, key) => (
+                                                <div key={key}>
+                                                    <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== orderDocsInCycle.length - 1 ? 'border-b border-gray-300' : ''}`}>
+                                                        <FieldItem
+                                                            label={
+                                                                item?.OrderStatus === "Non-Favourable"
+                                                                    ? "Order Date"
+                                                                    : "Order Date"
+                                                            }
+                                                            value={
+                                                                item?.AmountUnderDisputeDate
+                                                                    ? formatDate_dd_MonthName_yy(item.AmountUnderDisputeDate)
+                                                                    : "-"
+                                                            }
+                                                        />
+
+                                                        {item?.OrderStatus !== "Favourable" && (
+                                                            <FieldItem
+                                                                label="Amount Under Dispute"
+                                                                value={formatCurrency(item.AmountUnderDispute)}
+                                                            />
+                                                        )}
+
+                                                        {item?.OrderStatus === "Non-Favourable" && (
+                                                            <FieldItem
+                                                                label="Authority Type"
+                                                                value={item?.AuthorityType || "-"}
+                                                            />
+                                                        )}
+
+                                                        <FieldItem
+                                                            label="Order Status"
+                                                            value={
+                                                                (() => {
+                                                                    const orderStatusColor = getNoticeStatusColor(item?.OrderStatus ?? "");
+                                                                    return (
+                                                                        <span
+                                                                            className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                                                            style={{
+                                                                                backgroundColor: orderStatusColor.bg,
+                                                                                color: orderStatusColor.text,
+                                                                            }}
+                                                                        >
+                                                                            {item?.OrderStatus || "-"}
+                                                                        </span>
+                                                                    );
+                                                                })()
+                                                            }
+                                                        />
+                                                    </div>
                                                 </div>
+                                            ))}
 
-                                                <div className="p-3">
-                                                    <FieldItem
-                                                        label="Description"
-                                                        value={
-                                                            taxTrackerDetailsData?.find((item) => item.RequestType === "Others")
-                                                                ?.NoticeDescription || "-"
-                                                        }
-                                                    />
-                                                </div>
-                                            </section>
-
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
-                                                <div className="bg-[#e1e2e4] px-3 py-2 border-b border-[#D0D7DE]">
-                                                    <h4 className="text-sm font-semibold text-[#5c5f63]">
-                                                        Action Details
-                                                    </h4>
-                                                </div>
-
+                                            {(!orderDocsInCycle || orderDocsInCycle.length === 0) && (
                                                 <div className="p-4 bg-white grid grid-cols-3 gap-4">
-                                                    <FieldItem label="Created By" value={detailsData?.CreatedBy} />
-                                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(detailsData?.CreatedDate || '')} />
-                                                    <FieldItem label="Modified By" value={detailsData?.ModifiedBy} />
-                                                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(detailsData?.ModifiedDate || '')} />
+                                                    <FieldItem label="Order Date" value="-" />
+                                                    <FieldItem label="Amount Under Dispute" value="-" />
+                                                    <FieldItem label="Order Status" value="-" />
                                                 </div>
-                                            </section>
-                                        </div>
+                                            )}
+                                        </section>
 
-                                        <div className="pr-4">
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs bg-white min-h-[800px] overflow-y-auto thin-scroll ">
+
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
+                                            <div className="bg-[#F5F8FD] px-3 py-2 border-b border-[#D9E1EC]">
+                                                <h4 className="text-sm font-semibold text-[#123B7A]">Appeal Details</h4>
+                                            </div>
+
+                                            <div className="p-4 bg-white grid grid-cols-3 gap-4">
+                                                <FieldItem
+                                                    label="Request Type"
+                                                    value={appealItem?.RequestType || "-"}
+                                                />
+                                                <FieldItem
+                                                    label="Appeal Due Date"
+                                                    value={appealItem?.AmountUnderDisputeDate ? formatDate_dd_MonthName_yy(appealItem.AmountUnderDisputeDate) : "-"}
+                                                />
+                                                <FieldItem
+                                                    label="Date Of Appeal"
+                                                    value={appealItem?.DateOfAppeal ? formatDate_dd_MonthName_yy(appealItem.DateOfAppeal) : "-"}
+                                                />
+                                                <FieldItem
+                                                    label="Status"
+                                                    value={
+                                                        appealItem?.NoticeStatus ? (
+                                                            <span
+                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                                                style={{ backgroundColor: statusColor.bg, color: statusColor.text }}
+                                                            >
+                                                                {appealItem.NoticeStatus}
+                                                            </span>
+                                                        ) : "-"
+                                                    }
+                                                />
+                                            </div>
+                                        </section>
+
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
+                                            <div className="bg-[#F5F8FD] px-3 py-2 border-b border-[#D9E1EC]">
+                                                <h4 className="text-sm font-semibold text-[#5c5f63]">
+                                                    Other Details
+                                                </h4>
+                                            </div>
+
+                                            <div className="p-3">
+                                                <FieldItem
+                                                    label="Description"
+                                                    value={
+                                                        taxTrackerDetailsData?.find((item) => item.RequestType === "Others")
+                                                            ?.NoticeDescription || "-"
+                                                    }
+                                                />
+                                            </div>
+                                        </section>
+
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
+                                            <div className="bg-[#e1e2e4] px-3 py-2 border-b border-[#D0D7DE]">
+                                                <h4 className="text-sm font-semibold text-[#5c5f63]">
+                                                    Action Details
+                                                </h4>
+                                            </div>
+
+                                            <div className="p-4 bg-white grid grid-cols-3 gap-4">
+                                                <FieldItem label="Created By" value={detailsData?.CreatedBy} />
+                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(detailsData?.CreatedDate || '')} />
+                                                <FieldItem label="Modified By" value={detailsData?.ModifiedBy} />
+                                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(detailsData?.ModifiedDate || '')} />
+                                            </div>
+                                        </section>
+                                    </div>
+
+                                    <div className="pr-4 md:pr-0 flex flex-col md:block md:relative min-h-[400px] md:min-h-0">
+                                        <div className="md:absolute md:inset-0 md:pr-4 flex flex-col h-full w-full">
+                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden flex flex-col h-full shadow-2xs bg-white">
                                                 <div className="bg-[#edf7ed] px-3 py-2 border-b border-[#D0D7DE]">
                                                     <h4 className="text-sm font-semibold text-[#1e4620]">
                                                         Activity Tracker
                                                     </h4>
                                                 </div>
 
-                                                <div className="flex flex-col items-center w-full p-4">
-                                                    <div className="w-full ml-1 h-[780px] overflow-y-auto pr-2 thin-scroll">
+                                                <div className="flex flex-col items-center w-full p-4 flex-1 overflow-hidden">
+                                                    <div className="w-full ml-1 flex-1 overflow-y-auto pr-2 thin-scroll">
                                                         {cycle.docs.length > 0 ? (
                                                             <div className="space-y-5">
                                                                 {cycle.docs.map((item, index) => {
@@ -593,20 +602,20 @@ export const ViewTaxTracker: React.FC = () => {
                                                                     return (
                                                                         <div key={index} className={`w-full flex ${isLeftAligned ? 'justify-start' : 'justify-end'} mb-6`}>
                                                                             <div className="w-full max-w-[82%]">
-                                                                                <div className={`rounded-xl border p-4 shadow-xs w-full transition-all ${cardConfig.bgColor} ${cardConfig.borderColor} ${isLeftAligned ? 'rounded-tl-none' : 'rounded-tr-none'}`}>
+                                                                                <div className={`rounded-xl borderv p-4 shadow-xs w-full transition-all ${cardConfig.bgColor} ${cardConfig.borderColor} ${isLeftAligned ? 'rounded-tl-none' : 'rounded-tr-none'}`}>
 
                                                                                     <div className="flex items-center justify-between">
                                                                                         <p className={`font-semibold text-sm ${cardConfig.textColor}`}>
                                                                                             {cardConfig.title}
                                                                                         </p>
-                                                                                        <div className={`text-xs font-medium ${item.RequestType === "Reply" || item.RequestType === "Order" ? 'text-gray-600' : 'text-slate-500'}`}>
+                                                                                        <div className={`text-xs font-medium ${item.RequestType === "Reply" || item.RequestType === "Order" ? 'text-white' : 'text-slate-500'}`}>
                                                                                             {formatDate_dd_MonthName_yy(item.AmountUnderDisputeDate ?? "")}
                                                                                         </div>
                                                                                     </div>
 
                                                                                     {item.NoticeDescription && (
-                                                                                        <div className="mt-2 pt-2">
-                                                                                            <p className={`text-xs font-semibold break-words whitespace-normal ${cardConfig.labelColor}`}>
+                                                                                        <div className="pt-2">
+                                                                                            <p className={`text-sm font-semibold break-words whitespace-normal ${cardConfig.labelColor}`}>
                                                                                                 Description : <span className={`font-normal ${cardConfig.fieldTextColor}`}>{item.NoticeDescription}</span>
                                                                                             </p>
                                                                                         </div>
@@ -659,14 +668,15 @@ export const ViewTaxTracker: React.FC = () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                            </section >
-                                        </div >
+                                            </section>
+                                        </div>
                                     </div>
-                                )}
-                            </>
-                        );
-                    }}
-                />
+                                </div>
+                            )}
+                        </>
+                    );
+                }}
+            />
             <Modal
                 isOpen={reopenModalOpen}
                 onClose={() => {

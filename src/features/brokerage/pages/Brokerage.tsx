@@ -350,7 +350,7 @@ export const Brokerage: React.FC = () => {
                     width: '25',
                     sortable: false,
                     align: 'left',
-                    render: (value) => value ? `${value} Sq Ft` : '-'
+                    render: (value) => value ? `${value} SqFt` : '-'
                 },
             ]
         },

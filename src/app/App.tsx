@@ -233,6 +233,14 @@ import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
 import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
 import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
 import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
+import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
+import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
+import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
+import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
+import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
+import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
+import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -574,6 +582,17 @@ function App() {
             <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/:departmentId/JobApplicationDetails/:jobOpeningMasterId" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
+         
+          {/* MATERIAL REQUISITION */}
+            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
+            <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

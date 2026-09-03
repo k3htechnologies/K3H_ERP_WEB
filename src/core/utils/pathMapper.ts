@@ -145,7 +145,9 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //  HIRESPACE & JON OPENING
         '/jobrolemaster': '/jobRoleMaster',
-        '/jobopenings': '/jobOpenings'
+        '/jobopenings': '/jobOpenings',
+
+        '/materialrequisition': '/materialRequisition',
     }
 
 

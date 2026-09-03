@@ -560,4 +560,17 @@ export const isValidAPF = (apf: string): boolean => {
 };
 
 
+export const isValidVehicleNumber = (value: string): boolean => {
+  if (!value?.trim()) return false;
+
+  const vehicleNumberRegex =
+    /^(?:[A-Z]{2}\s*\d{2}\s*[A-Z]{1,3}\s*\d{1,4}|\d{2}\s*BH\s*\d{4}\s*[A-Z]{2}|\d{1,4})$/i;
+
+  return vehicleNumberRegex.test(value.trim());
+};
+
+// VALIDATE CHALLAN NUMBER 
+export const filterChallanNumber = (value: string): string =>
+  value.replace(/[^A-Za-z0-9/-]/g, "").toUpperCase().slice(0, 15);
+
 

@@ -21,10 +21,8 @@ import { Loader } from "@/core/utils/loader";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
-const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
-    totalAmount = 0,
-    editData
-}) => {
+const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ totalAmount = 0, editData }) => {
+
     const navigate = useNavigate();
     const { addToast } = useToast();
     const { MaterialRequisitionId, MaterialRequisitionInvoiceId } = useParams();
@@ -134,7 +132,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         }
 
         const bankTransferModes = ["IMPS", "NEFT", "RTGS", "Online Transfer"];
-
         const ddChequeModes = ["Cheque", "Demand Draft"];
 
         if (bankTransferModes.includes(formData.PaymentMode)) {
@@ -145,17 +142,14 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             if (!formData.AccountNumber) {
                 newErrors.AccountNumber = "Account Number is required";
             } else if (!isValidAccount(formData.AccountNumber)) {
-                newErrors.AccountNumber =
-                    "Enter valid Account Number";
+                newErrors.AccountNumber = "Enter valid Account Number";
             }
-
-            if (!formData.IFSCCode) {
-                newErrors.IFSCCode = "IFSC Code is required";
-            } else if (formData.IFSCCode.trim().length !== 11) {
-                newErrors.IFSCCode = "IFSC Code must be 11 characters";
-
-            } else if (!isValidIFSC(formData.IFSCCode)) {
-                newErrors.IFSCCode = "Enter valid IFSC Code";
+            if (!formData.IFSCCode?.trim()) {
+                newErrors.IFSCCode = 'IFSC Code is required.'
+            } else if (formData.IFSCCode.trim().length > 12) {
+                newErrors.IFSCCode = 'IFSC Code must be at most 50 characters'
+            } else if (!isValidIFSC(formData.IFSCCode.trim())) {
+                newErrors.IFSCCode = 'Enter a valid IFSC Code'
             }
         }
 
@@ -223,9 +217,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
-
                     navigate(-1);
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -251,7 +243,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     };
 
     useEffect(() => {
-
         if (!editData) return;
 
         setFormData({
@@ -261,22 +252,17 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         });
 
         setDropdownLabels({ bankName: editData.BankName });
-
         setExistingURL(editData.TransactionReceiptURL);
-
     }, [editData]);
 
     useEffect(() => {
-
         if (!MaterialRequisitionInvoiceId || !projectId) return;
 
         const fetchInvoiceData = async () => {
-
             await runApiWithLoader(
                 setIsLoading,
                 setLoadingMessage,
                 async () => {
-
                     const params: FilterWithPaginationMaterialRequisitionInvoice = {
                         PageNumber: 1,
                         PageSize: 1,
@@ -308,7 +294,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                                 PendingAmount: pendingAmt
                             }));
                         }
-
                     } else {
                         addToast({ type: "error", title: response.left.message });
                     }
@@ -323,142 +308,130 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             );
         };
         fetchInvoiceData();
-
     }, [MaterialRequisitionInvoiceId, projectId, currentMaterialRequisitionId]);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6">
+            <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
-            <Loader loading={isLoading} title={loadingMessage} >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"  >
+                <div className="col-span-full text-lg font-semibold text-gray-900">
+                    Make Payment
+                </div>
 
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        handleAddPayment();
-                    }}
-                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"
-                >
+                <SinglePageSelection
+                    label="Payment Mode"
+                    required
+                    value={formData.PaymentMode}
+                    onChange={(e) => handleFieldChange("PaymentMode", String(e))}
+                    options={PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
+                    error={errors.PaymentMode}
+                />
 
-                    <div className="col-span-full text-lg font-semibold text-gray-900">
-                        Payment Details
-                    </div>
+                {["IMPS", "NEFT", "RTGS", "Online Transfer", "Cheque", "Demand Draft"].includes(formData.PaymentMode) && (
 
-                    <SinglePageSelection
-                        label="Payment Mode"
-                        required
-                        value={formData.PaymentMode}
-                        onChange={(e) => handleFieldChange("PaymentMode", String(e))}
-                        options={PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
-                        error={errors.PaymentMode}
+                    <SingleSelectDropdownWithPagination
+                        label="Bank Name"
+                        title="Select Bank"
+                        dataFetchCallBack={fetchBankListMasterDropdown}
+                        initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+                        onSelected={(item) => {
+                            handleFieldChange("BankListMasterId", Number(item?.value || 0));
+                            handleFieldChange("BankName", item?.label || "");
+                            setDropdownLabels({ bankName: item?.label || "" });
+                        }}
+                        error={errors.BankListMasterId}
                     />
+                )}
 
-                    {["IMPS", "NEFT", "RTGS", "Online Transfer", "Cheque", "Demand Draft"].includes(formData.PaymentMode) && (
-
-                        <SingleSelectDropdownWithPagination
-                            label="Bank Name"
-                            title="Select Bank"
-                            dataFetchCallBack={fetchBankListMasterDropdown}
-                            initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
-                            onSelected={(item) => {
-                                handleFieldChange("BankListMasterId", Number(item?.value || 0));
-                                handleFieldChange("BankName", item?.label || "");
-                                setDropdownLabels({ bankName: item?.label || "" });
-                            }}
-                            error={errors.BankListMasterId}
-                        />
-
-                    )}
-
-                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
-
-                        <Input
-                            label="Account Number"
-                            value={formData.AccountNumber}
-                            onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
-                            error={errors.AccountNumber}
-                        />
-
-                    )}
-
-                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
-
-                        <Input
-                            label="IFSC Code"
-                            value={formData.IFSCCode}
-                            onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))
-                            }
-                            error={errors.IFSCCode}
-                        />
-
-                    )}
-
-                    <SinglePageSelection
-                        label="Payment Type" required
-                        value={formData.PaymentType}
-                        onChange={(e) => handleFieldChange("PaymentType", String(e))}
-                        options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
-                        error={errors.PaymentType}
-                    />
+                {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
 
                     <Input
-                        label="Amount Paid"
-                        value={String(formData.AmountPaid)}
-                        disabled={formData.PaymentType === "Full"}
-                        onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))
+                        label="Account Number"
+                        value={formData.AccountNumber}
+                        onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
+                        error={errors.AccountNumber}
+                        placeholder="Enter Account Number"
+                        maxLength={18}
+                    />
+                )}
+
+                {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
+
+                    <Input
+                        label="IFSC Code"
+                        value={formData.IFSCCode}
+                        placeholder="Enter IFSC Code"
+                        onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
+                        error={errors.IFSCCode}
+                    />
+                )}
+
+                <SinglePageSelection
+                    label="Payment Type" required
+                    value={formData.PaymentType}
+                    onChange={(e) => handleFieldChange("PaymentType", String(e))}
+                    options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                    error={errors.PaymentType}
+                />
+
+                <Input
+                    label="Amount Paid"
+                    value={String(formData.AmountPaid)}
+                    disabled={formData.PaymentType === "Full"}
+                    onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))}
+                    error={errors.AmountPaid}
+                />
+
+                <Input
+                    label="Pending Amount"
+                    value={String(formData.PendingAmount)}
+                    disabled
+                />
+
+                <Input
+                    label="TDS Amount"
+                    value={String(formData.TDSAmount)}
+                    onChange={(e) => handleFieldChange("TDSAmount", sanitizeAmount(e.target.value))}
+                    error={errors.TDSAmount}
+                />
+
+                <Input
+                    label={getTransactionLabel()}
+                    className="sm:col-span-2 lg:col-span-2 xl:col-span-2"
+                    value={formData.TransactionNumber}
+                    onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
+                    error={errors.TransactionNumber}
+                    required
+                    maxLength={25}
+                />
+
+                <MultiFilePicker
+                    label="Transaction Receipt"
+                    value={transactionFiles}
+                    onChange={setTransactionFiles}
+                    availableFilesURL={existingURL ?? ""}
+                    allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                    maxFiles={1}
+                    maxSizeMB={5}
+                    onRemoveExisting={(url) => setRemovedFiles(prev => [...prev, url])}
+                    error={errors.TransactionReceiptURL}
+                    required
+                />
+
+                <div className="flex items-end h-full">
+                    <Checkbox
+                        label="Advance"
+                        checked={formData.IsAdvance}
+                        onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)
                         }
-                        error={errors.AmountPaid}
                     />
-
-                    <Input
-                        label="Pending Amount"
-                        value={String(formData.PendingAmount)}
-                        disabled
-                    />
-
-                    <Input
-                        label="TDS Amount"
-                        value={String(formData.TDSAmount)}
-                        onChange={(e) => handleFieldChange("TDSAmount", sanitizeAmount(e.target.value))}
-                        error={errors.TDSAmount}
-                    />
-
-                    <Input
-                        label={getTransactionLabel()}
-                        className="sm:col-span-2 lg:col-span-2 xl:col-span-2"
-                        value={formData.TransactionNumber}
-                        onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
-                        error={errors.TransactionNumber}
-                        required
-                    />
-
-                    <MultiFilePicker
-                        label="Transaction Receipt"
-                        value={transactionFiles}
-                        onChange={setTransactionFiles}
-                        availableFilesURL={existingURL ?? ""}
-                        allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                        maxFiles={1}
-                        maxSizeMB={5}
-                        onRemoveExisting={(url) => setRemovedFiles(prev => [...prev, url])}
-                        error={errors.TransactionReceiptURL}
-                        required
-                    />
-
-                    <div className="flex items-end h-full">
-                        <Checkbox
-                            label="Advance"
-                            checked={formData.IsAdvance}
-                            onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)
-                            }
-                        />
-                    </div>
-                </form>
-
-            </Loader>
+                </div>
+            </div>
 
             <BottomActionBar
                 cancelText="Cancel"
-                saveText="Save"
+                saveText="Add"
                 onCancel={() => navigate(-1)}
                 onSave={handleAddPayment}
                 isLoading={isLoading}

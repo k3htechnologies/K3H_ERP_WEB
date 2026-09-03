@@ -11,7 +11,7 @@ export abstract class MaterialRequisitionInvoiceDatasource {
 }
 
 export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisitionInvoiceDatasource {
-
+    
     private get k3hHttpClient() {
         return baseClient;
     }
@@ -92,9 +92,7 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
             if (error instanceof TokenExpiredException) {
 
                 return await this.deleteMaterialRequisitionInvoice(params);
-
             }
-
             throw error
         }
     }
@@ -109,6 +107,7 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
                 `${MaterialRequisitionInvoiceApi.PULL_INVOICE_SUMMARY}?${queryParams.toString()}`, { signal }
             )
             return response;
+
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION INVOICE SUMMARY :', error);
@@ -117,7 +116,6 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
 
                 return await this.pullMaterialRequisitionInvoiceSummary(params);
             }
-
             throw error
         }
     }

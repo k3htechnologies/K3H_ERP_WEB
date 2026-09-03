@@ -89,7 +89,6 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
                 return await this.deleteMaterialRequisitionQuotation(params);
 
             }
-
             throw error
         }
     }

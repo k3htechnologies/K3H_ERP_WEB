@@ -19,6 +19,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
 export const Details: React.FC = () => {
+
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
@@ -199,41 +200,43 @@ export const Details: React.FC = () => {
         <div className="justify-center">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4 mt-2">
+            <div className="border border-[#33333321] rounded-xl overflow-hidden mb-4 mt-2">
+                <div className="bg-[#E7F2FF] px-4 py-2 border-b border-[#D0D7DE]">
+                    <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                        Basic Details
+                    </h4>
+                </div>
 
-                <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
+                    <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
+                    <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
+                    <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
 
-                <div className="lg:col-span-5 pb-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
-                        <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
-                        <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
-
-                        <div>
-                            <p className="text-gray-500">Attachment</p>
-                            <MultiImageViewer
-                                images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
-                                title="Attachment"
-                                isIcon={false}
-                                triggerLabel="-"
-                            />
-                        </div>
-
+                    <div>
+                        <p className="text-gray-500">Attachment</p>
+                        <MultiImageViewer
+                            images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
+                            title="Attachment"
+                            isIcon={false}
+                            triggerLabel="-"
+                        />
                     </div>
+
                 </div>
             </div>
 
-            <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-4">
+                <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-[#7E22CE]">
+                        Material Details
+                    </h4>
 
-                <div className="flex justify-between">
-                    <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
-
-                    {ShowSplitButton && (
+                    {ShowSplitButton && !active && (
                         <Button
                             size="md"
                             color="blue"
                             style={{
-                                padding: '2px 16px',
+                                padding: "2px 16px",
                             }}
                             onClick={() => setActive(true)}
                         >
@@ -242,10 +245,12 @@ export const Details: React.FC = () => {
                     )}
                 </div>
 
-                <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">
+                <div className="lg:col-span-5 px-2 pb-3 overflow-y-auto thin-scroll h-[250px]">
                     {matrialRequisitionDetailData.map((item, index) => (
-                        <div key={index} className="flex items-center gap-4 bg-gray-200 rounded-lg p-2 mt-2">
-
+                        <div
+                            key={index}
+                            className="flex items-center gap-3 bg-gray-100 rounded-lg p-2 mt-2"
+                        >
                             {active && (
                                 <Checkbox size="sm"
                                     checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
@@ -260,69 +265,77 @@ export const Details: React.FC = () => {
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
-                                <FieldItem label="Name" value={item.MaterialName} />
-                                <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                                <FieldItem label="Material Name" value={item.MaterialName} />
+                                <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ""} />} />
                                 <FieldItem label="Uom" value={item.Uom} />
                                 <FieldItem label="Quantity" value={item.MaterialQuantity} />
-                                <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+                                <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)}
+                                />
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="flex justify-end gap-2">
-                    {active && (
-                        <>
-                            <Button
-                                color="transparent"
-                                variant="transparent_border"
-                                size="md"
-                                onClick={() => {
-                                    setActive(false);
-                                    setSelectedIds([]);
-                                }}
-                            >
-                                Cancel Split
-                            </Button>
+                {active && (
+                    <div className="flex justify-end items-center gap-2 px-3 py-2 border-t border-[#D0D7DE] bg-white">
+                        <Button
+                            color="transparent"
+                            variant="transparent_border"
+                            size="md"
+                            onClick={() => {
+                                setActive(false);
+                                setSelectedIds([]);
+                            }}
+                        >
+                            Cancel Split
+                        </Button>
 
-                            <Button
-                                size="md"
-                                color="blue"
-                                style={{
-                                    padding: '4px 8px',
-                                }}
-                                onClick={() => {
-                                    if (selectedIds.length === 0) {
-                                        addToast({ type: "error", title: "Please select at least one material" });
-                                        return;
-                                    }
-                                    setIsAddUpdateModalOpen(true);
-                                }}
-                            >
-                                Save Split
-                            </Button>
-
-                        </>
-                    )}
-                </div>
-            </div>
-
-            <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
-                <h1 className="text-lg font-semibold text-gray-900 pb-2">Remarks</h1>
-                <span>{matrialRequisitionData?.Remarks}</span>
-            </div>
-
-            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-1">
-                <h1 className="text-lg font-semibold text-gray-900 pb-2">Action Details</h1>
-                <div className="lg:col-span-5 pb-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                        <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
-                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
-                        <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
-                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
+                        <Button
+                            size="md"
+                            color="blue"
+                            style={{
+                                padding: "4px 12px",
+                            }}
+                            onClick={() => {
+                                if (selectedIds.length === 0) {
+                                    addToast({ type: "error", title: "Please select at least one material", });
+                                    return;
+                                }
+                                setIsAddUpdateModalOpen(true);
+                            }}
+                        >
+                            Save Split
+                        </Button>
                     </div>
+                )}
+            </section>
+
+            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-4">
+                <div className="bg-[#E6FFE6] px-4 py-2 border-b border-[#D0D7DE]">
+                    <h4 className="text-sm font-semibold text-[#00A800]">
+                        Remarks
+                    </h4>
                 </div>
-            </div>
+
+                <div className="p-4">
+                    <span>{matrialRequisitionData?.Remarks}</span>
+                </div>
+            </section>
+
+            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                <div className="bg-[#E1E2E4] px-4 py-2 border-b border-[#D0D7DE]">
+                    <h4 className="text-sm font-semibold text-[#333333]">
+                        Action Details
+                    </h4>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
+                    <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
+                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
+                    <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
+                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
+                </div>
+            </section>
 
             <div className="pt-2 flex justify-end gap-2">
                 <Button

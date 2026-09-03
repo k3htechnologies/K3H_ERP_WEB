@@ -93,6 +93,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 const isService = !!row?.Logistics
                 return (
                     <div className="flex flex-col">
+
                         <span className="text-gray-900">
                             {row?.MaterialName || row?.Logistics || ""}
                         </span>
@@ -110,6 +111,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                         >
                             {isService ? "SERVICE" : "MATERIAL"}
                         </span>
+                        
                     </div>
                 )
             }

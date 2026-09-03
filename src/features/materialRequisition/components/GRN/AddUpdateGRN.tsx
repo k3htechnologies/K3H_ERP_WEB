@@ -22,7 +22,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterChallanNumber, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -386,11 +386,11 @@ export const AddUpdateGRN = () => {
         if (!formData.Remarks) {
             newErrors.Remarks = ' Remarks is required.';
         }
-
-        if (!formData.VehicleNumber) {
-            newErrors.VehicleNumber = ' Vehicle Number is required.';
+        if (!formData.VehicleNumber?.trim()) {
+            newErrors.VehicleNumber = 'Vehicle Number is required.';
+        } else if (!isValidVehicleNumber(formData.VehicleNumber)) {
+            newErrors.VehicleNumber = 'Invalid vehicle number format. Examples: MH12AB1234, 21 BH 0001 AA, 628, 1';
         }
-
         if (!formData.ChallanNumber) {
             newErrors.ChallanNumber = ' Challan Number is required.';
         } else if (formData.ChallanNumber.length !== 15) {
@@ -717,12 +717,12 @@ export const AddUpdateGRN = () => {
                     setAddMaterialPopUp(false);
                     setMaterialData(initialFormState());
                 }}
-                title={editIndex !== null ? "Edit Material" : "Add Material"}
+                title={editIndex !== null ? "Update Material" : "Add Material"}
                 onSubmit={e => {
                     e.preventDefault();
                     saveMaterial();
                 }}
-                saveText="Save"
+                saveText={editIndex !== null ? "Update" : "Add"}
                 cancelText="Cancel"
                 onCancel={() => {
                     setAddMaterialPopUp(false);

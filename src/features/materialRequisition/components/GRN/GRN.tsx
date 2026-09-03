@@ -33,6 +33,8 @@ export const GRN: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
+    const materialRequisitionStatus = listState.MaterialRequisitionStatus === "Completed"
+
     const [, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
@@ -260,7 +262,7 @@ export const GRN: React.FC = () => {
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction}
+                isShowAddButton={canAction && !materialRequisitionStatus}
                 addTitle="Add GRN"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}

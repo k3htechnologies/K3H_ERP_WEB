@@ -489,8 +489,6 @@ export const MASTER_DATA = {
 
   paymentType: ["Advance", "Late Fee", "Penalty", "Regular"],
 
-  materialRequisitionpaymentType: ['Full', 'Partial'],
-
   amountType: ["Monthly", "One Time", "Quarterly", "Yearly"],
 
   channelPartnerDesignation: ["Business Head", "Cluster Head", "Owner", "Partner", "Team Member"],
@@ -793,7 +791,6 @@ export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipTy
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
 export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
 export const PAYMENT_TYPE = toOptions(MASTER_DATA.paymentType);
-export const MATERIAL_REQUISITION_PAYMENT_TYPE = toOptions(MASTER_DATA.materialRequisitionpaymentType);
 export const AMOUNT_TYPE = toOptions(MASTER_DATA.amountType);
 export const CHANNE_PARTNER_DESIGNATION = toOptions(MASTER_DATA.channelPartnerDesignation);
 export const CHANNE_PARTNER_TYPE = toOptions(MASTER_DATA.channelPartnerType);

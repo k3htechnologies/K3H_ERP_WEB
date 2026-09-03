@@ -11,7 +11,7 @@ export abstract class MaterialRequisitionGRNGRNDatasource {
 }
 
 export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisitionGRNGRNDatasource {
-
+    
     private get k3hHttpClient() {
         return baseClient;
     }
@@ -88,9 +88,7 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
             if (error instanceof TokenExpiredException) {
 
                 return await this.deleteMaterialRequisitionGRN(params);
-
             }
-
             throw error
         }
     }
@@ -114,7 +112,6 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
 
                 return await this.pullMaterialRequisitionGRNSummary(params);
             }
-
             throw error
         }
     }

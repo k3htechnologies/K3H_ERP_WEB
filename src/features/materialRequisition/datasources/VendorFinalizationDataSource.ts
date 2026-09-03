@@ -86,9 +86,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
             if (error instanceof TokenExpiredException) {
 
                 return  await this.pullSelectedVendorForEnquiry(params);
-
             }
-
             throw error
         }
     }
@@ -108,8 +106,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
             
             if (error instanceof TokenExpiredException) {
 
-                return await this.addFinalizedVendor(payload);
-                
+                return await this.addFinalizedVendor(payload); 
             }
             throw error
         }
@@ -136,7 +133,6 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
 
                 return await this.pullFinalizedVendor(params, signal);
             }
-
             throw error
         }
     }

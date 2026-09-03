@@ -52,7 +52,6 @@ export interface AddUpdateMaterialRequisitionInvoice {
     InvoiceDueDate: string | null;
     Remarks: string | null;
     MaterialRequisitionGRNId: number | 0;
-
 }
 
 export interface DeleteMaterialRequisitionInvoice {

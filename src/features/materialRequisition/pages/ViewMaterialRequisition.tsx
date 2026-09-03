@@ -57,7 +57,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
         { id: "Overview", label: "Overview" },
         { id: "Details", label: "Details" },
-        canFinalizedVendorView ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
+        canFinalizedVendorView ? { id: "Finalize Vendor", label: "Finalize Vendor" } : null,
         canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
         { id: "GRN", label: "GRN" },
         canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
@@ -77,6 +77,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     }, [projectId, currentMaterialRequisitionId, addToast]);
 
     const CopyMaterialRequisitionFormData = (): FormData => {
+
         const fd = new FormData();
 
         fd.append("ProjectId", Number(projectId).toString());
@@ -85,21 +86,17 @@ export const ViewMaterialRequisition: React.FC = () => {
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
         fd.append("IsCopy", "1");
         fd.append("IsSplit", "0");
-        fd.append(
-            "MaterialRequisitionDetailJSON",
-            JSON.stringify(
-                editableDetails.map(item => ({
-                    MaterialRequisitionDetailId: 0,
-                    MaterialMasterId: item.MaterialMasterId,
-                    MaterialQuantity: item.MaterialQuantity,
-                    UomMasterId: item.UomMasterId,
-                    RequiredDate: item.RequiredDate
-                        ? item.RequiredDate.split("T")[0]
-                        : null,
-                    SubMaterialMasterId: item.SubMaterialMasterId,
-                }))
-            )
-        );
+        fd.append("MaterialRequisitionDetailJSON", JSON.stringify(
+            editableDetails.map(item => ({
+                MaterialRequisitionDetailId: 0,
+                MaterialMasterId: item.MaterialMasterId,
+                MaterialQuantity: item.MaterialQuantity,
+                UomMasterId: item.UomMasterId,
+                RequiredDate: item.RequiredDate
+                    ? item.RequiredDate.split("T")[0] : null,
+                SubMaterialMasterId: item.SubMaterialMasterId,
+            }))
+        ));
         return fd;
     };
 
@@ -128,7 +125,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                     setDetailData(item?.MaterialRequisitionDetailData);
 
                     setMaterialRequisitionDetailData(item?.MaterialRequisitionDetailData ?? []);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -173,7 +169,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                     navigate("/materialRequisition");
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -345,7 +340,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                     setIsCloseRequisitionDialogOpen(false);
 
                     loadMaterialRequisition();
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                     setIsCloseRequisitionDialogOpen(false);
@@ -424,7 +418,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             {activeTab === 'Details' && <Details />}
             {activeTab === 'Overview' && <Overview />}
-            {activeTab === 'Finalized Vendor' && <FinalizedVendor />}
+            {activeTab === 'Finalize Vendor' && <FinalizedVendor />}
             {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
             {activeTab === 'GRN' && <GRN />}
@@ -454,7 +448,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     setSelectedMaterialRequisitionItem(null);
                 }}
                 onConfirm={handleCloseRequisition}
-                title="Close Requisition"
+                title="Close Material Requisition"
                 message={`Are you sure you want to Close this Material Requisition?`}
                 confirmText="Close"
                 cancelText="Cancel"

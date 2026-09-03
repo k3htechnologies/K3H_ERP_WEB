@@ -52,7 +52,6 @@ export const materialRequisitionService = {
         } catch (error: any) {
             
             return E.left({ message: error.message, code: error.code });
-
             
         }
     }

@@ -98,8 +98,13 @@ export const FinalizedVendor: React.FC = () => {
                     setMaterialRequisitionVendorFinalizedList(response.right.Data)
                 }
                 return response
-            })
-    }
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Loading Finalized Vendors"
+        );
+    };
 
     const loadSelectedVendor = async () => {
         await runApiWithLoader(
@@ -117,8 +122,13 @@ export const FinalizedVendor: React.FC = () => {
                     setMaterialRequisitionVendorSelectedList(response.right.Data)
                 }
                 return response
-            })
-    }
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Loading Selected Vendors"
+        );
+    };
 
     const toggleVendor = (id: number) => {
         setSelectedVendorIds(prev =>
@@ -127,8 +137,10 @@ export const FinalizedVendor: React.FC = () => {
     }
 
     const toggleVendorSelectAllVisible = () => {
+
         const visibleIds = materialRequisitionVendorFinalizedList.map(v => v.VendorId)
         const allSelected = visibleIds.every(id => selectedVendorIds.includes(id))
+
         if (allSelected) {
             setSelectedVendorIds(prev => prev.filter(id => !visibleIds.includes(id)))
         } else {
@@ -146,6 +158,7 @@ export const FinalizedVendor: React.FC = () => {
     }
 
     const handleApprovalSubmit = async (remark: string) => {
+
         const payload: UpdateModulesWorkflowApprovalRequest = {
             ModuleName: "MATERIAL REQUISITION",
             Id: Number(currentMaterialRequisitionId) ?? 0,
@@ -153,7 +166,6 @@ export const FinalizedVendor: React.FC = () => {
             IsApproved: approvalActionType === "approve",
             Remarks: remark ?? null
         };
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -166,9 +178,7 @@ export const FinalizedVendor: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
                     setIsApprovalActionModalOpen(false);
-
                     await loadSelectedVendor();
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -200,7 +210,6 @@ export const FinalizedVendor: React.FC = () => {
                     )
 
                     setCheckedFinalVendor(Number(vendorId))
-
                     addToast({ type: "success", title: response.right.SuccessMessage[0] })
                 }
                 else {
@@ -227,9 +236,8 @@ export const FinalizedVendor: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    const selected =
-                        materialRequisitionVendorFinalizedList.filter(v =>
-                            selectedVendorIds.includes(v.VendorId))
+                    const selected = materialRequisitionVendorFinalizedList.filter(v =>
+                        selectedVendorIds.includes(v.VendorId))
 
                     setMaterialRequisitionVendorSelectedList(selected)
 
@@ -269,6 +277,7 @@ export const FinalizedVendor: React.FC = () => {
     })
 
     const saveData = async (vendor: any, term: any, lines: any[]) => {
+
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
 
             const payload = buildPayload(vendor, term, lines)
@@ -276,6 +285,7 @@ export const FinalizedVendor: React.FC = () => {
             const response = await materialRequisitionQuotationService.apiCallToAddMaterialRequisitionQuotation(payload)
 
             if (E.isRight(response)) {
+
                 addToast({ type: "success", title: response.right.SuccessMessage[0] })
             }
             else {
@@ -352,6 +362,7 @@ export const FinalizedVendor: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
             <div className="flex justify-end gap-2">
+
                 {isAnyFinalized && canfinalizeVendor && (
                     <ApprovalActions
                         approvalStatus={finalizedVendor?.VendorFinalizationApproval}
@@ -360,7 +371,6 @@ export const FinalizedVendor: React.FC = () => {
                         showApproval={isApprovalAvailable}
                         isIcons={true}
                         onHistory={handleApprovalLog}
-
                     />
                 )}
 
@@ -460,6 +470,7 @@ export const FinalizedVendor: React.FC = () => {
                                 <div className="grid grid-cols-12 gap-4">
 
                                     <div className="col-span-3 flex items-start gap-4">
+
                                         <Checkbox
                                             checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
                                             disabled={!canAction || (isAnyFinalized && !vendor.IsFinalized)}
@@ -483,8 +494,7 @@ export const FinalizedVendor: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <Copy
-                                            className="text-gray-500 cursor-pointer mt-1"
+                                        <Copy className="text-gray-500 cursor-pointer mt-1"
                                             size={16}
                                             onClick={() => {
                                                 navigator.clipboard.writeText(vendor.EmailId)
@@ -499,6 +509,7 @@ export const FinalizedVendor: React.FC = () => {
                                         <FieldItem label="GRAND TOTAL" value={`₹${computeLinesTotal(headerLines).toFixed(2)}`} />
                                         <FieldItem label="EST. DELIVERY" value={`${firstTerm?.ExpectedDeliveryInDays || 0} Days`} />
                                     </div>
+
                                 </div>
                             }
                             child={
@@ -596,8 +607,7 @@ export const FinalizedVendor: React.FC = () => {
                             materialRequisitionVendorFinalizedList
                                 .filter(v =>
                                     v.VendorName?.toLowerCase().includes(searchVendor.toLowerCase())
-                                )
-                                .map((vendor: any) => {
+                                ).map((vendor: any) => {
 
                                     const checked = selectedVendorIds.includes(vendor.VendorId)
 
@@ -645,7 +655,6 @@ export const FinalizedVendor: React.FC = () => {
 
                     </div>
                 </div>
-
             </Modal>
 
         </div>

@@ -41,8 +41,7 @@ export const vendorFinalizationService = {
     
             return E.left({ message: error.message, code: error.code });
     
-        }
-        
+        }  
     },
         
     apiCallAddFinalizedVendor: async (payload: AddVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
@@ -53,8 +52,6 @@ export const vendorFinalizationService = {
         } catch (error: any) {
             
             return E.left({ message: error.message, code: error.code });
-
-            
         }
     },
 

@@ -47,6 +47,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     //PURCHASE 
     MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
+    
     //LITIGATION
     LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
 

@@ -85,9 +85,7 @@ export const AddUpdateMaterialRequisition = () => {
 
     useEffect(() => {
         if (!MaterialRequisitionId) return;
-        (async () => {
-            await loadDetailsdata();
-        })();
+        loadDetailsdata();
     }, [MaterialRequisitionId]);
 
     useEffect(() => {
@@ -98,15 +96,15 @@ export const AddUpdateMaterialRequisition = () => {
 
     useEffect(() => {
         const uniqueMaterials = [
-            ...new Map((materialsubmaterialList || []).map(x => [
-                x.MaterialMasterId,
-                x
+            ...new Map((materialsubmaterialList || []).map(item => [
+                item.MaterialMasterId,
+                item
             ])).values()];
 
         setMaterialOptions(
-            uniqueMaterials.map(x => ({
-                label: x.MaterialName,
-                value: String(x.MaterialMasterId)
+            uniqueMaterials.map(item => ({
+                label: item.MaterialName,
+                value: String(item.MaterialMasterId)
             }))
         );
     }, [materialsubmaterialList]);
@@ -179,18 +177,19 @@ export const AddUpdateMaterialRequisition = () => {
                             ProjectId: e.ProjectId ?? prev.ProjectId,
                             Remarks: e.Remarks ?? prev.Remarks
                         }));
+
                         if (e.MaterialRequisitionDetailData) {
                             setMaterialList(
-                                e.MaterialRequisitionDetailData.map((x: any) => ({
-                                    MaterialMasterId: x.MaterialMasterId,
-                                    SubMaterialMasterId: x.SubMaterialMasterId,
-                                    SubMaterialName: x.SubMaterialName,
-                                    UomCode: x.UomCode,
-                                    UomMasterId: x.UomMasterId,
-                                    MaterialQuantity: x.MaterialQuantity,
-                                    RequiredDate: x.RequiredDate,
-                                    MaterialName: x.MaterialName,
-                                    Remark: x.Remark
+                                e.MaterialRequisitionDetailData.map((item: any) => ({
+                                    MaterialMasterId: item.MaterialMasterId,
+                                    SubMaterialMasterId: item.SubMaterialMasterId,
+                                    SubMaterialName: item.SubMaterialName,
+                                    UomCode: item.UomCode,
+                                    UomMasterId: item.UomMasterId,
+                                    MaterialQuantity: item.MaterialQuantity,
+                                    RequiredDate: item.RequiredDate,
+                                    MaterialName: item.MaterialName,
+                                    Remark: item.Remark
                                 }))
                             );
                         }
@@ -306,9 +305,9 @@ export const AddUpdateMaterialRequisition = () => {
             align: "right",
             render: (_value, row) => {
                 const index = materialList.findIndex(
-                    x =>
-                        x.MaterialMasterId === row.MaterialMasterId &&
-                        x.SubMaterialMasterId === row.SubMaterialMasterId
+                    item =>
+                        item.MaterialMasterId === row.MaterialMasterId &&
+                        item.SubMaterialMasterId === row.SubMaterialMasterId
                 );
 
                 return canAction ? (
@@ -331,7 +330,6 @@ export const AddUpdateMaterialRequisition = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-
                                 setMaterialList(prev =>
                                     prev.filter((_, i) => i !== index)
                                 );
@@ -358,10 +356,10 @@ export const AddUpdateMaterialRequisition = () => {
         if (!materialData.MaterialMasterId) return [];
 
         return materialsubmaterialList
-            .filter(x => x.MaterialMasterId === materialData.MaterialMasterId)
-            .map(x => ({
-                label: x.SubMaterialName,
-                value: String(x.SubMaterialMasterId)
+            .filter(item => item.MaterialMasterId === materialData.MaterialMasterId)
+            .map(item => ({
+                label: item.SubMaterialName,
+                value: String(item.SubMaterialMasterId)
             }));
     }, [materialData.MaterialMasterId, materialsubmaterialList]);
 
@@ -445,7 +443,6 @@ export const AddUpdateMaterialRequisition = () => {
             setErrors(validation.errors);
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -460,11 +457,9 @@ export const AddUpdateMaterialRequisition = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                     navigate("/materialRequisition");
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
-
                 return response;
             },
             undefined,
@@ -501,7 +496,6 @@ export const AddUpdateMaterialRequisition = () => {
                 if (E.isRight(apiResponse)) {
 
                     setMaterialSubMaterialList(apiResponse.right.Data.MaterialMasterSubMaterialMasterData);
-
                 } else {
                     addToast({ type: "error", title: "Error Fetching material list" });
                 }
@@ -520,7 +514,6 @@ export const AddUpdateMaterialRequisition = () => {
         setErrors({});
 
         const validation = validateMaterialForm();
-
         if (!validation.isValid) {
 
             setErrors(validation.errors);
@@ -571,7 +564,6 @@ export const AddUpdateMaterialRequisition = () => {
                             >
                                 Add Material
                             </Button>
-
                         </div>
 
                         {materialList.length > 0 && (
@@ -644,7 +636,7 @@ export const AddUpdateMaterialRequisition = () => {
                     e.preventDefault();
                     saveMaterial();
                 }}
-                saveText="Save"
+                saveText="Add"
                 cancelText="Cancel"
                 onCancel={() => setAddMaterialPopUp(false)}
                 size="lg"
@@ -661,6 +653,7 @@ export const AddUpdateMaterialRequisition = () => {
                 </div>
 
                 {active == "Direct" && (
+
                     <div className="space-y-4">
                         <SingleSelectDropdownWithPagination
                             label="Category Name"
@@ -685,9 +678,7 @@ export const AddUpdateMaterialRequisition = () => {
                             label="Sub Material"
                             title="Select SubMaterial"
                             size="lg"
-                            onSelected={(item) => {
-                                item
-                            }}
+                            onSelected={(item) => { item }}
                             error={errors.SubMaterialMasterId}
                         />
 
@@ -717,10 +708,7 @@ export const AddUpdateMaterialRequisition = () => {
                             value={materialData.MaterialQuantity}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    MaterialQuantity: value === "" ? 0 : Number(value)
-                                }));
+                                setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
                             }}
                             placeholder="Quantity"
                             min={0}
@@ -732,10 +720,7 @@ export const AddUpdateMaterialRequisition = () => {
                             required
                             value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
                             onChange={(value) =>
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? ""
-                                }))
+                                setMaterialData(prev => ({ ...prev, RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }))
                             }
                             placeholder="DD/MM/YYYY"
                         />
@@ -746,10 +731,7 @@ export const AddUpdateMaterialRequisition = () => {
                             className="thin-scroll"
                             value={materialData.Remark}
                             onChange={(e) =>
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    Remark: e.target.value
-                                }))
+                                setMaterialData(prev => ({ ...prev, Remark: e.target.value }))
                             }
                             required
                             placeholder="Enter Remark"
@@ -765,10 +747,7 @@ export const AddUpdateMaterialRequisition = () => {
                             required
                             label="Material"
                             key={dropdownMaterialResetKey}
-                            initialValue={createDropdownInitialValue(
-                                materialData.MaterialMasterId,
-                                dropdownLabels.materialName || materialData.MaterialName,
-                            )}
+                            initialValue={createDropdownInitialValue(materialData.MaterialMasterId, dropdownLabels.materialName || materialData.MaterialName)}
                             title="Select Material"
                             size="lg"
                             dataFetchCallBack={async () => ({
@@ -786,9 +765,7 @@ export const AddUpdateMaterialRequisition = () => {
                                     SubMaterialName: "",
                                     UomCode: "",
                                     UomMasterId: 0
-
                                 }));
-
                                 setDropdownSubMaterialResetKey(p => p + 1);
                             }}
                             error={errors.MaterialMasterId}
@@ -798,21 +775,19 @@ export const AddUpdateMaterialRequisition = () => {
                             required
                             label="Sub Material"
                             key={dropdownSubMaterialResetKey}
-                            initialValue={createDropdownInitialValue(
-                                materialData.SubMaterialMasterId,
-                                materialData.SubMaterialName
-                            )}
+                            initialValue={createDropdownInitialValue(materialData.SubMaterialMasterId, materialData.SubMaterialName)}
                             title="Select SubMaterial"
                             size="lg"
                             dataFetchCallBack={async () => ({
                                 itemList: subMaterialOptions,
                                 totalNumberOfRecord: subMaterialOptions.length
                             })}
+
                             onSelected={(item) => {
                                 const id = item ? Number(item.value) : 0;
 
                                 const selected = materialsubmaterialList.find(
-                                    x => x.SubMaterialMasterId === id
+                                    item => item.SubMaterialMasterId === id
                                 );
 
                                 setMaterialData(prev => ({
@@ -842,46 +817,39 @@ export const AddUpdateMaterialRequisition = () => {
                             value={materialData.MaterialQuantity}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    MaterialQuantity: value === "" ? 0 : Number(value)
-                                }));
+                                setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
                             }}
                             placeholder="Enter Quantity"
                             error={errors.MaterialQuantity}
                         />
 
                         <div>
-
                             <DatePickerInput
                                 label="Required Date"
                                 required
                                 value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
                                 onChange={(value) =>
-                                    setMaterialData(prev => ({
-                                        ...prev,
-                                        RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? ""
-                                    }))
+                                    setMaterialData(prev => ({ ...prev, RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }))
                                 }
                                 placeholder="DD/MM/YYYY"
                             />
                             {errors.RequiredDate && <p className="text-red-500 text-sm mt-1">{errors.RequiredDate}</p>}
                         </div>
 
-                        <TextArea
-                            label="Remark"
-                            className="thin-scroll"
-                            value={materialData.Remark}
-                            onChange={(e) =>
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    Remark: e.target.value
-                                }))
-                            }
-                            required
-                            placeholder="Enter Remark"
-                            error={errors.Remark}
-                        />
+                        <div>
+                            <TextArea
+                                label="Remark"
+                                className="thin-scroll"
+                                value={materialData.Remark}
+                                onChange={(e) =>
+                                    setMaterialData(prev => ({ ...prev, Remark: e.target.value }))
+                                }
+                                required
+                                placeholder="Enter Remark"
+                                error={errors.Remark}
+                            />
+                        </div>
+                        
                     </div>
                 )}
             </Modal>

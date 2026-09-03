@@ -85,7 +85,6 @@ export interface MaterialRequisitionDetailData {
     ModifiedDate: null;
 }
 
-
 export interface AddUpdateMaterialRequisitionRequest {
     MaterialRequisitionId: number;
     Uniquekey: string;

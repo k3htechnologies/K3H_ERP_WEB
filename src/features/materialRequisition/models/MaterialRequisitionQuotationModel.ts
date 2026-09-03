@@ -16,6 +16,7 @@ export interface MaterialRequisitionQuotationDetailsTermsData {
     MobileNumber:string;
     EmailId:string;
 }
+
 export interface MaterialRequisitionQuotationDetailsData {
     MaterialRequisitionQuotationId:number;
     Uniquekey:string;
@@ -34,7 +35,6 @@ export interface MaterialRequisitionQuotationDetailsData {
     SGST:number;
     UGST:number;
     TGST:number;
-    
 }
 
 export interface AddUpdateMaterialRequestQuotation {
@@ -47,7 +47,6 @@ export interface AddUpdateMaterialRequestQuotation {
     Total:number;
     ProjectId:number;
     MaterialRequisitionQuotationJSON:string;
-
 }
 
 export interface DeleteMaterialRequisitionQuotation{

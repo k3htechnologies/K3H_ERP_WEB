@@ -10,7 +10,7 @@ export abstract class MaterialRequisitionPaymentDatasource {
 }
 
 export class MaterialRequisitionPaymentDatasourceImpl implements MaterialRequisitionPaymentDatasource {
-
+    
     private get k3hHttpClient() {
         return baseClient;
     }
@@ -91,7 +91,6 @@ export class MaterialRequisitionPaymentDatasourceImpl implements MaterialRequisi
                 return await this.deleteMaterialRequisitionPayment(params);
 
             }
-
             throw error
         }
     }

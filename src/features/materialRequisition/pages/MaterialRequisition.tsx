@@ -51,34 +51,66 @@ export const MaterialRequisition: React.FC = () => {
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
 
-    const applyFilters = () => {
-        updateListState({ filters: tempFilters, page: 1 });
-        setShowFilterPopup(false);
-    };
-
-    const clearFilters = () => {
-        setTempFilters({});
-        updateListState({ filters: {}, page: 1 });
-    };
-
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
-    }
-
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchMaterialRequisition(value)
     }, 350);
 
-    const searchMaterialRequisition = async (searchValue: string) => {
-        updateListState({ searchTerm: searchValue });
+    useEffect(() => {
+        if (!projectId) return;
 
-        if (searchValue.trim() === '') {
-            fetchLoadDetailsList();
-            return
+        if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
+            loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
+
+        } else {
+            loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
+    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm, clearMaterialRequisitionContext]);
 
-        updateListState({ filters, page: 1, searchTerm: searchValue });
-        await loadDetailsdata(1, filters, sortInfo, searchValue);
+    const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+        return await loadDetailsdata(page, filters, sort ?? sortInfo);
+    }
+
+    const loadDetailsdata = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisition = {
+                    PageNumber: page,
+                    PageSize: pagination.pageSize,
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
+                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
+                    SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
+                    FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                    ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
+                };
+
+                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
+
+                if (E.isRight(response)) {
+
+                    setMaterialRequisitionData(response.right.Data);
+
+                    setPagination({
+                        currentPage: page,
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+                    });
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading Material Requisition",
+        );
     };
 
     const handleConfirmationDialogBoxOpen = useCallback((row: MaterialRequisitionData) => {
@@ -87,75 +119,15 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
-
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId ?? 0, MaterialRequisitionStage: row.MaterialRequisitionStage ?? "", MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "", SystemGeneratedCode: row.SystemGeneratedCode ?? "", Uniquekey: row.Uniquekey ?? "" });
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
-
-    const handleDeleteRequest = async () => {
-        setIsConfirmationDialogBoxOpen(false);
-
-        if (!deleteData) return;
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const payload: DeleteMaterialRequisitionRequest = {
-                    MaterialRequisitionId: deleteData.MaterialRequisitionId,
-                    Uniquekey: deleteData.Uniquekey,
-                    ProjectId: Number(projectId)
-                };
-
-                const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
-
-                if (E.isRight(response)) {
-
-                    const newTotalRecords = pagination.totalRecords - 1;
-
-                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
-
-                    let pageToShow = pagination.currentPage;
-
-                    if (pagination.currentPage > newTotalPages) {
-                        pageToShow = newTotalPages;
-                    }
-
-                    else if (materialRequisitionData.length === 1 && pagination.currentPage > 1) {
-                        pageToShow = pagination.currentPage - 1;
-                    }
-                    setPagination({
-                        currentPage: pageToShow,
-                        totalRecords: newTotalRecords,
-                        totalPages: newTotalPages
-                    });
-
-                    await loadDetailsdata(pageToShow, filters, sortInfo);
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-
-                    setIsConfirmationDialogBoxOpen(false);
-
-                    setDeleteData(null);
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Deleting Requisition'
-        );
-    };
 
     const handlePageChange = (page: number) => {
         updateListState({ page });
     };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
-
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);
@@ -247,6 +219,7 @@ export const MaterialRequisition: React.FC = () => {
             sortable: false,
             align: 'left',
             render: (_value: string, row: any) => {
+
                 const urls = parseDocumentUrls(row.PurchaseOrderURL);
 
                 if (!urls || urls.length === 0) {
@@ -359,80 +332,28 @@ export const MaterialRequisition: React.FC = () => {
     }, [MaterialRequisitionColumns.length]);
 
     const visibleMaterialRequisitionColumns = useMemo(
-        () =>
-            MaterialRequisitionColumns.filter((col) =>
-                selectedMaterialRequisitionColumnKeys.includes(col.key),
-            ),
-
+        () => MaterialRequisitionColumns.filter((col) =>
+            selectedMaterialRequisitionColumnKeys.includes(col.key),),
         [MaterialRequisitionColumns, selectedMaterialRequisitionColumnKeys],
     );
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         updateListState({ sortInfo: sort, page: 1 });
         loadDetailsdata(1, filters, sort, searchTerm || undefined);
     }, [filters, updateListState, searchTerm]);
 
-    useEffect(() => {
-        if (!projectId) return;
+    const searchMaterialRequisition = async (searchValue: string) => {
+        updateListState({ searchTerm: searchValue });
 
-        if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-            loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
-
-        } else {
-            loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
+        if (searchValue.trim() === '') {
+            fetchLoadDetailsList();
+            return
         }
-    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm, clearMaterialRequisitionContext]);
-
-    const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-        return await loadDetailsdata(page, filters, sort ?? sortInfo);
-    }
-
-    const loadDetailsdata = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: page,
-                    PageSize: pagination.pageSize,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
-                    SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
-                    FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
-                    ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    setMaterialRequisitionData(response.right.Data);
-
-                    setPagination({
-                        currentPage: page,
-                        totalRecords: response.right.TotalNumberOfRecord,
-                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-                    });
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Material Requisition",
-        );
+        updateListState({ filters, page: 1, searchTerm: searchValue });
+        await loadDetailsdata(1, filters, sortInfo, searchValue);
     };
 
     const clearSearchMaterialRequisition = () => {
-
         debouncedSearch.cancel?.();
         updateListState({ searchTerm: '', filters: {}, page: 1 });
         setTempFilters({});
@@ -442,6 +363,80 @@ export const MaterialRequisition: React.FC = () => {
     const handleAddMaterialRequisitionModal = useCallback(() => {
         navigate('/materialRequisition/add');
     }, [navigate]);
+
+    const applyFilters = () => {
+        updateListState({ filters: tempFilters, page: 1 });
+        setShowFilterPopup(false);
+    };
+
+    const clearFilters = () => {
+        setTempFilters({});
+        updateListState({ filters: {}, page: 1 });
+    };
+
+    const handleFilterChange = (key: string, value: string) => {
+        setTempFilters(prev => updateFilter(prev, key, value));
+    }
+
+    const handleDeleteRequest = async () => {
+
+        if (!deleteData) return;
+
+        setIsConfirmationDialogBoxOpen(false);
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload: DeleteMaterialRequisitionRequest = {
+                    MaterialRequisitionId: deleteData.MaterialRequisitionId,
+                    Uniquekey: deleteData.Uniquekey,
+                    ProjectId: Number(projectId)
+                };
+
+                const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (materialRequisitionData.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+
+                    await loadDetailsdata(pageToShow, filters, sortInfo);
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteData(null);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Requisition'
+        );
+    };
 
     const getMaterialRequisition = async (filterParams: FilterWithPaginationMaterialRequisition) => {
         return await materialRequisitionService.apiCallPullMaterialRequisition(filterParams);

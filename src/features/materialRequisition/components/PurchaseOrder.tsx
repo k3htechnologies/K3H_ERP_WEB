@@ -82,7 +82,6 @@ export const PurchaseOrder: React.FC = () => {
                     const data = response.right.Data;
 
                     setMaterialRequisitionPurchaseOrder(Array.isArray(data) ? (data[0] ?? null) : data);
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -175,7 +174,6 @@ export const PurchaseOrder: React.FC = () => {
                     loadPurchaseOrder()
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -213,7 +211,6 @@ export const PurchaseOrder: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
                     loadPurchaseOrder();
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -252,7 +249,6 @@ export const PurchaseOrder: React.FC = () => {
 
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteGeneratePurchaseOrderData(null);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);

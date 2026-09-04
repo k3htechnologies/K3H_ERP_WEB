@@ -22,7 +22,8 @@ export interface SubMaterialMasterData {
     UomMasterId: number | 0,
     UomCode: string | 0,
     Uom: string | 0,
-    IsTolerant:boolean
+    LeadTimeInDays: number | 0,
+    IsTolerant?: boolean,
 
     CreatedById: number | 0,
     CreatedBy: string | '',
@@ -39,7 +40,8 @@ export interface AddUpdateSubMaterialMasterRequest {
     MaterialMasterId: number | 0,
     SubMaterialName: string,
     UomMasterId: number | 0,
-    IsTolerant:boolean
+    LeadTimeInDays: number | 0,
+    IsTolerant?: boolean,
 }
 
 export interface DeleteSubMaterialMasterRequest {

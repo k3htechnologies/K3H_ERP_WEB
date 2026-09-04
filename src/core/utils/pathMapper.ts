@@ -45,6 +45,11 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/category': '/category',
         '/document': '/document',
         '/reracategory': '/reraCategory',
+        '/testcategory': '/testCategory',
+        '/testdocument': '/testDocument',
+        '/drawingcategory': '/drawingCategory',
+        '/drawing': '/drawing',
+
         '/rera': '/rera',
         '/siteprogress': '/siteProgress',
         '/building': '/building',
@@ -87,12 +92,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/classificationparameter': '/classificationParameter',
         '/paymentschedulereport': '/paymentScheduleReport',
         '/paymentschedule': '/paymentSchedule',
-        '/target': '/target',
-        '/incentivereport': '/incentiveReport',
-        '/paymentschedulescheme': '/paymentScheduleScheme',
-        '/performance': '/performance',
-        '/achievement': '/achievement',
-        '/channelpartnercategory' :'/channelPartnerCategory',
+        '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
 
 
@@ -113,19 +113,37 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paytrackreport': '/payTrackReport',
         '/brokerage': '/brokerage',
         '/collectionreport': '/collectionReport',
-         '/dailycollectionreport': '/dailyCollectionReport',
+        '/dailycollectionreport': '/dailyCollectionReport',
 
         //MORE
         '/inwardoutward': '/inwardOutward',
         '/ticket': '/ticket',
+        '/otplogs': '/otpLogs',
+        '/taxtracker': '/taxTracker',
+
 
         //SETTING EXTRA
         '/companypolicy': '/companyPolicy',
 
         //TAX TRACKER
         '/noticesection': '/noticeSection',
-        '/stock': '/Stock',
-        '/channelPartnerCategory': '/ChannelPartnerCategory'
+
+        //FINANCE
+        '/termsheet': '/termSheet',
+        '/termsheetreport': '/termSheetReport',
+
+        //VISITOR MANAGEMENT
+        '/gatepass': '/gatePass',
+
+        //PROJECT LAND
+        '/projectlead': '/projectLead',
+
+
+        //  HIRESPACE & JON OPENING
+        '/jobrolemaster': '/jobRoleMaster',
+        '/jobopenings': '/jobOpenings',
+
+        '/materialrequisition': '/materialRequisition',
     }
 
 

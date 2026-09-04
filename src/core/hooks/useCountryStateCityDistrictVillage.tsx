@@ -24,7 +24,9 @@ interface CountryStateCityDistrictVillageContextValue {
   statesByCountryId: Record<number, CountryStateCityDistrictVillageOption[]>
   districtsByStateId: Record<number, CountryStateCityDistrictVillageOption[]>
   citiesByDistrictId: Record<number, CountryStateCityDistrictVillageOption[]>
+  wardByDistrictId: Record<number, CountryStateCityDistrictVillageOption[]>
   villagesByCityId: Record<number, CountryStateCityDistrictVillageOption[]>
+  
 }
 
 const CountryStateCityDistrictVillageContext =
@@ -43,7 +45,9 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
       statesByCountryId: {},
       districtsByStateId: {},
       citiesByDistrictId: {},
+      wardByDistrictId: {},
       villagesByCityId: {},
+      
     })
 
   useEffect(() => {
@@ -112,6 +116,7 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
           statesByCountryId,
           districtsByStateId,
           citiesByDistrictId,
+          wardByDistrictId,
           villagesByCityId,
         } = buildLocationMaps(list)
 
@@ -125,6 +130,7 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
           statesByCountryId,
           districtsByStateId,
           citiesByDistrictId,
+          wardByDistrictId,
           villagesByCityId,
         })
       } catch (err: any) {
@@ -157,6 +163,7 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
   const statesByCountryId: Record<number, CountryStateCityDistrictVillageOption[]> = {}
   const districtsByStateId: Record<number, CountryStateCityDistrictVillageOption[]> = {}
   const citiesByDistrictId: Record<number, CountryStateCityDistrictVillageOption[]> = {}
+  const wardByDistrictId: Record<number, CountryStateCityDistrictVillageOption[]> = {}
   const villagesByCityId: Record<number, CountryStateCityDistrictVillageOption[]> = {}
 
   for (const row of list) {
@@ -210,6 +217,21 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
       })
     }
 
+    // ward
+    if (!wardByDistrictId[row.DistrictMasterId]) {
+      wardByDistrictId[row.DistrictMasterId] = []
+    }
+    if (
+      !wardByDistrictId[row.DistrictMasterId].some(
+        c => c.id === row.WardMasterId,
+      )
+    ) {
+      wardByDistrictId[row.DistrictMasterId].push({
+        id: row.WardMasterId,
+        name: row.WardName,
+      })
+    }
+
     // Village
     if (!villagesByCityId[row.CityMasterId]) {
       villagesByCityId[row.CityMasterId] = []
@@ -235,6 +257,7 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
     statesByCountryId,
     districtsByStateId,
     citiesByDistrictId,
+    wardByDistrictId,
     villagesByCityId,
   }
 }

@@ -70,22 +70,28 @@ export const SubMaterialMasterTable: React.FC<SubMaterialMasterTableProps> = ({
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
                 text={value || '-'}
-                maxWidth="400px"
-                tooltipThreshold={30}
+                maxWidth="800px"
+                tooltipThreshold={100}
                 onClick={() => onView(row)}
               />
             </div>
           )
         };
       }
+      if (col.key === 'Uom') {
+        return {
+          ...col,
+          render: (_value, row: SubMaterialMasterData) => (
+            <span>
+              {row.Uom || '-'} {row.UomCode ? ` (${row.UomCode})` : ''}
+            </span>
+          )
+        };
+      }
       if (col.key === 'IsTolerant') {
         return {
           ...col,
-          render: (value, _row: SubMaterialMasterData) => (
-            <div className="text-center">
-              {(value as boolean) ? 'Yes' : 'No'}
-            </div>
-          )
+          render: (value) => value == 1 ? 'Yes' : 'No'
         };
       }
       return col;

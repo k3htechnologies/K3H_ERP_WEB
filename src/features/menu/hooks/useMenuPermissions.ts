@@ -23,6 +23,7 @@ export class ModuleAction {
   static makePayments = 'Make Payments'
 }
 
+
 const normalizePath = (path: string): string => {
   if (!path) return '/'
   const trimmed = path.trim()

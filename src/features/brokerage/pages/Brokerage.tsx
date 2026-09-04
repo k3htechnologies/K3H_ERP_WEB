@@ -67,12 +67,7 @@ export const Brokerage: React.FC = () => {
             loadBrokerageBooking(listState.page, listState.filters, listState.sortInfo);
 
         }
-    }, [
-        listState.page,
-        listState.filters,
-        listState.sortInfo,
-        listState.searchTerm,
-    ]);
+    }, [projectId,listState.page,  listState.filters, listState.sortInfo, listState.searchTerm, ]);
 
     useEffect(() => {
         return () => {
@@ -146,7 +141,6 @@ export const Brokerage: React.FC = () => {
         setTempFilters({});
     };
 
-
     const handleExportBrokerageBooking = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -211,10 +205,9 @@ export const Brokerage: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-        [pagination, handlePageChange]
-    )
-    const BrokerageBookingForTable = useMemo(() => BrokerageBookingList, [BrokerageBookingList]);
+        [pagination, handlePageChange])
 
+    const BrokerageBookingForTable = useMemo(() => BrokerageBookingList, [BrokerageBookingList]);
 
     const handleViewBrokerageBookingDetails = useCallback((row: BrokerageBookingData) => {
 
@@ -223,12 +216,15 @@ export const Brokerage: React.FC = () => {
             bookingName: row.ApplicantName ?? "",
             cpName: row.ChannelPartnerName ?? "",
             cpMobileNumber: row.ChannelPartnerMobileNumber ?? "",
-            cpCompany: row.ChannelPartnerCompany ?? ""
+            cpCompany: row.ChannelPartnerCompany ?? "",
+            agreementValue: row.AgreementValue,
+            brokerageAmount: row.BrokerageAmount,
+            invoiceAmount: row.InvoiceAmount,
+            paymentPaidAmount: row.PaymentPaidAmount
         });
+
         navigate("/brokerage/brokerageInvoice/view");
-
     }, [navigate]);
-
 
     const BrokerageBookingColumns = useMemo<TableColumn[]>(() => [
         {
@@ -258,7 +254,7 @@ export const Brokerage: React.FC = () => {
 
         {
             key: 'ChannelPartnerMobileNumber',
-            label: 'Cp Mobile Number',
+            label: 'CP Mobile Number',
             width: '15',
             sortable: false,
             align: 'left',
@@ -280,14 +276,6 @@ export const Brokerage: React.FC = () => {
             )
         },
         {
-            key: 'ProjectName',
-            label: 'Project Name',
-            width: '25',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        {
             key: 'ApplicantName',
             label: 'Applicant Name',
             width: '25',
@@ -297,11 +285,11 @@ export const Brokerage: React.FC = () => {
         },
         {
             key: 'ApplicantMobileNumber',
-            label: 'Mobile Number',
+            label: 'Applicant Mobile Number',
             width: '25',
             sortable: false,
             align: 'left',
-           render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
+            render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: "UnitGroup",
@@ -362,7 +350,7 @@ export const Brokerage: React.FC = () => {
                     width: '25',
                     sortable: false,
                     align: 'left',
-                    render: (value) => value ? `${value} Sq ft` : '-'
+                    render: (value) => value ? `${value} SqFt` : '-'
                 },
             ]
         },
@@ -394,14 +382,14 @@ export const Brokerage: React.FC = () => {
                 },
                 {
                     key: "InvoiceAmount",
-                    label: "Raise Invoice (₹)",
+                    label: "Raised Invoice(₹)",
                     align: "right",
                     render: value => value ? formatCurrency(value) : '0'
                 },
 
                 {
                     key: "PaymentPaidAmount",
-                    label: "Account Paid (₹)",
+                    label: "Amount Paid (₹)",
                     align: "right",
                     render: value => value ? formatCurrency(value) : '0'
                 },
@@ -413,7 +401,7 @@ export const Brokerage: React.FC = () => {
                         const brokerageAmount = Number(row.BrokerageAmount) || 0
                         const paidBrokerageAmount = Number(row.PaymentPaidAmount) || 0
                         const outstandingAmount = brokerageAmount - paidBrokerageAmount
-                        return `₹ ${outstandingAmount.toFixed(2)}`
+                        return formatCurrency(outstandingAmount) || '0'
                     }
                 }
             ]
@@ -544,7 +532,7 @@ export const Brokerage: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Brokerage Booking"
+                title="Filter - Brokerage "
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -582,6 +570,7 @@ export const Brokerage: React.FC = () => {
                             value={tempFilters.ChannelPartnerMobileNumber || ''}
                             onChange={e => handleFilterChange('ChannelPartnerMobileNumber', e.target.value)}
                             placeholder="Enter CP Mobile Number"
+                            maxLength={10}
                         />
                     </div>
                     <div>
@@ -601,6 +590,7 @@ export const Brokerage: React.FC = () => {
                             value={tempFilters.ApplicantMobileNumber || ''}
                             onChange={e => handleFilterChange('ApplicantMobileNumber', e.target.value)}
                             placeholder="Enter Mobile Number"
+                            maxLength={10}
                         />
                     </div>
                     <div>
@@ -625,17 +615,7 @@ export const Brokerage: React.FC = () => {
 
                     <div>
                         <Input
-                            label='Floor'
-                            type="text"
-                            value={tempFilters.Floor || ''}
-                            onChange={e => handleFilterChange('Floor', e.target.value)}
-                            placeholder="Enter Floor"
-                        />
-                    </div>
-                    <div>
-                        <Input
                             label='Agreement Value'
-                            type="number"
                             value={tempFilters.AgreementValue || ''}
                             onChange={e => handleFilterChange('AgreementValue', e.target.value)}
                             placeholder="Enter Agreement Value"

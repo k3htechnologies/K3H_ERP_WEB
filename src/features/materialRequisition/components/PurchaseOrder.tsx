@@ -16,7 +16,7 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import RichTextEditor from "@/ui/components/forms/RichTextEditor";
-import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import {  useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -54,7 +54,7 @@ export const PurchaseOrder: React.FC = () => {
     const currentUniquekey = listState.Uniquekey
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isMaximized, setIsMaximized] = useState(false);
-    const { canAction: canGeneratePurchaseOrder } = useMenuPermissions(ModuleAction.generatePurchaseOrder);
+    const { canAction: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
 
     useEffect(() => {
         if (!projectId) return

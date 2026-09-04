@@ -2,7 +2,6 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { BuildingDatasourceImpl } from '@/features/building/datasources/BuildingDatasource'
 import type {
     FilterWithPaginationBuildingRequest,
-    AddUpdateBuildingRequest,
     BuildingListResponse,
     DeleteBuildingRequest,
     BuildingDeleteResponse,
@@ -35,10 +34,10 @@ export const buildingService = {
         }
     },
 
-    apiCallAddUpdateBuilding: async (params: AddUpdateBuildingRequest): Promise<E.Either<Failure, BuildingListResponse>> => {
+    apiCallAddUpdateBuilding: async (formData: FormData): Promise<E.Either<Failure, BuildingListResponse>> => {
         try {
 
-            return E.right(await buildingDatasource.addUpdateBuilding(params));
+            return E.right(await buildingDatasource.addUpdateBuilding(formData));
 
         } catch (error: any) {
 

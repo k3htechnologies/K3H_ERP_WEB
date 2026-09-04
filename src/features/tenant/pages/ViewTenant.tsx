@@ -186,7 +186,7 @@ export const ViewTenant: React.FC = () => {
 
         return urls.length > 0;
     });
-    
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -259,14 +259,14 @@ export const ViewTenant: React.FC = () => {
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                             <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900 bold' />
                                                             <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
-                                                             <FieldItem label="Mobile Number" value={`${getSafeString(tenantData?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(tenantData?.ApplicantMobileNumber)}`} />
+                                                            <FieldItem label="Mobile Number" value={`${getSafeString(tenantData?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(tenantData?.ApplicantMobileNumber)}`} />
                                                             <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
 
                                                             <FieldItem label="Aadhaar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
                                                             <FieldItem label="PAN No." value={tenantData?.PanNumber} urls={tenantData?.PanCardURL} isIcon />
+                                                            <FieldItem label="Passport No." value={tenantData?.PassportNumber} urls={tenantData?.PassportURL} isIcon />
                                                             <FieldItem label="Driving License" value={tenantData?.DrivingLicenseNumber} urls={tenantData?.DrivingLicenseURL} isIcon />
                                                             <FieldItem label="Voting ID No." value={tenantData?.VotingIdNumber} urls={tenantData?.VotingIdURL} isIcon />
-                                                            <FieldItem label="Passport No." value={tenantData?.PassportNumber} urls={tenantData?.PassportURL} isIcon />
                                                             <FieldItem label="GST No." value={tenantData?.GSTNumber} urls={tenantData?.GSTNumberURL} isIcon />
 
                                                             <FieldItem label="Bank Name" value={tenantData?.BankName} />
@@ -303,14 +303,9 @@ export const ViewTenant: React.FC = () => {
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Tenant Code" value={editTenantData?.SystemGeneratedCode} />
                                                 <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.UnitAnnexureSurveyNumber} />
-                                                <FieldItem label="Type" value={editTenantData?.UnitType} />
-                                                {editTenantData?.UnitType?.toUpperCase() !== "GYM"
-                                                    ?
-                                                    <FieldItem label="Configuration" value={editTenantData?.UnitConfiguration} />
-                                                    : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.UnitCarpetAreaSqFt} />
-                                                }
-
+                                                <FieldItem label="Unit Type" value={editTenantData?.UnitType} />
                                             </div>
                                         </div>
 
@@ -318,10 +313,16 @@ export const ViewTenant: React.FC = () => {
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 {editTenantData?.UnitType?.toUpperCase() !== "GYM"
                                                     ?
-                                                    <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.UnitCarpetAreaSqFt} />
+                                                    <FieldItem label="Unit Configuration" value={editTenantData?.UnitConfiguration} />
+                                                    : <FieldItem label="Unit Carpet Area (SqFt)" value={editTenantData?.UnitCarpetAreaSqFt} />
+                                                }
+
+                                                {editTenantData?.UnitType?.toUpperCase() !== "GYM"
+                                                    ?
+                                                    <FieldItem label="Unit Carpet Area (SqFt)" value={editTenantData?.UnitCarpetAreaSqFt} />
                                                     : ""
                                                 }
-                                                <FieldItem label="Facing" value={editTenantData?.UnitFacing} />
+                                                <FieldItem label="Unit Facing" value={editTenantData?.UnitFacing} />
 
                                             </div>
                                         </div>
@@ -368,69 +369,121 @@ export const ViewTenant: React.FC = () => {
 
                     </div>
 
-                    {editTenantData?.Flat === "" && (
-                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
+                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
 
-                            <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
-                                <h4 className="text-sm font-semibold text-[#7B6B28]">
+                        <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                            <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                Eligibility Details in Carpet Area (SqFt)
+                            </h4>
+                        </div>
+                        <div className="p-4 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Extra Free Carpet Area Offered (%)" value={editTenantData?.ExtraFreeCarpetAreaOfferedPercent} />
+                                        <FieldItem label="Free MOFA Carpet Area (SqFt)" value={editTenantData?.FreeMOFACarpetAreaSqFt} />
+
+                                    </div>
+                                </div>
+
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Existing Terrace Area (SqFt)" value={editTenantData?.ExistingTerraceAreaSqFt} />
+                                        <FieldItem label="New Eligibility MOFA Carpet Area (SqFt)" value={editTenantData?.NewEligibilityMOFACarpetAreaSqFt} />
+                                        <FieldItem label="New Eligibility RERA Carpet Area (SqFt)" value={editTenantData?.NewEligibilityRERACarpetAreaSqFt} />
+
+
+                                    </div>
+                                </div>
+
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="(A) Area Against Terrace (SqFt)" value={editTenantData?.AreaAgainstTerraceSqFt} />
+                                        <FieldItem label="MOFA Carpet Area Purchased (SqFt)" value={editTenantData?.MOFACarpetAreaPurchasedSqFt} />
+                                        <FieldItem label="RERA Carpet Area Purchased (SqFt)" value={editTenantData?.RERACarpetAreaPurchasedSqFt} />
+
+
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 pt-3 pb-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="(B) Deck Area (SqFt)" value={editTenantData?.DeckAreaSqFt} />
+                                        <FieldItem label="Total New MOFA Carpet Area (SqFt)" value={editTenantData?.TotalNewMOFACarpetAreaSqFt} />
+                                        <FieldItem label="(C) Total New Rera Carpet Area (SqFt)" value={editTenantData?.TotalNewRERACarpetAreaSqFt} />
+
+
+
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className='flex'>
+                                        <FieldItem
+                                            label="Area Against Terrace + Deck Area + Total New RERA Carpet Area (SqFt) (A + B + C)"
+                                            value={(
+                                                (Number(editTenantData?.TotalNewRERACarpetAreaSqFt) || 0) +
+                                                (Number(editTenantData?.DeckAreaSqFt) || 0) +
+                                                (Number(editTenantData?.AreaAgainstTerraceSqFt) || 0)
+                                            ).toFixed(2)}
+                                        />
+                                    </div>
+
+                                </div>
+
+                                <div className="lg:col-span-3 pt-3 pb-3">
+                                    <div className='flex'>
+                                        <FieldItem label="Remark" value={editTenantData?.Remark} />
+                                    </div>
+
+                                </div>
+
+
+                            </div>
+                        </div>
+
+                    </section>
+
+                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
+
+                        <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
                                     New Unit Details
                                 </h4>
                             </div>
-                            <div className="p-4 bg-white">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        <div className="p-4 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Extra Free Carpet Area  %" value={editTenantData?.ExtraFreeCarpetAreaOfferedPercent} />
-                                            <FieldItem label="New Eligibility RERA Carpet Area (SqFt)" value={editTenantData?.NewEligibilityRERACarpetAreaSqFt} />
-                                            <FieldItem label="Free MOFA Carpet Area (SqFt)" value={editTenantData?.FreeMOFACarpetAreaSqFt} />
-
-                                        </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Building Number" value={editTenantData?.BuildingNumber} />
+                                        <FieldItem label="Wing" value={editTenantData?.Wing} />
+                                        <FieldItem label="Floor" value={editTenantData?.Floor} />
                                     </div>
+                                </div>
 
 
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Existing Terrace Area (SqFt)" value={editTenantData?.ExistingTerraceAreaSqFt} />
-                                            <FieldItem label="RERA Carpet Area Purchased (SqFt)" value={editTenantData?.RERACarpetAreaPurchasedSqFt} />
-                                            <FieldItem label="New Eligibility MOFA Carpet Area (SqFt)" value={editTenantData?.NewEligibilityMOFACarpetAreaSqFt} />
-
-
-                                        </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Unit Number" value={editTenantData?.Flat} />
+                                        <FieldItem label="RERA Carpet Area (SqFt)" value={editTenantData?.RERACarpetAreaSqFt} />
+                                        <FieldItem label="Unit Type" value={editTenantData?.InventoryFlatType} />
                                     </div>
+                                </div>
 
 
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="(C) Area Against Terrace (SqFt)" value={editTenantData?.AreaAgainstTerraceSqFt} />
-                                            <FieldItem label="(A) Total New Rera Carpet Area (SqFt)" value={editTenantData?.TotalNewRERACarpetAreaSqFt} />
-                                            <FieldItem label="MOFA Carpet Area Purchased (SqFt)" value={editTenantData?.MOFACarpetAreaPurchasedSqFt} />
-
-
-                                        </div>
-                                    </div>
-                                    <div className="lg:col-span-3 pt-3 pb-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="(B) Deck Area (SqFt)" value={editTenantData?.DeckAreaSqFt} />
-                                            <FieldItem label="A + B + C (SqFt)" value={editTenantData?.TotalNewRERACarpetAreaWithDeckSqFt} />
-                                            <FieldItem label="Total New MOFA Carpet Area (SqFt)" value={editTenantData?.TotalNewMOFACarpetAreaSqFt} />
-
-                                        </div>
-                                    </div>
-
-                                    <div className="lg:col-span-3 pt-3 pb-3">
-                                        <div className='flex'>
-                                            <FieldItem label="Remark" value={editTenantData?.Remark} />
-                                        </div>
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Unit Configuration" value={editTenantData?.InventoryFlatConfiguration} />
 
                                     </div>
-
-
                                 </div>
                             </div>
+                        </div>
 
-                        </section>
-                    )}
+                    </section>
+
                     {parkingList.length > 0 ?
                         <div className="mt-6">
                             <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">

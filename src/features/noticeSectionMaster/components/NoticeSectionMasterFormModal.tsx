@@ -1,9 +1,9 @@
 import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import type { AddUpdateNoticeSectionMasterRequest } from '@/features/noticeSectionMaster/models/NoticeSectionMasterModel';
+import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { NOTICE_TYPE_OPTIONS } from '@/core/constants';
-import { Input } from '@/ui/components/forms';
 
 interface NoticeSectionMasterFormModalProps {
     isOpen: boolean;
@@ -37,22 +37,22 @@ export const NoticeSectionMasterFormModal: React.FC<NoticeSectionMasterFormModal
             onSubmit={onSubmit}
             saveText={editingData ? 'Update' : 'Add'}
             loading={loading}
-            size='xl'
+            size='lg'
         >
             <div className="space-y-10 p-6 bg-blue-100">
                 <div className="space-y-4" >
                     <div>
-                        <div>
-                            <SinglePageSelection
-                                label="Notice Type"
-                                required
-                                placeholder="Select Notice Type"
-                                value={formData.GovernmentCompliance ?? ''}
-                                onChange={(value) => onFieldChange("GovernmentCompliance", value)}
-                                options={NOTICE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                error={errors.GovernmentCompliance}
-                            />
-                        </div>
+                        <SinglePageSelection
+                            label="Government Compliance"
+                            onChange={(e) => {
+                                onFieldChange("GovernmentCompliance", String(e));
+                            }}
+                            options={NOTICE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            value={formData.GovernmentCompliance}
+                            placeholder="Select Government Compliance"
+                            required
+                            error={errors.GovernmentCompliance}
+                        />
                     </div>
 
                     <div>

@@ -322,7 +322,7 @@ export const Enquiry: React.FC = () => {
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 
-    //#region TABLE COLUMNS
+    
     const EnquiryColumns = useMemo<TableColumn[]>(() => [
 
         {

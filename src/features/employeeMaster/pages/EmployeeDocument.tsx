@@ -225,9 +225,6 @@ export const EmployeeDocument: React.FC = () => {
     await loadEmployeeDocuments(1, filters, sortInfo, searchValue)
 
   }
-  //#endregion
-
-  //#region CLEAR SERACH EMPLOYEE DOCUMENT 
   const clearsearchEmployeeDocuments = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();

@@ -1,23 +1,29 @@
 import { fetchBuildingDropdown } from "@/features/building/buildingDropdown";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { FileText } from "lucide-react";
+import { Button } from "@/ui/components/forms";
+import { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   onBuildingChange: (buildingId: number) => void;
-  proposedOfferProposedPlanData: any[];
 
 }
 
-export default function RedevelopmentHeader({ onBuildingChange, proposedOfferProposedPlanData }: Props) {
+export default function RedevelopmentHeader({ onBuildingChange }: Props) {
 
   const { projectId } = useProject();
+  const navigate = useNavigate();
+  const { canView: canProposedPlanView } = useMenuPermissions("/proposedPlan");
 
-  const plan = proposedOfferProposedPlanData?.[0] || {};
+  const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
+      fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
+      [projectId]
+    );
 
   return (
-    <div className="bg-white rounded-xl p-3 flex items-center justify-between" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div className="bg-white rounded-xl p-3 flex items-center justify-between" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <div className="flex items-center gap-3">
 
@@ -27,37 +33,29 @@ export default function RedevelopmentHeader({ onBuildingChange, proposedOfferPro
             key={projectId}
             title="Select Building"
             size="lg"
-            dataFetchCallBack={(pageNumber) =>
-              fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })
-            }
+            dataFetchCallBack={fetchBuildingCallback}
             onSelected={(item) => {
               const selectedBuildingId = Number(item?.value ?? 0);
 
               onBuildingChange(selectedBuildingId);
             }}
           />
+          </div>
 
-        </div>
 
-        <button className="flex items-center gap-2 border border-blue-600 text-blue-600 text-sm px-4 py-2 rounded-lg hover:bg-blue-50">
-          <FileText size={14} />
-          Generate Report
-        </button>
       </div>
-      
-      {/* RIGHT SIDE */}
+
       <div className="flex items-center gap-4">
-        <span className="bg-green-100 text-green-600 text-sm px-4 py-1 rounded-full">
-          <FieldItem
-            label=""
-            value={"Project Plan"}
-            urls={plan.PlanDocumentURL}
-            isIcon
-          />
-        </span>
+        <Button
+          color="blue"
+          variant="solid"
+          colorMode="extraLight"
+          className={!canProposedPlanView ? "invisible" : ""}
+          onClick={() => navigate("/proposedPlan")}>
+          Proposed Plan
+        </Button>
 
       </div>
-
 
 
     </div>

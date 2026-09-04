@@ -61,6 +61,7 @@ export const ApprovalDocumentCategoryMasterFormModal: React.FC<ApprovalDocumentC
               value={formData.OrderBy}
               onChange={(e) => onFieldChange('OrderBy', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
               placeholder="Enter Sequence"
+              maxLength={5}
             />
           </div>
         </div>

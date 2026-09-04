@@ -25,7 +25,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { filterNumbers } from "@/core/utils/fileValidation";
-import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { TextArea } from "@/ui/components/forms/Textarea";
 
 export const ViewMaterialRequisition: React.FC = () => {
@@ -48,9 +48,9 @@ export const ViewMaterialRequisition: React.FC = () => {
     const location = useLocation();
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
-    const { canView: canFinalizedVendorView } = useMenuPermissions(ModuleAction.finalizeVendor);
-    const { canView: canGeneratePurchaseOrder } = useMenuPermissions(ModuleAction.generatePurchaseOrder);
-    const { canView: canAddInvoice } = useMenuPermissions(ModuleAction.addInvoice);
+    const { canView: canFinalizedVendorView } = useMenuPermissions('Finalize Vendor');
+    const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
+    const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
     const currentUniquekey = listState.Uniquekey
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [

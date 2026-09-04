@@ -8,7 +8,7 @@ interface Props {
   onClose: () => void;
   onSubmit: (remark: string) => void;
   loading?: boolean;
-  actionType: "approve" | "reject";
+  actionType: "approve" | "reject" | "reopen";
   titleText?: string;
   subTitleText?: string;
   subSubTitleText?: string;
@@ -42,13 +42,17 @@ const ApprovalActionModal: React.FC<Props> = ({
     if (!remark.trim()) {
       setError("Remark is required");
       return;
+    }else if (remark.trim().length < 10) {
+      setError("Remark must be at least 10 characters");
+      return;
     }
 
     setError("");
     onSubmit(remark.trim());
   };
 
-  const modalTitle = (<span className="font-semibold"> {actionType === "approve" ? "Approve" : "Reject"} {title}
+  const modalTitle = (
+     <span className="font-semibold"> {actionType === "approve" ? "Approve" : actionType === "reopen" ? "Re - Open" : "Reject"} {title}
       {titleText && (
         <span className="text-gray-500 font-medium">
           {" : "}
@@ -67,10 +71,9 @@ const ApprovalActionModal: React.FC<Props> = ({
       onCancel={onClose}
       onSubmit={handleSubmit}
       title={modalTitle}
-      saveText={actionType === "approve" ? "Approve" : "Reject"}
+      saveText={actionType === "approve" ? "Approve" : actionType === "reopen" ? "Re - Open" : "Reject"}
       size="lg"
-      loading={loading}
-    >
+      loading={loading}>
       
       <div className="space-y-6 p-6 bg-blue-100">
 

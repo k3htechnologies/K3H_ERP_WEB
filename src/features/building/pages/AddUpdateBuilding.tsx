@@ -14,10 +14,14 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { LAND_OWNERSHIP_TYPE, ROAD_WIDTH } from "@/core/constants";
+import { LAND_OWNERSHIP_TYPE, PROJECT_CATEGORY, ROAD_WIDTH, TENDER_PAYMENT_MODE } from "@/core/constants";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { MapPin } from "lucide-react";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateBuildingRequest => ({
   BuildingId: 0,
@@ -27,15 +31,16 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   CTSNumber: "",
   GoogleLocation: "",
   TotalPlotAreaSqFt: null,
-  TotalPlotAreaSqMt:null,
+  TotalPlotAreaSqMt: null,
   RoadWidth: "",
   CountryMasterId: 1,
   DistrictMasterId: null,
   StateMasterId: null,
   CityMasterId: null,
   VillageMasterId: null,
+  WardMasterId: null,
   TotalNumberOfUnits: null,
-  
+
   TotalUnitsAreaUtilizedSqFt: null,
   IsGarden: null,
   TotalGardenAreaSqFt: null,
@@ -43,52 +48,66 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   TotalReligiousStructureAreaSqFt: null,
   PropertyAgeYears: null,
   NumberOfFloors: null,
-  NumberOfWings:null,
+  NumberOfWings: null,
   FSI_TDR_UtilizationSqFt: null,
   LandOwnershipType: "",
   IsLitigation: null,
   LitigationRemarks: "",
+
+  Category: '',
+
+  TenderAmount: 0,
+  TenderPurchaseStartDate: null,
+  TenderPurchaseEndDate: null,
+  TenderAmountPaymentMode: '',
+  TenderAmountChequeNumber: '',
+  TenderAmountChequeNumberURL: null,
+  RemoveTenderAmountChequeNumberURL: '',
+  TenderAmountPayorderRemark: '',
+
+  TenderEMDAmount: 0,
+  TenderSubmissionDate: null,
+  TenderEMDPaymentMode: '',
+  TenderEMDChequeNumber: '',
+  TenderEMDChequeNumberURL: null,
+  RemoveTenderEMDChequeNumberURL: '',
+  TenderEMDPayorderRemark: '',
 });
 
 const AddUpdateBuilding: React.FC = () => {
-
-  //#region STATE MANAGEMENT
 
   const [formData, setFormData] = useState<AddUpdateBuildingRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  // NAVIGATE
   const navigate = useNavigate();
 
-  //GET VALUE FROM URL :BUILDINGID
   const { buildingId } = useParams<{ buildingId?: string }>();
 
-  // TOAST
   const { addToast } = useToast();
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
 
   const { projectId } = useProject()
 
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions('/building');
-  //#endregion
 
-  //#region COUNTRY STATE CITY DISTRICT 
+  const [tenderAmountChequeNumberFiles, setTenderAmountChequeNumberFiles] = useState<(File | string)[]>([]);
+  const [removedTenderAmountChequeNumberUrls, setRemovedTenderAmountChequeNumberUrls] = useState<string[]>([]);
+  const [tenderAmountChequeNumberURL, setTenderAmountChequeNumberURL] = useState<string>();
+
+  const [tenderEMDChequeNumberFiles, setTenderEMDChequeNumberFiles] = useState<(File | string)[]>([]);
+  const [removedTenderEMDChequeNumberUrls, setRemovedTenderEMDChequeNumberUrls] = useState<string[]>([]);
+  const [tenderEMDChequeNumberURL, setTenderEMDChequeNumberURL] = useState<string>();
+
+
   const {
     isLoading: isLocationLoading,
     countries,
     statesByCountryId,
     districtsByStateId,
     citiesByDistrictId,
+    wardByDistrictId,
     villagesByCityId
   } = useCountryStateCityDistrictVillageData()
 
@@ -96,6 +115,7 @@ const AddUpdateBuilding: React.FC = () => {
   const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
   const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
   const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
+  const [selectedWardId, setSelectedWardId] = React.useState<number | null>(null)
   const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null)
 
   const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
@@ -124,6 +144,14 @@ const AddUpdateBuilding: React.FC = () => {
       }))
       : [];
 
+  const wardOptions =
+    selectedDistrictId != null
+      ? (wardByDistrictId[selectedDistrictId] || []).map(c => ({
+        label: c.name,
+        value: c.id,
+      }))
+      : [];
+
   const villageOptions =
     selectedCityId != null
       ? (villagesByCityId[selectedCityId] || []).map(c => ({
@@ -133,10 +161,6 @@ const AddUpdateBuilding: React.FC = () => {
       : [];
 
 
-
-  //#endregion
-
-  //#region HANDLE FILED CHNAGE EVENT
   const handleFieldChange = (field: keyof AddUpdateBuildingRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -145,9 +169,7 @@ const AddUpdateBuilding: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region INITIALIZATION
 
   useEffect(() => {
     if (buildingId) {
@@ -160,9 +182,6 @@ const AddUpdateBuilding: React.FC = () => {
 
   }, [buildingId]);
 
-  //#endregion
-
-  //#region FETCH BUILDING DETAILS
   const fetchBuildingDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -200,6 +219,7 @@ const AddUpdateBuilding: React.FC = () => {
               StateMasterId: e.StateMasterId ?? prev.StateMasterId,
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
               VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
+              WardMasterId: e.WardMasterId ?? prev.WardMasterId,
               TotalNumberOfUnits: e.TotalNumberOfUnits ?? prev.TotalNumberOfUnits,
               TotalUnitsAreaUtilizedSqFt: e.TotalUnitsAreaUtilizedSqFt ?? prev.TotalUnitsAreaUtilizedSqFt,
               IsGarden: e.IsGarden ?? prev.IsGarden,
@@ -213,13 +233,42 @@ const AddUpdateBuilding: React.FC = () => {
               LandOwnershipType: e.LandOwnershipType ?? prev.LandOwnershipType,
               IsLitigation: e.IsLitigation ?? prev.IsLitigation,
               LitigationRemarks: e.LitigationRemarks ?? prev.LitigationRemarks,
+
+              Category: e.Category ?? prev.Category ?? '',
+
+
+              TenderAmount: e.TenderAmount ?? prev.TenderAmount ?? 0,
+              TenderPurchaseStartDate: e.TenderPurchaseStartDate ?? prev.TenderPurchaseStartDate,
+              TenderPurchaseEndDate: e.TenderPurchaseEndDate ?? prev.TenderPurchaseEndDate,
+              TenderAmountPaymentMode: e.TenderAmountPaymentMode ?? prev.TenderAmountPaymentMode ?? '',
+              TenderAmountChequeNumber: e.TenderAmountChequeNumber ?? prev.TenderAmountChequeNumber ?? '',
+              TenderAmountChequeNumberURL: null,
+              RemoveTenderAmountChequeNumberURL: '',
+              TenderAmountPayorderRemark: e.TenderAmountPayorderRemark ?? prev.TenderAmountPayorderRemark ?? '',
+
+              TenderEMDAmount: e.TenderEMDAmount ?? prev.TenderEMDAmount ?? 0,
+              TenderSubmissionDate: e.TenderSubmissionDate ?? prev.TenderSubmissionDate,
+              TenderEMDPaymentMode: e.TenderEMDPaymentMode ?? prev.TenderEMDPaymentMode ?? '',
+              TenderEMDChequeNumber: e.TenderEMDChequeNumber ?? prev.TenderEMDChequeNumber ?? '',
+              TenderEMDChequeNumberURL: null,
+              RemoveTenderEMDChequeNumberURL: '',
+              TenderEMDPayorderRemark: e.TenderEMDPayorderRemark ?? prev.TenderEMDPayorderRemark ?? '',
             }));
 
             setSelectedCountryId(e.CountryMasterId ?? null);
             setSelectedStateId(e.StateMasterId ?? null);
             setSelectedDistrictId(e.DistrictMasterId ?? null);
             setSelectedCityId(e.CityMasterId ?? null);
+            setSelectedWardId(e.WardMasterId ?? null);
             setSelectedVillageId(e.VillageMasterId ?? null);
+
+            setTenderAmountChequeNumberFiles([]);
+            setTenderAmountChequeNumberURL(e.TenderAmountChequeNumberURL)
+            setRemovedTenderAmountChequeNumberUrls([]);
+
+            setTenderEMDChequeNumberFiles([]);
+            setTenderEMDChequeNumberURL(e.TenderEMDChequeNumberURL)
+            setRemovedTenderEMDChequeNumberUrls([]);
           }
         } else {
 
@@ -259,6 +308,34 @@ const AddUpdateBuilding: React.FC = () => {
       newErrors.CTSNumber = 'CTS Number is required'
     }
 
+    if (!formData.Category?.trim()) {
+      newErrors.Category = "Category is required.";
+    }
+
+    if (formData.Category?.trim().toUpperCase() === "TENDER") {
+
+      if (!formData.TenderAmount) {
+        newErrors.TenderAmount = "Amount is required.";
+      }
+
+      if (!formData.TenderPurchaseStartDate) {
+        newErrors.TenderPurchaseStartDate = "Purchase Start Date is required.";
+      }
+
+      if (!formData.TenderPurchaseEndDate) {
+        newErrors.TenderPurchaseEndDate = "Purchase End Date is required.";
+      }
+
+      const purchaseStartDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseStartDate ? new Date(formData.TenderPurchaseStartDate) : undefined);
+      const purchaseEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseEndDate ? new Date(formData.TenderPurchaseEndDate) : undefined);
+
+      if (formData?.TenderPurchaseStartDate && formData.TenderPurchaseEndDate && !isToDateGreaterOrEqualFromDate(purchaseStartDate, purchaseEndDate)) {
+        newErrors.TenderPurchaseEndDate = "Purchase End Date must be greater than or equal to Purchase Start Date";
+      }
+
+    }
+
+
     if (!formData.GoogleLocation?.trim()) {
       newErrors.GoogleLocation = 'Google Location is required'
     } else if (!isValidGoogleMapsUrl(formData.GoogleLocation.trim())) {
@@ -296,6 +373,9 @@ const AddUpdateBuilding: React.FC = () => {
     if (!formData.VillageMasterId) {
       newErrors.VillageMasterId = "Village is required";
     }
+    if (!formData.WardMasterId) {
+      newErrors.WardMasterId = "Ward is required";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -303,37 +383,95 @@ const AddUpdateBuilding: React.FC = () => {
     }
   }
 
-  const PushBuildingFormData = (): AddUpdateBuildingRequest => {
-    return {
-      BuildingId: formData.BuildingId,
-      Uniquekey: formData.Uniquekey,
-      ProjectId: projectId,
-      BuildingName: formData.BuildingName,
-      CTSNumber: formData.CTSNumber,
-      GoogleLocation: formData.GoogleLocation || "",
-      TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt || 0,
-      TotalPlotAreaSqMt: formData.TotalPlotAreaSqMt || 0,
-      RoadWidth: formData.RoadWidth || "",
-      CountryMasterId: formData.CountryMasterId,
-      DistrictMasterId: formData.DistrictMasterId,
-      StateMasterId: formData.StateMasterId,
-      CityMasterId: formData.CityMasterId,
-      VillageMasterId: formData.VillageMasterId,
-      TotalNumberOfUnits: formData.TotalNumberOfUnits || 0,
-      TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt || 0,
-      IsGarden: formData.IsGarden || false,
-      TotalGardenAreaSqFt: formData.TotalGardenAreaSqFt || 0,
-      IsReligiousStructure: formData.IsReligiousStructure || false,
-      TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt || 0,
-      PropertyAgeYears: formData.PropertyAgeYears || 0,
-      NumberOfFloors: formData.NumberOfFloors || 0,
-      NumberOfWings: formData.NumberOfWings || 0,
-      FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt || 0,
-      LandOwnershipType: formData.LandOwnershipType || "",
-      IsLitigation: formData.IsLitigation || false,
-      LitigationRemarks: formData.LitigationRemarks || "",
-    };
+  const PushBuildingFormData = (): FormData => {
+    const isTender = formData.Category.toUpperCase() === "TENDER";
 
+    const fd = new FormData();
+    fd.append("BuildingId", String(formData.BuildingId ?? 0));
+    fd.append("Uniquekey", formData.Uniquekey ?? "");
+    fd.append("ProjectId", String(projectId ?? 0));
+    fd.append("BuildingName", formData.BuildingName ?? "");
+    fd.append("CTSNumber", formData.CTSNumber ?? "");
+
+    fd.append("GoogleLocation", formData.GoogleLocation ?? "");
+
+    fd.append("TotalPlotAreaSqFt", String(formData.TotalPlotAreaSqFt ?? 0));
+
+    fd.append("TotalPlotAreaSqMt", String(formData.TotalPlotAreaSqMt ?? 0));
+
+    fd.append("RoadWidth", formData.RoadWidth ?? "");
+
+    fd.append("CountryMasterId", String(formData.CountryMasterId ?? 0));
+
+    fd.append("StateMasterId", String(formData.StateMasterId ?? 0));
+
+    fd.append("DistrictMasterId", String(formData.DistrictMasterId ?? 0));
+
+    fd.append("CityMasterId", String(formData.CityMasterId ?? 0));
+
+    fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
+
+    fd.append("WardMasterId", String(formData.WardMasterId ?? 0));
+
+    fd.append("TotalNumberOfUnits", String(formData.TotalNumberOfUnits ?? 0));
+
+    fd.append("TotalUnitsAreaUtilizedSqFt", String(formData.TotalUnitsAreaUtilizedSqFt ?? 0));
+
+    fd.append("IsGarden", String(formData.IsGarden ?? false));
+
+    fd.append("TotalGardenAreaSqFt", String(formData.TotalGardenAreaSqFt ?? 0));
+
+    fd.append("IsReligiousStructure", String(formData.IsReligiousStructure ?? false));
+
+    fd.append("TotalReligiousStructureAreaSqFt", String(formData.TotalReligiousStructureAreaSqFt ?? 0));
+
+    fd.append("PropertyAgeYears", String(formData.PropertyAgeYears ?? 0));
+
+    fd.append("NumberOfFloors", String(formData.NumberOfFloors ?? 0));
+
+    fd.append("NumberOfWings", String(formData.NumberOfWings ?? 0));
+
+    fd.append("FSI_TDR_UtilizationSqFt", String(formData.FSI_TDR_UtilizationSqFt ?? 0));
+
+    fd.append("LandOwnershipType", formData.LandOwnershipType ?? "");
+
+    fd.append("IsLitigation", String(formData.IsLitigation ?? false));
+
+    fd.append("LitigationRemarks", formData.LitigationRemarks ?? "");
+    fd.append("Category", formData.Category ?? "");
+
+    fd.append("TenderAmount", isTender ? String(formData.TenderAmount ?? 0) : "0");
+    fd.append("TenderPurchaseStartDate", isTender ? (formData.TenderPurchaseStartDate ?? "") : "");
+    fd.append("TenderPurchaseEndDate", isTender ? (formData.TenderPurchaseEndDate ?? "") : "");
+    fd.append("TenderAmountPaymentMode", isTender ? (formData.TenderAmountPaymentMode ?? "") : "");
+    fd.append("TenderAmountChequeNumber", isTender ? (formData.TenderAmountChequeNumber ?? "") : "");
+    fd.append("TenderAmountPayorderRemark", isTender ? (formData.TenderAmountPayorderRemark ?? "") : "");
+
+    // Tender EMD Details
+    fd.append("TenderEMDAmount", isTender ? String(formData.TenderEMDAmount ?? 0) : "0");
+    fd.append("TenderSubmissionDate", isTender ? (formData.TenderSubmissionDate ?? "") : "");
+    fd.append("TenderEMDPaymentMode", isTender ? (formData.TenderEMDPaymentMode ?? "") : "");
+    fd.append("TenderEMDChequeNumber", isTender ? (formData.TenderEMDChequeNumber ?? "") : "");
+    fd.append("TenderEMDPayorderRemark", isTender ? (formData.TenderEMDPayorderRemark ?? "") : "");
+
+    if (isTender) {
+      tenderAmountChequeNumberFiles.forEach((file) => {
+        if (file instanceof File) {
+          fd.append("TenderAmountChequeNumberURL", file);
+        }
+      });
+
+      tenderEMDChequeNumberFiles.forEach((file) => {
+        if (file instanceof File) {
+          fd.append("TenderEMDChequeNumberURL", file);
+        }
+      });
+    }
+
+    fd.append("RemoveTenderAmountChequeNumberURL", isTender ? removedTenderAmountChequeNumberUrls.join(",") : "");
+    fd.append("RemoveTenderEMDChequeNumberURL", isTender ? removedTenderEMDChequeNumberUrls.join(",") : "");
+
+    return fd;
   };
 
   const handleSubmit = async () => {
@@ -395,7 +533,7 @@ const AddUpdateBuilding: React.FC = () => {
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC BUILDING DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Building Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -457,8 +595,248 @@ const AddUpdateBuilding: React.FC = () => {
               </div>
             </div>
           </div>
+
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Category</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+
+                <SinglePageSelection
+                  required
+                  label="Category"
+                  placeholder="Select Category"
+                  value={formData.Category}
+                  error={errors.Category}
+
+                  onChange={(item) => {
+
+                    if (!item) {
+
+                      handleFieldChange('Category', '');
+                      handleFieldChange('TenderAmount', 0);
+                      handleFieldChange('TenderPurchaseStartDate', null);
+                      handleFieldChange('TenderPurchaseEndDate', null);
+                      handleFieldChange('TenderAmountPaymentMode', "");
+                      handleFieldChange('TenderAmountChequeNumber', "");
+                      if (tenderAmountChequeNumberURL) {
+                        setRemovedTenderAmountChequeNumberUrls(prev => [...prev, tenderAmountChequeNumberURL]);
+                      }
+                      setTenderAmountChequeNumberFiles([]);
+                      setTenderAmountChequeNumberURL("");
+                      handleFieldChange('TenderAmountPayorderRemark', "");
+
+                      handleFieldChange('TenderEMDAmount', 0);
+                      handleFieldChange('TenderSubmissionDate', null);
+                      handleFieldChange('TenderEMDPaymentMode', "");
+                      handleFieldChange('TenderEMDChequeNumber', "");
+                      if (tenderEMDChequeNumberURL) {
+                        setRemovedTenderEMDChequeNumberUrls(prev => [...prev, tenderEMDChequeNumberURL]);
+                      }
+                      setTenderEMDChequeNumberFiles([]);
+                      setTenderEMDChequeNumberURL("");
+                      handleFieldChange('TenderEMDPayorderRemark', "");
+
+                      return;
+                    }
+
+                    handleFieldChange('Category', String(item));
+                    handleFieldChange('TenderAmount', 0);
+                    handleFieldChange('TenderPurchaseStartDate', null);
+                    handleFieldChange('TenderPurchaseEndDate', null);
+                    handleFieldChange('TenderAmountPaymentMode', "");
+                    handleFieldChange('TenderAmountChequeNumber', "");
+                    if (tenderAmountChequeNumberURL) {
+                      setRemovedTenderAmountChequeNumberUrls(prev => [...prev, tenderAmountChequeNumberURL]);
+                    }
+                    setTenderAmountChequeNumberFiles([]);
+                    setTenderAmountChequeNumberURL("");
+                    handleFieldChange('TenderAmountPayorderRemark', "");
+
+                    handleFieldChange('TenderEMDAmount', 0);
+                    handleFieldChange('TenderSubmissionDate', null);
+                    handleFieldChange('TenderEMDPaymentMode', "");
+                    handleFieldChange('TenderEMDChequeNumber', "");
+                    if (tenderEMDChequeNumberURL) {
+                      setRemovedTenderEMDChequeNumberUrls(prev => [...prev, tenderEMDChequeNumberURL]);
+                    }
+                    setTenderEMDChequeNumberFiles([]);
+                    setTenderEMDChequeNumberURL("");
+                    handleFieldChange('TenderEMDPayorderRemark', "");
+
+                  }}
+
+                  options={PROJECT_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
+                />
+
+              </div>
+
+            </div>
+
+          </div>
+
+          {formData.Category?.toUpperCase() === "TENDER" && (
+            <>
+              <div className="space-y-4 pt-5">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Tender Amount Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                  <div>
+                    <Input
+                      label="Amount (₹)"
+                      required
+                      type="text"
+                      value={formData.TenderAmount || ''}
+                      onChange={(e) => handleFieldChange('TenderAmount', filterNumbersWithDecimal(e.target.value) || 0)}
+                      placeholder="Enter Amount (₹)"
+                      error={errors.TenderAmount}
+                    />
+                  </div>
+                  <div>
+                    <DatePickerInput
+                      required
+                      label="Purchase Start Date"
+                      value={formatDate_dd_mm_yyyy(formData.TenderPurchaseStartDate)}
+                      onChange={(val) => handleFieldChange('TenderPurchaseStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                      error={errors.TenderPurchaseStartDate}
+                    />
+                  </div>
+
+                  <div>
+                    <DatePickerInput
+                      required
+                      label="Purchase End Date"
+                      value={formatDate_dd_mm_yyyy(formData.TenderPurchaseEndDate)}
+                      error={errors.TenderPurchaseEndDate}
+                      onChange={(val) => handleFieldChange('TenderPurchaseEndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                    />
+                  </div>
+                  <div>
+
+                    <SinglePageSelection
+                      label="Payment Mode"
+                      placeholder="Select Payment Mode"
+                      value={formData.TenderAmountPaymentMode}
+                      onChange={(val) => handleFieldChange('TenderAmountPaymentMode', String(val))}
+                      options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      label='Transaction / Cheque / Demand Draft No'
+                      value={formData.TenderAmountChequeNumber ?? ""}
+                      onChange={(e) => handleFieldChange("TenderAmountChequeNumber", e.target.value)}
+                      placeholder="Enter Transaction / Cheque / Demand Draft No"
+                      maxLength={15}
+                      error={errors.TenderAmountChequeNumber}
+                    />
+                  </div>
+                  <div>
+                    <MultiFilePicker
+                      label="Transaction / Cheque / Demand Draft Image"
+                      placeholder="Select Transaction / Cheque / Demand Draft Image"
+                      error={errors.TenderAmountChequeNumberURL}
+                      value={tenderAmountChequeNumberFiles}
+                      onChange={setTenderAmountChequeNumberFiles}
+                      availableFilesURL={tenderAmountChequeNumberURL ?? ""}
+                      allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                      maxFiles={5}
+                      onRemoveExisting={(url) => {
+                        setRemovedTenderAmountChequeNumberUrls((prev) => [...prev, url])
+                      }}
+                    />
+                  </div>
+
+
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                  <div>
+                    <TextArea
+                      label="Payorder Remark"
+                      placeholder="Enter Payorder Remark"
+                      className="thin-scroll"
+                      value={formData.TenderAmountPayorderRemark}
+                      onChange={(e) => handleFieldChange("TenderAmountPayorderRemark", e.target.value)}
+                      error={errors.TenderAmountPayorderRemark} />
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="space-y-4 pt-5">
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Tender EMD Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <Input
+                      label="EMD Amount (₹)"
+                      type="text"
+                      value={formData.TenderEMDAmount || ''}
+                      onChange={(e) => handleFieldChange('TenderEMDAmount', filterNumbersWithDecimal(e.target.value) || 0)}
+                      placeholder="Enter Tender EMD Amount (₹)"
+                    />
+                  </div>
+
+                  <div>
+                    <DatePickerInput
+                      label="Submission Date"
+                      value={formatDate_dd_mm_yyyy(formData.TenderSubmissionDate)}
+                      onChange={(val) => handleFieldChange('TenderSubmissionDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                    />
+                  </div>
+                  <div>
+
+                    <SinglePageSelection
+                      label="Payment Mode"
+                      placeholder="Select Payment Mode"
+                      value={formData.TenderEMDPaymentMode}
+                      onChange={(val) => handleFieldChange('TenderEMDPaymentMode', String(val))}
+                      options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
+                    />
+                  </div>
+                  <div>
+                    <Input
+                      type="text"
+                      label='Transaction / Cheque / Demand Draft No'
+                      value={formData.TenderEMDChequeNumber ?? ""}
+                      onChange={(e) => handleFieldChange("TenderEMDChequeNumber", e.target.value)}
+                      placeholder="Enter Transaction / Cheque / Demand Draft No"
+                      maxLength={15}
+                      error={errors.TendorEMDChequeNumber}
+                    />
+                  </div>
+                  <div>
+                    <MultiFilePicker
+                      label="Transaction / Cheque / Demand Draft Image"
+                      placeholder="Select Transaction / Cheque / Demand Draft Image"
+                      error={errors.TenderEMDChequeNumberURL}
+                      value={tenderEMDChequeNumberFiles}
+                      onChange={setTenderEMDChequeNumberFiles}
+                      availableFilesURL={tenderEMDChequeNumberURL ?? ""}
+                      allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                      maxFiles={5}
+                      onRemoveExisting={(url) => {
+                        setRemovedTenderEMDChequeNumberUrls((prev) => [...prev, url])
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                  <div>
+                    <TextArea
+                      label="Payorder Remark"
+                      placeholder="Enter Payorder Remark"
+                      className="thin-scroll"
+                      value={formData.TenderEMDPayorderRemark}
+                      onChange={(e) => handleFieldChange("TenderEMDPayorderRemark", e.target.value)}
+                      error={errors.TenderEMDPayorderRemark} />
+                  </div>
+                </div>
+              </div>
+            </>
+
+          )}
           {/* ============================================================= [PROPERTY INFORMATION] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Information</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -525,7 +903,7 @@ const AddUpdateBuilding: React.FC = () => {
                 />
               </div>
             </div>
-            <div className="space-y-4 pb-3">
+            <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">FSI / TDR Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
@@ -552,7 +930,7 @@ const AddUpdateBuilding: React.FC = () => {
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -619,7 +997,7 @@ const AddUpdateBuilding: React.FC = () => {
             </div>
           </div>
           {/* ============================================================= [LOCATION] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -638,12 +1016,14 @@ const AddUpdateBuilding: React.FC = () => {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedWardId(null);
                       setSelectedVillageId(null);
 
                       handleFieldChange('CountryMasterId', 0);
                       handleFieldChange('StateMasterId', 0);
                       handleFieldChange('DistrictMasterId', 0);
                       handleFieldChange('CityMasterId', 0);
+                      handleFieldChange('WardMasterId', 0);
                       handleFieldChange('VillageMasterId', 0);
 
                       return;
@@ -655,12 +1035,14 @@ const AddUpdateBuilding: React.FC = () => {
                     setSelectedStateId(null);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
+                    setSelectedWardId(null);
                     setSelectedVillageId(null);
 
                     handleFieldChange('CountryMasterId', id);
                     handleFieldChange('StateMasterId', 0);
                     handleFieldChange('DistrictMasterId', 0);
                     handleFieldChange('CityMasterId', 0);
+                    handleFieldChange('WardMasterId', 0);
                     handleFieldChange('VillageMasterId', 0);
                   }}
                   disabled={isLocationLoading}
@@ -684,11 +1066,13 @@ const AddUpdateBuilding: React.FC = () => {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedWardId(null);
                       setSelectedVillageId(null);
 
                       handleFieldChange("StateMasterId", 0);
                       handleFieldChange("DistrictMasterId", 0);
                       handleFieldChange("CityMasterId", 0);
+                      handleFieldChange('WardMasterId', 0);
                       handleFieldChange('VillageMasterId', 0);
 
                       return;
@@ -699,11 +1083,13 @@ const AddUpdateBuilding: React.FC = () => {
                     setSelectedStateId(id);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
+                    setSelectedWardId(null);
                     setSelectedVillageId(null);
 
                     handleFieldChange("StateMasterId", id);
                     handleFieldChange("DistrictMasterId", 0);
                     handleFieldChange("CityMasterId", 0);
+                    handleFieldChange('WardMasterId', 0);
                     handleFieldChange('VillageMasterId', 0);
                   }}
                   disabled={!selectedCountryId || stateOptions.length === 0}
@@ -726,10 +1112,12 @@ const AddUpdateBuilding: React.FC = () => {
                     if (!item) {
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedWardId(null);
                       setSelectedVillageId(null);
 
                       handleFieldChange('DistrictMasterId', 0);
                       handleFieldChange('CityMasterId', 0);
+                      handleFieldChange('WardMasterId', 0);
                       handleFieldChange('VillageMasterId', 0);
                       return;
                     }
@@ -738,10 +1126,12 @@ const AddUpdateBuilding: React.FC = () => {
 
                     setSelectedDistrictId(id);
                     setSelectedCityId(null);
+                    setSelectedWardId(null);
                     setSelectedVillageId(null);
 
                     handleFieldChange('DistrictMasterId', id);
                     handleFieldChange('CityMasterId', 0);
+                    handleFieldChange('WardMasterId', 0);
                     handleFieldChange('VillageMasterId', 0);
                   }}
                   disabled={!selectedStateId || districtOptions.length === 0}
@@ -802,6 +1192,33 @@ const AddUpdateBuilding: React.FC = () => {
                   }}
                   disabled={!selectedCityId || villageOptions.length === 0}
                   options={villageOptions}
+                />
+
+              </div>
+
+              <div>
+
+                <SinglePageSelection
+                  label='Ward'
+                  placeholder="Select Ward"
+                  required
+                  value={selectedWardId ?? ''}
+                  error={errors.WardMasterId}
+                  onChange={(item) => {
+
+                    if (!item) {
+                      setSelectedWardId(null);
+                      handleFieldChange('WardMasterId', 0);
+                      return;
+                    }
+
+                    const id = Number(item);
+
+                    setSelectedWardId(id);
+                    handleFieldChange('WardMasterId', id);
+                  }}
+                  disabled={!selectedDistrictId || wardOptions.length === 0}
+                  options={wardOptions}
                 />
 
               </div>

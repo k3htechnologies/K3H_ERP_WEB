@@ -3,6 +3,7 @@ import { Modal } from "@/ui/components/Modal/Modal"
 import { THEME } from "@/core/constants/theme"
 import { ChevronUp, ChevronDown } from "lucide-react"
 import { format24To12Hour } from "@/core/utils/comman"
+import ReactDOM from "react-dom"
 
 interface TimePickerCustomizeProps {
   isOpen: boolean
@@ -61,13 +62,14 @@ export const TimePickerCustomize: React.FC<TimePickerCustomizeProps> = ({
     color: '#454545'
   }
 
-  return (
+  const modalContent = (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
       onCancel={onClose}
       onSubmit={(e) => {
         e.preventDefault()
+        e.stopPropagation()
         handleConfirm()
       }}
       title={title}
@@ -136,4 +138,6 @@ export const TimePickerCustomize: React.FC<TimePickerCustomizeProps> = ({
 
     </Modal>
   )
+
+  return ReactDOM.createPortal(modalContent, document.body)
 }

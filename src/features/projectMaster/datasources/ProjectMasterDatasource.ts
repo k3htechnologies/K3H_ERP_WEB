@@ -30,7 +30,7 @@ export abstract class ProjectMasterDatasource {
     abstract addUpdateProjectMasterWithEmployee(params: AddUpdateProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeSaveResponse>;
     abstract deleteProjectMasterWithEmployee(params: DeleteProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeDeleteResponse>;
 
-    abstract pullProjectMasterWithCompany(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse>;
+    abstract pullProjectMasterWithCompany(ProjectId: number,IsCheckPermission? :boolean, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse>;
     abstract addUpdateProjectMasterWithCompany(params: AddUpdateProjectMasterWithCompanyRequest): Promise<ProjectMasterWithCompanySaveResponse>
 
 
@@ -209,10 +209,12 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
         }
     }
 
-    async pullProjectMasterWithCompany(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse> {
+    async pullProjectMasterWithCompany(ProjectId: number,IsCheckPermission? :boolean, signal?: AbortSignal): Promise<ProjectMasterWithCompanyResponse> {
+
         try {
             const queryParams = new URLSearchParams({
-                ProjectId: (ProjectId ?? 0).toString()
+                ProjectId: (ProjectId ?? 0).toString(),
+                IsCheckPermission: (IsCheckPermission ?? true).toString()
             })
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${ProjectMasterApi.PULL_PROJECT_WITH_COMPANY}?${queryParams.toString()}`, { signal }

@@ -35,7 +35,7 @@ import type { FilterPullExcelSample } from "@/features/technical/models/Technica
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
-import { FileText, AlertTriangle } from "lucide-react";
+import { FileText, AlertTriangle, Copy } from "lucide-react";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import { useEmployeeListState } from "@/features/employeeMaster/context/EmployeeListStateContext";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
@@ -46,9 +46,9 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { filterNumbers } from "@/core/utils/fileValidation";
+import { copyToClipboard } from "@/core/utils/comman";
 
 export const EmployeeMaster: React.FC = () => {
-  //#region STATE
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -69,48 +69,27 @@ export const EmployeeMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  const [
-    isShowCustomizeEmployeeColumnsModal,
-    setIsShowCustomizeEmployeeColumnsModal,
-  ] = useState(false);
+  const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
-  //EXCEL IMPORT
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
 
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadEmployees(
-        listState.page,
-        { EmployeeName: String(listState.searchTerm).trim() },
-        listState.sortInfo,
-      );
+      loadEmployees(listState.page, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
       loadEmployees(listState.page, listState.filters, listState.sortInfo);
     }
-  }, [
-    listState.page,
-    listState.filters,
-    listState.sortInfo,
-    listState.searchTerm,
-  ]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
     };
   }, [debouncedSearch]);
-  //#endregion
 
-  //#region DATA LOAD
-  const fetchEmployeeList = async (
-    page: number = pagination.currentPage,
-    sort?: SortInfo,
-  ) => {
+  const fetchEmployeeList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadEmployees(page, filters, sort ?? sortInfo);
   };
 
@@ -187,9 +166,6 @@ export const EmployeeMaster: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region SEARCH EMPLOYEE FILTER
   const searchEmployees = async (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
 
@@ -201,18 +177,12 @@ export const EmployeeMaster: React.FC = () => {
     updateListState({ searchTerm: searchValue, page: 1 });
   };
 
-  //#endregion
-
-  //#region CLAER SERACH EMPLOYEE
   const clearSearchEmployees = () => {
     debouncedSearch.cancel?.();
     updateListState({ searchTerm: "", filters: {}, page: 1 });
     setTempFilters({});
   };
 
-  //#endregion
-
-  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportEmployees = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
@@ -270,12 +240,9 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeeExcel = () => handleExportEmployees("Excel");
   const handleExportEmployeePdf = () => handleExportEmployees("PDF");
 
-  //#endregion
-
-  //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
-      updateListState({ page });
-    },[sortInfo, updateListState],
+    updateListState({ page });
+  }, [sortInfo, updateListState],
   );
 
   const handleSortColumn = useCallback(
@@ -303,9 +270,6 @@ export const EmployeeMaster: React.FC = () => {
   );
 
   const employeesForTable = useMemo(() => employeeList, [employeeList]);
-  //#endregion
-
-  //#region VIEW EMPLOYEE MASTER
 
   const handleViewEmployeeDetails = useCallback(
     (row: EmployeeMasterData) => {
@@ -317,9 +281,6 @@ export const EmployeeMaster: React.FC = () => {
     },
     [navigate, updateListState],
   );
-  //#endregion
-
-  //#region VIEW EMPLOYEE DOCUMENT
 
   const handleViewEmployeeDocument = useCallback(
     (row: EmployeeMasterData) => {
@@ -332,9 +293,7 @@ export const EmployeeMaster: React.FC = () => {
     },
     [navigate, updateListState],
   );
-  //#endregion
 
-  //#region TABLE COLUMN
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -386,7 +345,7 @@ export const EmployeeMaster: React.FC = () => {
 
           return (
             <div className={`flex items-center justify-between gap-3`}>
-              
+
               <div className="flex items-center gap-3">
                 {hasProfile ? (
                   <img
@@ -438,7 +397,7 @@ export const EmployeeMaster: React.FC = () => {
       },
       {
         key: "EmailId",
-        label: "Email Id",
+        label: "E-Mail ID",
         width: "14",
         sortable: false,
         align: "left",
@@ -662,6 +621,48 @@ export const EmployeeMaster: React.FC = () => {
         render: (value) => value || '-'
       },
       {
+        key: 'MPIN',
+        label: 'MPIN',
+        sortable: false,
+        align: 'left',
+        render: (value) => {
+          return (
+            <div className="flex items-center gap-2">
+
+              {value && (
+                <TooltipText
+                  text={value || '-'}
+                  tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+              )}
+              
+              {value && (
+                <Button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const success = await copyToClipboard(value);
+                    if (success) {
+                      addToast({ type: 'success', title: `${value} Copied!` });
+                    }
+                  }}
+                  color="transparent"
+                  size="sm"
+                  style={{
+                    padding: '2px 6px',
+                    color: '#6B7280',
+                    cursor: 'pointer'
+                  }}
+                  title="Copy"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          );
+        }
+      },
+      {
         key: "LastLogin",
         label: "Last Login",
         width: "16",
@@ -701,9 +702,7 @@ export const EmployeeMaster: React.FC = () => {
     ],
     [canAction, handleViewEmployeeDetails, handleViewEmployeeDocument],
   );
-  //#endregion
 
-  //#region CUSTOMIZE COLUMNS
   const requiredEmployeeColumnKeys: string[] = ["FullName", 'Actions'];
 
   const allEmployeeColumnKeys: string[] = employeeColumns.map((c) => c.key);
@@ -741,9 +740,7 @@ export const EmployeeMaster: React.FC = () => {
       ),
     [employeeColumns, selectedEmployeeColumnKeys],
   );
-  //#endregion
 
-  //#region FILTER HELPERS
   const applyFilters = () => {
     updateListState({ filters: tempFilters, page: 1 });
     loadEmployees(1, tempFilters);
@@ -755,30 +752,21 @@ export const EmployeeMaster: React.FC = () => {
     updateListState({ filters: {}, page: 1 });
     loadEmployees(1, {});
   };
-  //#endregion
 
-  //#region ADD NEW EMPLOYEE
   const handleAddEmployeeModal = () => {
     navigate("/employeeMaster/add");
   };
-  //#endregion
-
-  //#region  HANDLE CHANGE EVENT
 
   const handleFilterChange = (key: string, value: string | null) => {
     setTempFilters((prev) => updateFilter(prev, key, value));
   };
 
-  //#endregion
-
-  //#region IMPORT EXCEL | DOWNLOAD
 
   const downloadExcelSampleEmployeeMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
           TableName: "EMPLOYEE MASTER",
@@ -1040,10 +1028,10 @@ export const EmployeeMaster: React.FC = () => {
             <div>
               <Input
                 type="text"
-                label="E-mail Id"
+                label="E-Mail ID"
                 value={tempFilters.EmailId || ""}
                 onChange={(e) => handleFilterChange("EmailId", e.target.value)}
-                placeholder="Enter E-mail Id"
+                placeholder="Enter E-Mail ID"
               />
             </div>
             <div>

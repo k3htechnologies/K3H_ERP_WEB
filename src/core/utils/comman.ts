@@ -265,6 +265,12 @@ export const copyToClipboard = async (text?: string): Promise<boolean> => {
   }
 };
 
+export const getInputValue = (id: number,value: number | null | undefined) => {
+  return id > 0 ? (value ?? 0): (value === 0 ? '' : (value ?? ''));
+};
+
+export const isEmpty = (value: any) =>value === null || value === undefined || value === '';
+
 export const sendEmail = (email: string) => {
   if (email) {
     window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, '_blank');

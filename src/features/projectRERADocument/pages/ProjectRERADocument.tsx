@@ -54,96 +54,50 @@ const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
 });
 
 const ProjectRERADocument: React.FC = () => {
-
-  //#region STATE
   const [projectRERADocumentList, setProjectRERADocumentList] = useState<ProjectRERADocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [expandHeaderProjectRERADocumentName, setExpandHeaderProjectRERADocumentName] = useState<string>('');
   const [expandHeaderProjectRERADocumentId, setExpandHeaderProjectRERADocumentId] = useState<number>(0);
-
-  //SET AND REMOVE URL FILE
   const [projectRERADocumentFiles, setProjectRERADocumentFiles] = useState<(File | string)[]>([]);
   const [RemoveProjectRERADocumentUrls, setRemoveProjectRERADocumentUrls] = useState<string[]>([]);
   const [projectRERADocumentURL, setProjectRERADocumentURL] = useState<string>();
-
-  //SET AND REMOVE URL FILE
   const [rERAPortalScreenShotFiles, setRERAPortalScreenShotFiles] = useState<(File | string)[]>([]);
   const [RemoveRERAPortalScreenShotUrls, setRemoveRERAPortalScreenShotUrls] = useState<string[]>([]);
   const [rERAPortalScreenShotURL, setRERAPortalScreenShotURL] = useState<string>();
-
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
-  //FILTER STATE
   const [filters] = useState<FilterInfo>({});
-
-  // TOAST
   const { addToast } = useToast();
-
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchDocuments(value)
   }, 350)
-
-  // TAB LIST
   const [projectRERADocumentTabList, setProjectRERADocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>('');
   const [activeTabName, setActiveTabName] = useState<string>('');
 
   const [inAllTabPlusButtonClickDocumentCategoryId, setInAllTabPlusButtonClickDocumentCategoryId] = useState<number>(0);
-
-  //DATATABLE EXPANDABLE REF
   const dtRef = useRef<DataTableExpandableRef | null>(null)
-
-  //DATATABLE EXPANDED ROW AND PARENT ID
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
   const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  // ADD EDIT UPDATE DOCUMENT
   const [editingDocumentData, setEditingDocumentData] = useState<ProjectRERADocumentData | null>(null);
-
-  // ADD EDIT UPDATE DOCUMENT DETAILS
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
-
-  //DELETE PROJECT RERA DOCUMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteProjectRERADocumentDetailsData, setDeleteProjectRERADocumentDetailsData] = useState<ProjectRERADocumentData | null>(null)
-
-
-  //ADD UPDATE PROJECT RERA DOCUMENT MASTER
   const [formData, setFormData] = useState<AddUpdateProjectRERADocumentRequest>(() => initialFormState());
-
-  // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [rERADocumentName, setRERADocumentName] = useState<string | null>("");
   const [rERADocumentCategory, setRERADocumentCategory] = useState<string | null>("");
-
-  // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [approvalRowData, setApprovalRowData] = useState<ProjectRERADocumentData | null>(null);
-
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
-
-  //#region INIT
 
   useEffect(() => {
     if (!projectId) return;
@@ -203,10 +157,6 @@ const ProjectRERADocument: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
-
-  //#endregion
-
-  //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
 
     if (filterParams && filterParams.ProjectRERADocumentCategoryId != null) {
@@ -225,9 +175,6 @@ const ProjectRERADocument: React.FC = () => {
 
     return 0;
   };
-  //#endregion
-
-  //#region LOAD TAB PROJECT DOCUMENT CATEGORY
   const loadProjectRERADocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -275,15 +222,11 @@ const ProjectRERADocument: React.FC = () => {
       'Loading Category'
     );
   };
-
-  //#endregion
-
-  //#region DATA LOAD
-  const fetchProjectRERADocumentList = async (page: number = pagination.currentPage) => {
-    return await loadProjectRERADocument(page, filters);
+  const fetchProjectRERADocumentList = async (page: number = pagination.currentPage, currentSortInfo: SortInfo | undefined = sortInfo) => {
+    return await loadProjectRERADocument(page, filters, currentSortInfo);
   };
 
-  const loadProjectRERADocument = async (page: number, filterParams: FilterInfo) => {
+  const loadProjectRERADocument = async (page: number, filterParams: FilterInfo, currentSortInfo: SortInfo | undefined = sortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -298,7 +241,7 @@ const ProjectRERADocument: React.FC = () => {
           ProjectRERADocumentStatus: filterParams.ProjectRERADocumentStatus ?? "",
           ProjectRERADocumentCategory: filterParams.ProjectRERADocumentCategory ?? "",
           ProjectRERADocumentCategoryId: Number(getActiveTabId(filterParams)),
-          SortBy: getSortByParam(sortInfo ?? null, projectRERADocumentColumns)
+          SortBy: getSortByParam(currentSortInfo ?? null, projectRERADocumentColumns)
         };
 
         const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
@@ -329,9 +272,6 @@ const ProjectRERADocument: React.FC = () => {
       'Loading Project RERA Document'
     );
   };
-  //#endregion
-
-  //#region SERACH Document 
   const searchDocuments = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -350,36 +290,27 @@ const ProjectRERADocument: React.FC = () => {
     await loadProjectRERADocument(1, filterParams)
 
   }
-  //#endregion
-
-  //#region CLEAR SERACH Document 
   const clearsearchDocumnets = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     fetchProjectRERADocumentList();
   }
 
-  //#endregion
-
-  //#region HANDLE PAGE CHNAGE EVENT
-
   const handlePageChange = useCallback((page: number) => {
     fetchProjectRERADocumentList(page);
   }, [fetchProjectRERADocumentList]);
 
-  //#endregion
+  const handleSortColumn = (newSortInfo: SortInfo) => {
 
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
+    setSortInfo(newSortInfo);
 
-    setSortInfo(sortInfo);
+    const newFilters: FilterInfo = {
+      ...filters,
+      ProjectRERADocumentCategoryId: activeTab,
+    };
 
-    fetchProjectRERADocumentList(1);
-
-  }
-  //#endregion
-
-  //#region TABLE PAGINATION INFO
+    loadProjectRERADocument(1, newFilters, newSortInfo);
+  };
 
   const projectRERADocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -393,12 +324,6 @@ const ProjectRERADocument: React.FC = () => {
   )
 
   const projectRERADocumentListForTable = useMemo(() => projectRERADocumentList, [projectRERADocumentList]);
-
-  //#endregion
-
-
-
-  //#region EDIT PROJECT DOCUMENT DETAILS
   const handleEditProjectRERADocumentDetails = useCallback((row: ProjectRERADocumentData) => {
     setEditingDocumentData({
       ...row,
@@ -410,11 +335,8 @@ const ProjectRERADocument: React.FC = () => {
     })
     setIsAddUpdateDocumentDetailsModalOpen(true);
 
-  }, [])
+  },[])
 
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: ProjectRERADocumentData) => {
     setDeleteProjectRERADocumentDetailsData({
       ...row
@@ -422,10 +344,6 @@ const ProjectRERADocument: React.FC = () => {
 
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
-  //#endregion
-
-  //#region TABLE COLUMN
 
   const projectRERADocumentColumns = useMemo<TableColumn[]>(
     () => [
@@ -519,13 +437,8 @@ const ProjectRERADocument: React.FC = () => {
         },
       }
 
-    ],
-    // dependencies: include everything used inside that might change
-    [canAction, handleEditProjectRERADocumentDetails, handleConfirmationDialogBoxOpen]
+    ],[canAction, handleEditProjectRERADocumentDetails, handleConfirmationDialogBoxOpen]
   )
-  //#endregion
-
-  //#region TABLE COLUMN DOCUMENT DETAILS
 
   const handleApprovalLog = (row: ProjectRERADocumentData) => {
     const request: ModulesApprovalStatusRequest = {
@@ -742,12 +655,8 @@ const ProjectRERADocument: React.FC = () => {
         },
       }
     ],
-    // dependencies: include everything used inside that might change
     [canAction, handleConfirmationDialogBoxOpen, handleApprovalLog, handleApproveRejectDocument]
   )
-  //#endregion
-
-  //#region ADD UPDATE EDIT DOCUMENT
 
   const handleAddDocumentDetailsModal = useCallback((row: ProjectRERADocumentData) => {
     setExpandedParentRow(row);
@@ -780,8 +689,6 @@ const ProjectRERADocument: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
 
   const validateAddDocumentDetailsForm = (): {
@@ -895,10 +802,8 @@ const ProjectRERADocument: React.FC = () => {
             await fetchProjectRERADocumentList(pagination.currentPage);
 
             if (parentId) {
-              dtRef.current?.expandRow?.(
-                String(parentId),
-                expandedParentRow
-              );
+
+              dtRef.current?.expandRow?.(String(parentId), expandedParentRow );
             }
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -910,10 +815,7 @@ const ProjectRERADocument: React.FC = () => {
             await fetchProjectRERADocumentList(pagination.currentPage);
 
             if (parentId) {
-              dtRef.current?.expandRow?.(
-                String(parentId),
-                expandedParentRow
-              );
+              dtRef.current?.expandRow?.(String(parentId), expandedParentRow );
             }
 
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
@@ -941,10 +843,6 @@ const ProjectRERADocument: React.FC = () => {
     )
 
   };
-
-  //#endregion
-
-  //#region DELETE DOCUMENT
   const handleDeleteProjectRERADocument = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -1002,7 +900,6 @@ const ProjectRERADocument: React.FC = () => {
       'Delete Document'
     )
   }
-  //#endregion
 
   const handleApprovalSubmit = async (remark: string) => {
 
@@ -1033,16 +930,16 @@ const ProjectRERADocument: React.FC = () => {
 
           await fetchProjectRERADocumentList(pagination.currentPage);
 
-          // collapse all first
           if (dtRef.current) {
             dtRef.current.collapseAll?.();
           }
 
-          // reopen after table renders
           setTimeout(() => {
             if (parentId) {
+
               dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
             }
+
           }, 50);
 
         } else {
@@ -1081,12 +978,8 @@ const ProjectRERADocument: React.FC = () => {
         onClearSearch={clearsearchDocumnets}
         isShowFilterButton={false}
         isShowCustomizeButton={false}
-        // ADD
         isShowAddButton={false}
-
-        // IMPORT
         isShowImportButton={false}
-        // EXPORT
         isShowExportButton={false}
         exportLoading={isLoading}
       />
@@ -1115,6 +1008,7 @@ const ProjectRERADocument: React.FC = () => {
 
         />
       )}
+      
       <div className={`${projectRERADocumentTabList.length > 0 ? 'pt-5' : ''}`}>
         <DataTableExpandable
           ref={dtRef}

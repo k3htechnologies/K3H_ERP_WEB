@@ -24,7 +24,7 @@ import type { PaginationInfo, TableColumn } from "@/ui/components/DataTable/Data
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { formatCurrency, getSafeString } from "@/core/utils/comman";
+import { formatCurrency } from "@/core/utils/comman";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { handleExportFile } from "@/core/utils/exportFile";
@@ -49,6 +49,9 @@ export const ViewBrokerageInvoice: React.FC = () => {
     const [isConfirmationDialogBoxOpenForPayment, setIsConfirmationDialogBoxOpenForPayment] = useState(false)
     const [deletePaidBrokerageBookingData, setDeletePaidBrokerageBookingData] = useState<PaidBrokerageBookingData | null>(null)
 
+    const { canView: canInVoiceView } = useMenuPermissions('/invoice');
+
+    const { canView: canMakePaymentView } = useMenuPermissions('/makePayment');
 
     const { projectId } = useProject();
 
@@ -69,12 +72,14 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
     const bookingId = listState.bookingId || '';
 
-    const brokerageTabList = [
-        { id: "Invoice", label: "Invoice" },
-        { id: "Payment", label: "Payment" },
-    ];
+    const brokerageTabList: { id: string; label: string }[] = [
 
-    const [activeTab, setActiveTab] = useState<string>(brokerageTabList[0].id);
+        canInVoiceView ? { id: "Invoice", label: "Invoice" } : null,
+        canMakePaymentView ? { id: "Payment", label: "Payment" } : null,
+
+    ].filter(Boolean) as { id: string; label: string }[];
+
+    const [activeTab, setActiveTab] = useState<string>(brokerageTabList[0]?.id ?? "");
 
     const [searchInvoiceNumber, setSearchInvoiceNumber] = useState('')
     const debouncedSearchForInvoiceNumber = useDebouncedCallback((value: string) => {
@@ -111,7 +116,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationBrokerageInvoiceRequest = {
                     PageNumber: page,
-                    PageSize: 10,
+                    PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
                     InvoiceNumber: searchText,
@@ -162,10 +167,16 @@ export const ViewBrokerageInvoice: React.FC = () => {
         navigate(`/brokerage/brokerageInvoice/add/${BrokerageInvoiceId}`);
     };
 
-    const handleAddPaidBrokerageBooking = (BrokerageInvoiceId: number) => {
-        navigate(`/brokerage/PaidBrokerageBooking/add/${BrokerageInvoiceId}`);
+    const handleAddPaidBrokerageBooking = (row: BrokerageInvoiceData) => {
+        navigate(`/brokerage/PaidBrokerageBooking/add/${row.BrokerageInvoiceId}`, {
+            state: {
+                InvoiceAmount: Number(row.InvoiceAmount || 0),
+                PaidAmount: Number(row.PaymentAmount || 0),
+                InvoiceNumber: row.InvoiceNumber,
+                InvoiceDate: row.InvoiceDate,
+            },
+        });
     };
-
 
     const handleConfirmationDialogBoxOpen = useCallback((row: BrokerageInvoiceData) => {
         setDeleteBrokerageInvoiceData(row)
@@ -222,9 +233,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
         setIsConfirmationDialogBoxOpen(false);
 
         if (!deleteBrokerageInvoiceData) return;
-
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
             async () => {
@@ -299,7 +308,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
         setInvoiceAmount(row?.InvoiceAmount ?? 0);
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
-
     };
 
     const brokerageInvoiceColumns = useMemo<TableColumn[]>(
@@ -332,23 +340,23 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
             {
                 key: "InvoiceAmount",
-                label: "Invoice Amount",
+                label: "Invoice (₹)",
                 width: "14",
                 sortable: false,
                 align: "right",
-                render: value => value || '0'
+                render: value => formatCurrency(value) || '0'
             },
             {
                 key: "PaymentAmount",
-                label: "Paid Invoice Amount",
+                label: "Paid (₹)",
                 width: "14",
                 sortable: false,
                 align: "right",
-                render: value => value || '0'
+                render: value => formatCurrency(value) || '0'
             },
             {
                 key: "PendingAmount",
-                label: "Pending Amount",
+                label: "Pending (₹)",
                 width: "14",
                 sortable: false,
                 align: "right",
@@ -357,7 +365,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     const paid = Number(row.PaymentAmount || 0);
                     const pending = invoice - paid;
 
-                    return pending >= 0 ? pending : 0;
+                    return pending >= 0 ? formatCurrency(pending) : '0';
                 }
             },
 
@@ -604,9 +612,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     await loadBrokerageInvoice(1, searchInvoiceNumber?.trim() || "");
 
                 } else {
-
                     addToast({ type: "error", title: response.left.message });
-
                 }
 
                 return response;
@@ -620,6 +626,17 @@ export const ViewBrokerageInvoice: React.FC = () => {
         );
     };
 
+    const isFullyInvoiced = useMemo(() => {
+        const brokerageAmount = Number(listState.brokerageAmount || 0);
+
+        const totalInvoiceAmount = brokerageInvoiceList.reduce(
+            (total, invoice) => total + Number(invoice.InvoiceAmount || 0),
+            0
+        );
+
+        return totalInvoiceAmount >= brokerageAmount && brokerageAmount > 0;
+    }, [listState.brokerageAmount, brokerageInvoiceList]);
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6 ">
             <Loader loading={isLoading} title={loadingMessage}><div></div></Loader>
@@ -630,15 +647,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 subSubTitleText={channelPartnerCompanyName}
                 onCancel={() => handleBackToListBrokerage()}
                 cancelText="Cancel"
-                EditText="Add"
-
-                canAction={canAction && activeTab === "Invoice" ? true : false}
-                onEdit={() => {
-                    if (activeTab === "Invoice") {
-                        handleAddBrokerageInvoice(0);
-                    }
-
-                }}
                 isLoading={isLoading}
             />
 
@@ -672,6 +680,9 @@ export const ViewBrokerageInvoice: React.FC = () => {
                         }}
                         onClearSearch={clearSearchByInvoiceNumber}
 
+                        isShowAddButton={canAction && activeTab === "Invoice" && !isFullyInvoiced}
+                        addTitle="Add"
+                        onAdd={() => handleAddBrokerageInvoice(0)}
 
                         // EXPORT
                         isShowExportButton={canExport && brokerageInvoiceListForTable.length > 0}
@@ -691,7 +702,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
                         expandable={{
                             keyField: 'BrokerageInvoiceId',
                             alwaysFetchOnOpen: false,
-
                             fetchRow: async (row) => {
                                 return row;
                             },
@@ -705,32 +715,35 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                 return (
 
                                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                        <div className="flex justify-between items-center">
+
+                                        <div className="flex justify-between items-start">
                                             <div className="text-sm text-gray-700">
-                                               <FieldItem label="Account Holder Name" value={row.AccountName} isRow/>
-                                               
-                                               <FieldItem label="Invoice Amount" value={formatCurrency(row.InvoiceAmount)} isRow/>
+                                                <FieldItem label="Account Holder Name" value={row.AccountName} isRow />
 
-                                               <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row.InvoiceDate ?? '')} isRow/>
+                                                <FieldItem label="Invoice Amount" value={formatCurrency(row.InvoiceAmount)} isRow />
 
+                                                <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row.InvoiceDate ?? '')} isRow />
                                             </div>
 
                                             <div className="flex items-center gap-2">
                                                 {canMakePaymentAction && row.ApprovalStatus.toUpperCase() === "APPROVED" && (
-                                                    <div className="ml-4 whitespace-nowrap">
+                                                    <div className="ml-4 mt-2 whitespace-nowrap">
 
                                                         {pending > 0 ? (
                                                             <Button
-                                                                color="green"
-                                                                size="sm"
-                                                                onClick={() => handleAddPaidBrokerageBooking(row.BrokerageInvoiceId)}
-                                                            >
+                                                                color="blue"
+                                                                variant="solid"
+                                                                size="md"
+                                                                style={{ width: '140px', height: '37px' }}
+                                                                onClick={() => handleAddPaidBrokerageBooking(row)}>
                                                                 Make Payment
                                                             </Button>
                                                         ) : (
-                                                            <span className="text-green-600 font-medium">
-                                                                Fully Paid
-                                                            </span>
+                                                            <div>
+                                                                 <span className="px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                                                                        Fully Paid
+                                                                                      </span>
+                                                            </div>
                                                         )}
 
                                                     </div>
@@ -742,10 +755,10 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                             <div className="space-y-3">
                                                 <h3 className="font-semibold mb-2">Invoice Details</h3>
 
-                                               
+
                                                 <FieldItem label="Account Number" value={row.AccountNumber} />
                                                 <FieldItem label="Bank Name" value={row.BankName} />
-                                                 <FieldItem label="Remark" value={row.Remark} />
+                                                <FieldItem label="Remark" value={row.Remark} />
                                             </div>
 
                                             <div className="space-y-3">
@@ -767,7 +780,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                 );
                             },
 
@@ -779,8 +792,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
             )}
 
             {activeTab === 'Payment' && (
-
-
                 <div className="space-y-3 pt-5">
 
                     <TableActionToolbar
@@ -791,7 +802,6 @@ export const ViewBrokerageInvoice: React.FC = () => {
                             debouncedSearchForPaidInvoiceNumber(v)
                         }}
                         onClearSearch={clearSearchByPaidInvoiceNumber}
-
 
                         // EXPORT
                         isShowExportButton={canMakePaymentExport && paidBrokerageBookingList.length > 0}
@@ -811,84 +821,87 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                     </div>
 
                                     <div className="flex items-center gap-2">
-
-                                        <Button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (!canMakePaymentAction) return;
-                                                handleConfirmationDialogBoxOpenForPayment(data);
-                                            }}
-                                            color="transparent"
-                                            isborderRadius
-                                            disabled={!canMakePaymentAction}
-                                            size="sm"
-                                            style={{
-                                                color: canMakePaymentAction ? "red" : "#9CA3AF",
-                                                cursor: canMakePaymentAction ? "pointer" : "not-allowed",
-                                                opacity: canMakePaymentAction ? 1 : 0.5,
-                                            }}
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        {i === 0 && (
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (!canMakePaymentAction) return;
+                                                    handleConfirmationDialogBoxOpenForPayment(data);
+                                                }}
+                                                color="transparent"
+                                                isborderRadius
+                                                disabled={!canMakePaymentAction}
+                                                size="sm"
+                                                style={{
+                                                    color: canMakePaymentAction ? "red" : "#9CA3AF",
+                                                    cursor: canMakePaymentAction ? "pointer" : "not-allowed",
+                                                    opacity: canMakePaymentAction ? 1 : 0.5,
+                                                }}
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-                                    <FieldItem label="Bank Name" value={data.BankName} />
-                                    <FieldItem label="Payment Type" value={data.PaymentType} />
-                                    <FieldItem label="Payment Mode" value={data.PaymentMode} />
+                                <h3 className="col-span-3 font-semibold mt-4">
+                                    Developer Bank Details
+                                </h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                    <FieldItem label="Bank Name" value={data.ProjectBankName || "-"} isRow={false} />
+                                    <FieldItem label="Account Number" value={data.ProjectAccountNumber || "-"} isRow={false} />
+                                    <FieldItem label="IFSC Code" value={data.ProjectIFSCCode || "-"} isRow={false} />
+                                    <FieldItem label="Nature Of Account" value={data.ProjectNatureOfAccount || "-"} isRow={false} />
+                                    <FieldItem label="Account Type" value={data.ProjectAcType || "-"} isRow={false} />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                                    <FieldItem label="Account Number" value={data.AccountNumber} />
-                                    <FieldItem label="IFSC Code" value={data.IFSCCode} />
-                                    <FieldItem label="Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
-                                </div>
+                                <h3 className="col-span-3 font-semibold mt-4">
+                                    Customer Bank Details
+                                </h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4" >
-                                    <FieldItem label="Transaction Number / Receipt" value={data.TransactionNumber} urls={data.TransactionReceiptURL} isIcon />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                    <FieldItem label="Payment Mode" value={data.PaymentMode || "-"} />
+                                    <FieldItem label="Payment Type" value={data.PaymentType || "-"} />
+                                    <FieldItem label="Account Number" value={data.AccountNumber || "-"} />
+                                    <FieldItem label="IFSC Code" value={data.IFSCCode || "-"} />
                                     <FieldItem label="Amount Paid" value={formatCurrency(data.AmountPaid)} />
                                     <FieldItem label="TDS Amount" value={formatCurrency(data.TDSAmount)} />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                                    <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
-                                    <FieldItem
-                                        label="Created Date"
-                                        value={
-                                            data.CreatedDate
-                                                ? formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate)
-                                                : '-'
-                                        }
-                                    />
-                                    <FieldItem label="Modified By" value={getSafeString(data.ModifiedBy)} />
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
 
                                     <FieldItem
-                                        label="Modified Date"
-                                        value={
-                                            data.ModifiedDate
-                                                ? formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate)
-                                                : '-'
-                                        }
+                                        label="Transaction / Cheque / Demand Draft No"
+                                        urls={data.TransactionReceiptURL}
+                                        value={data.TransactionNumber || "-"}
+                                        isIcon
                                     />
+
+                                    <FieldItem
+                                        label="Transaction / Cheque / Demand Draft Date"
+                                        value={formatDate_dd_MonthName_yy(
+                                            data.TransactionChequeDemandDraftDate || "-"
+                                        )}
+                                    />
+                                </div>
+
+                                <h3 className="col-span-3 font-semibold mt-4">
+                                    Action Details
+                                </h3>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-2 pt-4">
+                                    <FieldItem label="Created By" value={data?.CreatedBy ?? "-"} />
+                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.CreatedDate ?? "-")} />
                                 </div>
 
                             </section>
                         ))
                     ) : (
                         <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message="No Data Found" />
+                            <NoDataView message="No payment data found" />
                         </section>
                     )}
-
-
                 </div>
-
             )}
 
             <DeleteDialog
@@ -918,7 +931,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 title='Invoice'
                 titleText={channelPartnerName ?? ""}
                 subTitleText={channelPartnerCompanyName ?? ""}
-                subSubTitleText={invoiceAmount?.toString() ?? ""}
+                subSubTitleText={`₹ ${invoiceAmount?.toString() ?? 0}`}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest} />
 
@@ -929,7 +942,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 actionType={approvalActionType}
                 titleText={channelPartnerName ?? ""}
                 subTitleText={channelPartnerCompanyName ?? ""}
-                subSubTitleText={invoiceAmount?.toString() ?? ""}
+                subSubTitleText={`₹ ${invoiceAmount?.toString() ?? 0}`}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />

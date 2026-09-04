@@ -25,6 +25,7 @@ interface ShiftMappingMasterFormModalProps {
   mappingShift: string;
   onApplicableTypeChange: (value: string) => void;
   employeeDetails: EmployeeMasterData | null;
+  
   setEmployeeDetails: (details: EmployeeMasterData | null) => void;
 }
 
@@ -99,8 +100,9 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                     <FieldItem label="Designation" value={employeeDetails.Designation || "-"} />
                     <FieldItem label="Branch" value={employeeDetails.Branch || "-"} />
                     <FieldItem label="Reporting Person" value={employeeDetails.ReportPersonName || "-"} />
-                    <FieldItem label="Email ID" value={employeeDetails.EmailId || "-"} />
-                    <FieldItem label="Personal Mobile Number" value={employeeDetails.PersonalMobileNumber || "-"} />
+                    <FieldItem label="E-Mail ID" value={employeeDetails.EmailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'}/>
+                    
                   </div>
                 </div>
               )}

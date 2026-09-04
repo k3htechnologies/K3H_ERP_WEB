@@ -6,7 +6,8 @@ import { fetchMaterialMasterDropdown } from '@/features/materialMaster/materialM
 import { fetchUOMMasterDropdown } from '@/features/uomMaster/uomMasterDropdown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { AddUpdateSubMaterialMasterRequest } from '@/features/subMaterialMaster/models/SubMaterialMasterModel';
-
+import { filterNumbers } from '@/core/utils/fileValidation';
+import Checkbox from '@/ui/components/forms/Checkbox';
 
 interface SubMaterialMasterFormModalProps {
   isOpen: boolean;
@@ -100,23 +101,26 @@ export const SubMaterialMasterFormModal: React.FC<SubMaterialMasterFormModalProp
               error={errors.UomMasterId}
             />
           </div>
-          <div className="pt-2">
-            <label className="flex items-center gap-3 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={formData.IsTolerant ?? false}
-                onChange={(e) =>
-                  onFieldChange("IsTolerant", e.target.checked)
-                }
-                className="h-4 w-4 rounded border-gray-300"
-              />
-
-              <span className="text-sm font-medium text-gray-700">
-                do you want to allow tolerance for this sub material?
-              </span>
-            </label>
+          <div>
+            <Input
+              label='Lead Time (Days)'
+              required
+              error={errors.LeadTimeInDays}
+              type="text"
+              value={formData.LeadTimeInDays}
+              maxLength={5}
+              rightIcon={<span className="text-gray-500">Days</span>}
+              onChange={(e) => onFieldChange('LeadTimeInDays', filterNumbers(e.target.value))}
+              placeholder="Enter Lead Time"
+            />
           </div>
-
+          <div>
+            <Checkbox
+              label="Is Tolerant?"
+              checked={formData.IsTolerant}
+              onChange={(e) => onFieldChange('IsTolerant', e.target.checked)}
+            />
+          </div>
         </div>
       </div>
     </Modal>

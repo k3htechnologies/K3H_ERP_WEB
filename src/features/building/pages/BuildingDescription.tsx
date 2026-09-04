@@ -28,6 +28,8 @@ const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
   TotalResidentialCarpetAreaSqFt: undefined,
   TotalCommercialUnits: undefined,
   TotalCommercialCarpetAreaSqFt: undefined,
+  TotalGarageCarpetAreaSqFt: 0,
+  TotalTerraceCarpetAreaSqFt: 0,
   BuildingKeyContactDetailsJSON: undefined
 });
 
@@ -120,7 +122,9 @@ const BuildingDescription: React.FC = () => {
               TotalResidentialUnits: row.TotalResidentialUnits ?? prev.TotalResidentialUnits,
               TotalResidentialCarpetAreaSqFt: row.TotalResidentialCarpetAreaSqFt ?? prev.TotalResidentialCarpetAreaSqFt,
               TotalCommercialUnits: row.TotalCommercialUnits ?? prev.TotalCommercialUnits,
-              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt
+              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt,
+              TotalGarageCarpetAreaSqFt: row.TotalGarageCarpetAreaSqFt ?? prev.TotalGarageCarpetAreaSqFt,
+              TotalTerraceCarpetAreaSqFt: row.TotalTerraceCarpetAreaSqFt ?? prev.TotalTerraceCarpetAreaSqFt,
             }));
 
             // Parse contact details from JSON
@@ -215,6 +219,8 @@ const BuildingDescription: React.FC = () => {
       TotalResidentialCarpetAreaSqFt: formData.TotalResidentialCarpetAreaSqFt ?? undefined,
       TotalCommercialUnits: formData.TotalCommercialUnits ?? undefined,
       TotalCommercialCarpetAreaSqFt: formData.TotalCommercialCarpetAreaSqFt ?? undefined,
+      TotalGarageCarpetAreaSqFt: formData.TotalGarageCarpetAreaSqFt ??0,
+      TotalTerraceCarpetAreaSqFt: formData.TotalTerraceCarpetAreaSqFt ?? 0,
       BuildingKeyContactDetailsJSON: contactDetailsJSON
     };
 
@@ -347,7 +353,7 @@ const BuildingDescription: React.FC = () => {
 
           {/* ============================================================= [BUILDING CONSTRUCTION DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3 pt-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Building Construction Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Existing Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -399,6 +405,26 @@ const BuildingDescription: React.FC = () => {
                   value={formData.TotalCommercialCarpetAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('TotalCommercialCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Commercial Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Garage Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalGarageCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalGarageCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter Garage Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
+               <div>
+                <Input
+                  label="Terrace Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalTerraceCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalTerraceCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter Terrace Carpet Area"
                   rightIcon="SqFt"
                 />
               </div>
@@ -479,7 +505,7 @@ const BuildingDescription: React.FC = () => {
                     </div>
                     <div className="md:col-span-2 lg:col-span-1">
                       <Input
-                        label="Email ID"
+                        label="E-Mail ID"
                         type="text"
                         value={contact.EmailId || ''}
                         onChange={(e) => {
@@ -499,7 +525,7 @@ const BuildingDescription: React.FC = () => {
                             }));
                           }
                         }}
-                        placeholder="Enter Email Id"
+                        placeholder="Enter E-Mail ID"
                         error={contactDetailsErrors[index]?.EmailId}
                       />
                     </div>

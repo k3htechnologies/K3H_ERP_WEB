@@ -217,7 +217,7 @@ export const useApprovalDocumentCategoryMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadApprovalDocumentCategories(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+  }, [filters, searchTerm,projectId]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS

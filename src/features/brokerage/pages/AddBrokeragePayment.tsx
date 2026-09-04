@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useCallback, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -11,18 +11,24 @@ import { Loader } from "@/core/utils/loader";
 import type { AddUpdatePaidBrokerageBookingRequest } from "@/features/brokerage/models/PaidBrokerageBookingModel";
 import { PaidBrokerageBookingService } from "@/features/brokerage/services/PaidBrokerageBookingService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants";
+import { INVOICE_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import type { ProjectWithBankDetails } from "@/features/projectMaster/models/ProjectMasterModel";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     PaidBrokerageBookingId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
-    BankListMasterId: 0,
+    ProjectBankListMasterId: 0,
     BookingId: 0,
     BrokerageInvoiceId: 0,
     PaymentMode: '',
@@ -32,7 +38,8 @@ const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     TransactionReceiptURL: '',
     RemoveTransactionReceiptURL: '',
     TransactionNumber: '',
-    BankName: ''
+    ProjectBankName: '',
+    TransactionChequeDemandDraftDate: "",
 })
 
 export const AddUpdatePaidBrokerageBooking: React.FC = () => {
@@ -41,13 +48,18 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdatePaidBrokerageBookingRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-
+    const [projectWithBankData, setProjectWithBankData] = useState<ProjectWithBankDetails | null>(null);
     const [transactionReceiptURLFiles, setTransactionReceiptURLFiles] = useState<(File | string)[]>([]);
     const [removeTransactionReceiptURLUrls, SetRemoveTransactionReceiptURLUrls] = useState<string[]>([]);
-    const [transactionReceiptURL, ] = useState<string>();
-
+    const [transactionReceiptURL,] = useState<string>();
     const navigate = useNavigate();
 
+    const location = useLocation();
+    const routeState = (location.state as { InvoiceAmount?: number; PaidAmount?: number, InvoiceNumber: string, InvoiceDate: string }) || {};
+    const invoiceAmount = Number(routeState.InvoiceAmount || 0);
+    const alreadyPaidAmount = Number(routeState.PaidAmount || 0);
+    const pendingAmount = invoiceAmount - alreadyPaidAmount;
+    const [currentPendingAmount, setCurrentPendingAmount] = useState(0);
     const { BrokerageInvoiceId } = useParams<{
         BrokerageInvoiceId?: string;
     }>();
@@ -70,9 +82,47 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     const { canAction } = useMenuPermissions('/makePayment');
     //#endregion
 
+    const fetchProjectBankList = useCallback(async (pageNumber: number, params?: { value?: string }) => {
+        return fetchProjectBankDropdown(pageNumber, {
+            projectId: projectId || 0,
+            bankName: params?.value || ""
+        });
+    }, [projectId]);
+
+    const [dropdownLabels, setDropdownLabels] = useState<{
+        projectBankName?: string;
+    }>({});
+
     //#region HANDLE FIELD CHANGE EVENT
-    const handleFieldChange = (field: keyof AddUpdatePaidBrokerageBookingRequest, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+    const handleFieldChange = (
+        field: keyof AddUpdatePaidBrokerageBookingRequest,
+        value: any
+    ) => {
+        setFormData((prev) => {
+            const updated = { ...prev, [field]: value };
+
+            if (field === "PaymentType") {
+                if (value === "Full") {
+                    updated.AmountPaid = pendingAmount;
+                    setCurrentPendingAmount(0);
+                }
+
+                if (value === "Partial") {
+                    updated.AmountPaid = 0;
+                    setCurrentPendingAmount(pendingAmount);
+                }
+            }
+
+            if (field === "AmountPaid") {
+                const paid = Number(value) || 0;
+
+                setCurrentPendingAmount(
+                    Math.max(pendingAmount - paid, 0)
+                );
+            }
+
+            return updated;
+        });
 
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -80,7 +130,6 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     };
     //#endregion
 
-   
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateAddPaidBrokerageForm = (): {
 
@@ -95,21 +144,26 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         if (!formData.PaymentMode) {
             newErrors.PaymentMode = 'Payment Mode is required.';
         }
-        if (!formData.BankListMasterId) {
-            newErrors.BankListMasterId = "Bank Name is required";
+        if (!formData.ProjectBankListMasterId) {
+            newErrors.ProjectBankListMasterId = "Project Bank Name is required";
         }
         if (!formData.PaymentType) {
             newErrors.PaymentType = 'Payment Type is required.';
+        }
+        if (!formData.TransactionChequeDemandDraftDate) {
+            newErrors.TransactionChequeDemandDraftDate = 'Transaction / Cheque / Demand Draft Date is required';
         }
 
         if (!formData.AmountPaid) {
             newErrors.AmountPaid = "Amount is required";
         } else if (formData.AmountPaid <= 0) {
             newErrors.AmountPaid = "Amount cannot be zero or negative";
+        } else if (pendingAmount > 0 && Number(formData.AmountPaid) > pendingAmount) {
+            newErrors.AmountPaid = `Amount cannot be greater than pending amount of ₹${pendingAmount.toLocaleString('en-IN')}`;
         }
 
         if (!formData.TransactionNumber) {
-            newErrors.TransactionNumber = 'Transaction Number is required.';
+            newErrors.TransactionNumber = 'Transaction / Cheque / Demand draft No is required.';
         }
 
         if (Number(formData.TDSAmount) != 0 && (Number(formData.TDSAmount) || 0) >= (Number(formData.AmountPaid) || 0)) {
@@ -117,7 +171,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         }
 
         if (!hasAnyDocumentFile(transactionReceiptURLFiles, transactionReceiptURL, removeTransactionReceiptURLUrls)) {
-            newErrors.TransactionReceiptURL = "Transaction Receipt is required";
+            newErrors.TransactionReceiptURL = "Transaction / Cheque / Demand Draft Image is required";
         }
 
         return {
@@ -134,13 +188,14 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("ProjectId", projectId!.toString());
         fd.append("BookingId", currentBookingId.toString());
-        fd.append("BankListMasterId", formData.BankListMasterId.toString());
+        fd.append("ProjectBankListMasterId", formData.ProjectBankListMasterId.toString());
         fd.append("BrokerageInvoiceId", currentBrokerageInvoiceId.toString());
         fd.append("PaymentMode", formData.PaymentMode ?? "");
         fd.append("PaymentType", formData.PaymentType ?? "");
         fd.append("TDSAmount", formData.TDSAmount.toString());
         fd.append("AmountPaid", formData.AmountPaid.toString());
         fd.append("TransactionNumber", formData.TransactionNumber ?? "");
+        fd.append("TransactionChequeDemandDraftDate", formData.TransactionChequeDemandDraftDate ?? "");
 
         transactionReceiptURLFiles.forEach((file) => {
             if (file instanceof File) {
@@ -207,9 +262,78 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                 <form onSubmit={handleAddUpdatePaidBrokerageBooking}>
 
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                            <FieldItem label="Invoice Number" value={routeState.InvoiceNumber} />
+                            <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(routeState.InvoiceDate)} />
+                            <FieldItem label="Invoice Amount" value={formatCurrency(routeState.InvoiceAmount)} />
+                            <FieldItem label="Paid Invoice Amount" value={formatCurrency(routeState.PaidAmount)} />
+                            <FieldItem label="Pending Amount" value={formatCurrency(pendingAmount)} />
+                        </div>
+                    </div>
+
                     {/* Paid Amount Details */}
 
                     <div className="space-y-4 pb-3">
+
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Developer Bank Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Project Bank Name"
+                                    title="Select Project Bank Name"
+                                    size="lg"
+                                    required
+                                    dataFetchCallBack={fetchProjectBankList}
+                                    onSelected={(item) => {
+                                        if (!item) {
+                                            handleFieldChange("ProjectBankListMasterId", null);
+                                            setProjectWithBankData(null);
+                                            setDropdownLabels((prev) => ({
+                                                ...prev,
+                                                projectBankName: "",
+                                            }));
+                                            return;
+                                        }
+                                        handleFieldChange("ProjectBankListMasterId", Number(item.value));
+
+                                        setProjectWithBankData(item as unknown as ProjectWithBankDetails);
+                                    }}
+                                    initialValue={createDropdownInitialValue(formData.ProjectBankListMasterId, dropdownLabels.projectBankName)}
+                                    error={errors.ProjectBankListMasterId}
+                                />
+                            </div>
+
+                            {projectWithBankData && Number(formData.ProjectBankListMasterId) > 0 && (
+                                <>
+                                    <div>
+                                        <Input
+                                            label="Account Number"
+                                            placeholder="Enter Account Number"
+                                            value={projectWithBankData?.AccountNumber || ""}
+                                            disabled
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input label="IFSC Code" placeholder="Enter IFSC Code" value={projectWithBankData?.IFSCCode || ""} disabled />
+                                    </div>
+
+                                    <div>
+                                        <Input label="Branch" placeholder="Enter Branch" value={projectWithBankData?.Branch || ""} disabled />
+                                    </div>
+
+                                    <div>
+                                        <Input label="Account Type" placeholder="Enter Account Type" value={projectWithBankData?.AcType || ""} disabled />
+                                    </div>
+
+                                    <div>
+                                        <Input label="Nature Of Account" placeholder="Enter Nature Of Account" value={projectWithBankData?.NatureOfAccount || ""} disabled />
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Make Payment</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -226,52 +350,37 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                             </div>
 
                             <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Bank Name"
-                                    required
-                                    title="Select Bank"
-                                    size="lg"
-                                    dataFetchCallBack={fetchBankListMasterDropdown}
-                                    onSelected={(item) => {
-                                        if (!item) {
-                                            handleFieldChange("BankListMasterId", null);
-                                            return;
-                                        }
-
-                                        handleFieldChange("BankListMasterId", Number(item.value));
-                                    }}
-                                    error={errors.BankListMasterId}
-                                />
-                            </div>
-
-                            <div>
                                 <SinglePageSelection
                                     label="Payment Type"
-                                    placeholder='Select Payment Type'
+                                    placeholder="Select Payment Type"
                                     required
-                                    value={formData.PaymentType || ''}
-                                    onChange={(e) => handleFieldChange('PaymentType', String(e))}
-                                    options={PAYMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                    value={formData.PaymentType || ""}
+                                    onChange={(e) => handleFieldChange("PaymentType", String(e))}
+                                    options={INVOICE_PAYMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id, }))}
                                     error={errors.PaymentType}
                                 />
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                       
 
                             <div>
                                 <Input
-                                    label='Amount (₹)'
+                                    label="Amount (₹)"
                                     required
                                     type="text"
                                     value={formData.AmountPaid}
                                     placeholder="Enter Amount"
                                     maxLength={15}
-                                    onChange={(e) => {
-                                        const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("AmountPaid", (digits));
-                                    }}
+                                    disabled={formData.PaymentType === "Full"}
+                                    onChange={(e) => handleFieldChange("AmountPaid", filterNumbersWithDecimal(e.target.value) || 0)}
                                     error={errors.AmountPaid}
+                                />
+                            </div>
+
+                            <div>
+                                <Input
+                                    label="Pending Amount (₹)"
+                                    value={currentPendingAmount.toFixed(2)}
+                                    disabled
                                 />
                             </div>
 
@@ -282,10 +391,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     value={formData.TDSAmount}
                                     placeholder="Enter TDS Amount"
                                     maxLength={15}
-                                    onChange={(e) => {
-                                        const digits = e.target.value.replace(/\D/g, '');
-                                        handleFieldChange("TDSAmount", (digits));
-                                    }}
+                                    onChange={(e) => handleFieldChange("TDSAmount", filterNumbersWithDecimal(e.target.value) || 0)}
                                     error={errors.TDSAmount}
                                 />
                             </div>
@@ -294,10 +400,10 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Transaction / Cheque Number'
+                                    label='Transaction / Cheque / Demand Draft No'
                                     value={formData.TransactionNumber ?? ""}
                                     onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
-                                    placeholder="Enter Transaction Number"
+                                    placeholder="Enter Transaction / Cheque / Demand Draft No"
                                     maxLength={15}
                                     error={errors.TransactionNumber}
                                 />
@@ -305,8 +411,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                             <div>
                                 <MultiFilePicker
-                                    label="Transaction / Cheque Receipt"
-                                    placeholder="Select Transaction / Cheque Receipt"
+                                    label="Transaction / Cheque / Demand Draft Image"
+                                    placeholder="Select Transaction / Cheque / Demand Draft Image"
                                     required
                                     value={transactionReceiptURLFiles}
                                     onChange={setTransactionReceiptURLFiles}
@@ -319,6 +425,17 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     }}
                                 />
                             </div>
+
+                            <div>
+                                <DatePickerInput
+                                    label="Transaction / Cheque / Demand Draft Date"
+                                    required
+                                    value={formatDate_dd_mm_yyyy(formData.TransactionChequeDemandDraftDate)}
+                                    onChange={(val) => handleFieldChange('TransactionChequeDemandDraftDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    error={errors.TransactionChequeDemandDraftDate}
+                                />
+                            </div>
+
                         </div>
                     </div>
                 </form>

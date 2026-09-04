@@ -100,7 +100,7 @@ export const ViewProjectMaster: React.FC = () => {
         employeeId: number
     } | null>(null);
 
-    const projectId = listState.projectId; 
+    const projectId = listState.projectId;
 
     const [searchEmployeeNameTerm, setSearchEmployeeNameTerm] = useState('');
 
@@ -109,7 +109,7 @@ export const ViewProjectMaster: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [selectedEmployeeId, setSelectedEmployeeId] = useState<string[]>([]);
-    
+
     const [projectWithEmployeeListOptions, setProjectWithEmployeeListOptions] = useState<
         { label: string; value: string }[]
     >([]);
@@ -338,7 +338,7 @@ export const ViewProjectMaster: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Bank Details'
+            'Loading Permission'
         );
     };
 
@@ -570,27 +570,38 @@ export const ViewProjectMaster: React.FC = () => {
                 {activeTab === 'Project Overview' && (
                     <div className="col-span-12 lg:col-span-7">
                         <div className="bg-white rounded-3xl border border-gray-200 shadow-sm px-5 py-5 mt-5">
-                            <div className="flex items-start gap-8">
-                                <div className="shrink-0">
-                                    <div className="w-[220px] h-[180px] rounded-xl overflow-hidden">
+                            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+                                <div className="w-full lg:w-[240px] shrink-0">
+                                    <div className="relative w-full lg:w-[220px] h-[200px] lg:h-[150px] rounded-xl overflow-hidden">
                                         <ImageCarousel
                                             images={editProjectData?.ProjectPhotoURL ?? ""}
                                             thumbHeight="h-full"
-                                            containerStyle={{ width: 220, height: 180 }}
                                         />
+
+                                        <div className="absolute top-2 right-2 z-20">
+                                            <FieldItem
+                                                label=""
+                                                urls={editProjectData?.ProjectPhotoURL}
+                                                isIcon
+                                                isSetValue={false}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFF4FF] text-[#464554] font-medium text-xs  mt-2">
+                                        <MapPin className="text-[#4648D4]" size={18} />
+                                        {editProjectData?.CityName}, {editProjectData?.StateName}
                                     </div>
                                 </div>
 
-                                <div className="flex-1">
-                                    <div className="flex justify-between gap-10">
-                                        <div className="flex-1 space-y-4">
+                                <div className="flex-1 w-full">
+                                    <div className="flex flex-col xl:flex-row gap-6 xl:gap-10">
+                                        <div className="flex-1 min-w-0 space-y-4">
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 <span className="text-lg font-semibold text-gray-800">
                                                     {editProjectData?.ProjectName ?? "-"}
                                                 </span>
 
-                                                <span
-                                                    className={`inline-block px-2 py-1 rounded text-xs font-medium ${editProjectData?.Category?.toLowerCase() === "tender"
+                                                <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${editProjectData?.Category?.toLowerCase() === "tender"
                                                         ? "bg-[#4346551F] text-[#434655]"
                                                         : "bg-green-100 text-green-700"
                                                         }`}
@@ -617,25 +628,23 @@ export const ViewProjectMaster: React.FC = () => {
                                                 )}
                                             </div>
 
-                                            <p className="text-lg text-gray-600">
-                                                {editProjectData?.BussinessCategory || "-"}
-                                            </p>
-
-                                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFF4FF] text-[#464554] font-medium">
-                                                <MapPin className="text-[#4648D4]" size={18} />
-                                                {editProjectData?.CityName}, {editProjectData?.StateName}
-                                            </div>
+                                            <FieldItem label="Business Category" value={editProjectData?.BussinessCategory} isRow />
+                                            <FieldItem label="Federation" value={editProjectData?.IsFederation ? "YES" : "NO"} isRow />
+                                            <FieldItem label="Federation Amount" value={formatCurrency(editProjectData?.FederationAmount ?? 0)} isRow />
                                         </div>
 
-                                        <div className="w-[360px] space-y-2">
-                                            <FieldItem label="Redevelopment" value={editProjectData?.IsRedevelopment ? "YES" : "NO"} isRow />
-                                            <FieldItem label="Scheme" value={editProjectData?.ProjectScheme} isRow />
-                                            <FieldItem label="Sub Scheme" value={editProjectData?.ProjectSubScheme} isRow />
-                                            <FieldItem label="File Number" value={editProjectData?.FileNumber} isRow />
+                                        <div className="w-full xl:w-[400px] space-y-4">
+
+                                            <FieldItem label="Redevelopment" value={editProjectData?.IsRedevelopment ? "YES" : "NO"} isRow isUsedForInventoryFlat />
+                                            <FieldItem label="Scope" value={editProjectData?.ProjectScope} isRow isUsedForInventoryFlat />
+                                            <FieldItem label="Scheme" value={editProjectData?.ProjectScheme} isRow isUsedForInventoryFlat />
+                                            <FieldItem label="Sub Scheme" value={editProjectData?.ProjectSubScheme?.replace(/,/g, " + ") ?? "-"} isRow isUsedForInventoryFlat />
+                                            <FieldItem label="File Number" value={editProjectData?.FileNumber} isRow isUsedForInventoryFlat />
+
                                         </div>
                                     </div>
 
-                                    <div className="pt-4">
+                                    <div className="pt-2">
                                         <FieldItem label="CTS Number" value={editProjectData?.CTSNumber} isRow />
                                     </div>
                                 </div>
@@ -659,6 +668,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem label="Amount" value={formatCurrency(editProjectData?.TenderAmount ?? "-")} />
                                         <FieldItem label="Purchase Start Date" value={formatDate_dd_MonthName_yy(editProjectData?.TenderPurchaseStartDate ?? '-')} />
                                         <FieldItem label="Purchase End Date" value={formatDate_dd_MonthName_yy(editProjectData?.TenderPurchaseEndDate ?? '-')} />
+                                        <FieldItem label="Payment Mode" value={editProjectData?.TenderAmountPaymentMode} />
                                         <FieldItem label="Transaction / Cheque / DD No" value={editProjectData?.TenderAmountChequeNumber} urls={editProjectData.TenderAmountChequeNumberURL} isIcon />
                                         <FieldItem label="Payorder Remark" value={editProjectData?.TenderAmountPayorderRemark} />
                                     </div>
@@ -678,7 +688,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <div className="grid grid-cols-2 gap-6">
                                         <FieldItem label="EMD Amount" value={formatCurrency(editProjectData?.TenderEMDAmount ?? "-")} />
                                         <FieldItem label="Submission Date" value={formatDate_dd_MonthName_yy(editProjectData?.TenderSubmissionDate ?? "-")} />
-                                        <FieldItem label="Payment Mode" value={editProjectData?.TenderAmountPaymentMode} />
+                                        <FieldItem label="Payment Mode" value={editProjectData?.TenderEMDPaymentMode} />
                                         <FieldItem label="Transaction / Cheque / DD No" value={editProjectData?.TenderEMDChequeNumber} urls={editProjectData.TenderEMDChequeNumberURL} isIcon />
                                         <FieldItem label="Payorder Remark" value={editProjectData?.TenderEMDPayorderRemark} />
                                     </div>
@@ -687,7 +697,7 @@ export const ViewProjectMaster: React.FC = () => {
                         )}
 
                         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 pt-5">
-                            {/* Liasoning Architect */}
+
 
                             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
                                 <div className="flex items-center gap-3">
@@ -700,19 +710,12 @@ export const ViewProjectMaster: React.FC = () => {
                                     </h2>
                                 </div>
 
-                                <div className="mt-4">
-                                    <span className="block text-[16px] font-medium text-slate-700">
-                                        {editProjectData?.LiasoningArchitectName || "-"}
-                                    </span>
+                                <div className="mt-4  space-y-4">
 
-                                    <p className="flex items-center gap-2 text-sm text-gray-600 pt-2">
-                                        <Phone className="h-4 w-4 shrink-0 text-blue-600" />
-                                        <span className="text-sm text-gray-500">
-                                            {editProjectData?.LiasoningArchitectMobileNumber
-                                                ? `+91 ${editProjectData.LiasoningArchitectMobileNumber}`
-                                                : "-"}
-                                        </span>
-                                    </p>
+                                    <FieldItem label="Name" value={editProjectData?.LiasoningArchitectName ?? '-'} isRow isUsedForInventoryFlat />
+
+                                    <FieldItem label="Mobile No" value={editProjectData?.LiasoningArchitectMobileNumber ? `+91 ${editProjectData.LiasoningArchitectMobileNumber}` : "-"} isRow isUsedForInventoryFlat />
+
                                 </div>
                             </div>
 
@@ -727,21 +730,14 @@ export const ViewProjectMaster: React.FC = () => {
                                         Designing Architect
                                     </h2>
                                 </div>
+                                <div className="mt-4  space-y-4">
 
-                                <div className="mt-4">
-                                    <span className="block text-[16px] font-medium text-slate-700">
-                                        {editProjectData?.DesigningArchitectName || "-"}
-                                    </span>
+                                    <FieldItem label="Name" value={editProjectData?.DesigningArchitectName ?? '-'} isRow isUsedForInventoryFlat />
 
-                                    <p className="flex items-center gap-2 text-sm text-gray-600 pt-2">
-                                        <Phone className="h-4 w-4 shrink-0 text-blue-600" />
-                                        <span className="text-sm text-gray-500">
-                                            {editProjectData?.DesigningArchitectMobileNumber
-                                                ? `+91 ${editProjectData.DesigningArchitectMobileNumber}`
-                                                : "-"}
-                                        </span>
-                                    </p>
+                                    <FieldItem label="Mobile No" value={editProjectData?.DesigningArchitectMobileNumber ? `+91 ${editProjectData.DesigningArchitectMobileNumber}` : "-"} isRow isUsedForInventoryFlat />
+
                                 </div>
+
                             </div>
 
                             {/* RCC Consultant */}
@@ -755,27 +751,20 @@ export const ViewProjectMaster: React.FC = () => {
                                         RCC Consultant
                                     </h2>
                                 </div>
+                                <div className="mt-4  space-y-4">
 
-                                <div className="mt-4">
-                                    <span className="block text-[16px] font-medium text-slate-700">
-                                        {editProjectData?.RCCConsultantName || "-"}
-                                    </span>
+                                    <FieldItem label="Name" value={editProjectData?.RCCConsultantName ?? '-'} isRow isUsedForInventoryFlat />
 
-                                    <p className="flex items-center gap-2 text-sm text-gray-600 pt-2">
-                                        <Phone className="h-4 w-4 shrink-0 text-blue-600" />
-                                        <span className="text-sm text-gray-500">
-                                            {editProjectData?.RCCConsultantMobileNumber
-                                                ? `+91 ${editProjectData.RCCConsultantMobileNumber}`
-                                                : "-"}
-                                        </span>
-                                    </p>
+                                    <FieldItem label="Mobile No" value={editProjectData?.RCCConsultantMobileNumber ? `+91 ${editProjectData.RCCConsultantMobileNumber}` : "-"} isRow isUsedForInventoryFlat />
+
                                 </div>
+
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 xl:grid-cols-1 gap-6 pt-5">
                             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
-                                <div className="flex justify-between items-center mb-6">
+                                <div className="flex justify-between items-center mb-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
                                             <MapPin className="w-5 h-5 text-indigo-600" />
@@ -796,17 +785,18 @@ export const ViewProjectMaster: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-2">
+
+                                <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-2 pt-3">
                                     <span>Country</span>
                                     <span>State</span>
                                     <span>District</span>
                                     <span>City</span>
-                                    <span>Village / Area</span>
+                                    <span>Village</span>
                                     <span>Pin Code</span>
                                 </div>
 
                                 <div className="border-t border-gray-300"></div>
-                                <div className="grid grid-cols-6 pt-3 text-md font-medium text-slate-800">
+                                <div className="grid grid-cols-6 pt-3 mb-3 text-md font-medium text-slate-800">
                                     <span>{editProjectData?.CountryName || "-"}</span>
                                     <span>{editProjectData?.StateName || "-"}</span>
                                     <span>{editProjectData?.DistrictName || "-"}</span>
@@ -814,118 +804,134 @@ export const ViewProjectMaster: React.FC = () => {
                                     <span>{editProjectData?.VillageName || "-"}</span>
                                     <span>{editProjectData?.ZipCode || "-"}</span>
                                 </div>
+
+                                <div className="flex items-center justify-between gap-4 mt-4">
+
+                                    <p className="text-sm bg-blue-50 rounded-lg p-4 border border-blue-200 px-4 py-3 flex-1 mb-0">
+                                        Project Location : {editProjectData?.ProjectLocation}
+                                    </p>
+
+                                </div>
+
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 pt-5">
-                            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
-                                <div className="flex items-center gap-3 mb-5">
-                                    <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center">
-                                        <BadgeCheck className="w-5 h-5 text-violet-600" />
-                                    </div>
+                        <div className="grid grid-cols-12 gap-5 pt-5 items-stretch">
 
-                                    <h2 className="text-[16px] font-semibold text-slate-800">
-                                        Project Documentation
-                                    </h2>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FieldItem label="RERA Number" value={editProjectData?.RERANumber} />
-                                    <FieldItem label="RERA Certificate Date" value={formatDate_dd_MonthName_yy(editProjectData?.RERACertificateDate ?? '-')} />
-                                    <FieldItem label="RERA Possession Date" value={formatDate_dd_MonthName_yy(editProjectData?.RERAPossessionDate ?? '-')} />
-                                    <FieldItem label="APF Number" value={editProjectData?.APFNumber} />
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
-                                        <IndianRupee className="w-5 h-5 text-indigo-600" />
-                                    </div>
-
-                                    <h2 className="text-[16px] font-semibold text-slate-800">
-                                        Project Financials
-                                    </h2>
-                                </div>
-
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 pt-3">
-                                    <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
-                                        <FieldItem label="Estimation Cost" value={formatCurrency(editProjectData?.ProjectEstimateCost)} />
-                                    </div>
-
-                                    <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
-                                        <FieldItem
-                                            label="Ongoing Budget"
-                                            value={formatCurrency(editProjectData?.OnGoingBudgetCost
-                                                ? Number(editProjectData.OnGoingBudgetCost)
-                                                : undefined
-                                            )}
-                                        />
-                                    </div>
-
-                                    <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
-                                        <FieldItem label="Area in (Sq. ft)" value={editProjectData?.ProjectAreaInSqft} />
-                                    </div>
-
-                                    <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
-                                        <FieldItem label="Area in (sq. mt)" value={editProjectData?.ProjectAreaInSqmt} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
-                                        <IndianRupee className="w-5 h-5 text-indigo-600" />
-                                    </div>
-
-                                    <h2 className="text-[16px] font-semibold text-slate-800">
-                                        Project Timeline
-                                    </h2>
-                                </div>
-
-                                <div className="space-y-6">
-                                    {[
-                                        {
-                                            label: "Survey Date",
-                                            value: editProjectData?.SurveyDate
-                                                ? formatDate_dd_MonthName_yy(editProjectData.SurveyDate)
-                                                : "-",
-                                        },
-                                        {
-                                            label: "Expected Start Date",
-                                            value: editProjectData?.ExpectedStartDate
-                                                ? formatDate_dd_MonthName_yy(editProjectData.ExpectedStartDate)
-                                                : "-",
-                                        },
-                                        {
-                                            label: "Execution Start Date",
-                                            value: editProjectData?.ExecutionStartDate
-                                                ? formatDate_dd_MonthName_yy(editProjectData.ExecutionStartDate)
-                                                : "-",
-                                        },
-                                    ].map((item, index, arr) => (
-                                        <div key={index} className="relative pl-8">
-                                            {index !== arr.length - 1 && (
-                                                <div className="absolute left-[11px] top-6 h-[calc(100%+16px)] w-[2px] bg-gray-300" />
-                                            )}
-
-                                            <div className="absolute left-0 top-0 flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
-                                                <div className="w-3 h-3 rounded-full bg-emerald-700" />
-                                            </div>
-
-                                            <p className="text-[14px] tracking-wider font-semibold text-gray-500">
-                                                {item.label}
-                                            </p>
-
-                                            <p className="mt-1 text-sm font-medium text-slate-900">
-                                                {item.value ?? "-"}
-                                            </p>
+                            {/* 3 Columns */}
+                            <div className="col-span-12 lg:col-span-4">
+                                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 h-full">
+                                    <div className="flex items-center gap-3 mb-5">
+                                        <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center">
+                                            <BadgeCheck className="w-5 h-5 text-violet-600" />
                                         </div>
-                                    ))}
+
+                                        <h2 className="text-[16px] font-semibold text-slate-800">
+                                            Project Documentation
+                                        </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <FieldItem label="RERA Number" value={editProjectData?.RERANumber} />
+                                        <FieldItem label="RERA Certificate Date" value={formatDate_dd_MonthName_yy(editProjectData?.RERACertificateDate ?? '-')} />
+                                        <FieldItem label="RERA Possession Date" value={formatDate_dd_MonthName_yy(editProjectData?.RERAPossessionDate ?? '-')} />
+                                        <FieldItem label="APF Number" value={editProjectData?.APFNumber} />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* 5 Columns */}
+                            <div className="col-span-12 lg:col-span-5">
+                                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 h-full">
+
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
+                                            <IndianRupee className="w-5 h-5 text-indigo-600" />
+                                        </div>
+
+                                        <h2 className="text-[16px] font-semibold text-slate-800">
+                                            Project Financials
+                                        </h2>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-3">
+                                        <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
+                                            <FieldItem label="Estimation Cost (₹)" value={formatCurrency(editProjectData?.ProjectEstimateCost)} />
+                                        </div>
+
+                                        <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
+                                            <FieldItem label="Ongoing Budget (₹)" value={formatCurrency(editProjectData?.OnGoingBudgetCost)} />
+                                        </div>
+
+                                        <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
+                                            <FieldItem label="Project Area in (SqFt)" value={editProjectData?.ProjectAreaInSqft} />
+                                        </div>
+
+                                        <div className="bg-[#F9F9FB] rounded-md border border-gray-200 p-4">
+                                            <FieldItem label="Project Area in (SqMt)" value={editProjectData?.ProjectAreaInSqmt} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* 4 Columns */}
+                            <div className="col-span-12 lg:col-span-3">
+                                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 h-full">
+                                    <div className="flex items-center gap-3 mb-3">
+                                        <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
+                                            <IndianRupee className="w-5 h-5 text-indigo-600" />
+                                        </div>
+
+                                        <h2 className="text-[16px] font-semibold text-slate-800">
+                                            Project Timeline
+                                        </h2>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        {[
+                                            {
+                                                label: "Survey Date",
+                                                value: editProjectData?.SurveyDate
+                                                    ? formatDate_dd_MonthName_yy(editProjectData.SurveyDate)
+                                                    : "-",
+                                            },
+                                            {
+                                                label: "Expected Start Date",
+                                                value: editProjectData?.ExpectedStartDate
+                                                    ? formatDate_dd_MonthName_yy(editProjectData.ExpectedStartDate)
+                                                    : "-",
+                                            },
+                                            {
+                                                label: "Execution Start Date",
+                                                value: editProjectData?.ExecutionStartDate
+                                                    ? formatDate_dd_MonthName_yy(editProjectData.ExecutionStartDate)
+                                                    : "-",
+                                            },
+                                        ].map((item, index, arr) => (
+                                            <div key={index} className="relative pl-8">
+                                                {index !== arr.length - 1 && (
+                                                    <div className="absolute left-[11px] top-6 h-[calc(100%+16px)] w-[2px] bg-gray-300" />
+                                                )}
+
+                                                <div className="absolute left-0 top-0 flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
+                                                    <div className="w-3 h-3 rounded-full bg-emerald-700" />
+                                                </div>
+
+                                                <p className="text-[14px] tracking-wider font-semibold text-gray-500">
+                                                    {item.label}
+                                                </p>
+
+                                                <p className="mt-1 text-sm font-medium text-slate-900">
+                                                    {item.value ?? "-"}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
 
                         <div className="grid grid-cols-1 xl:grid-cols-1 gap-6 pt-5">
                             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
@@ -961,29 +967,16 @@ export const ViewProjectMaster: React.FC = () => {
                                             key={index}
                                             className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
                                         >
-                                            <div className="flex flex-col h-full">
-                                                <h2 className="text-[14px] font-semibold text-slate-800">
-                                                    {contact.name || "-"}
-                                                </h2>
+                                            <div className="flex flex-col h-full space-y-4">
+                                                <FieldItem label="Name" value={contact.name ?? '-'} isRow isUsedForInventoryFlat />
+                                                <FieldItem label="Designation" value={contact.designation ?? '-'} isRow isUsedForInventoryFlat />
 
-                                                <p className="mt-3 pb-3 text-[14px] font-medium text-slate-700 border-b border-gray-200">
-                                                    {contact.designation || "-"}
-                                                </p>
+                                                <p className="pb-1 text-[14px] font-medium text-slate-700 border-b border-gray-200"></p>
 
-                                                <div className="mt-3 flex items-center gap-2">
-                                                    <div className="flex items-center gap-2 text-sm text-slate-700">
-                                                        <Phone size={15} className="text-blue-600" />
-                                                    </div>
+                                                <div className="flex items-center gap-2 ">
 
-                                                    {contact.mobile ? (
-                                                        <p className="text-sm font-medium text-slate-700">
-                                                            +91 {contact.mobile}
-                                                        </p>
-                                                    ) : (
-                                                        <span className="text-sm font-medium text-slate-400">
-                                                            -
-                                                        </span>
-                                                    )}
+                                                    <FieldItem label="Mobile No" value={contact.mobile ? `+91 ${contact.mobile}` : "-"} isRow isUsedForInventoryFlat />
+
                                                 </div>
                                             </div>
                                         </div>
@@ -1004,7 +997,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     </h2>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-x-4 space-y-4">
                                     <FieldItem label="Created By" value={editProjectData?.CreatedBy} />
                                     <FieldItem label="Created Date" value={editProjectData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editProjectData?.CreatedDate) : ""} />
                                     {editProjectData?.ModifiedBy && (
@@ -1176,7 +1169,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
                                         <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
                                         <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
-                                        <FieldItem label="E-mail Id" value={c.EmailId ?? "-"} />
+                                        <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
                                         <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
                                         <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
                                         <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />

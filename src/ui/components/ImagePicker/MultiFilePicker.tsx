@@ -48,7 +48,8 @@ const normalizeAvailableFiles = (input?: string | (string | File)[] | null): str
 
 /* ================= Component ================= */
 
-export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({ label, required, allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream", "text/csv"], maxFiles = 100, value, availableFilesURL, onChange, placeholder = "Select Excel File(s)", error, size = "md", onRemoveExisting, disabled = false }) => {
+export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({ label, required, allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream", "text/csv","application/acad", "application/x-acad", ".dwg"], maxFiles = 100, value, availableFilesURL, onChange, placeholder = "Select Excel File(s)", error, size = "md", onRemoveExisting, disabled = false }) => {
+  
   const theme = THEME;
 
   const sizeConfig = {
@@ -141,13 +142,25 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({ label, require
   }, []);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+
     const files = e.target.files;
     if (!files) return;
 
     const updated: FileValue[] = [...value];
 
     for (const file of Array.from(files)) {
-      if (!allowedTypes.includes(file.type)) {
+
+      const extension = file.name .substring(file.name.lastIndexOf(".")).toLowerCase();
+
+      const isAllowed = allowedTypes.some((type) => {
+            if (type.startsWith(".")) {
+                return extension === type.toLowerCase();
+            }
+
+            return file.type === type;
+        });
+
+      if (!isAllowed) {
         addToast({ type: "error", title: `File type not allowed: ${file.name}` });
         continue;
       }

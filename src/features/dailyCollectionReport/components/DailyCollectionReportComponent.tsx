@@ -75,7 +75,6 @@ export const DailyCollectionReportComponent: React.FC<Props> = ({ filterType, fr
                 const response = await dailyCollectionReportService.apiCallPullDailyCollectionReport(params);
 
                 handleExportFile(response, exportType, 'Daily Collection Report', addToast);
-                console.log('My response', response);
 
                 return response;
             },

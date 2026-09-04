@@ -14,7 +14,6 @@ import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 export const useHolidayMaster = () => {
-  //#region STATE MANAGEMENT
   const [holidayMasterList, setHolidayMasterList] = useState<HolidayMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -27,34 +26,17 @@ export const useHolidayMaster = () => {
   }, 350);
   const [viewHolidayMasterDetailsData, setViewHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  // ADD UPDATE HOLIDAY URL
   const [holidayFiles, setHolidayFiles] = useState<(File | string)[]>([]);
   const [removedHolidayURLs, setRemovedHolidayURLs] = useState<string[]>([]);
 
   const [holidayURL, setHolidayURL] = useState<string>();
-
-  // EDIT HOLIDAY MASTER
   const [editingHolidayMasterData, setEditingHolidayMasterData] = useState<HolidayMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  //ADD UPDATE HOLIDAY MASTER
   const [formData, setFormData] = useState<AddUpdateHolidayMasterRequest>(() => getInitialFormState());
-
-  //DELETE HOLIDAY MASTER STATES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
   const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null);
-
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
-
-  //#region INITIALIZATION
   const hasFetchedInitialHolidays = useRef(false);
 
   useEffect(() => {
@@ -62,8 +44,6 @@ export const useHolidayMaster = () => {
     hasFetchedInitialHolidays.current = true;
     fetchHolidayList();
   }, []);
-
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
@@ -94,14 +74,7 @@ export const useHolidayMaster = () => {
     }
   }, [isAddUpdateModalOpen, editingHolidayMasterData]);
 
-  //#endregion
-
-  //#region TABLE COLUMN DEFINITION
-
   const holidayMasterColumns = useMemo<TableColumn[]>(() => getHolidayMasterColumns(), []);
-  //#endregion
-
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
   const fetchHolidayList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadHolidays(page, "", sort);
@@ -142,9 +115,7 @@ export const useHolidayMaster = () => {
       "Loading Holiday",
     );
   };
-  //#endregion
 
-  //#region SEARCH HOLIDAY MASTER
   const searchHolidays = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
@@ -155,17 +126,13 @@ export const useHolidayMaster = () => {
 
     await loadHolidays(1, searchValue);
   };
-  //#endregion
 
-  //#region CLEAR SEARCH HOLIDAY MASTER
   const clearsearchHolidays = () => {
     setSearchTerm("");
     debouncedSearch.cancel?.();
     loadHolidays(1, "");
   };
-  //#endregion
 
-  //#region EXPORT EXCEL | PDF
   const handleExportHolidays = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
@@ -193,15 +160,11 @@ export const useHolidayMaster = () => {
 
   const handleExportHolidayExcel = () => handleExportHolidays("Excel");
   const handleExportHolidayPdf = () => handleExportHolidays("PDF");
-  //#endregion
 
-  //#region HANDLE PAGE CHANGE EVENT
   const handlePageChange = (page: number) => {
     fetchHolidayList(page);
   };
-  //#endregion
 
-  //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback(
     (sort: SortInfo) => {
       setSortInfo(sort);
@@ -209,16 +172,12 @@ export const useHolidayMaster = () => {
     },
     [searchTerm],
   );
-  //#endregion
 
-  //#region VIEW EDIT
   const handleViewHolidayDetails = useCallback((row: HolidayMasterData) => {
     setViewHolidayMasterDetailsData(row);
     setIsViewModalOpen(true);
   }, []);
-  //#endregion
 
-  //#region EDIT HOLIDAY  MASTER
   const handleEditHolidayMaster = useCallback((row: HolidayMasterData) => {
     setEditingHolidayMasterData({
       ...row,
@@ -226,16 +185,12 @@ export const useHolidayMaster = () => {
     });
     setIsAddUpdateModalOpen(true);
   }, []);
-  //#endregion
 
-  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: HolidayMasterData) => {
     setDeleteHolidayMasterDetailsData(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
-  //#endregion
-
-  //#region ADD UPDATE EDIT HOLIDAY MASTER
+  
   const handleFieldChange = (field: keyof AddUpdateHolidayMasterRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
@@ -348,9 +303,6 @@ export const useHolidayMaster = () => {
       formData.HolidayMasterId === 0 ? "Add Holiday" : "Update Holiday",
     );
   };
-  //#endregion
-
-  //#region DELETE HOLIDAY MASTER
   const handleDeleteHolidayMaster = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -404,7 +356,6 @@ export const useHolidayMaster = () => {
       "Delete Holiday Master",
     );
   };
-  //#endregion
 
   return {
     holidayMasterList,
@@ -427,8 +378,6 @@ export const useHolidayMaster = () => {
     holidayFiles,
     removedHolidayURLs,
     holidayURL,
-
-    // Setters
     setSearchTerm,
     setIsViewModalOpen,
     setViewHolidayMasterDetailsData,
@@ -441,8 +390,6 @@ export const useHolidayMaster = () => {
     setHolidayFiles,
     setRemovedHolidayURLs,
     setHolidayURL,
-
-    // Actions
     fetchHolidayList,
     handlePageChange,
     handleSortColumn,

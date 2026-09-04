@@ -18,7 +18,7 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { IndianRupee, MapPin, Phone } from "lucide-react";
+import { IndianRupee, Phone } from "lucide-react";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
@@ -90,12 +90,13 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     RERAPossessionDate: null,
     ProjectScheme: '',
     ProjectSubScheme: '',
-    GoogleLocation: ''
+    GoogleLocation: '',
+    IsFederation: false,
+    FederationAmount: 0
 });
 
 const AddUpdateProjectMaster: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [formData, setFormData] = useState<AddUpdateProjectMasterRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -112,25 +113,16 @@ const AddUpdateProjectMaster: React.FC = () => {
     const [removedTenderEMDChequeNumberUrls, setRemovedTenderEMDChequeNumberUrls] = useState<string[]>([]);
     const [tenderEMDChequeNumberURL, setTenderEMDChequeNumberURL] = useState<string>();
 
-    // NAVIGATE
     const navigate = useNavigate();
 
-    //GET VALUE FROM URL :PROJECTID
     const { projectId } = useParams<{ projectId?: string }>();
 
-    // TOAST
     const { addToast } = useToast();
 
-    //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-    //#endregion
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/projectDetails');
-    //#endregion
 
-    //#region COUNTRY STATE CITY DISTRICT 
     const {
         isLoading: isLocationLoading,
         countries,
@@ -181,10 +173,6 @@ const AddUpdateProjectMaster: React.FC = () => {
             : [];
 
 
-
-    //#endregion
-
-    //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
     const handleFieldChange = (field: keyof AddUpdateProjectMasterRequest, value: any) => {
 
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -194,9 +182,6 @@ const AddUpdateProjectMaster: React.FC = () => {
         }
     };
 
-    //#endregion 
-
-    //#region INITIALIZATION
     useEffect(() => {
 
         if (projectId) {
@@ -307,7 +292,9 @@ const AddUpdateProjectMaster: React.FC = () => {
                             RERAPossessionDate: row.RERAPossessionDate ?? prev.RERAPossessionDate,
                             ProjectScheme: row.ProjectScheme ?? prev.ProjectScheme ?? '',
                             ProjectSubScheme: row.ProjectSubScheme ?? prev.ProjectSubScheme ?? '',
-                            GoogleLocation: row.GoogleLocation ?? prev.GoogleLocation ?? ''
+                            GoogleLocation: row.GoogleLocation ?? prev.GoogleLocation ?? '',
+                            IsFederation: row.IsFederation ?? prev.IsFederation ?? false,
+                            FederationAmount: Number(row.FederationAmount ?? prev.FederationAmount ?? 0),
                         }));
                         setProjectPhotoFiles([]);
                         setProjectPhotoURL(row.ProjectPhotoURL)
@@ -345,9 +332,7 @@ const AddUpdateProjectMaster: React.FC = () => {
             'Loading Project Data'
         )
     }
-    //#endregion
 
-    //#region [VALIDATION FUNCTION]
 
     const validateAddProjectMasterForm = (): {
 
@@ -386,12 +371,10 @@ const AddUpdateProjectMaster: React.FC = () => {
             const purchaseEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseEndDate ? new Date(formData.TenderPurchaseEndDate) : undefined);
 
             if (formData?.TenderPurchaseStartDate && formData.TenderPurchaseEndDate && !isToDateGreaterOrEqualFromDate(purchaseStartDate, purchaseEndDate)) {
-                newErrors.TenderPurchaseEndDate = "Purchase Start Date must be greater than or equal to Purchase End Date";
+                newErrors.TenderPurchaseEndDate = "Purchase End Date must be greater than or equal to Purchase Start Date";
             }
 
         }
-
-
 
         if (formData.IsRedevelopment === 0 && !formData.CTSNumber?.trim()) {
             newErrors.CTSNumber = "CTS Number is required.";
@@ -399,6 +382,8 @@ const AddUpdateProjectMaster: React.FC = () => {
 
         if (!formData.ProjectLocation?.trim()) {
             newErrors.ProjectLocation = "Project Location is required.";
+        } else if (formData.ProjectLocation.trim().length < 10) {
+            newErrors.ProjectLocation = "Project Location must be at least 10 characters.";
         }
 
         if (!formData.GoogleLocation?.trim()) {
@@ -452,6 +437,10 @@ const AddUpdateProjectMaster: React.FC = () => {
 
         if (formData.RCCConsultantMobileNumber != "" && !isValidMobile(formData.RCCConsultantMobileNumber.trim())) {
             newErrors.RCCConsultantMobileNumber = "Enter a valid 10-digit RCC Consultant Mobile Number";
+        }
+
+        if (formData.IsFederation === true && !formData.FederationAmount) {
+            newErrors.FederationAmount = "Federation Amount is required.";
         }
 
         return {
@@ -533,6 +522,8 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('ProjectScheme', formData.ProjectScheme ?? '');
         fd.append('ProjectSubScheme', formData.ProjectSubScheme ?? '');
         fd.append('GoogleLocation', formData.GoogleLocation ?? '');
+        fd.append('IsFederation', String(formData.IsFederation ?? false));
+        fd.append('FederationAmount', String(formData.FederationAmount ?? 0));
 
         projectPhotoFiles.forEach(file => {
             if (file instanceof File) {
@@ -619,8 +610,6 @@ const AddUpdateProjectMaster: React.FC = () => {
     //#endregion
 
     return (
-
-
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
@@ -631,7 +620,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* Redevelopment Checkbox */}
+
                             <div className="space-y-4">
                                 <Checkbox
                                     label="Is This Project a Redevelopment Project?"
@@ -707,7 +696,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Scheme & Scope Details */}
+                    
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Category</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -795,6 +784,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     <div>
                                         <Input
                                             label="Amount (₹)"
+                                            required
                                             type="text"
                                             value={formData.TenderAmount || ''}
                                             onChange={(e) => handleFieldChange('TenderAmount', filterNumbersWithDecimal(e.target.value) || 0)}
@@ -804,6 +794,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     </div>
                                     <div>
                                         <DatePickerInput
+                                            required
                                             label="Purchase Start Date"
                                             value={formatDate_dd_mm_yyyy(formData.TenderPurchaseStartDate)}
                                             onChange={(val) => handleFieldChange('TenderPurchaseStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
@@ -813,6 +804,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                     <div>
                                         <DatePickerInput
+                                            required
                                             label="Purchase End Date"
                                             value={formatDate_dd_mm_yyyy(formData.TenderPurchaseEndDate)}
                                             error={errors.TenderPurchaseEndDate}
@@ -944,7 +936,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </>
 
                     )}
-                    {/* Scheme & Scope Details */}
+                   
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Liasoning Architect</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1027,30 +1019,32 @@ const AddUpdateProjectMaster: React.FC = () => {
                     {/* Scheme & Scope Details */}
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <Input
+                                <TextArea
                                     label="Project Location"
+                                    placeholder="Enter Project Location"
                                     required
                                     error={errors.ProjectLocation}
-                                    type="text"
+                                    className="thin-scroll"
                                     value={formData.ProjectLocation}
-                                    onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
-                                    placeholder="Enter Project Location"
-                                />
+                                    maxLength={200}
+                                    onChange={(e) => handleFieldChange("ProjectLocation", e.target.value)} />
                             </div>
                             <div>
-                                <Input
+                                <TextArea
                                     label="Google Location"
                                     required
-                                    type="text"
                                     value={formData.GoogleLocation}
                                     onChange={e => handleFieldChange('GoogleLocation', filterGoogleMapsUrl(e.target.value))}
-                                    rightIcon={<MapPin className="w-4 h-4" />}
+                                    className="thin-scroll"
                                     error={errors.GoogleLocation}
                                     placeholder="Enter Google Location"
                                 />
                             </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
 
                             <div>
 
@@ -1264,7 +1258,11 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="Project Scheme"
                                     placeholder="Select Project Scheme"
                                     value={formData.ProjectScheme}
-                                    onChange={(val) => handleFieldChange('ProjectScheme', String(val))}
+                                    onChange={(val) => {
+                                        handleFieldChange("ProjectScheme", String(val));
+                                        handleFieldChange("ProjectSubScheme", "");
+                                    }}
+
                                     options={PROJECT_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
                                 />
                             </div>
@@ -1283,13 +1281,12 @@ const AddUpdateProjectMaster: React.FC = () => {
                                                     : []
                                     }
                                     selectedValues={formData.ProjectSubScheme ? formData.ProjectSubScheme.split(",") : []}
+
                                     onChange={(values) => handleFieldChange("ProjectSubScheme", values.join(","))}
+
                                     error={errors.ProjectSubScheme}
                                     disabled={!formData.ProjectScheme}
                                 />
-
-
-
 
                             </div>
                         </div>
@@ -1349,6 +1346,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('ProjectEstimateCost', filterNumbers(e.target.value) || 0)}
                                     placeholder="Enter Estimate Cost"
+                                    disabled
                                 />
                             </div>
                             <div>
@@ -1360,6 +1358,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('OnGoingBudgetCost', filterNumbers(e.target.value) || 0)}
                                     placeholder="Enter Budget Cost"
+                                    disabled
                                 />
                             </div>
                             <div>
@@ -1380,6 +1379,36 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     onChange={(e) => handleFieldChange('ProjectAreaInSqmt', filterNumbersWithDecimal(e.target.value) || 0)}
                                     placeholder="Enter Project Area"
                                     rightIcon="SqMt"
+                                />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div className="space-y-4 pt-5">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+
+
+                            <Checkbox
+                                label="Is This Project a Federation?"
+                                checked={formData.IsFederation === true}
+                                onChange={(e) => handleFieldChange('IsFederation', e.target.checked ? true : false)}
+                            />
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    label="Project Federation Amount"
+                                    type="text"
+                                    required={formData.IsFederation}
+                                    maxLength={16}
+                                    value={formData.IsFederation === true ? formData.FederationAmount || '' : 0}
+                                    rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
+                                    onChange={(e) => handleFieldChange('FederationAmount', filterNumbers(e.target.value) || 0)}
+                                    placeholder="Enter Federation Amount"
+                                    disabled={!formData.IsFederation}
+                                    error={errors.FederationAmount}
                                 />
                             </div>
                         </div>

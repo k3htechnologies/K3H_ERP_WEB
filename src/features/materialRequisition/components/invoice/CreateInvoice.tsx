@@ -10,7 +10,7 @@ import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Input } from "@/ui/components/forms";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
@@ -69,7 +69,7 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
-    const { canAction: canAddInvoice } = useMenuPermissions(ModuleAction.addInvoice);
+    const { canAction: canAddInvoice } = useMenuPermissions('Add Invoice');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     useEffect(() => {

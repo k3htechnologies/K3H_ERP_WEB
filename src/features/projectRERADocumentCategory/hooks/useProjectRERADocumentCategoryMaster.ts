@@ -213,7 +213,7 @@ export const useProjectRERADocumentCategoryMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadProjectRERADocumentCategories(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+  }, [filters, searchTerm,projectId]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS

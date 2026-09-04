@@ -36,6 +36,8 @@ import type {
     FilterPaginatedFlatsResponse,
     FilterWithPaginationProjectInventoryStructureRequest,
     ProjectInventoryStructureListResponse,
+    FilterPaginatedFloorRequest,
+    FilterPaginatedFloorResponse,
 } from "@/features/inventory/models/InventoryMasterModel";
 import { InventoryApis } from "@/features/inventory/api/InventoryApis";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
@@ -44,6 +46,7 @@ export abstract class InventoryDatasource {
     abstract isProjectInventoryExists(params: FilterProjectInventoryExistsRequest): Promise<ProjectInventoryExistsResponse>;
     abstract pullInventory(params: FilterInventoryRequest, signal?: AbortSignal): Promise<InventoryListReponse>;
     abstract pullPaginatedFlats(params: FilterPaginatedFlatsRequest, signal?: AbortSignal): Promise<FilterPaginatedFlatsResponse>;
+    abstract pullPaginatedFloor(params: FilterPaginatedFloorRequest, signal?: AbortSignal): Promise<FilterPaginatedFloorResponse>;
     abstract addInventory(params: AddInventoryRequest): Promise<AddInventoryResponse>;
     abstract deleteInventory(params: DeleteInventoryRequest): Promise<InventoryDeleteResponse>;
     abstract updateInventoryWing(params: UpdateInventoryWingRequest): Promise<UpdateInventoryWingResponse>;
@@ -115,6 +118,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
                 PageSize: (params.PageSize ?? 0).toString(),
                 PageNumber: (params.PageNumber ?? 0).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
+                IsAcessOnlyLienToSociety: (params.IsAcessOnlyLienToSociety ?? false).toString(),
             });
 
             if (params.InventoryFlatId) queryParams.append("InventoryFlatId", params.InventoryFlatId.toString());
@@ -127,6 +131,9 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
             if (params.FlatConfiguration) queryParams.append('FlatConfiguration', params.FlatConfiguration);
             if (params.FlatFacing) queryParams.append('FlatFacing', params.FlatFacing);
             if (params.FlatStatus) queryParams.append('FlatStatus', params.FlatStatus);
+            if (params.ApprovalStatus) queryParams.append('ApprovalStatus', params.ApprovalStatus);
+            if (params.DisplayInventoryFlatId) queryParams.append('DisplayInventoryFlatId', params.DisplayInventoryFlatId);
+           
 
             return await this.k3hHttpClient.getRequestWithAuthentication(`${InventoryApis.PULL_PAGINATED_FLATS}?${queryParams.toString()}`, { signal });
         } catch (error: any) {
@@ -136,6 +143,36 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
             if (error instanceof TokenExpiredException) {
 
                 return await this.pullPaginatedFlats(params, signal);
+            }
+            throw error;
+        }
+    }
+
+     async pullPaginatedFloor(params: FilterPaginatedFloorRequest, signal?: AbortSignal): Promise<FilterPaginatedFloorResponse> {
+        try {
+
+            const queryParams = new URLSearchParams({
+                PageSize: (params.PageSize ?? 0).toString(),
+                PageNumber: (params.PageNumber ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            });
+
+            if (params.InventoryFloorId) queryParams.append("InventoryFloorId", params.InventoryFloorId.toString());
+            if (params.BuildingNumber) queryParams.append('BuildingNumber', params.BuildingNumber);
+            if (params.Wing) queryParams.append('Wing', params.Wing);
+            if (params.Floor) queryParams.append('Floor', params.Floor);
+            if (params.BuildingNumberWingFloor) queryParams.append('BuildingNumberWingFloor', params.BuildingNumberWingFloor);
+            if (params.ApprovalStatus) queryParams.append('ApprovalStatus', params.ApprovalStatus);
+           
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${InventoryApis.PULL_PAGINATED_FLOOR}?${queryParams.toString()}`, { signal });
+        } catch (error: any) {
+
+            console.error('ERROR: PULL PAGINATED FLOOR:', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullPaginatedFloor(params, signal);
             }
             throw error;
         }

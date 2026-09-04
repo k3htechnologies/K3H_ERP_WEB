@@ -61,6 +61,7 @@ export const ProjectRERADocumentCategoryMasterFormModal: React.FC<ProjectRERADoc
               value={formData.OrderBy.toString()}
               onChange={(e) => onFieldChange('OrderBy', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
               placeholder="Enter Sequence"
+              maxLength={5}
             />
           </div>
         </div>

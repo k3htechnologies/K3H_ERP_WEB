@@ -18,19 +18,20 @@ import { useNavigate } from "react-router-dom";
 import { handleExportFile } from "@/core/utils/exportFile";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Button } from "@/ui/components/forms/Button";
-import { Edit, Trash2 } from "lucide-react";
+import { Copy, Edit, Trash2 } from "lucide-react";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { DateInput } from "@/ui/components/forms/DateInput";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { getMaterialRequisitionStatusColor } from "@/features/materialRequisition/utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { copyToClipboard, formatCurrency } from "@/core/utils/comman";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -144,19 +145,48 @@ export const MaterialRequisition: React.FC = () => {
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'SystemGeneratedCode',
-            label: 'Unique Id',
-            width: '20',
+            label: 'MR Code',
             sortable: true,
+            width: '20',
             fixed: 'left',
             align: 'left',
-            render: (value, row) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                    onClick={() => handleNavigateToView(row)}
-                />
-            )
+            render: (value, row) => {
+                return (
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="180px"
+                            tooltipThreshold={30}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            onClick={() => handleNavigateToView(row)}
+                        />
+
+                        {value && (
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const success = await copyToClipboard(value);
+                                    if (success) {
+                                        addToast({ type: 'success', title: `${value} Copied!` });
+                                    }
+                                }}
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    padding: '2px 6px',
+                                    color: '#6B7280',
+                                    cursor: 'pointer'
+                                }}
+                                title="Copy"
+                            >
+                                <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             key: 'MaterialRequisitionStage',
@@ -164,7 +194,7 @@ export const MaterialRequisition: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => value || '-'
+            render: (value) => (value) || '-'
         },
         {
             key: 'FinalVendor',
@@ -172,7 +202,16 @@ export const MaterialRequisition: React.FC = () => {
             width: '15',
             sortable: true,
             align: 'left',
-            render: (value) => value || '-'
+            render: (value: string, row: any) => {
+                return (
+                    <MultiImageViewer
+                        images={parseDocumentUrls(row.PurchaseOrderURL)}
+                        title={`Purchase Order - ${row.FinalVendor ?? ""}`}
+                        triggerLabel={value || '-'}
+                        isWrap={false}
+                    />
+                );
+            }
         },
         {
             key: 'MaterialRequisitionStatus',
@@ -198,50 +237,19 @@ export const MaterialRequisition: React.FC = () => {
         },
         {
             key: 'TotalPoAmount',
-            label: 'Total Po Amount',
+            label: 'Total Po Amount (₹)',
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => value || '-'
+            render: (value) => formatCurrency(value) || '-'
         },
         {
             key: 'TotalInvoiceAmount',
-            label: 'Total Invoice Amount',
+            label: 'Total Invoice Amount (₹)',
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => value || '-'
-        },
-        {
-            key: 'PurchaseOrderURL',
-            label: 'PO',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (_value: string, row: any) => {
-
-                const urls = parseDocumentUrls(row.PurchaseOrderURL);
-
-                if (!urls || urls.length === 0) {
-                    return <span>-</span>;
-                }
-
-                return (
-                    <div className="flex items-center justify-between gap-2 w-full">
-                        <MultiImageViewer
-                            images={urls}
-                            title="Document"
-                            triggerLabel={
-                                <TooltipText
-                                    text="View"
-                                    maxWidth="250px"
-                                    tooltipThreshold={25}
-                                />
-                            }
-                        />
-                    </div>
-                );
-            }
+            render: (value) => formatCurrency(value) || '-'
         },
         {
             key: 'Actions',
@@ -250,6 +258,7 @@ export const MaterialRequisition: React.FC = () => {
             fixed: 'right',
             align: 'center',
             render: (_value, row) => {
+
                 const canActionStage = row.MaterialRequisitionStage === 'Get Quotation';
 
                 return (
@@ -483,7 +492,7 @@ export const MaterialRequisition: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Unique Id"
+                searchPlaceholder="Search By MR Code"
                 onSearchChange={(v) => {
                     updateListState({ searchTerm: v });
                     debouncedSearch(v);
@@ -511,7 +520,7 @@ export const MaterialRequisition: React.FC = () => {
                 data={materialRequisitionData}
                 columns={visibleMaterialRequisitionColumns}
                 pagination={MaterialRequisitionPaginationInfo}
-                emptyMessage="No Material Requisition Data Found"
+                emptyMessage="No Material Requisition Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"
@@ -589,22 +598,24 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
 
                     <div>
-                        <DateInput
-                            label="From Date"
-                            value={tempFilters?.FromDate || ""}
-                            onChange={(value: any) => handleFilterChange('FromDate', value)}
-                            placeholder="DD/MM/YYYY"
+                        <DatePickerInput
+                            label='From Date'
+                            value={tempFilters.FromDate || ''}
+                            onChange={value => handleFilterChange('FromDate', value || '')}
+                            placeholder="Select From Date"
                         />
                     </div>
 
                     <div>
-                        <DateInput
-                            label="To Date"
-                            value={tempFilters?.ToDate || ""}
-                            onChange={(value: any) => handleFilterChange('ToDate', value)}
-                            placeholder="DD/MM/YYYY"
+                        <DatePickerInput
+                            label='To Date'
+                            value={tempFilters.ToDate || ''}
+                            onChange={value => handleFilterChange('ToDate', value || '')}
+                            placeholder="Select To Date"
                         />
                     </div>
+
+
 
                 </div>
             </Modal>

@@ -330,7 +330,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
 
       {
         key: 'EmailId',
-        label: 'Email Id',
+        label: 'E-Mail ID',
         width: '15',
         sortable: false,
         align: 'left',

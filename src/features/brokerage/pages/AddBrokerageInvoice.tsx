@@ -19,6 +19,8 @@ import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListM
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { filterIFSC, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidIFSC } from "@/core/utils/fileValidation";
 import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
     BrokerageInvoiceId: 0,
@@ -59,6 +61,8 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
     const brokerageInvoiceId = BrokerageInvoiceId ? Number(BrokerageInvoiceId) : 0;
 
+    const brokerageAmount = Number(listState.brokerageAmount) || 0;
+
     const isAddMode = brokerageInvoiceId === 0;
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -95,12 +99,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     }, [bookingId, projectId, brokerageInvoiceId]);
 
     const fetchBrokerageInvoiceDetails = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationBrokerageInvoiceRequest = {
                     PageNumber: 1,
                     PageSize: 1,
@@ -173,10 +175,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             newErrors.InvoiceNumber = 'Invoice Number is required';
         }
 
-        if (!formData.InvoiceDate) {
-            newErrors.InvoiceDate = 'Invoice Date is required';
-        }
-
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceURLUrls)) {
             newErrors.UploadInvoiceURL = "Invoice is required";
         }
@@ -188,8 +186,17 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         if (!formData.AccountNumber) {
             newErrors.AccountNumber = 'Account Number is required.';
         }
+        if (!formData.DueDate) {
+            newErrors.DueDate = 'Due Date is required.';
+
+        }
+        if (!formData.Remark?.trim()) {
+            newErrors.Remark = "Remarks is required.";
+        } else if (formData.Remark.trim().length > 250) {
+            newErrors.Remark = "Remark must be at most 250 characters";
+        }
         if (!formData.AccountName) {
-            newErrors.AccountName = 'Account Name is required.';
+            newErrors.AccountName = 'Account Holder Name is required.';
         }
 
         if (!formData.IFSCCode?.trim()) {
@@ -199,8 +206,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (!isValidIFSC(formData.IFSCCode.trim())) {
             newErrors.IFSCCode = 'Enter a valid IFSC Code'
         }
-
-
         if (!formData.AccountNumber?.trim()) {
             newErrors.AccountNumber = "Account Number is required.";
         } else if (formData.AccountNumber.trim().length > 18) {
@@ -211,8 +216,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             newErrors.InvoiceAmount = "Invoice Amount is required";
         } else if (formData.InvoiceAmount <= 0) {
             newErrors.InvoiceAmount = "Invoice Amount cannot be zero or negative";
+        } else if (Number(formData.InvoiceAmount) > brokerageAmount) {
+            var pendingAmount = Number(brokerageAmount) - Number(listState.invoiceAmount);
+            newErrors.InvoiceAmount = `Invoice amount exceeds the brokerage amount ₹${pendingAmount.toLocaleString('en-IN')}`;
         }
-
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -291,6 +298,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     };
     //#endregion
 
+    const BrokerageAmount = Number(listState.brokerageAmount) || 0
+    const paidBrokerageAmount = Number(listState.paymentPaidAmount) || 0
+    const PendingAmount = BrokerageAmount - paidBrokerageAmount
+
     //#region
     return (
 
@@ -304,7 +315,18 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
                 <form onSubmit={handleAddUpdateBrokerageInvoice}>
 
-                    {/* Basic Brokerage Invoice Details */}
+                    <div className="bg-blue-50 rounded-lg p-4 border border-blue-200 mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                            <FieldItem label="CP Name" value={listState.cpName} />
+                            <FieldItem label="CP Company" value={listState.cpCompany} />
+                            <FieldItem label="CP Mobile Number" value={listState.cpMobileNumber} />
+                            <FieldItem label="Agreement Value" value={formatCurrency(listState.agreementValue)} />
+                            <FieldItem label="Brokerage Amount" value={formatCurrency(listState.brokerageAmount)} />
+                            <FieldItem label="Generated Invoice Amount" value={formatCurrency(listState.invoiceAmount)} />
+                            <FieldItem label="Payment Paid Amount" value={formatCurrency(listState.paymentPaidAmount)} />
+                            <FieldItem label="Pending Amount" value={formatCurrency(PendingAmount)} />
+                        </div>
+                    </div>
 
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Add Invoice</h3>
@@ -322,6 +344,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     error={errors.InvoiceNumber}
                                 />
                             </div>
+
                             <div>
                                 <DatePickerInput
                                     label="Invoice Date"
@@ -374,10 +397,10 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Account Name'
+                                    label='Account Holder Name'
                                     value={formData.AccountName ?? ""}
                                     onChange={(e) => handleFieldChange("AccountName", e.target.value)}
-                                    placeholder="Enter Account Name"
+                                    placeholder="Enter Account Holder Name"
                                     maxLength={50}
                                     error={errors.AccountName}
                                 />
@@ -399,12 +422,11 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     error={errors.AccountNumber}
                                     placeholder="Enter Account Number"
                                     required
-                                    maxLength={15}
+                                    maxLength={18}
                                 />
                             </div>
 
                             <div>
-
                                 <Input
                                     label="Invoice Amount (₹)"
                                     value={formData.InvoiceAmount?.toString() ?? ""}
@@ -427,21 +449,27 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                             <div>
                                 <DatePickerInput
                                     label="Due Date"
+                                    required
                                     value={formatDate_dd_mm_yyyy(formData.DueDate)}
                                     onChange={(val) => handleFieldChange('DueDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    minDate={new Date(new Date().setDate(new Date().getDate()))}
                                     error={errors.DueDate}
                                 />
                             </div>
+
                         </div>
 
                         <div>
                             <TextArea
                                 label="Remarks"
+                                required
                                 className='thin-scroll'
                                 value={formData.Remark ?? ""}
                                 placeholder="Enter Remarks"
                                 onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                error={errors.Remark} />
+                                error={errors.Remark}
+                                maxLength={250}
+                            />
                         </div>
                     </div>
                 </form>

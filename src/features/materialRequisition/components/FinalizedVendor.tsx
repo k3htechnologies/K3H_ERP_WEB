@@ -5,7 +5,7 @@ import type { FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationV
 import { useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
-import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
+import {  useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import { runApiWithLoader } from "@/core/utils"
 import * as E from "fp-ts/Either"
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService"
@@ -62,9 +62,10 @@ export const FinalizedVendor: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [materialRequisitionVendorSelectedList, setMaterialRequisitionVendorSelectedList] = useState<any[]>([])
     const [materialRequisitionVendorFinalizedList, setMaterialRequisitionVendorFinalizedList] = useState<any[]>([])
-    const { canAction: cangetCompare } = useMenuPermissions(ModuleAction.getCompare);
-    const { canAction: cangetQuotation } = useMenuPermissions(ModuleAction.getQuotation);
-    const { canAction: canfinalizeVendor } = useMenuPermissions(ModuleAction.finalizeVendor);
+
+    const { canAction: cangetCompare } = useMenuPermissions('Get Compare');
+    const { canAction: cangetQuotation } = useMenuPermissions('Get Quotation');
+    const { canAction: canfinalizeVendor } = useMenuPermissions('Finalized Vendor');
 
     useEffect(() => {
         if (!projectId) return
@@ -295,7 +296,7 @@ export const FinalizedVendor: React.FC = () => {
         })
     }
 
-    const handleCompareVendor = async (exportType: 'VENDOR COMPARISON CHART') => {
+    const handleCompareVendor = async (exportType: 'Excel' | 'PDF') => {
 
         if (materialRequisitionVendorSelectedList.length !== 2) {
             addToast({ type: "error", title: "Please select atleast two vendors to compare." })
@@ -355,7 +356,7 @@ export const FinalizedVendor: React.FC = () => {
         await finalizeVendor(String(checkedFinalVendor))
     }
 
-    const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART')
+    const handleExportCompareVendorExcel = () => handleCompareVendor('Excel')
 
     return (
         <div className="space-y-4">
@@ -392,10 +393,6 @@ export const FinalizedVendor: React.FC = () => {
                             backgroundColor: '#E8F0FF',
                             padding: '4px 8px',
                         }}
-                        hover={{
-                            backgroundColor: '#135BEC',
-                            color: '#ffffff'
-                        }}
                         leftIcon={<Scale size={20} />}
                         onClick={() => handleExportCompareVendorExcel()}
                     >
@@ -411,10 +408,7 @@ export const FinalizedVendor: React.FC = () => {
                             backgroundColor: '#E8FBE8',
                             padding: '4px 8px',
                         }}
-                        hover={{
-                            backgroundColor: '#00A800',
-                            color: '#ffffff'
-                        }}
+                       
                         leftIcon={<CheckLine size={20} />}
                         onClick={finalizeSelectedVendors}
                     >
@@ -440,10 +434,6 @@ export const FinalizedVendor: React.FC = () => {
                             color: '#d35400',
                             backgroundColor: '#FDE6D3',
                             padding: '4px 8px',
-                        }}
-                        hover={{
-                            backgroundColor: '#f39c12',
-                            color: '#ffffff'
                         }}
                         leftIcon={<MessageSquareQuote size={20} />}
                         onClick={() => setQuotationAvailable(true)}

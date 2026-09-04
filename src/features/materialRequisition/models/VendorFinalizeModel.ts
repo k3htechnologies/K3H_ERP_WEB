@@ -11,7 +11,7 @@ export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
     MaterialRequisitionId?: number
     Uniquekey?: string
     ProjectId: number | 0
-    ExportType?: 'VENDOR COMPARISON CHART'
+    ExportType?:'Excel' | 'PDF'
 }
 
 export interface SelectedVendorData {

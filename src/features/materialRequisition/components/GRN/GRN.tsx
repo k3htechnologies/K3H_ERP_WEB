@@ -271,7 +271,7 @@ export const GRN: React.FC = () => {
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
-                addExtraWidth={150}
+                
             />
 
             <DataTableExpandable

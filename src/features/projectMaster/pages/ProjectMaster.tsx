@@ -75,9 +75,7 @@ export const ProjectMaster: React.FC = () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
-
-  //#region DATA LOAD
+  
   const fetchProjectList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadProjects(page, filters, sort ?? sortInfo);
   }
@@ -132,9 +130,6 @@ export const ProjectMaster: React.FC = () => {
     )
   }
 
-  //#endregion
-
-  //#region SERACH PROJECT
   const searchProjects = async (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
 
@@ -146,9 +141,7 @@ export const ProjectMaster: React.FC = () => {
     updateListState({ searchTerm: searchValue, page: 1 });
     await loadProjects(1, filters, sortInfo, searchValue);
   }
-  //#endregion
-
-  //#region CLAER SERACH PROJECT
+  
   const clearsearchProjects = () => {
     updateListState({ searchTerm: '', filters: {}, page: 1 });
 
@@ -159,7 +152,6 @@ export const ProjectMaster: React.FC = () => {
     loadProjects(1, { ProjectName: '' }, sortInfo, undefined);
   };
 
-  //#endregion
 
   //#region EXCEL EXPORT PDF | EXCEL
   const handleExportProjects = async (exportType: 'Excel' | 'PDF') => {
@@ -200,10 +192,7 @@ export const ProjectMaster: React.FC = () => {
 
   const handleExportProjectExcel = () => handleExportProjects('Excel')
   const handleExportProjectPdf = () => handleExportProjects('PDF')
-  //#endregion
-
-  //#region TABLE CONFIG
-
+  
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
   }, [sortInfo, updateListState],
@@ -227,51 +216,31 @@ export const ProjectMaster: React.FC = () => {
 
   const projectListForTable = useMemo(() => projectMasterList, [projectMasterList]);
 
-  //#endregion
-
-  //#region VIEW PROJECT MASTER DETAILS
   const handleViewProjectDetails = useCallback((row: ProjectMasterData) => {
     updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/view');
   }, [navigate, updateListState]);
 
-  //#endregion
-
-  //#region VIEW BANK DETAILS
-
   const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
     updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/bank');
   }, [navigate, updateListState]);
-  //#endregion
-
-  //#region VIEW EMPLOYEE DETAILS
-
+  
   const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
     updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/employee');
   }, [navigate, updateListState]);
-  //#endregion
-
-  //#region VIEW COMPANY DETAILS
-
+  
   const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
     updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/company');
   }, [navigate, updateListState]);
-  //#endregion
-
-  //#region VIEW COMPANY DETAILS
-
+  
   const handleViewProjectApproval = useCallback((row: ProjectMasterData) => {
     updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/approval');
   }, [navigate, updateListState]);
-  //#endregion
-
-
-  //#region TABLE COLUMN
-
+  
   const projectMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -329,6 +298,14 @@ export const ProjectMaster: React.FC = () => {
             />
           </div>
         )
+      },
+      {
+        key: 'FederationAmount',
+        label: 'Federation Amount (₹)',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
       },
       {
         key: 'APFNumber',
@@ -532,9 +509,6 @@ export const ProjectMaster: React.FC = () => {
     [handleViewProjectDetails, handleViewProjectEmployee, handleViewProjectCompany, handleViewProjectBank, handleViewProjectApproval]
   )
 
-  //#endregion
-
-  //#region CUSTOMIZE COLUMNS
 
   const requiredProjectMasterColumnKeys: string[] = ['ProjectName', 'Actions'];
 
@@ -576,9 +550,6 @@ export const ProjectMaster: React.FC = () => {
     [projectMasterColumns, selectedProjectMasterColumnKeys]
   );
 
-  //#endregion
-
-  //#region FILTER HELPERS
   const applyFilters = () => {
     updateListState({ filters: tempFilters, page: 1 });
     loadProjects(1, tempFilters);
@@ -592,21 +563,14 @@ export const ProjectMaster: React.FC = () => {
   };
 
 
-  //#endregion
-
-  //#region  HANDLE CHANGE EVENT
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  //#endregion
-
-  //#region ADD PROJECT THEN NAVIGATE
   const handleAddProjectMasterModal = () => {
     navigate('/projectMaster/add');
   };
-  //#endregion
+  
 
   return (
 
@@ -615,7 +579,7 @@ export const ProjectMaster: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Project Name..."
+        searchPlaceholder="Search By Project Name"
         onSearchChange={(v) => {
           updateListState({ searchTerm: v });
           debouncedSearch(v);
@@ -644,6 +608,7 @@ export const ProjectMaster: React.FC = () => {
         onExportPdf={handleExportProjectPdf}
         exportLoading={isLoading}
       />
+      
       <DataTable
         data={projectListForTable}
         columns={visibleProjectMasterColumns}

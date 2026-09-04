@@ -64,6 +64,8 @@ export const MASTER_DATA = {
 
   documentStatus: ["Applied", "Doc Missing", "In Process", "Issued", "Not Applied", "Not Applicable", "Paid", "Payment Due", "Rejected"],
 
+  drawingDocumentStatus: ["Advance", "Good For Construction (GFC)"],
+
   bankAccountType: ["Current", "Overdraft", "RERA Escrow Current Account", "Salary", "Saving"],
 
   natureOfAccount: [
@@ -317,10 +319,6 @@ export const MASTER_DATA = {
 
   nationality: ["Indian", "NRI"],
 
-  materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
-
-  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Ongoing'],
-
   reasonsOfJobLeaving: [
     "Better career growth opportunity",
     "Business shutdown",
@@ -442,9 +440,21 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["PU 1", "GROUND"],
+  parkingSubCategory_PuzzleParking: [
+    "LEVEL 1",
+    "LEVEL 2",
+    "LEVEL 3",
+    "LEVEL 4",
+    "LEVEL 5",
+    "LEVEL 6",
+    "LEVEL 7",
+    "LEVEL 8",
+    "LEVEL 9",
+    "LEVEL 10",
+    "GROUND LEVEL",
+  ],
 
-  parkingSubCategory_TowerParking: ["TO 1", "GROUND"],
+  parkingSubCategory_TowerParking: ["ROTATING", "TO 1", "GROUND"],
 
   parkingSubCategory_PitPuzzleParking: ["PIT 1", "GROUND"],
 
@@ -485,7 +495,7 @@ export const MASTER_DATA = {
     "Supreme Court of India",
   ],
 
-  paymentMode: ["Cheque", "Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
+  paymentMode: ["Cheque", 'Challan',"Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
 
   paymentType: ["Advance", "Late Fee", "Penalty", "Regular"],
 
@@ -535,7 +545,7 @@ export const MASTER_DATA = {
     "Agreement Value GST",
     "Agreement Value TDS",
     "Other Charges Value",
-    "Other Charges GST"
+    "Other Charges GST",
   ],
 
   paymentReceivedFrom: ["Bank", "Owner"],
@@ -573,7 +583,6 @@ export const MASTER_DATA = {
 
   reasonForInactivity: ["Firm Closed", "Key SPOC left", "Brokerage Pending", "Did not like project/brand"],
 
-
   platform: ["ERP", "Application", "Website"],
 
   module: [
@@ -606,14 +615,21 @@ export const MASTER_DATA = {
     "Between 201 And 300",
     "Between 301 And 400",
     "Between 401 And 500",
-    "Above 501"
+    "Above 501",
   ],
 
   channelPartnerCategory: ["P1", "P2", "P3", "P4"],
 
   ibmObmReportStage: ["IBM", "OBM"],
 
-  noticeType: ['Income Tax', 'GST'],
+  noticeType: [
+    "GST (Goverment Service Tax)",
+    "Income Tax",
+    "PF (Provident Fund)",
+    "ESIC (Employee State Insurance)",
+    "PT (Profession Tax)",
+    "Other",
+  ],
 
   budgetLevelType: ["L1", "L2", "L3"],
 
@@ -654,34 +670,113 @@ export const MASTER_DATA = {
     "Unit Plan",
     "Vacant Possession Letter",
     "Vacating Consent Letter",
-    "Yadi Slip"
+    "Yadi Slip",
   ],
-  
-  professionalType: ["Architect", "Engineer", "Real Estate Agent", "Advocate"],
 
-  type: ["Person /Individual", "Legal Entity / Other"],
+  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30"],
 
-  mode_options: ["Mode", "PDC", "Advance"],
+  termSheetDocument: [
+    "Board Resolution",
+    "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
+    "Deed Of Corporate Guarantee",
+    "Deed Of Hypothecation",
+    "Deed Of Personal Guarantee",
+    "Demand Promissory Note",
+    "Disbursement Request Letter as per format of NBFC or Bank",
+    "Escrow Agreement",
+    "Indenture of Mortgage",
+    "Loan Agreement",
+    "Other documents as per Sanction Letter",
+    "PDC to be given as per Sanction Letter",
+    "Power Of Attorney",
+    "Promoters Undertaking",
+  ],
 
-  brokerage_options: ["0", "1"],
+  authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
 
-  existingBuildingType: ["Residential", "Commercial", "Mixed - Use"],
+  orderStatusOptions: ["Favourable", "Non-Favourable"],
+
+  requestTypeOptions: ['Reply', 'Order', 'Appeal', 'Notice', 'Close-Notice', 'Others'],
+
+  termSheetTypeOptions: [
+    "Construction Finance (CF)",
+    "Loan Against Property (LAP)",
+    "Lease Rental Discounting (LRD)",
+    "Overdraft Facility (OD)",
+  ],
+
+  termSheetApprovalStatus: ["Term Sheet", "Sanction", "Closed"],
+
+  termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
+
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending"],
+
+  vendorType: ["Material", "Contractor", "Both"],
+
+  purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"],
 
   landTenureType: ["Leasehold", "Freehold", "Collectors Land", "MHADA", "SRA", "BMC", "Builder"],
 
   plotShape: ["Rectangular", "Irregular", "L - Shape", "Circle"],
 
-  constructionType: ["RCC", "Load - Bearing",],
+  constructionType: ["RCC", "Load - Bearing"],
 
   soilType: ["Clay", "Black Cotton", "Sandy", "Rocky"],
 
   existingGroundConditions: ["Vacant", "Barren", "Vegetation", "Encroachements"],
 
-  waterSupplyAvailable: ["Borewell", "Municipal",],
+  waterSupplyAvailable: ["Borewell", "Municipal"],
 
   surroundingLandUse: ["Agricultural", "Residential", "Industrial", "Vacant"],
 
   landOwnerShipType: ["Individual", "Joint", "Trust", "Company", "Government", "Society"],
+
+  inVoicePaymentType: ['Full', 'Partial'],
+
+  workMode: ["On-site", "Hybrid", "Remote"],
+
+  employmentType: ["Full-Time", "Contract", "Internship"],
+
+  experienceYears: [
+    "1 Year",
+    "2 Years",
+    "3 Years",
+    "4 Years",
+    "5 Years",
+    "6 Years",
+    "7 Years",
+    "8 Years",
+    "9 Years",
+    "10 Years",
+  ],
+
+  experienceMonths: [
+    "1 Month",
+    "2 Months",
+    "3 Months",
+    "4 Months",
+    "5 Months",
+    "6 Months",
+    "7 Months",
+    "8 Months",
+    "9 Months",
+    "10 Months",
+    "11 Months",
+    "12 Months",
+  ],
+
+  jobOpeningLockedEditFields: [
+    "JobDescription",
+    "JobResponsibilities",
+    "JobRequirement",
+    "JobQualification",
+    "JobSkills",
+  ],
+
+   materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
+
+  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Ongoing'],
+
 
 } as const;
 
@@ -713,6 +808,7 @@ export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType);
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus);
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory);
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus);
+export const DRAWING_DOCUMENT_STATUS = toOptions(MASTER_DATA.drawingDocumentStatus);
 export const ACCOMODATION_TYPE_OPTIONS = toOptions(MASTER_DATA.accomodation);
 export const REQUIREMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.requirement);
 export const BUDGET_TYPE_OPTIONS = toOptions(MASTER_DATA.budget);
@@ -775,18 +871,6 @@ export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
 export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
-export const MODE_OPTIONS = toOptions(MASTER_DATA.mode_options);
-export const BROKERAGE_OPTIONS = toOptions(MASTER_DATA.brokerage_options);
-export const EXISTING_BUILDING_TYPE_OPTIONS = toOptions(MASTER_DATA.existingBuildingType);
-export const LAND_TENURE_TYPE_OPTIONS = toOptions(MASTER_DATA.landTenureType);
-export const PLOT_SHAPE_OPTIONS = toOptions(MASTER_DATA.plotShape);
-export const CONSTRUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.constructionType);
-export const SOIL_TYPE_OPTIONS = toOptions(MASTER_DATA.soilType);
-export const EXISTING_GROUND_CONDITION_OPTIONS = toOptions(MASTER_DATA.existingGroundConditions);
-export const WATER_SUPPLY_AVAILABLE_OPTIONS = toOptions(MASTER_DATA.waterSupplyAvailable);
-export const SURROUNDING_LAND_USE_OPTIONS = toOptions(MASTER_DATA.surroundingLandUse);
-export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipType);
-
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
 export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
@@ -820,10 +904,41 @@ export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
 export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
 export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
 export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
+export const FINANCIAL_YEAR = toOptions(MASTER_DATA.financialYear);
+export const TERM_SHEET_DOCUMENT = toOptions(MASTER_DATA.termSheetDocument);
+export const AUTHORITY_OPTIONS = toOptions(MASTER_DATA.authorityOptions);
+export const ORDER_STATUS_OPTIONS = toOptions(MASTER_DATA.orderStatusOptions);
+export const REQUEST_TYPE_OPTIONS = toOptions(MASTER_DATA.requestTypeOptions);
+export const TERM_SHEET_TYPE_OPTIONS = toOptions(MASTER_DATA.termSheetTypeOptions);
+export const TERM_SHEET_APPROVAL_OPTIONS = toOptions(MASTER_DATA.termSheetApprovalStatus);
+export const TERM_SHEET_DSRA_TERM_OPTIONS = toOptions(MASTER_DATA.termSheetDSRATerm);
+export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
+export const VENDOR_TYPE_OPTIONS = toOptions(MASTER_DATA.vendorType);
+export const PURPOSE_OPTIONS = toOptions(MASTER_DATA.purposeOptions);
+export const LAND_TENURE_TYPE_OPTIONS = toOptions(MASTER_DATA.landTenureType);
+export const PLOT_SHAPE_OPTIONS = toOptions(MASTER_DATA.plotShape);
+export const CONSTRUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.constructionType);
+export const SOIL_TYPE_OPTIONS = toOptions(MASTER_DATA.soilType);
+export const EXISTING_GROUND_CONDITION_OPTIONS = toOptions(MASTER_DATA.existingGroundConditions);
+export const WATER_SUPPLY_AVAILABLE_OPTIONS = toOptions(MASTER_DATA.waterSupplyAvailable);
+export const SURROUNDING_LAND_USE_OPTIONS = toOptions(MASTER_DATA.surroundingLandUse);
+export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipType);
+export const INVOICE_PAYMENT_TYPE = toOptions(MASTER_DATA.inVoicePaymentType);
+export const EMPLOYMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.employmentType);
+export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
+export const EXPERIENCE_YEAR_OPTIONS: Option[] = MASTER_DATA.experienceYears.map((name, index) => ({
+  id: String(index + 1),
+  name,
+}));
+export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.map((name, index) => ({
+  id: String(index + 1),
+  name,
+}));
+export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
-export const PROJECT_PROFESSIONAL_DETAILS_STATUS_OPTIONS = toOptions(MASTER_DATA.professionalType);
-export const TYPE_STATUS_OPTIONS = toOptions(MASTER_DATA.type);
+
+
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

@@ -59,6 +59,9 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     UomMasterId: number;
     UomCode: string;
     RequiredDate: string | null;
+    MaterialRequisitionType: string;
+    SpecificationMasterId: number;
+    CategoryName: string;
     Remark: string ;
 }
 

@@ -27,9 +27,8 @@ export const CollapseCard: React.FC<CollapseCardProps> = ({
   const toggle = () => setIsOpen(prev => !prev)
 
   return (
-    <div className="w-full rounded-xl border border-slate-300 bg-white shadow-sm overflow-hidden">
+    <div className="w-full rounded-xl border border-gray-200 bg-white overflow-hidden">
 
-      {/* HEADER SECTION */}
       <div className="flex items-start px-4 py-4 relative">
 
         {/* Avatar */}
@@ -43,13 +42,12 @@ export const CollapseCard: React.FC<CollapseCardProps> = ({
           </div>
         )}
 
-        {/* Right section fields */}
         <div className="flex-1">
 
           {/* TOP ROW */}
           <div className="grid grid-cols-4 gap-4">
             <FieldItem label="Full Name" value={name} urls={photoURL}  isIcon={true}/>
-            <FieldItem label="Mobile Number" value={mobileNumber} />
+            <FieldItem label="Mobile Number" value={`+91 ${mobileNumber ?? "-"}`} />
             <FieldItem label="Share %" value={partnershipPercent} />
             <FieldItem label="Gender" value={gender} />
           </div>

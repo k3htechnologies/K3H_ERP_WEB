@@ -87,6 +87,21 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
 
                 ];
 
+            // ✅ Budget
+            case "Budget":
+                return [
+                    { key: "ProjectName", label: "Project", render: renderText },
+
+                ];
+
+            // ✅ Budget
+            case "Term Sheet":
+                return [
+                    { key: "ProjectName", label: "Project", render: renderText },
+                    { key: "NameOfInstitutionBankNBFC", label: "Name Of Institution / Bank / NBFC", render: renderText },
+
+                ];
+
             // ✅ DEFAULT FALLBACK
             default:
                 return [
@@ -163,7 +178,18 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             icon: ClipboardCheck,
             bg: "#FDF4FF",
             color: "#A21CAF"
+        },
+        "Budget": {
+            icon: Wallet,
+            bg: "#ECFDF5",
+            color: "#059669"
+        },
+        "Term Sheet": {
+            icon: ClipboardCheck,
+            bg: "#FEF3C7",
+            color: "#D97706"
         }
+
     };
 
     return (
@@ -174,7 +200,6 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                     Pending Approvals
                 </p>
 
-                {/* GRID */}
                 {moduleSummary.length > 0 ? (
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto thin-scroll pr-1">
 

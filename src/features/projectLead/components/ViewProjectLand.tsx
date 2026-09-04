@@ -10,7 +10,7 @@ import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Loader } from "@/core/utils/loader";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { BadgeCheck, ContactRound, History, Mail, MapPin, MessageSquareText, Phone, Route, Ruler } from "lucide-react";
+import { BadgeCheck, ContactRound, History, MapPin, MessageSquareText, Route, Ruler } from "lucide-react";
 import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import ImageCarousel from "@/ui/components/ImageViewer/ImageCarousel";
 
@@ -74,7 +74,9 @@ export const ViewProjectLand: React.FC = () => {
 
             <div className="px-5 py-5">
                 <HeaderActionBar
-                    titleText={ProjectLandData?.LandOwnerName ?? "Land Details"}
+                    titleText="Land Details : "
+                    subTitleText={ProjectLandData?.LandOwnerName ?? ""}
+
                     cancelText="Cancel"
                     canAction={canAction}
                     EditText="Edit"
@@ -94,40 +96,44 @@ export const ViewProjectLand: React.FC = () => {
                 <div className="grid grid-cols-1 gap-6 pt-5">
                     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
                         <div className="flex items-start gap-5">
-                            <div className="relative w-full max-w-[220px] h-[150px] rounded-2xl overflow-hidden bg-gray-100 shrink-0">
-                                <ImageCarousel
-                                    images={ProjectLandData?.PhotoURL ?? ""}
-                                    thumbHeight="h-full"
-                                />
 
-                                <div className="absolute top-2 right-2 z-20">
-                                    <FieldItem
-                                        label=""
-                                        urls={ProjectLandData?.PhotoURL}
-                                        isIcon
-                                        isSetValue={false}
+                            <div className="w-full lg:w-[240px] shrink-0">
+                                <div className="relative w-full lg:w-[220px] h-[200px] lg:h-[150px] rounded-xl overflow-hidden">
+                                    <ImageCarousel
+                                        images={ProjectLandData?.PhotoURL ?? ""}
+                                        thumbHeight="h-full"
                                     />
+
+                                    <div className="absolute top-2 right-2 z-20">
+                                        <FieldItem
+                                            label=""
+                                            urls={ProjectLandData?.PhotoURL}
+                                            isIcon
+                                            isSetValue={false}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#EFF4FF] text-[#464554] font-medium text-xs  mt-2">
+                                    <MapPin className="text-[#4648D4]" size={18} />
+                                    {ProjectLandData?.CityName}, {ProjectLandData?.StateName}
                                 </div>
                             </div>
 
+
                             <div className="flex-1 min-w-0 py-2">
-                                <h2 className="text-xl font-semibold text-slate-800 mt-1 truncate">
+
+                                <h2 className="text-xl font-semibold text-slate-800 truncate">
                                     {ProjectLandData?.LandOwnerName || "-"}
                                 </h2>
 
-                                <div className="mt-2">
-                                    <p className="text-md text-gray-600 leading-6 mt-1">
-                                        {ProjectLandData?.LandAddress || "-"}
-                                    </p>
+
+                                <div className="pt-2">
+                                    <FieldItem label="Plot / CTS / Survey / Subdivision Number" value={ProjectLandData?.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber} isRow />
+
                                 </div>
 
-                                <div className="pt-3">
-                                    <div className="flex flex-col gap-1">
-                                        <span className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                                            Plot / CTS Number :
-                                            {ProjectLandData?.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber || "-"}
-                                        </span>
-                                    </div>
+                                <div className="mt-2">
+                                    <FieldItem label="Address" value={ProjectLandData?.LandAddress} isRow />
                                 </div>
 
                             </div>
@@ -159,24 +165,26 @@ export const ViewProjectLand: React.FC = () => {
                             )}
                         </div>
 
-                        <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-3">
+                        <div className="grid grid-cols-7 text-sm font-semibold text-gray-500 pb-3">
                             <span>Country</span>
                             <span>State</span>
                             <span>District</span>
                             <span>City</span>
-                            <span>Ward Number</span>
                             <span>Pin Code</span>
+                            <span>Ward Number</span>
+                            <span>Latitude Longitude</span>
                         </div>
 
                         <div className="border-t border-gray-300" />
 
-                        <div className="grid grid-cols-6 pt-4 text-sm font-medium text-slate-800">
+                        <div className="grid grid-cols-7 pt-4 text-sm font-medium text-slate-800">
                             <span>{ProjectLandData?.CountryName || "-"}</span>
                             <span>{ProjectLandData?.StateName || "-"}  </span>
-                            <span> {ProjectLandData?.DistrictName || "-"} </span>
-                            <span> {ProjectLandData?.CityName || "-"}  </span>
-                            <span>{ProjectLandData?.WardNumberZone}</span>
+                            <span>{ProjectLandData?.DistrictName || "-"} </span>
+                            <span>{ProjectLandData?.CityName || "-"}  </span>
                             <span>{ProjectLandData?.PinCode || "-"}  </span>
+                            <span>{ProjectLandData?.WardNumberZone}</span>
+                            <span>{ProjectLandData?.LatitudeLongitude}</span>
                         </div>
                     </div>
                 </div>
@@ -194,23 +202,25 @@ export const ViewProjectLand: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <FieldItem label="Total Plot Area (in Sq. m.)" value={ProjectLandData?.TotalPlotAreaSqM} />
+                        <FieldItem label="Total Plot Area (SqMt)" value={ProjectLandData?.TotalPlotAreaSqM} />
                         <FieldItem label="Plot Shape" value={ProjectLandData?.PlotShape} />
                         <FieldItem label="Depth Of The Plot" value={ProjectLandData?.PlotDepth} />
-                        <FieldItem label="Road Width In Front Of Plot" value={ProjectLandData?.RoadWidth} />
+                        <FieldItem label="Road Width" value={ProjectLandData?.RoadWidth} />
                         <FieldItem label="Soil Type" value={ProjectLandData?.SoilType} />
                         <FieldItem label="Existing Ground Conditions" value={ProjectLandData?.ExistingGroundCondition} />
                         <FieldItem label="Surrounding Land Use" value={ProjectLandData?.SurroundingLandUse} />
-                        <FieldItem label="Total Number Of Trees" value={ProjectLandData?.TotalNumberOfTreesonSite} />
-                        <FieldItem label="Access Road Available" value={ProjectLandData?.IsAccessRoadAvailable === true ? "Yes" : "No"} />
-                        <FieldItem label="Electricity Nearby" value={ProjectLandData?.IsElectricityConnectionNearby === true ? "Yes" : "No"} />
+                        <FieldItem label="Total Number Of Trees on Site" value={ProjectLandData?.TotalNumberOfTreesonSite} />
+                        <FieldItem label="Available of Access Road" value={ProjectLandData?.IsAccessRoadAvailable === true ? "Yes" : "No"} />
+                        <FieldItem label="Electricity Connection Nearby" value={ProjectLandData?.IsElectricityConnectionNearby === true ? "Yes" : "No"} />
                         <FieldItem label="FSI Permissible" value={ProjectLandData?.FSIPermissible} />
-                        <FieldItem label="Type Water Supply Available" value={ProjectLandData?.WaterSupplyAvailable} />
+                        <FieldItem label="Type of Water Supply Available" value={ProjectLandData?.WaterSupplyAvailable} />
                     </div>
                 </div>
 
                 {/* ================= LEGAL DETAILS ================= */}
                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 pt-5">
+
+                    {/* LEFT COLUMN - 1. LEGAL & OWNERSHIP */}
                     <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
                         <div className="flex items-center gap-3 mb-5">
                             <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
@@ -223,77 +233,148 @@ export const ViewProjectLand: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
-                            <FieldItem label="Type Of Land Tenure" value={ProjectLandData?.TypeOfLandTenureType} />
-                            <FieldItem label="Land Ownership Type" value={ProjectLandData?.LandOwnershipType} />
-                            <FieldItem label="Any Power Of Attorney" value={ProjectLandData?.IsAnyPowerofAttorneyInvolved === true ? "Yes" : "No"} />
-                            <FieldItem label="Fencing / Boundary Wall" value={ProjectLandData?.IsFencingBoundaryWallPresent === true ? "Yes" : "No"} />
-                            <FieldItem label="Converted To Non-Agricultural" value={ProjectLandData?.IsLandConvertedToNonAgricultural === true ? "Yes" : "No"} />
-                            <FieldItem label="Under Litigation / Stay Order" value={ProjectLandData?.IsUnderLitigationOrStayOrder === true ? "Yes" : "No"} />
-                            <FieldItem label="7 / 12 Available" value={ProjectLandData?.Is712Available === true ? "Yes" : "No"} />
+                            <FieldItem
+                                label="Type Of Land Tenure"
+                                value={ProjectLandData?.TypeOfLandTenureType}
+                            />
+
+                            <FieldItem
+                                label="Land Ownership Type"
+                                value={ProjectLandData?.LandOwnershipType}
+                            />
+
+                            <FieldItem
+                                label="Any Power Of Attorney Involved"
+                                value={
+                                    ProjectLandData?.IsAnyPowerofAttorneyInvolved === true
+                                        ? "Yes"
+                                        : "No"
+                                }
+                            />
+
+                            <FieldItem
+                                label="Fencing / Boundary Wall Present"
+                                value={
+                                    ProjectLandData?.IsFencingBoundaryWallPresent === true
+                                        ? "Yes"
+                                        : "No"
+                                }
+                            />
+
+                            <FieldItem
+                                label="Land Converted To Non-Agricultural"
+                                value={
+                                    ProjectLandData?.IsLandConvertedToNonAgricultural === true
+                                        ? "Yes"
+                                        : "No"
+                                }
+                            />
+
+                            <FieldItem
+                                label="Plot Under Litigation / Stay Order"
+                                value={
+                                    ProjectLandData?.IsUnderLitigationOrStayOrder === true
+                                        ? "Yes"
+                                        : "No"
+                                }
+                            />
+
+                            <FieldItem
+                                label="7 / 12"
+                                value={
+                                    ProjectLandData?.Is712Available === true
+                                        ? "Yes"
+                                        : "No"
+                                }
+                            />
                         </div>
                     </div>
 
-                    {/* ================= INFRASTRUCTURE ================= */}
-                    <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
-                        <div className="flex items-center gap-3 mb-5">
-                            <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center">
-                                <Route className="w-5 h-5 text-violet-600" />
+
+                    {/* RIGHT COLUMN */}
+                    <div className="flex flex-col gap-6">
+
+                        {/* 2. DISTANCE */}
+                        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="w-11 h-11 rounded-xl bg-violet-50 flex items-center justify-center">
+                                    <Route className="w-5 h-5 text-violet-600" />
+                                </div>
+
+                                <h2 className="text-[16px] font-semibold text-slate-800">
+                                    Distance From Key Landmarks
+                                </h2>
                             </div>
 
-                            <h2 className="text-[16px] font-semibold text-slate-800">
-                                Distance From Key Landmarks
-                            </h2>
+                            <div className="grid grid-cols-4 gap-6">
+                                <FieldItem
+                                    label="Town (KM)"
+                                    value={ProjectLandData?.DistanceFromNearestTownKM}
+                                />
+
+                                <FieldItem
+                                    label="Highway (KM)"
+                                    value={ProjectLandData?.DistanceFromHighwayKM}
+                                />
+
+                                <FieldItem
+                                    label="Railway Station (KM)"
+                                    value={ProjectLandData?.DistanceFromRailwayStationKM}
+                                />
+
+                                <FieldItem
+                                    label="Airport (KM)"
+                                    value={ProjectLandData?.DistanceFromAirportKM}
+                                />
+                            </div>
+
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-2 gap-6">
-                            <FieldItem label="Distance From Nearest Town (KM)" value={ProjectLandData?.DistanceFromNearestTownKM} />
-                            <FieldItem label="Distance From Highway (KM)" value={ProjectLandData?.DistanceFromHighwayKM} />
-                            <FieldItem label="Distance From Railway Station (KM)" value={ProjectLandData?.DistanceFromRailwayStationKM} />
-                            <FieldItem label="Distance From Airport (KM)" value={ProjectLandData?.DistanceFromAirportKM} />
+
+                        {/* 3. CONTACT */}
+                        <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
+
+                            <div className="flex items-center gap-3 mb-5">
+                                <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center">
+                                    <ContactRound className="w-5 h-5 text-emerald-600" />
+                                </div>
+
+                                <h2 className="text-[16px] font-semibold text-slate-800">
+                                    Land Contact Information
+                                </h2>
+                            </div>
+
+                            <div className="flex flex-col gap-4">
+                                <FieldItem
+                                    label="Name"
+                                    value={ProjectLandData?.ContactPersonName ?? '-'}
+                                    isRow
+                                />
+
+                                <FieldItem
+                                    label="Mobile No"
+                                    value={
+                                        ProjectLandData?.ContactPersonMobile
+                                            ? `+91 ${ProjectLandData.ContactPersonMobile}`
+                                            : '-'
+                                    }
+                                    isRow
+                                />
+
+                                <FieldItem
+                                    label="E-Mail ID"
+                                    value={ProjectLandData?.ContactPersonEmail ?? '-'}
+                                    isRow
+                                />
+                            </div>
+
                         </div>
+
                     </div>
+
                 </div>
 
-                {/* ================= CONTACT ================= */}
-                <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 mt-5">
-                    <div className="flex items-center gap-3 mb-5">
-                        <div className="w-11 h-11 rounded-xl bg-emerald-50 flex items-center justify-center">
-                            <ContactRound className="w-5 h-5 text-emerald-600" />
-                        </div>
-
-                        <h2 className="text-[16px] font-semibold text-slate-800">
-                            Land Contact Information
-                        </h2>
-                    </div>
-
-                    <div className="space-y-4">
-                        <div className="bg-[#F9F9FB] rounded-2xl border border-gray-200 p-4">
-                            <p className="text-sm text-gray-500">
-                                Contact Person
-                            </p>
-
-                            <p className="text-[15px] font-semibold text-slate-800 mt-1">
-                                {ProjectLandData?.ContactPersonName || "-"}
-                            </p>
-
-                            <div className="flex items-center gap-2 mt-2">
-                                <Phone size={15} className="text-blue-600" />
-                                <span className="text-sm font-medium text-slate-700">
-                                    {ProjectLandData?.ContactPersonMobile
-                                        ? `+91 ${ProjectLandData.ContactPersonMobile}`
-                                        : "-"}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-2 mt-2">
-                                <Mail size={15} className="text-indigo-600" />
-                                <span className="text-sm font-medium text-slate-700">
-                                    {ProjectLandData?.ContactPersonEmail || "-"}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 {/* ================= REMARKS ================= */}
                 <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5 mt-5">
@@ -303,7 +384,7 @@ export const ViewProjectLand: React.FC = () => {
                         </div>
 
                         <h2 className="text-[16px] font-semibold text-slate-800">
-                            Remarks
+                            Additional Information
                         </h2>
                     </div>
 
@@ -325,7 +406,7 @@ export const ViewProjectLand: React.FC = () => {
                         </h2>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                    <div className="grid grid-cols-4 gap-6">
                         <FieldItem label="Created By" value={ProjectLandData?.CreatedBy} />
                         <FieldItem label="Created Date" value={ProjectLandData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(ProjectLandData?.CreatedDate) : ""} />
                         {ProjectLandData?.ModifiedBy && (

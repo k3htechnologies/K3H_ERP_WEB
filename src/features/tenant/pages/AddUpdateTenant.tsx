@@ -420,8 +420,6 @@ const AddUpdateTenant: React.FC = () => {
 
   };
 
-
-
   const handleEditApplicant = useCallback((row: TenantApplicantWithFiles, index: number) => {
 
     const applicantData: AddUpdateTenantApplicant = {
@@ -500,14 +498,12 @@ const AddUpdateTenant: React.FC = () => {
 
     setIsAddUpdateApplicantModalOpen(true);
   }, []);
-  //#endregion
-  //#region DELETE TENANT APPLICANT CONFIRMATION DIALOG
+
   const handleConfirmationDialogBoxOpen = (row: TenantApplicantWithFiles, index: number) => {
     setDeleteTenantApplicantData({ row, index });
     setIsConfirmationDialogBoxOpen(true)
   }
-  //#endregion
-  //#region APPLICANT TABLE COLUMN
+
   const applicantColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -549,7 +545,7 @@ const AddUpdateTenant: React.FC = () => {
       },
       {
         key: 'ApplicantEmailId',
-        label: 'Email Id',
+        label: 'E-Mail ID',
         width: '15',
         sortable: false,
         align: 'center',
@@ -745,8 +741,7 @@ const AddUpdateTenant: React.FC = () => {
     [handleEditApplicant, handleConfirmationDialogBoxOpen, applicantList]
 
   );
-  //#endregion
-  //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
+
   const handleFieldChangeTenantApplicant = (field: keyof AddUpdateTenantApplicant, value: any) => {
 
     setFormDataForApplicant((prev) => ({ ...prev, [field]: value }));
@@ -755,9 +750,6 @@ const AddUpdateTenant: React.FC = () => {
       setErrorsTenantApplicant((prev) => ({ ...prev, [field]: "" }));
     }
   };
-
-  //#endregion 
-  //#region ADD UPDATE TENANT APPLICANT
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddApplicantForm = (): {
@@ -785,16 +777,7 @@ const AddUpdateTenant: React.FC = () => {
 
 
     if (formDataForApplicant.ApplicantEmailId?.trim() && !isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
-      newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid Email Id';
-    }
-
-    // Validate Photo - check merged files (what will actually be saved)
-    const mergedPhotoFiles = editingApplicantData
-      ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs)
-      : applicantPhotoFiles.slice();
-
-    if (mergedPhotoFiles.length === 0) {
-      newErrorsTenantApplicant.PhotoURL = "Applicant Photo is required";
+      newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid E-Mail ID';
     }
 
     const mergedAadharFiles = editingApplicantData
@@ -978,15 +961,11 @@ const AddUpdateTenant: React.FC = () => {
       }
     }
 
-
-
-
     return {
       isValid: Object.keys(newErrorsTenantApplicant).length === 0,
       errorsTenantApplicant: newErrorsTenantApplicant
     }
   }
-
 
   const handleAddUpdateTenantApplicant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1112,7 +1091,7 @@ const AddUpdateTenant: React.FC = () => {
       IFSCCode: formDataForApplicant.IFSCCode || '',
       ChequeURL: createFileUrlString(mergedChequeFiles),
 
-      BankName: null,
+      BankName:  dropdownLabels.bankName ?? "",
       CreatedById: 0,
       CreatedBy: '',
       CreatedDate: null,
@@ -1165,10 +1144,6 @@ const AddUpdateTenant: React.FC = () => {
     setGstFiles([]);
     setChequeFiles([]);
   };
-
-  //#endregion
-  //#region DELETE TENANT APPLICANT
-
 
   const handleDeleteApplicant = () => {
 
@@ -1384,7 +1359,7 @@ const AddUpdateTenant: React.FC = () => {
                   onChange={e => handleFieldChange('UnitAnnexureSurveyNumber', e.target.value)}
                   error={errors.UnitAnnexureSurveyNumber}
                   maxLength={15}
-                  placeholder="Enter Unit Number"
+                  placeholder="Enter Unit / Annexure / Survey Number"
                 />
               </div>
               <div>
@@ -1424,6 +1399,7 @@ const AddUpdateTenant: React.FC = () => {
                 <div>
                   <SinglePageSelection
                     label="Unit Configuration"
+                    placeholder="Select Unit Configuration"
                     value={formData.UnitConfiguration ?? ""}
                     onChange={(e) => handleFieldChange('UnitConfiguration', String(e))}
                     options={COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -1447,12 +1423,13 @@ const AddUpdateTenant: React.FC = () => {
               <div>
                 <SinglePageSelection
                   label="Unit Facing"
+                  placeholder="Select Unit Facing"
                   required
-                  value={formData.UnitFacing ? String(formData.UnitFacing).toUpperCase() : ""}
+                  value={formData.UnitFacing ? String(formData.UnitFacing) : ""}
                   onChange={(e) => handleFieldChange('UnitFacing', String(e))}
                   options={FLAT_UNIT_FACING.map((opt) => ({
                     label: opt.name,
-                    value: String(opt.id).toUpperCase()
+                    value: String(opt.id)
                   }))}
                   error={errors.UnitFacing}
                 />
@@ -1464,7 +1441,7 @@ const AddUpdateTenant: React.FC = () => {
           {/* New Details */}
           <div className="space-y-4  pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">New Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
               <div>
                 <Input
                   label="Extra Free Carpet Area Offered (%)"
@@ -1477,32 +1454,26 @@ const AddUpdateTenant: React.FC = () => {
                       handleFieldChange("ExtraFreeCarpetAreaOfferedPercent", filterNumbersWithDecimal(e.target.value));
                     }
                   }}
-                  placeholder="Enter Free Carpet Area Offered"
+                  placeholder="Enter Free CA Offered"
 
                 />
               </div>
-
-              <div>
-                <Input
-                  label="New Eligibility RERA Carpet Area (SqFt)"
-                  type="text"
-                  value={formData.NewEligibilityRERACarpetAreaSqFt || ''}
-                  onChange={(e) => handleFieldChange('NewEligibilityRERACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter New Eligibility RERA Carpet Area"
-                  rightIcon="SqFt"
-                />
-              </div>
-
               <div>
                 <Input
                   label="Free MOFA Carpet Area (SqFt)"
                   type="text"
                   value={formData.FreeMOFACarpetAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('FreeMOFACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter Free MOFA Carpet Area"
+                  placeholder="Enter Free MOFA CA"
                   rightIcon="SqFt"
                 />
               </div>
+
+              <div>
+
+              </div>
+
+
               <div>
                 <Input
                   label="Existing Terrace Area (SqFt)"
@@ -1515,29 +1486,30 @@ const AddUpdateTenant: React.FC = () => {
               </div>
 
 
-              <div>
-                <Input
-                  label="RERA Carpet Area Purchased (SqFt)"
-                  type="text"
-                  value={formData.RERACarpetAreaPurchasedSqFt || ''}
-                  onChange={(e) => handleFieldChange('RERACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter RERA Carpet Area Purchased"
-                  rightIcon="SqFt"
-                />
-              </div>
+
               <div>
                 <Input
                   label="New Eligibility MOFA Carpet Area (SqFt)"
                   type="text"
                   value={formData.NewEligibilityMOFACarpetAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('NewEligibilityMOFACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter New Eligibility MOFA Carpet Area"
+                  placeholder="Enter New Eligibility MOFA CA"
                   rightIcon="SqFt"
                 />
               </div>
               <div>
                 <Input
-                  label="(C) Area Against Terrace (SqFt)"
+                  label="New Eligibility RERA Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.NewEligibilityRERACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('NewEligibilityRERACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter New Eligibility RERA CA"
+                  rightIcon="SqFt"
+                />
+              </div>
+              <div>
+                <Input
+                  label="(A) Area Against Terrace (SqFt)"
                   type="text"
                   value={formData.AreaAgainstTerraceSqFt || ''}
                   onChange={(e) => handleFieldChange('AreaAgainstTerraceSqFt', filterNumbersWithDecimal(e.target.value))}
@@ -1550,24 +1522,27 @@ const AddUpdateTenant: React.FC = () => {
 
               <div>
                 <Input
-                  label="(A) Total New Rera Carpet Area (SqFt)"
-                  value={formData.TotalNewRERACarpetAreaSqFt || ''}
-                  onChange={(e) => handleFieldChange("TotalNewRERACarpetAreaSqFt", filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter Total New Rera Carpet Area"
+                  label="MOFA Carpet Area Purchased (SqFt)"
+                  type="text"
+                  value={formData.MOFACarpetAreaPurchasedSqFt || ''}
+                  onChange={(e) => handleFieldChange('MOFACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter MOFA CA Purchased"
                   rightIcon="SqFt"
                 />
               </div>
 
               <div>
                 <Input
-                  label="MOFA Carpet Area Purchased (SqFt)"
+                  label="RERA Carpet Area Purchased (SqFt)"
                   type="text"
-                  value={formData.MOFACarpetAreaPurchasedSqFt || ''}
-                  onChange={(e) => handleFieldChange('MOFACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter New MOFA Carpet Area Purchased"
+                  value={formData.RERACarpetAreaPurchasedSqFt || ''}
+                  onChange={(e) => handleFieldChange('RERACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter RERA CA Purchased"
                   rightIcon="SqFt"
                 />
               </div>
+
+
               <div>
                 <Input
                   label="(B) Deck Area (SqFt)"
@@ -1578,26 +1553,35 @@ const AddUpdateTenant: React.FC = () => {
                   rightIcon="SqFt"
                 />
               </div>
-              <div>
-                <Input
-                  label="A + B + C (SqFt)"
-                  value={(Number(formData?.TotalNewRERACarpetAreaSqFt || 0) + (Number(formData?.DeckAreaSqFt || 0)) + (Number(formData?.AreaAgainstTerraceSqFt || 0))).toFixed(2)}
-                  disabled
-                  rightIcon="SqFt"
-                />
-              </div>
+
               <div>
                 <Input
                   label="Total New MOFA Carpet Area (SqFt)"
                   type="text"
                   value={formData.TotalNewMOFACarpetAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('TotalNewMOFACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                  placeholder="Enter Total New MOFA Carpet Area"
+                  placeholder="Enter Total New MOFA CA"
                   rightIcon="SqFt"
                 />
               </div>
+              <div>
+                <Input
+                  label="(C) Total New RERA Carpet Area (SqFt)"
+                  value={formData.TotalNewRERACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange("TotalNewRERACarpetAreaSqFt", filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter Total New Rera CA"
+                  rightIcon="SqFt"
+                />
+              </div>
+            </div>
+            <div>
 
-
+              <Input
+                label="Area Against Terrace + Deck Area + Total New RERA Carpet Area (SqFt) (A + B + C) "
+                value={(Number(formData?.TotalNewRERACarpetAreaSqFt || 0) + (Number(formData?.DeckAreaSqFt || 0)) + (Number(formData?.AreaAgainstTerraceSqFt || 0))).toFixed(2)}
+                disabled
+                rightIcon="SqFt"
+              />
             </div>
             <div>
               <TextArea
@@ -1608,6 +1592,7 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={(e) => handleFieldChange("Remark", e.target.value)}
               />
             </div>
+
           </div>
         </form>
       </div >
@@ -1725,14 +1710,14 @@ const AddUpdateTenant: React.FC = () => {
             </div>
             <div>
               <Input
-                label='Email Id'
+                label='E-Mail ID'
                 error={errorsTenantApplicant.ApplicantEmailId}
                 type="text"
                 value={formDataForApplicant.ApplicantEmailId ?? ""}
                 onChange={e =>
                   handleFieldChangeTenantApplicant('ApplicantEmailId', filterEmail(e.target.value))
                 }
-                placeholder="Enter Email Id"
+                placeholder="Enter E-Mail ID"
               />
             </div>
             <div>
@@ -1740,7 +1725,6 @@ const AddUpdateTenant: React.FC = () => {
               <MultiFilePicker
                 label="Photo"
                 placeholder="Select Photo"
-                required
                 error={errorsTenantApplicant.PhotoURL}
                 value={applicantPhotoFiles}
                 onChange={setApplicantPhotoFiles}
@@ -1931,6 +1915,11 @@ const AddUpdateTenant: React.FC = () => {
                   }
 
                   handleFieldChangeTenantApplicant("BankListMasterId", Number(item.value));
+
+                  setDropdownLabels({
+                    bankName: item.label || "",
+                  });
+
                 }}
                 initialValue={createDropdownInitialValue(formDataForApplicant.BankListMasterId, dropdownLabels.bankName)}
                 error={errorsTenantApplicant.BankListMasterId}
@@ -1946,6 +1935,7 @@ const AddUpdateTenant: React.FC = () => {
                 placeholder="Enter Account Number"
               />
             </div>
+
             <div>
               <Input label="IFSC Code"
                 value={formDataForApplicant.IFSCCode ?? ""}
@@ -1954,9 +1944,11 @@ const AddUpdateTenant: React.FC = () => {
                 placeholder="Enter IFSC Code"
               />
             </div>
+
             <div>
               <MultiFilePicker
                 label="Cheque / Cancelled Cheque"
+                placeholder="Select Cheque / Cancelled Cheque"
                 error={errorsTenantApplicant.ChequeURL}
                 value={chequeFiles}
                 onChange={setChequeFiles}

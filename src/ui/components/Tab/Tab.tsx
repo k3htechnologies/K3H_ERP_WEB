@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { COLORS } from "@/core/constants";
+import { useViewportHeight } from "@/core/utils/useViewportHeight";
 
 export interface TabItem {
   id: string;
   label: string;
+  count?: number;
 }
 
 interface TabsProps {
@@ -12,6 +14,7 @@ interface TabsProps {
   onTabChange?: (tab: TabItem) => void;
   islarge?: boolean
   isChips?: boolean;
+  isvertical?: boolean;
   istoggleTab?: boolean;
 }
 
@@ -21,11 +24,13 @@ export const Tabs: React.FC<TabsProps> = ({
   onTabChange,
   islarge = false,
   isChips = false,
+  isvertical = false,
   istoggleTab = false,
 }) => {
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const verticalTabHeight = useViewportHeight(255, 350, 900);
 
   useEffect(() => {
     if (defaultActive) {
@@ -75,7 +80,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (isChips) {
     return (
-      <div className="w-full border-b border-gray-200">
+      <div className="w-full border-b border-gray-200 overflow-x-auto scrollbar-hide thin-scroll">
         <div className="flex gap-8">
           {tabs.map((tab) => {
             const isActive = active === tab.id;
@@ -91,14 +96,42 @@ export const Tabs: React.FC<TabsProps> = ({
                   }
               `}>
                 {tab.label}
-
-                {/* underline */}
                 {isActive && (
-                  <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full"
-                  />
+                  <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full" />
                 )}
               </button>
             );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  if (isvertical) {
+    return (
+      <div className="w-full overflow-y-auto thin-scroll" style={{ maxHeight: verticalTabHeight}} >
+        <div className="flex flex-col gap-2 w-full">
+          {tabs.map((tab) => {
+
+            const isActive = active === tab.id;
+
+            return (
+              <div key={tab.id} className="border-b border-gray-100 last:border-b-0" >
+                <button
+                  type="button"
+                  onClick={() => handleChange(tab)}
+                  className={`w-full flex items-center justify-between text-left px-4 py-3 rounded-lg text-sm transition
+                                    ${isActive ? "bg-[#2563EB] text-white font-medium" : "text-gray-700 font-normal"}`}>
+                  <span>{tab.label}</span>
+
+                  <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>
+                    {tab.count ?? 0}
+                  </span>
+                  
+                </button>
+              </div>
+            );
+
           })}
         </div>
       </div>

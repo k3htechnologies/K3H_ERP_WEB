@@ -87,7 +87,7 @@ export interface ProjectMasterData {
     ProjectEstimateCost: number | 0;
     ProjectAreaInSqft: string | '';
     ProjectAreaInSqmt: string | '';
-    OnGoingBudgetCost: string | '';
+    OnGoingBudgetCost:number | 0;
 
     SurveyDate: string | null;
     ExpectedStartDate: string | null;
@@ -112,6 +112,9 @@ export interface ProjectMasterData {
     ProjectScheme: string | '';
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
+
+    IsFederation:boolean | false;
+    FederationAmount:number | 0;
 
     // Notification
     NotificationCount: number | 0;
@@ -230,6 +233,9 @@ export interface AddUpdateProjectMasterRequest {
     ProjectScheme: string | '';
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
+
+    IsFederation:boolean | false;
+    FederationAmount:number | 0;
 }
 
 export interface AddUpdateProjectMasterWithEmployeeRequest {

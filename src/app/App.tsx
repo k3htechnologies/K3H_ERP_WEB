@@ -95,12 +95,10 @@ import { DeductionMasterListStateProvider } from '@/features/deductionMaster/con
 import { ShiftMasterListStateProvider } from '@/features/shiftMaster/context/ShiftMasterListStateContext';
 import { WeekOffMasterListStateProvider } from '@/features/weekOffMaster/context/WeekOffMasterListStateContext';
 import TenantDocument from '@/features/tenant/pages/TenantDocument';
-import ProposedOffer from '@/features/proposedOffer/pages/ProposedOffer';
 import Company from '@/features/projectMaster/pages/Company';
 import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
-import Rent from '@/features/rent/pages/Rent';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -133,9 +131,6 @@ import ApprovedBankFile from '@/features/approvedBank/pages/ApprovedBankFile';
 import { MarketingContentListStateProvider } from '@/features/marketingContent/context/MarketingContentListStateContext';
 import MarketingContentFolder from '@/features/marketingContent/pages/MarketingContentFolder';
 import MarketingContent from '@/features/marketingContent/pages/MarketingContent';
-import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTrackRent';
-import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
-import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
 import { BookingListStateProvider } from '@/features/booking/context/BookingListStateContext';
 import Booking from '@/features/booking/pages/Booking';
 import AddUpdateBooking from '@/features/booking/pages/AddUpdateBooking';
@@ -179,39 +174,56 @@ import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/Chan
 import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
-import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import Budget from '@/features/budget/pages/Budget';
 import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
 import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
 import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
-import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
-import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
-import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
-import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
-import { AddUpdateGRN } from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
-import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
-import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
-import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
-import StockManagement from '@/features/stockManagement/pages/StockManagement';
-import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
-import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
-import ProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ProjectProfessionalDetails';
-import { ProjectProfessionalDetailsListStateProvider } from '@/features/projectProfessionalDetails/context/ProjectProfessionalDetailsListStateContext';
-import ViewProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ViewProjectProfessionalDetails';
-import AddUpdateProjectProfessionalDetail from '@/features/projectProfessionalDetails/pages/AddUpdateProjectProfessionalDetails';
-import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
-import NewProposedPlan from '@/features/proposedOffer/pages/NewProposedPlan';
 import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
-import CameraPlayer from '@/features/cameraPlayer/pages/CameraPlayer';
-import ViewProjectLead from '@/features/projectLead/pages/ViewProjectLead';
+import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
+import { TermSheetListStateProvider } from '@/features/termSheet/context/TermSheetListStateContext';
+import TermSheet from '@/features/termSheet/pages/TermSheet';
+import { TermSheetDocument } from '@/features/termSheet/pages/TermSheetDocument';
+import ViewTermSheet from '@/features/termSheet/pages/ViewTermSheet';
+import CompareTermSheet from '@/features/termSheet/pages/CompareTermSheet';
+import { TaxTrackerListStateProvider } from '@/features/taxTracker/context/TaxTrackerListStateContext';
+import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
+import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker';
+import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
+import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
+import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
+import TermSheetReport from '@/features/termSheetReport/pages/TermSheetReport';
+import TestDocumentCategoryMaster from '@/features/testDocumentCategory/pages/TestDocumentCategoryMaster';
+import TestDocument from '@/features/testDocument/pages/TestDocument';
+import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pages/DrawingDocumentCategoryMaster';
+import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
+import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
+import { GatePass } from '@/features/gatePass/pages/GatePass';
 import { ProjectLandListStateProvider } from '@/features/projectLead/context/ProjectLandListStateContext';
 import { ProjectRedevelopmentListStateProvider } from '@/features/projectLead/context/ProjectRedevelopmentListStateContext';
-import AddUpdateProjectRedevelopment from '@/features/projectLead/components/AddUpdateProjectRedevelopment';
 import AddUpdateProjectLand from '@/features/projectLead/components/AddUpdateProjectLand';
+import AddUpdateProjectRedevelopment from '@/features/projectLead/components/AddUpdateProjectRedevelopment';
 import { ViewProjectLand } from '@/features/projectLead/components/ViewProjectLand';
 import ViewProjectRedevelopment from '@/features/projectLead/components/ViewProjectRedevelopment';
+import ViewProjectLead from '@/features/projectLead/pages/ViewProjectLead';
+import { JobRoleMasterListStateProvider } from '@/features/hireSpace/JobRoleMaster/context/JobRoleMasterListStateContext';
+import JobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/JobRoleMaster';
+import AddUpdateJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/AddUpdateJobRoleMaster';
+import { JobOpeningListStateProvider } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
+import ViewJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/ViewJobRoleMaster';
+import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
+import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
+import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
+import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
+import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
+import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
+import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
+import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
+import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
+import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
+import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 
 
 // Loading component for Suspense fallback 
@@ -224,7 +236,6 @@ const LoadingSpinner = () => (
   </div>
 )
 
-// Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const token = LocalStorageHelper.getStoredTokenData();
@@ -381,6 +392,7 @@ function App() {
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
+            <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
@@ -391,6 +403,10 @@ function App() {
             <Route path="approvalDocument" element={<ApprovalDocument />} />
             <Route path="reraCategory" element={<ProjectRERADocumentCategoryMaster />} />
             <Route path="rera" element={<ProjectRERADocument />} />
+            <Route path="testCategory" element={<TestDocumentCategoryMaster />} />
+            <Route path="testDocument" element={<TestDocument />} />
+            <Route path="drawingCategory" element={<DrawingDocumentCategoryMaster />} />
+            <Route path="drawing" element={<DrawingDocument />} />
 
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
@@ -399,6 +415,14 @@ function App() {
             <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
             <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
             <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
+
+            {/* TAX TRACKER */}
+            <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} />
+
+
+            <Route path='otplogs' element={<OTPLogs />} />
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
@@ -461,15 +485,6 @@ function App() {
             <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
-            <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
-            <Route path="rent/pay/:PayTrackRentId?" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
-            <Route path="rent/paymentLedger" element={<RentListStateProvider><ViewPayTrackRent /></RentListStateProvider>} />
-
-            <Route path="proposedOffer" element={<ProposedOffer />} />
-
-            <Route path="proposedPlan" element={<NewProposedPlan />} />
-
-
             {/* OPERATION */}
             <Route path="siteProgress" element={<SiteProgress />} />
             <Route path="siteProgress/SiteProgressSubConstruction" element={<SiteProgressSubConstruction />} />
@@ -497,8 +512,6 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
-
-            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
 
@@ -516,13 +529,35 @@ function App() {
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
 
+            {/* FINANCE */}
+            <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/add/:TermSheetId?' element={<TermSheetListStateProvider><AddUpdateTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
+            <Route path='termSheetReport' element={<TermSheetReport />} />
 
-            <Route path="brokerage" element={<Brokerage />} />
-            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
-            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
-            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
-            <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            {/* VISITOR MANAGEMENT */}
+            <Route path='gatePass' element={<GatePass />} />
 
+            {/* PROJECT LAND */}
+            <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
+              <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectLand/:ProjectLandId?" element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/addProjectRedevelopment/:ProjectRedevelopmentId?" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+            <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
+            <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
+
+            {/* HIRESPACE & JON OPENING */}
+            <Route path="jobRoleMaster" element={<JobRoleMasterListStateProvider><JobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/add/:departmentId/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/view" element={<JobRoleMasterListStateProvider><ViewJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobOpenings" element={<JobOpeningListStateProvider><JobOpening /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/:departmentId/JobApplicationDetails/:jobOpeningMasterId" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
+         
+          {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
@@ -531,26 +566,6 @@ function App() {
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
-
-            {/* Stock Management */}
-            <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
-            <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
-
-            <Route path='projectProfessionalDetails' element={<ProjectProfessionalDetailsListStateProvider><ProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
-            <Route path='addUpdateProjectProfessionalDetails/add' element={<ProjectProfessionalDetailsListStateProvider><AddUpdateProjectProfessionalDetail /></ProjectProfessionalDetailsListStateProvider>} />
-            <Route path='viewProjectProfessionalDetails/view' element={<ProjectProfessionalDetailsListStateProvider><ViewProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
-
-            <Route path='cameraPlayer' element={<CameraPlayer />} />
-
-            <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
-              <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
-            <Route path="projectLead/addProjectLand/:ProjectLandId?" element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
-            <Route path="projectLead/addProjectRedevelopment/:ProjectRedevelopmentId?" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
-            <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
-            <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
-
-            {/* MORE */}
-            <Route path='otplogs' element={<OTPLogs />} />
 
           </Route>
 

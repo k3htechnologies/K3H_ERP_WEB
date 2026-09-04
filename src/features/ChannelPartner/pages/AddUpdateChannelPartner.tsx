@@ -375,12 +375,12 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.EmailId !== "") {
       if (!isValidEmail(formData.EmailId!.trim())) {
-        newErrors.EmailId = "Enter a Valid E-mail Id";
+        newErrors.EmailId = "Enter a Valid E-Mail ID";
       }
     }
 
     if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId.trim() === "") {
-      newErrors.EmailId = "E-mail Id is mandatory";
+      newErrors.EmailId = "E-Mail ID is mandatory";
     }
 
     if (formData.AlternativeMobileNumber?.trim()) {
@@ -834,7 +834,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
               <div>
                 <Input
-                  label="E-mail Id"
+                  label="E-Mail ID"
                   type="text"
                   value={formData.EmailId}
                   error={errors.EmailId}
@@ -843,7 +843,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                     const emailId = filterEmail(e.target.value);
                     handleFieldChange("EmailId", emailId);
                   }}
-                  placeholder="Enter Valid E-mail Id"
+                  placeholder="Enter Valid E-Mail ID"
                 />
               </div>
 

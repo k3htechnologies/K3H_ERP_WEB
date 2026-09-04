@@ -77,7 +77,7 @@ export const BranchAssociationsMasterFormModal: React.FC<BranchAssociationsMaste
                 <FieldItem label="Designation" value={employeeDetails.Designation || "-"} />
                 <FieldItem label="Branch" value={employeeDetails.Branch || "-"} />
                 <FieldItem label="Reporting Person" value={employeeDetails.ReportPersonName || "-"} />
-                <FieldItem label="Email ID" value={employeeDetails.EmailId || "-"} />
+                <FieldItem label="E-Mail ID" value={employeeDetails.EmailId || "-"} />
                 <FieldItem label="Personal Mobile Number" value={employeeDetails.PersonalMobileNumber || "-"} />
               </div>
             </div>

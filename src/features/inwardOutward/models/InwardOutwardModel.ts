@@ -1,0 +1,168 @@
+import type { ApiResponse } from "@/core/api/ApiResponse"
+export interface FilterWithPaginationInwardAndOutWardRequest {
+    PageSize?: number
+    PageNumber?: number
+    InwardOutwardId?: number
+    SenderName?: string
+    SystemGeneratedCode?: string
+    ReceiverName?: string
+    DocumentType?: string
+    DocumentTitle?: string;
+    DeliveryStatus?: string;
+    SenderMobileNumber?: string;
+    ReceiverMobileNumber?: string;
+    FromDate?: string;
+    ToDate?: string;
+    SortBy?: string
+    ExportType?: 'Excel' | 'PDF'
+}
+
+export interface InwardAndOutWardData {
+    InwardOutwardId: number | 0,
+    UniqueKey: string | null
+    SystemGeneratedCode: string | null,
+    DocumentTitle: string | null,
+    InwardOutwardDate: string | null,
+    DocumentType: string | null,
+    EmployeeId: string | null,
+    DocumentURL: string | null,
+    Amount: number | 0,
+    DeliveryType: string | null,
+    ReceiversSignature: string,
+    ReceivedBy: string | null,
+    ChequeNo: string | null,
+    Priority: string | null,
+    DocumentDescription: string | null,
+    DeliveryMode: string | null,
+    DeliveryStatus: string | null,
+    AcknowledgementSignatureURL: string | null,
+    AcknowledgementURL: string | null,
+    AcknowledgementRemark: string | null,
+    EmployeeNames: string | null
+    InvoiceDate: string | null,
+    DepartmentName: string | null,
+    InwardNumber: number | 0,
+    InvoiceNumber: string | null,
+    HandOverDate: string | null,
+    HandOverTo: string | null,
+    SenderName: string | null,
+    SenderEmailId: string | null,
+    SenderMobileNo: string | null,
+    SenderAddress: string | null,
+    ReceiverName: string | null,
+    ReceiverEmailId: string | null,
+    ReceiverMobileNo: string | null
+    ReceiverAddress: string | null
+    InwardOutwardRevertHistory: InwardOutwardRevertHistory[];
+    InwardOutwardDocumentHistory: InwardOutwardDocumentHistory[];
+
+    ChequeNumber: string | null
+    AcknowledgementBy: string | null,
+    SenderMobileNumber: string | null,
+    SenderMobileNumberCountryCode: string | null,
+    ReceiverMobileNumber: string | null,
+    ReceiverMobileNumberCountryCode: string | null,
+    HandoverPersonMobileNumber: string | null,
+    HandoverPersonMobileNumberCountryCode: string | null,
+
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null,
+}
+export interface AddUpdateInwardAndOutWardRequest {
+    InwardOutwardId: number;
+    UniqueKey: string | null;
+    InvoiceNumber: string | null;
+    InvoiceDate: string | null;
+    DeliveryType: string | null;
+    DocumentType: string | null;
+    ChequeNumber: string | null;
+    DocumentTitle: string | null;
+    Amount: number;
+    InwardOutwardDate: string | null;
+    SenderName: string | null;
+    SenderAddress: string | null;
+    SenderMobileNumber: string | null;
+    SenderMobileNumberCountryCode: string | null;
+    SenderEmailId: string | null;
+    ReceiverName: string | null;
+    ReceiverAddress: string | null;
+    ReceiverMobileNumber: string | null;
+    ReceiverMobileNumberCountryCode: string | null;
+    ReceiverEmailId: string | null;
+    HandOverTo: string | null;
+    HandOverDate: string | null;
+    HandoverPersonMobileNumber: string | null;
+    HandoverPersonMobileNumberCountryCode: string | null;
+
+    DocumentURL: File[] | null;
+    RemoveDocumentURL: string;
+    DocumentDescription: string | null;
+    EmployeeId: string | null;
+    DeliveryMode: string | null;
+    DeliveryStatus: string | null;
+    AcknowledgementBy: string | null;
+    AcknowledgementURL: File[] | null;
+    RemoveAcknowledgementURL: string;
+    AcknowledgementSignatureURL: File[] | null;
+    RemoveAcknowledgementSignatureURL: string;
+    AcknowledgementRemark: string | null;
+    CreatedById?: number | 0
+}
+
+export interface DeleteInwardAndOutWardRequest {
+
+    InwardOutwardId: number
+    UniqueKey: string
+}
+
+export interface InwardOutwardRevertHistory {
+    InwardOutwardRevertId: number
+    UniqueKey: string | null
+    InwardOutwardId: number
+    RevertDate: string | null
+    RevertRemark: string | null
+    RevertDocumentURL: string
+}
+export interface InwardOutwardDocumentHistory {
+    DeliveryStatus: string | null
+    DeliveryDate: string | null
+}
+export interface AddRevertInwardOutwardData {
+    InwardOutwardRevertId: number | 0,
+    UniqueKey: string | null
+    InwardOutwardId: number | 0,
+    RevertDate: string | null
+    RevertRemark: string | null
+    RevertDocumentURL: File[] | null
+    RemoveRevertDocumentURL: string | null
+}
+export interface DeleteInwardOutwardRevertHistoryRequest {
+    InwardOutwardRevertId: number | 0,
+    Uniquekey: string
+    InwardOutwardId: number | 0,
+
+}
+
+export interface FilterWithPaginationSenderReceiverByMobileNoRequest {
+    PageSize?: number
+    PageNumber?: number
+    MobileNumber?: string
+}
+export interface SenderReceiverByMobileNoData {
+    MobileNumber: string | null
+    Name: string | null,
+    EmailId: string | null,
+    Address: string | null,
+}
+
+export type InwardAndOutWardListResponse = ApiResponse<InwardAndOutWardData[]>
+export type InwardAndOutWardSaveResponse = ApiResponse<InwardAndOutWardData[]>
+export type InwardAndOutWardDeleteResponse = ApiResponse<number>
+export type InwardOutwardRevertSaveResponse = ApiResponse<AddRevertInwardOutwardData[]>
+export type SenderReceiverByMobileNoDataListResponse = ApiResponse<SenderReceiverByMobileNoData[]>

@@ -1227,6 +1227,48 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  storeTestDocumentCategoryMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Test Document Category Master Columns Details:", error);
+    }
+  },
+
+  getTestDocumentCategoryMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Test Document Category Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeDrawingDocumentCategoryMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Drawing Document Category Master Columns Details:", error);
+    }
+  },
+
+  getDrawingDocumentCategoryMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Drawing Document Category Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
   //REDEVELOPMENT
   storeRedevelopmentBuildingTableColumns: (columns: string): void => {
     try {
@@ -1465,51 +1507,76 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  //#region MATERIAL REQUISITION
 
-  storeMaterialRequisitionTableColumns: (columns: string): void => {
+  //TERM SHEET
+
+  storeTermSheetTableColumns: (columns: string): void => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS, columns);
     } catch (error) {
-      console.error("Error Material Requisition Columns Details:", error);
+      console.error('Error Term Sheet Columns Details:', error)
     }
   },
-  getMaterialRequisitionTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+
+  getTermSheetTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS)
     if (stored) {
       try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS);
       } catch (error) {
-        console.error("Error reading Material Requisition Columns Details:", error);
-        return null;
-      }
-    }
-    return null;
-  },
-  //#endregion
-
-  //#region PROJECT PROFESSIONAL DETAILS
-  storeProjectProfessionalDetailsTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error("ERROR Project Professional Details Columns Details", error);
-    }
-  },
-  getProjectProfessionalDetailsTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS);
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error("Error reading Project Professional Details Columns Details:", error);
+        console.error('Error reading Term Sheet Columns Details:', error)
         return null
       }
     }
     return null
   },
 
-  //#region PROJECT LAND
+   // ACCOUNT
+  getTaxTrackerTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading  Tax Tracker Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+
+  },
+
+  storeTaxTrackerTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Tax Tracker Columns Details:", error);
+    }
+  },
+
+  // VISITOR MANAGEMENT
+  storeGatePassTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Gate Pass Columns Details:", error);
+    }
+  },
+
+  getGatePassTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Gate Pass Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+   //#region PROJECT LAND
   storeProjectLandTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS, columns);
@@ -1549,11 +1616,34 @@ export const LocalStorageHelper = {
     }
     return null
   },
+
+   //#region PURCHASE MATERIAL REQUISITION
+
+  storeMaterialRequisitionTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Material Requisition Columns Details:", error);
+    }
+  },
+  getMaterialRequisitionTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Material Requisition Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
   //#endregion
-  //#region CLEAR LOCAL STORAGE
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_PROJECT);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
@@ -1583,6 +1673,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
@@ -1610,8 +1702,45 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.GATE_PASS_SELECTED_COLUMNS);
+
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.OUTDOOR_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
@@ -1636,12 +1765,17 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_LAND);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_REDEVELOPMENT);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_ROLE_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
+
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);
     }
   },
-  //#endregion
 };

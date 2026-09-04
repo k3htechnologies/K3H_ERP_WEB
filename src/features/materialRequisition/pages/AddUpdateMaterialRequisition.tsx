@@ -22,10 +22,10 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, isPreviousDate } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
-import { fetchSpecificationMasterDropdown } from "@/features/specificationMaster/utils/SpecificationMasterDropDown";
+import { fetchBudgetDropdown } from "../utils/BudgetDropDown";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -48,6 +48,9 @@ const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
     SubMaterialName: "",
     UomCode: "",
     RequiredDate: "",
+    MaterialRequisitionType: "",
+    SpecificationMasterId: 0,
+    CategoryName: "",
     Remark: ""
 })
 
@@ -74,11 +77,10 @@ export const AddUpdateMaterialRequisition = () => {
     const navigate = useNavigate();
     const { projectId } = useProject();
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
-    const [selectedL1Id, setSelectedL1Id] = useState<number>(0);
 
     const MaterialRequisitionTab = [
         { id: "Direct", label: "Direct" },
-        { id: "InDirect", label: "InDirect" }
+        { id: "In - Direct", label: "In - Direct" }
     ]
 
     const [active, setActive] = useState<string>(MaterialRequisitionTab[0].id);
@@ -117,33 +119,21 @@ export const AddUpdateMaterialRequisition = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
+        if (!materialData.SpecificationMasterId || materialData.SpecificationMasterId === 0)
+            newErrors.SpecificationMasterId = "Category Name is required";
+
         if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0)
             newErrors.MaterialMasterId = "Material is required";
 
         if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
             newErrors.SubMaterialMasterId = "Sub Material is required";
 
-        if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0)
-            newErrors.MaterialQuantity = "Quantity must be greater than 0";
-
-        if (!materialData.RequiredDate) {
-            newErrors.RequiredDate = "Required Date is required";
-
-        } else if (materialData.RequiredDate) {
-
-            const selectedDate = new Date(materialData.RequiredDate as string);
-            const today = new Date();
-
-            selectedDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-
-            if (selectedDate < today) {
-                newErrors.RequiredDate = "Required Date Can't be in the Past"
-            }
+        if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0) {
+            newErrors.MaterialQuantity = "Required Quantity is required";
+        } else if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0) {
+            newErrors.MaterialQuantity = "Required Quantity must be greater than 0";
         }
 
-        if (!materialData.Remark || materialData.Remark === "")
-            newErrors.Remark = "Remark is required";
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -189,6 +179,9 @@ export const AddUpdateMaterialRequisition = () => {
                                     MaterialQuantity: item.MaterialQuantity,
                                     RequiredDate: item.RequiredDate,
                                     MaterialName: item.MaterialName,
+                                    MaterialRequisitionType: item.MaterialRequisitionType,
+                                    SpecificationMasterId: item.SpecificationMasterId,
+                                    CategoryName: item.CategoryName,
                                     Remark: item.Remark
                                 }))
                             );
@@ -234,6 +227,9 @@ export const AddUpdateMaterialRequisition = () => {
                 || convert_dd_mm_yyyy_To_Yyyy_mm_dd(row.RequiredDate) || "",
             SubMaterialName: row.SubMaterialName,
             MaterialName: row.MaterialName,
+            MaterialRequisitionType: row.MaterialRequisitionType,
+            SpecificationMasterId: row.SpecificationMasterId,
+            CategoryName: row.CategoryName,
             Remark: row.Remark
         });
         setDropdownLabels({
@@ -244,6 +240,20 @@ export const AddUpdateMaterialRequisition = () => {
     }, [materialOptions]);
 
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: "MaterialRequisitionType",
+            label: "Type",
+            align: "left",
+            width: "30",
+            render: (value) => value ? value : '-'
+        },
+        {
+            key: "CategoryName",
+            label: "Category",
+            align: "left",
+            width: "30",
+            render: (value) => value ? value : '-'
+        },
         {
             key: "MaterialName",
             label: "Material",
@@ -421,21 +431,6 @@ export const AddUpdateMaterialRequisition = () => {
             return;
         }
 
-        const hasPastDate = materialList.some(item => {
-
-            if (!item.RequiredDate) return false;
-
-            const dateString = item.RequiredDate.split("T")[0];
-            const date = new Date(dateString + "T00:00:00");
-
-            return isPreviousDate(date);
-        });
-
-        if (hasPastDate) {
-            addToast({ type: 'error', title: 'Required Date cannot be in the past.' });
-            return;
-        }
-
         setErrors({});
         const validation = validateMaterialRequisitionForm();
 
@@ -506,7 +501,7 @@ export const AddUpdateMaterialRequisition = () => {
                 addToast({ type: "error", title: errorMessage });
             },
             undefined,
-            "Loading Data"
+            "Loading Material - Sub Material - UOM List"
         );
     };
 
@@ -549,9 +544,10 @@ export const AddUpdateMaterialRequisition = () => {
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
 
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Material Requisition Details </h3>
-                        <div className="flex items-center justify-between">
-                            <h3 className="text-md font-medium text-gray-500">
+
+
+                        <div className="flex items-center justify-between border-b border-gray-500 pb-2">
+                            <h3 className="text-lg font-semibold text-gray-900">
                                 Material Details
                             </h3>
 
@@ -564,9 +560,10 @@ export const AddUpdateMaterialRequisition = () => {
                             >
                                 Add Material
                             </Button>
+
                         </div>
 
-                        {materialList.length > 0 && (
+                        {materialList.length > 0 ? (
                             <div className="pb-2">
                                 <DataTable
                                     data={materialList}
@@ -576,6 +573,10 @@ export const AddUpdateMaterialRequisition = () => {
                                     recordsPerPage={5}
                                     className="flex-1"
                                 />
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center">
+                                <span className="text-gray-500 text-sm font-medium">No materials found</span>
                             </div>
                         )}
 
@@ -602,7 +603,10 @@ export const AddUpdateMaterialRequisition = () => {
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
 
                         <div className="flex items-center justify-between pb-3">
-                            <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
+                            <TextArea
+                                label="Remark"
+                                className="thin-scroll"
+                                value={formData.Remarks}
                                 onChange={(e) =>
                                     setFormData(prev => ({
                                         ...prev,
@@ -610,7 +614,8 @@ export const AddUpdateMaterialRequisition = () => {
                                     }))
                                 }
                                 required
-                                placeholder="Enter Remark" error={errors.Remarks} />
+                                placeholder="Enter Remark"
+                                error={errors.Remarks} />
                         </div>
 
                     </div>
@@ -637,221 +642,276 @@ export const AddUpdateMaterialRequisition = () => {
                     saveMaterial();
                 }}
                 saveText="Add"
-                cancelText="Cancel"
-                onCancel={() => setAddMaterialPopUp(false)}
                 size="lg"
             >
-                <div className="mb-2">
-                    <Tabs
-                        tabs={MaterialRequisitionTab}
-                        defaultActive={active}
-                        islarge={true}
-                        onTabChange={(t) => {
-                            setActive(t.id)
-                        }}
-                    />
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div className="space-y-4" >
+                        <Tabs
+                            tabs={MaterialRequisitionTab}
+                            defaultActive={active}
+                            islarge={true}
+                            istoggleTab
+                            onTabChange={(t) => {
+                                setActive(t.id)
+                            }}
+                        />
+
+                        {active == "Direct" && (
+
+                            <div className="space-y-4">
+
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Category Name"
+                                    title="Select Category Name"
+                                    key={dropdownMaterialResetKey}
+                                    initialValue={createDropdownInitialValue(
+                                        materialData.SpecificationMasterId,
+                                        materialData.CategoryName
+                                    )}
+                                    size="lg"
+                                    dataFetchCallBack={fetchBudgetDropdown(projectId!, "L1")}
+                                    onSelected={(item) => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            SpecificationMasterId: id,
+                                            CategoryName: item?.label ?? "",
+                                        }));
+                                    }}
+                                    error={errors.SpecificationMasterId}
+                                />
+
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Material"
+                                    key={dropdownMaterialResetKey}
+                                    initialValue={createDropdownInitialValue(materialData.MaterialMasterId, dropdownLabels.materialName || materialData.MaterialName)}
+                                    title="Select Material"
+                                    size="lg"
+                                    dataFetchCallBack={async () => ({
+                                        itemList: materialOptions,
+                                        totalNumberOfRecord: materialOptions.length
+                                    })}
+                                    onSelected={(item) => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            MaterialMasterId: id,
+                                            SubMaterialMasterId: 0,
+                                            MaterialName: item?.label ?? "",
+                                            SubMaterialName: "",
+                                            UomCode: "",
+                                            UomMasterId: 0
+                                        }));
+                                        setDropdownSubMaterialResetKey(p => p + 1);
+                                    }}
+                                    error={errors.MaterialMasterId}
+                                />
+
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Sub Material"
+                                    key={dropdownSubMaterialResetKey}
+                                    initialValue={createDropdownInitialValue(materialData.SubMaterialMasterId, materialData.SubMaterialName)}
+                                    title="Select SubMaterial"
+                                    size="lg"
+                                    dataFetchCallBack={async () => ({
+                                        itemList: subMaterialOptions,
+                                        totalNumberOfRecord: subMaterialOptions.length
+                                    })}
+
+                                    onSelected={(item) => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        const selected = materialsubmaterialList.find(
+                                            item => item.SubMaterialMasterId === id
+                                        );
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            SubMaterialMasterId: id,
+                                            SubMaterialName: selected?.SubMaterialName ?? "",
+                                            UomCode: selected?.UomCode ?? "",
+                                            UomMasterId: selected?.UomMasterId ?? 0
+                                        }));
+                                    }}
+                                    error={errors.SubMaterialMasterId}
+                                />
+
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label="UOM"
+                                    value={materialData.UomCode}
+                                    placeholder="UOM"
+                                    maxLength={250}
+                                    error={errors.UomMasterId}
+                                />
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <Input
+                                        label="Estimated Quantity"
+                                    />
+
+                                    <Input
+                                        label="Received Quantity"
+                                    />
+                                </div>
+
+                                <Input
+                                    label=" Required Quantity"
+                                    required
+                                    value={materialData.MaterialQuantity}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
+                                    }}
+                                    placeholder="Quantity"
+                                    min={0}
+                                    error={errors.MaterialQuantity}
+                                />
+
+                                <DatePickerInput
+                                    label="Required Date"
+                                    value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
+                                    disabled
+                                    error={errors.RequiredDate}
+                                    onChange={(value) =>
+                                        setMaterialData(prev => ({ ...prev, RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }))
+                                    }
+                                    placeholder="DD/MM/YYYY"
+                                />
+
+                                <TextArea
+                                    label="Remark"
+                                    className="thin-scroll"
+                                    value={materialData.Remark}
+                                    onChange={(e) =>
+                                        setMaterialData(prev => ({ ...prev, Remark: e.target.value }))
+                                    }
+                                    placeholder="Enter Remark"
+                                    error={errors.Remark}
+                                />
+                            </div>
+                        )}
+
+                        {active == "In - Direct" && (
+                            <div className="space-y-4">
+
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Material"
+                                    key={dropdownMaterialResetKey}
+                                    initialValue={createDropdownInitialValue(materialData.MaterialMasterId, dropdownLabels.materialName || materialData.MaterialName)}
+                                    title="Select Material"
+                                    size="lg"
+                                    dataFetchCallBack={async () => ({
+                                        itemList: materialOptions,
+                                        totalNumberOfRecord: materialOptions.length
+                                    })}
+                                    onSelected={(item) => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            MaterialMasterId: id,
+                                            SubMaterialMasterId: 0,
+                                            MaterialName: item?.label ?? "",
+                                            SubMaterialName: "",
+                                            UomCode: "",
+                                            UomMasterId: 0
+                                        }));
+                                        setDropdownSubMaterialResetKey(p => p + 1);
+                                    }}
+                                    error={errors.MaterialMasterId}
+                                />
+
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Sub Material"
+                                    key={dropdownSubMaterialResetKey}
+                                    initialValue={createDropdownInitialValue(materialData.SubMaterialMasterId, materialData.SubMaterialName)}
+                                    title="Select SubMaterial"
+                                    size="lg"
+                                    dataFetchCallBack={async () => ({
+                                        itemList: subMaterialOptions,
+                                        totalNumberOfRecord: subMaterialOptions.length
+                                    })}
+
+                                    onSelected={(item) => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        const selected = materialsubmaterialList.find(
+                                            item => item.SubMaterialMasterId === id
+                                        );
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            SubMaterialMasterId: id,
+                                            SubMaterialName: selected?.SubMaterialName ?? "",
+                                            UomCode: selected?.UomCode ?? "",
+                                            UomMasterId: selected?.UomMasterId ?? 0
+                                        }));
+                                    }}
+                                    error={errors.SubMaterialMasterId}
+                                />
+
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label="UOM"
+                                    value={materialData.UomCode}
+                                    placeholder="UOM"
+                                    maxLength={250}
+                                    error={errors.UomMasterId}
+                                />
+
+                                <Input
+                                    label="Quantity"
+                                    required
+                                    value={materialData.MaterialQuantity}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
+                                    }}
+                                    placeholder="Enter Quantity"
+                                    error={errors.MaterialQuantity}
+                                />
+
+                                <div>
+                                    <DatePickerInput
+                                        label="Required Date"
+                                        required
+                                        error={errors.RequiredDate}
+                                        value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
+                                        onChange={(value) =>
+                                            setMaterialData(prev => ({ ...prev, RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }))
+                                        }
+                                        placeholder="DD/MM/YYYY"
+                                    />
+
+                                </div>
+
+                                <div>
+                                    <TextArea
+                                        label="Remark"
+                                        className="thin-scroll"
+                                        value={materialData.Remark}
+                                        onChange={(e) =>
+                                            setMaterialData(prev => ({ ...prev, Remark: e.target.value }))
+                                        }
+                                        placeholder="Enter Remark"
+                                        error={errors.Remark}
+                                    />
+                                </div>
+
+                            </div>
+                        )}
+                    </div>
                 </div>
-
-                {active == "Direct" && (
-
-                    <div className="space-y-4">
-                        <SingleSelectDropdownWithPagination
-                            label="Category Name"
-                            title="Select Category Name"
-                            dataFetchCallBack={fetchSpecificationMasterDropdown("L1")}
-                            onSelected={(item) => {
-                                setSelectedL1Id(Number(item?.value ?? 0));
-                            }}
-                        />
-
-                        <SingleSelectDropdownWithPagination
-                            key={selectedL1Id}
-                            label="Material"
-                            title="Select Material"
-                            dataFetchCallBack={fetchSpecificationMasterDropdown("L2", selectedL1Id)}
-                            onSelected={() => {
-                            }}
-                        />
-
-                        <SingleSelectDropdownWithPagination
-                            required
-                            label="Sub Material"
-                            title="Select SubMaterial"
-                            size="lg"
-                            onSelected={(item) => { item }}
-                            error={errors.SubMaterialMasterId}
-                        />
-
-                        <Input
-                            type="text"
-                            disabled
-                            label="UOM"
-                            value={materialData.UomCode}
-                            placeholder="UOM"
-                            maxLength={250}
-                            error={errors.UomMasterId}
-                        />
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <Input
-                                label="Estimated Quantity"
-                            />
-
-                            <Input
-                                label="Received Quantity"
-                            />
-                        </div>
-
-                        <Input
-                            label=" Required Quantity"
-                            required
-                            value={materialData.MaterialQuantity}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
-                            }}
-                            placeholder="Quantity"
-                            min={0}
-                            error={errors.MaterialQuantity}
-                        />
-
-                        <DatePickerInput
-                            label="Required Date"
-                            required
-                            value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
-                            onChange={(value) =>
-                                setMaterialData(prev => ({ ...prev, RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }))
-                            }
-                            placeholder="DD/MM/YYYY"
-                        />
-                        {errors.RequiredDate && <p className="text-red-500 text-sm mt-1">{errors.RequiredDate}</p>}
-
-                        <TextArea
-                            label="Remark"
-                            className="thin-scroll"
-                            value={materialData.Remark}
-                            onChange={(e) =>
-                                setMaterialData(prev => ({ ...prev, Remark: e.target.value }))
-                            }
-                            required
-                            placeholder="Enter Remark"
-                            error={errors.Remark}
-                        />
-                    </div>
-                )}
-
-                {active == "InDirect" && (
-                    <div className="space-y-4">
-
-                        <SingleSelectDropdownWithPagination
-                            required
-                            label="Material"
-                            key={dropdownMaterialResetKey}
-                            initialValue={createDropdownInitialValue(materialData.MaterialMasterId, dropdownLabels.materialName || materialData.MaterialName)}
-                            title="Select Material"
-                            size="lg"
-                            dataFetchCallBack={async () => ({
-                                itemList: materialOptions,
-                                totalNumberOfRecord: materialOptions.length
-                            })}
-                            onSelected={(item) => {
-                                const id = item ? Number(item.value) : 0;
-
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    MaterialMasterId: id,
-                                    SubMaterialMasterId: 0,
-                                    MaterialName: item?.label ?? "",
-                                    SubMaterialName: "",
-                                    UomCode: "",
-                                    UomMasterId: 0
-                                }));
-                                setDropdownSubMaterialResetKey(p => p + 1);
-                            }}
-                            error={errors.MaterialMasterId}
-                        />
-
-                        <SingleSelectDropdownWithPagination
-                            required
-                            label="Sub Material"
-                            key={dropdownSubMaterialResetKey}
-                            initialValue={createDropdownInitialValue(materialData.SubMaterialMasterId, materialData.SubMaterialName)}
-                            title="Select SubMaterial"
-                            size="lg"
-                            dataFetchCallBack={async () => ({
-                                itemList: subMaterialOptions,
-                                totalNumberOfRecord: subMaterialOptions.length
-                            })}
-
-                            onSelected={(item) => {
-                                const id = item ? Number(item.value) : 0;
-
-                                const selected = materialsubmaterialList.find(
-                                    item => item.SubMaterialMasterId === id
-                                );
-
-                                setMaterialData(prev => ({
-                                    ...prev,
-                                    SubMaterialMasterId: id,
-                                    SubMaterialName: selected?.SubMaterialName ?? "",
-                                    UomCode: selected?.UomCode ?? "",
-                                    UomMasterId: selected?.UomMasterId ?? 0
-                                }));
-                            }}
-                            error={errors.SubMaterialMasterId}
-                        />
-
-                        <Input
-                            type="text"
-                            disabled
-                            label="UOM"
-                            value={materialData.UomCode}
-                            placeholder="UOM"
-                            maxLength={250}
-                            error={errors.UomMasterId}
-                        />
-
-                        <Input
-                            label="Quantity"
-                            required
-                            value={materialData.MaterialQuantity}
-                            onChange={(e) => {
-                                const value = e.target.value;
-                                setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
-                            }}
-                            placeholder="Enter Quantity"
-                            error={errors.MaterialQuantity}
-                        />
-
-                        <div>
-                            <DatePickerInput
-                                label="Required Date"
-                                required
-                                value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
-                                onChange={(value) =>
-                                    setMaterialData(prev => ({ ...prev, RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "" }))
-                                }
-                                placeholder="DD/MM/YYYY"
-                            />
-                            {errors.RequiredDate && <p className="text-red-500 text-sm mt-1">{errors.RequiredDate}</p>}
-                        </div>
-
-                        <div>
-                            <TextArea
-                                label="Remark"
-                                className="thin-scroll"
-                                value={materialData.Remark}
-                                onChange={(e) =>
-                                    setMaterialData(prev => ({ ...prev, Remark: e.target.value }))
-                                }
-                                required
-                                placeholder="Enter Remark"
-                                error={errors.Remark}
-                            />
-                        </div>
-                        
-                    </div>
-                )}
             </Modal>
         </>
 

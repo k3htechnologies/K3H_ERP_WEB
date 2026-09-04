@@ -285,7 +285,7 @@ const Employee: React.FC = () => {
       },
       {
         key: 'EmailId',
-        label: 'Email Id',
+        label: 'E-Mail ID',
         width: '14',
         sortable: false,
         align: 'left',

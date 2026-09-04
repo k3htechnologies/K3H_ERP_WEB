@@ -31,7 +31,6 @@ export interface AddUpdatePayTrackRentRequest {
   IFSCCode: string | null
   PaymentMode: string | null
   AmountType: string | null
-  PaymentType: string | null
   PayAmount: number | null
   TransactionChequeDemandDraftNumber: string | null
   TransactionChequeDemandDraftURL: File[] | null
@@ -52,11 +51,11 @@ export interface PayTrackRentLedgerData {
   ProjectId: number | null
 
   // Tenant Details
-  FlatNumber: string
-  FlatCarpetAreaSqFt: number | null
-  Facing: string | null
-  FlatType: string
-  FlatConfiguration: string | null
+  UnitAnnexureSurveyNumber: string | null;
+  UnitCarpetAreaSqFt: number;
+  UnitFacing: string | null;
+  UnitType: string | null;
+  UnitConfiguration: string | null;
 
   // Applicant Details
   ApplicantType: string | null
@@ -78,7 +77,6 @@ export interface PayTrackRentLedgerData {
   AccountNumber: string | null
   IFSCCode: string | null
   AmountType: string | null
-  PaymentType: string | null
   PayAmount: number | null
   TransactionChequeDemandDraftNumber: string | null
   TransactionChequeDemandDraftURL: string | null

@@ -88,6 +88,7 @@ export interface EmployeeMasterData {
   DrivingLicenceNumber: string | ''
   VoterCardNumber: string | ''
   ProfilePhotoURL: string | ''
+  MPIN: string | ''
   ClientRegistrationId: number | 0
   CreatedById: number | 0
   CreatedBy: string | ''

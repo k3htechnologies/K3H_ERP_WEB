@@ -451,12 +451,12 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     if (formData.EmailId !== "") {
       if (!isValidEmail(formData.EmailId!.trim())) {
-        newErrors.EmailId = "Enter a Valid E-mail Id";
+        newErrors.EmailId = "Enter a Valid E-Mail ID";
       }
     }
 
     if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId!.trim() === "") {
-      newErrors.EmailId = "E-mail Id is mandatory";
+      newErrors.EmailId = "E-Mail ID is mandatory";
     }
 
     if (!formData.Accommodation) {
@@ -561,11 +561,11 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
 
     if (formData.ChannelPartnerTeamMemberMobileNumberCountryCode !== "+91" && (mobile || name) && !emailId) {
-      newErrors.ChannelPartnerTeamMemberEmailId = "E-mail Id is mandatory";
+      newErrors.ChannelPartnerTeamMemberEmailId = "E-Mail ID is mandatory";
     }
 
     if (emailId && !isValidEmail(emailId)) {
-      newErrors.ChannelPartnerTeamMemberEmailId = "Enter a valid E-mail Id";
+      newErrors.ChannelPartnerTeamMemberEmailId = "Enter a valid E-Mail ID";
     }
 
     if (Number(formData.EnquiryDate) === 0 && !formData.EnquiryDate) {
@@ -953,7 +953,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     const emailId = filterEmail(e.target.value);
                     handleFieldChange("EmailId", emailId);
                   }}
-                  placeholder="Enter Valid E-mail Id"
+                  placeholder="Enter Valid E-Mail ID"
                 />
               </div>
               <div>
@@ -1377,7 +1377,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                   const emailId = filterEmail(e.target.value);
                                   handleFieldChange("ChannelPartnerTeamMemberEmailId", emailId);
                                 }}
-                                placeholder="Enter Valid E-mail Id"
+                                placeholder="Enter Valid E-Mail ID"
                               />
                             </div>
 
@@ -1431,8 +1431,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <FieldItem label="Designation" value={employeeDetails?.Designation || "-"} />
                     <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
                     <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
-                    <FieldItem label="Email ID" value={employeeDetails?.EmailId || "-"} />
-                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber || "-"} />
+                    <FieldItem label="E-Mail ID" value={employeeDetails?.EmailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'} />
                   </div>
                 </div>
               )}
@@ -1756,7 +1756,12 @@ export const AddUpdateEnquiry: React.FC = () => {
             </div>
 
             <div>
-              <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+              <TextArea label="Remarks"
+                className="thin-scroll"
+                value={formData.Remark ?? ""}
+                placeholder="Enter Remarks"
+                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                error={errors.Remark} />
             </div>
           </div>
 

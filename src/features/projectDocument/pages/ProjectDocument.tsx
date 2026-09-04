@@ -62,94 +62,49 @@ const initialFormState = (): AddUpdateProjectDocumentRequest => ({
 });
 
 const ProjectDocument: React.FC = () => {
-  //#region STATE
   const [projectDocumentList, setProjectDocumentList] = useState<ProjectDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [expandHeaderProjectDocumentName, setExpandHeaderProjectDocumentName] = useState<string>("");
   const [expandHeaderProjectDocumentId, setExpandHeaderProjectDocumentId] = useState<number>(0);
-
-  //SET AND REMOVE URL FILE
   const [projectDocumentFiles, setProjectDocumentFiles] = useState<(File | string)[]>([]);
   const [RemoveProjectDocumentUrls, setRemoveProjectDocumentUrls] = useState<string[]>([]);
   const [projectDocumentURL, setProjectDocumentURL] = useState<string>();
-
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
-  //FILTER STATE
   const [filters] = useState<FilterInfo>({});
-
-  // TOAST
   const { addToast } = useToast();
-
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchDocuments(value);
   }, 350);
-
-  // TAB LIST
   const [projectDocumentTabList, setProjectDocumentTabList] = useState<TabItem[]>([]);
   const [activeTab, setActiveTab] = useState<string>("");
-
-  //DATATABLE EXPANDABLE REF
   const dtRef = useRef<DataTableExpandableRef | null>(null);
-
-  //DATATABLE EXPANDED ROW AND PARENT ID
 
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
 
   const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  // ADD EDIT UPDATE DOCUMENT
   const [editingDocumentData, setEditingDocumentData] = useState<ProjectDocumentData | null>(null);
 
   const [isAddUpdateDocumentModalOpen, setIsAddUpdateDocumentModalOpen] = useState(false);
-
-  // ADD EDIT UPDATE DOCUMENT DETAILS
   const [isAddUpdateDocumentDetailsModalOpen, setIsAddUpdateDocumentDetailsModalOpen] = useState(false);
-
-  //DELETE PROJECT DOCUMENT MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
 
   const [deleteProjectDocumentDetailsData, setDeleteProjectDocumentDetailsData] = useState<ProjectDocumentData | null>(null);
-
-  //ADD UPDATE PROJECT DOCUMENT MASTER
   const [formData, setFormData] = useState<AddUpdateProjectDocumentRequest>(() => initialFormState());
-
-  //EXCEL IMPORT
   const [showImportModal, setShowImportModal] = useState(false);
-
-  // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [documentName, setDocumentName] = useState<string | null>("");
   const [documentCategory, setDocumentCategory] = useState<string | null>("");
-
-  // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [approvalRowData, setApprovalRowData] = useState<ProjectDocumentData | null>(null);
-
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
-
-  //#region INIT
 
   useEffect(() => {
     if (!projectId) return;
@@ -201,10 +156,6 @@ const ProjectDocument: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateDocumentModalOpen, isAddUpdateDocumentDetailsModalOpen, editingDocumentData]);
-
-  //#endregion
-
-  //#region ACTIVE TAB IF FIND OUT
   const getActiveTabId = (filterParams?: FilterInfo): number => {
     if (filterParams && filterParams.ProjectDocumentCategoryId != null) {
       const raw = filterParams.ProjectDocumentCategoryId;
@@ -218,8 +169,7 @@ const ProjectDocument: React.FC = () => {
 
     return 0;
   };
-  //#endregion
-  //#region LOAD TAB PROJECT DOCUMENT CATEGORY
+  
   const loadProjectDocumentTabs = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -260,14 +210,11 @@ const ProjectDocument: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region DATA LOAD
-  const fetchProjectDocumentList = async (page: number = pagination.currentPage) => {
-    return await loadProjectDocument(page, filters);
+  const fetchProjectDocumentList = async (page: number = pagination.currentPage, currentSortInfo: SortInfo | undefined = sortInfo) => {
+    return await loadProjectDocument(page, filters, currentSortInfo);
   };
 
-  const loadProjectDocument = async (page: number, filterParams: FilterInfo) => {
+  const loadProjectDocument = async (page: number, filterParams: FilterInfo, currentSortInfo: SortInfo | undefined = sortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -281,7 +228,7 @@ const ProjectDocument: React.FC = () => {
           ProjectDocumentStatus: filterParams.ProjectDocumentStatus,
           ProjectDocumentCategory: filterParams.ProjectDocumentCategory,
           ProjectDocumentCategoryId: Number(getActiveTabId(filterParams)),
-          SortBy: getSortByParam(sortInfo ?? null, projectDocumentColumns),
+          SortBy: getSortByParam(currentSortInfo ?? null, projectDocumentColumns),
         };
 
         const response = await projectDocumentService.apiCallPullProjectDocument(params);
@@ -308,9 +255,7 @@ const ProjectDocument: React.FC = () => {
       "Loading Project Document",
     );
   };
-  //#endregion
 
-  //#region SERACH Document
   const searchDocuments = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
@@ -326,18 +271,12 @@ const ProjectDocument: React.FC = () => {
 
     await loadProjectDocument(1, filterParams);
   };
-  //#endregion
-
-  //#region CLEAR SERACH Document
+  
   const clearsearchDocumnets = () => {
     setSearchTerm("");
     debouncedSearch.cancel?.();
     fetchProjectDocumentList();
   };
-
-  //#endregion
-
-  //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = useCallback(
     (page: number) => {
@@ -346,17 +285,16 @@ const ProjectDocument: React.FC = () => {
     [fetchProjectDocumentList],
   );
 
-  //#endregion
+  const handleSortColumn = (newSortInfo: SortInfo) => {
+  setSortInfo(newSortInfo);
 
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = (sortInfo: SortInfo) => {
-    setSortInfo(sortInfo);
-
-    fetchProjectDocumentList(1);
+  const newFilters: FilterInfo = {
+    ...filters,
+    ProjectDocumentCategoryId: activeTab,
   };
-  //#endregion
 
-  //#region TABLE PAGINATION INFO
+  loadProjectDocument(1, newFilters, newSortInfo);
+};
 
   const projectDocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
@@ -370,10 +308,6 @@ const ProjectDocument: React.FC = () => {
   );
 
   const projectDocumentListForTable = useMemo(() => projectDocumentList, [projectDocumentList]);
-
-  //#endregion
-
-  //#region EDIT PROJECT DOCUMENT
   const handleEditProjectDocument = useCallback((row: ProjectDocumentData) => {
     setEditingDocumentData({
       ...row,
@@ -381,10 +315,6 @@ const ProjectDocument: React.FC = () => {
     });
     setIsAddUpdateDocumentModalOpen(true);
   }, []);
-
-  //#endregion
-
-  //#region EDIT PROJECT DOCUMENT DETAILS
   const handleEditProjectDocumentDetails = useCallback((row: ProjectDocumentData) => {
     setEditingDocumentData({
       ...row,
@@ -395,10 +325,6 @@ const ProjectDocument: React.FC = () => {
     });
     setIsAddUpdateDocumentDetailsModalOpen(true);
   }, []);
-
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: ProjectDocumentData) => {
     setDeleteProjectDocumentDetailsData({
       ...row,
@@ -407,10 +333,6 @@ const ProjectDocument: React.FC = () => {
 
     setIsConfirmationDialogBoxOpen(true);
   }, []);
-
-  //#endregion
-
-  //#region TABLE COLUMN
 
   const projectDocumentColumns = useMemo<TableColumn[]>(
     () => [
@@ -541,12 +463,8 @@ const ProjectDocument: React.FC = () => {
         },
       },
     ],
-    // dependencies: include everything used inside that might change
     [canAction, handleEditProjectDocument, handleConfirmationDialogBoxOpen],
   );
-  //#endregion
-
-  //#region TABLE COLUMN DOCUMENT DETAILS
 
   const handleApprovalLog = (row: ProjectDocumentData) => {
     const request: ModulesApprovalStatusRequest = {
@@ -729,12 +647,8 @@ const ProjectDocument: React.FC = () => {
         },
       },
     ],
-    // dependencies: include everything used inside that might change
     [canAction, handleEditProjectDocument, handleApprovalLog, handleApproveRejectDocument],
   );
-  //#endregion
-
-  //#region ADD UPDATE EDIT DOCUMENT
 
   const handleAddDocumentDetailsModal = useCallback((row: ProjectDocumentData) => {
     setExpandedParentRow(row);
@@ -766,8 +680,6 @@ const ProjectDocument: React.FC = () => {
     setErrors({});
     setIsAddUpdateDocumentModalOpen(true);
   }, []);
-
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddDocumentForm = (): {
     isValid: boolean;
 
@@ -877,6 +789,7 @@ const ProjectDocument: React.FC = () => {
         const response = await projectDocumentService.apiCallAddUpdateProjectDocument(payload);
 
         if (E.isRight(response)) {
+
           ismaster === 1 ? setIsAddUpdateDocumentModalOpen(false) : setIsAddUpdateDocumentDetailsModalOpen(false);
 
           const isAdd = formData.ProjectDocumentId === 0;
@@ -897,13 +810,9 @@ const ProjectDocument: React.FC = () => {
               const parentId = expandedParentId;
 
               await fetchProjectDocumentList(pagination.currentPage);
-
-              // collapse all first
               if (dtRef.current) {
                 dtRef.current.collapseAll?.();
               }
-
-              // reopen after table renders
               setTimeout(() => {
                 if (parentId) {
                   dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -923,13 +832,9 @@ const ProjectDocument: React.FC = () => {
               const parentId = expandedParentId;
 
               await fetchProjectDocumentList(pagination.currentPage);
-
-              // collapse all first
               if (dtRef.current) {
                 dtRef.current.collapseAll?.();
               }
-
-              // reopen after table renders
               setTimeout(() => {
                 if (parentId) {
                   dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -956,10 +861,6 @@ const ProjectDocument: React.FC = () => {
       Number(formData.ProjectDocumentId) === 0 ? "Add Document" : "Update Document",
     );
   };
-
-  //#endregion
-
-  //#region DELETE DOCUMENT
   const handleDeleteDocument = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -1004,13 +905,9 @@ const ProjectDocument: React.FC = () => {
             const parentId = expandedParentId;
 
             await fetchProjectDocumentList(pagination.currentPage);
-
-            // collapse all first
             if (dtRef.current) {
               dtRef.current.collapseAll?.();
             }
-
-            // reopen after table renders
             setTimeout(() => {
               if (parentId) {
                 dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -1038,16 +935,12 @@ const ProjectDocument: React.FC = () => {
       "Delete Document",
     );
   };
-  //#endregion
-
-  //#region IMPORT EXCEL | DOWNLOAD
 
   const downloadExcelSampleProjectDocument = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
           TableName: "PROJECT DOCUMENT",
@@ -1101,8 +994,6 @@ const ProjectDocument: React.FC = () => {
     );
   };
 
-  //#endregion
-
   const handleApprovalSubmit = async (remark: string) => {
 
     if (!approvalRowData) return;
@@ -1131,13 +1022,9 @@ const ProjectDocument: React.FC = () => {
           const parentId = expandedParentId;
 
           await fetchProjectDocumentList(pagination.currentPage);
-
-          // collapse all first
           if (dtRef.current) {
             dtRef.current.collapseAll?.();
           }
-
-          // reopen after table renders
           setTimeout(() => {
             if (parentId) {
               dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
@@ -1178,15 +1065,12 @@ const ProjectDocument: React.FC = () => {
         onClearSearch={clearsearchDocumnets}
         isShowFilterButton={false}
         isShowCustomizeButton={false}
-        // ADD
         isShowAddButton={projectDocumentTabList.length > 0 && canAction ? true : false}
         addTitle="Add"
         onAdd={handleAddDocumentModal}
-        // IMPORT
         isShowImportButton={canAction && Number(projectId) > 0}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocument}
-        // EXPORT
         isShowExportButton={false}
         exportLoading={isLoading}
       />

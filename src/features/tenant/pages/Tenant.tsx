@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePagination } from "@/core/hooks/usePagination";
-import {  type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
@@ -33,7 +33,7 @@ import { copyToClipboard } from "@/core/utils/comman";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 
 export const Tenant: React.FC = () => {
-  //#region STATE
+
   const [tenantList, setTenantList] = useState<TenantData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -48,7 +48,6 @@ export const Tenant: React.FC = () => {
 
   const [isShowCustomizeTenantColumnsModal, setIsShowCustomizeTenantColumnsModal] = useState(false);
 
-  //EXCEL IMPORT
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
@@ -57,88 +56,88 @@ export const Tenant: React.FC = () => {
 
   const [deleteTenantData, setDeleteTenantData] = useState<TenantData | null>(null);
 
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
 
-  //#region TENANT LIST STATE CONTEXT
   const { listState, updateListState, resetFilters, setBuildingContext } = useTenantListState();
   const { page, filters, sortInfo, searchTerm, buildingId, buildingName } = listState;
-  //#endregion
 
-  //#region DATA LOAD
-  const loadTenants = useCallback(
-    async (pageNum: number, filterParams: FilterInfo, buildingIdNum: number) => {
-      await runApiWithLoader(
-        setIsLoading,
-        setLoadingMessage,
-        async () => {
-          const params: FilterWithPaginationTenantRequest = {
-            PageNumber: pageNum,
-            PageSize: pagination.pageSize,
-            IsCheckPermission: true,
-            TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
-            ProjectId: Number(projectId),
-            BuildingId: buildingIdNum,
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    searchTenants(value);
+  }, 350);
 
-            UnitAnnexureSurveyNumber: filterParams.UnitAnnexureSurveyNumber?.trim() || undefined,
-            ApplicantName: filterParams.ApplicantName?.trim() || undefined,
-            UnitType: filterParams.UnitType?.trim() || undefined,
-            UnitCarpetAreaSqFt: Number(filterParams.UnitCarpetAreaSqFt),
-            BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
-            Wing: filterParams.Wing?.trim() || undefined,
-            Flat: filterParams.Flat?.trim() || undefined,
-            ParkingNumber: filterParams.ParkingNumber?.trim() || undefined,
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel?.();
+    };
+  }, [debouncedSearch]);
 
-            UnitFacing: filterParams.UnitFacing?.trim() || undefined,
-            UnitConfiguration: filterParams.UnitConfiguration?.trim() || undefined,
+  const loadTenants = useCallback(async (pageNum: number, filterParams: FilterInfo, buildingIdNum: number, searchtext?: string,) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationTenantRequest = {
+          PageNumber: pageNum,
+          PageSize: pagination.pageSize,
+          IsCheckPermission: true,
+          TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
+          ProjectId: Number(projectId),
+          BuildingId: buildingIdNum,
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
+          UnitAnnexureSurveyNumber: searchtext ?? filterParams.UnitAnnexureSurveyNumber?.trim() ?? undefined,
 
-            FlatNumber: filterParams.FlatNumber?.trim() || undefined,
-            FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
-            FlatType: filterParams.FlatType?.trim() || undefined,
-            FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt?.trim() || undefined,
+          ApplicantName: filterParams.ApplicantName?.trim() || undefined,
+          UnitType: filterParams.UnitType?.trim() || undefined,
+          UnitCarpetAreaSqFt: Number(filterParams.UnitCarpetAreaSqFt),
+          BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
+          Wing: filterParams.Wing?.trim() || undefined,
+          Flat: filterParams.Flat?.trim() || undefined,
+          ParkingNumber: filterParams.ParkingNumber?.trim() || undefined,
 
-            SortBy: getSortByParam(sortInfo ?? null, tenantColumns),
-          };
+          UnitFacing: filterParams.UnitFacing?.trim() || undefined,
+          UnitConfiguration: filterParams.UnitConfiguration?.trim() || undefined,
 
-          const response = await tenantService.apiCallPullTenant(params);
+          FlatNumber: filterParams.FlatNumber?.trim() || undefined,
+          FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
+          FlatType: filterParams.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt?.trim() || undefined,
 
-          if (E.isRight(response)) {
-            setTenantList(response.right.Data);
+          SortBy: getSortByParam(sortInfo ?? null, tenantColumns),
+        };
 
-            setPagination({
-              currentPage: pageNum,
-              totalRecords: response.right.TotalNumberOfRecord,
-              totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-            });
-          } else {
-            addToast({ type: "error", title: response.left.message });
-          }
+        const response = await tenantService.apiCallPullTenant(params);
 
-          return response;
-        },
-        undefined,
-        (error: any) => {
-          addToast({ type: "error", title: error.message });
-        },
-        undefined,
-        "Loading Tenant",
-      );
-    },
+        if (E.isRight(response)) {
+          setTenantList(response.right.Data);
+
+          setPagination({
+            currentPage: pageNum,
+            totalRecords: response.right.TotalNumberOfRecord,
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+          });
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      "Loading Tenant",
+    );
+  },
     [projectId, pagination.pageSize, addToast, sortInfo],
   );
 
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
     if (!projectId) return;
 
     if (buildingId && buildingId > 0) {
       if (searchTerm && searchTerm.trim()) {
-        loadTenants(page, { FlatNumber: searchTerm.trim() }, buildingId);
+        loadTenants(page, { UnitAnnexureSurveyNumber: searchTerm.trim() }, buildingId);
       } else {
         loadTenants(page, filters, buildingId);
       }
@@ -153,39 +152,24 @@ export const Tenant: React.FC = () => {
     setTempFilters(filters);
   }, [filters]);
 
-  //#endregion
+  const searchTenants = async (searchValue: string) => {
+    updateListState({ searchTerm: searchValue });
 
-  //#region SEARCH TENANT FILTER
-  const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
-    let filterParams: FilterInfo = {};
-    if (value.trim() === "") {
-      updateListState({ searchTerm: "", filters: {}, page: 1 });
+    if (searchValue.trim() === "") {
+      updateListState({ searchTerm: "", page: 1 });
       return;
     }
 
-    if (isSerach) {
-      filterParams = { BuildingName: value.trim() };
-    }
-
-    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
-  }, 350);
-
-  const searchTenants = (searchValue: string) => {
-    updateListState({ searchTerm: searchValue });
-    debouncedSearch(searchValue, false);
+    updateListState({ searchTerm: searchValue, page: 1 });
   };
-  //#endregion
 
-  //#region CLEAR SEARCH TENANT
   const clearSearchTenants = () => {
     debouncedSearch.cancel?.();
-    resetFilters();
+    updateListState({ searchTerm: "", filters: {}, page: 1 });
     setTempFilters({});
   };
 
-  //#endregion
 
-  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportTenants = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
@@ -197,15 +181,24 @@ export const Tenant: React.FC = () => {
           IsCheckPermission: true,
           ProjectId: Number(projectId),
           BuildingId: buildingId,
-          FlatNumber: filters.FlatNumber?.trim() || undefined,
+          SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
+          UnitAnnexureSurveyNumber: filters.UnitAnnexureSurveyNumber?.trim() || undefined,
           ApplicantName: filters.ApplicantName?.trim() || undefined,
-          FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
-          FlatType: filters.FlatType?.trim() || undefined,
-          FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt?.trim() || undefined,
+          UnitType: filters.UnitType?.trim() || undefined,
+          UnitCarpetAreaSqFt: Number(filters.UnitCarpetAreaSqFt),
           BuildingNumber: filters.BuildingNumber?.trim() || undefined,
           Wing: filters.Wing?.trim() || undefined,
           Flat: filters.Flat?.trim() || undefined,
           ParkingNumber: filters.ParkingNumber?.trim() || undefined,
+
+          UnitFacing: filters.UnitFacing?.trim() || undefined,
+          UnitConfiguration: filters.UnitConfiguration?.trim() || undefined,
+
+          FlatNumber: filters.FlatNumber?.trim() || undefined,
+          FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
+          FlatType: filters.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt?.trim() || undefined,
+
           SortBy: getSortByParam(sortInfo ?? null, tenantColumns),
           ExportType: exportType,
         };
@@ -228,9 +221,6 @@ export const Tenant: React.FC = () => {
   const handleExportTenantExcel = () => handleExportTenants("Excel");
   const handleExportTenantPdf = () => handleExportTenants("PDF");
 
-  //#endregion
-
-  //#region TABLE CONFIG
   const handlePageChange = useCallback(
     (newPage: number) => {
       updateListState({ page: newPage });
@@ -281,7 +271,6 @@ export const Tenant: React.FC = () => {
     },
     [navigate, updateListState],
   );
-
 
   const handleConfirmationDialogBoxOpen = useCallback((row: TenantData) => {
     setDeleteTenantData(row);
@@ -334,13 +323,12 @@ export const Tenant: React.FC = () => {
       },
       {
         key: "UnitAnnexureSurveyNumber",
-        label: "Unit / Annexure / Survey Number",
+        label: "Unit / Annx / Svy No.",
         width: "18",
         sortable: true,
         fixed: "left",
         align: "left",
-        wrap:true,
-        truncate:false,
+        truncate: false,
         render: (value, row) => (
           <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} onClick={() => handleViewTenantDetails(row)} />
         ),
@@ -400,7 +388,7 @@ export const Tenant: React.FC = () => {
           },
           {
             key: "UnitCarpetAreaSqFt",
-            label: "Carpet Area (SqFt)",
+            label: "Carpet Area",
             width: "18",
             sortable: false,
             align: "center",
@@ -411,7 +399,7 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#EEF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "UnitFacing",
@@ -432,7 +420,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: "Eligibility Group",
-        label: "Eligibility  Details",
+        label: "Eligibility  Details in Carpet Area (SqFt)",
         align: "center",
         theadStyle: {
           backgroundColor: '#FBF5FF',
@@ -444,8 +432,7 @@ export const Tenant: React.FC = () => {
             label: "Free Area Offered (%)",
             width: "25",
             sortable: false,
-            wrap:true,
-            align: "left",
+            align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
               color: '#64748B'
@@ -457,10 +444,9 @@ export const Tenant: React.FC = () => {
           },
           {
             key: "FreeMOFACarpetAreaSqFt",
-            label: "Free MOFA Carpet Area (SqFt)",
+            label: "Free MOFA ",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -469,14 +455,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "NewEligibilityMOFACarpetAreaSqFt",
-            label: "New Eligibility MOFA Carpet Area (SqFt)",
+            label: "New Eligibility MOFA",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -485,14 +470,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "NewEligibilityRERACarpetAreaSqFt",
-            label: "New Eligibility RERA Carpet Area (SqFt)",
+            label: "New Eligibility RERA",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -501,14 +485,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "MOFACarpetAreaPurchasedSqFt",
-            label: "MOFA Carpet Area Purchased (SqFt)",
+            label: "MOFA Purchased",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -517,14 +500,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "RERACarpetAreaPurchasedSqFt",
-            label: "RERA Carpet Area Purchased (SqFt)",
+            label: "RERA Purchased",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -533,14 +515,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "TotalNewMOFACarpetAreaSqFt",
-            label: "Total New MOFA Carpet Area (SqFt)",
+            label: "Total New MOFA",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -549,16 +530,15 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
 
 
           {
             key: "TotalNewRERACarpetAreaSqFt",
-            label: "Total New Rera Carpet Area (SqFt)",
+            label: "Total New RERA (A)",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -567,11 +547,11 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "DeckAreaSqFt",
-            label: "Deck Area (SqFt)",
+            label: "Deck Area (B)",
             width: "25",
             sortable: false,
             align: "center",
@@ -582,14 +562,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "ExistingTerraceAreaSqFt",
-            label: "Existing Terrace Area(SqFt)",
+            label: "Existing Terrace Area",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -598,15 +577,14 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "AreaAgainstTerraceSqFt",
-            label: "Area Against Terrace (SqFt)",
+            label: "Area Against Terrace (C)",
             width: "25",
             sortable: false,
             align: "center",
-            wrap:true,
             theadStyle: {
               backgroundColor: '#FFF',
               color: '#64748B'
@@ -614,15 +592,14 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
 
 
           {
             key: "TotalNewRERACarpetAreaWithDeckSqFt",
-            label: "Total New Rera Carpet Area With Deck & Terrace(sq.ft)",
+            label: "Total (A + B + C)",
             width: "25",
-            wrap:true,
             sortable: false,
             align: "center",
             theadStyle: {
@@ -638,7 +615,7 @@ export const Tenant: React.FC = () => {
                 Number(row.DeckAreaSqFt || 0) +
                 Number(row.AreaAgainstTerraceSqFt || 0);
 
-              return total > 0 ? total.toFixed(2) : "-";
+              return total > 0 ? `${total.toFixed(2)} SqFt` : "-";
             },
           },
 
@@ -1024,6 +1001,11 @@ export const Tenant: React.FC = () => {
     );
   };
 
+  const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
+    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
+    [projectId]
+  );
+
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -1034,8 +1016,11 @@ export const Tenant: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Flat Number"
-        onSearchChange={searchTenants}
+        searchPlaceholder="Search By Unit / Annx / Svy No"
+        onSearchChange={(v) => {
+          updateListState({ searchTerm: v });
+          debouncedSearch(v);
+        }}
         onClearSearch={clearSearchTenants}
         isShowFilterButton
         filters={filters}
@@ -1062,6 +1047,7 @@ export const Tenant: React.FC = () => {
 
       <div className="pb-5 flex">
         <div className="relative min-w-0 w-[526px]">
+          
           <SingleSelectDropdownWithPagination
             key={projectId}
             label="Building"
@@ -1069,7 +1055,7 @@ export const Tenant: React.FC = () => {
             isShowClearSelection={false}
             size="lg"
             initialValue={buildingName ? { label: buildingName ?? "", value: buildingId } : undefined}
-            dataFetchCallBack={(pageNumber) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) })}
+            dataFetchCallBack={fetchBuildingCallback}
             onSelected={(item) => {
               const selectedBuildingId = Number(item?.value ?? 0);
               const selectedBuildingName = item?.label ?? "";
@@ -1125,6 +1111,14 @@ export const Tenant: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
+            <div>
+              <Input
+                type="text"
+                label="Tenant Code"
+                value={tempFilters?.SystemGeneratedCode ?? ''}
+                onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+                placeholder="Enter System Code" />
+            </div>
             <div>
               <Input
                 label="Unit / Annexure / Survey Number"

@@ -56,6 +56,8 @@ export const LOCAL_STORAGE_KEYS = {
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
     APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'approvalDocumentCategoryMaster.selectedColumns',
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
+    TEST_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'testDocumentCategoryMaster.selectedColumns',
+    DRAWING_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'drawingDocumentCategoryMaster.selectedColumns',
 
     // REDEVELOPMENT
 
@@ -113,6 +115,22 @@ export const LOCAL_STORAGE_KEYS = {
     //ESTIMATION AND BUDGET
     BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
 
+    //TERM SHEET
+    TERM_SHEET_SELECTED_COLUMNS: 'termSheet.selectedColumns',
+
+    //TAX TRACKER
+    TAX_TRACKER_SELECTED_COLUMNS: 'taxTracker.selectedColumns',
+
+    //VISITOR MANAGEMENT
+    GATE_PASS_SELECTED_COLUMNS: 'gatepass.selectedColumns',
+
+    //PROJECT LEAD
+    PROJECT_LAND_SELECTED_COLUMNS: 'projectLand.selectedColumns',
+    PROJECT_REDEVELOPMENT_SELECTED_COLUMNS: 'projectLead.selectedColumns',
+
+    //PURCHASE  MATERIAL REQUISITION
+    MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
+
 
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
@@ -150,6 +168,14 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INWARD_OUTWARD: 'inwardOutward.listState',
     BOOKING_Brokerage: 'bookingBrokerage.listState',
     TICKET: 'ticket.listState',
+    TERM_SHEET: 'termSheet.listState',
+    TAX_TRACKER: 'taxTracker.listState',
+    PROJECT_LAND: 'projectLead.listState',
+    PROJECT_REDEVELOPMENT: 'projectLead.listState',
+    JOB_ROLE_MASTER: 'jobRoleMaster.listState',
+    JOB_OPENING: 'jobOpening.listState',
+    MATERIAL_REQUISITION: 'materialRequisition.listState',
+
 
     STOCK_MANAGEMENT: 'stock.listState',
     MATERIAL_REQUISITION: 'materialRequisition.listState',

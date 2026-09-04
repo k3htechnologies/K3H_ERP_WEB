@@ -25,7 +25,6 @@ import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const Building: React.FC = () => {
-  //#region STATE
   const [buildingList, setBuildingList] = useState<BuildingData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -47,19 +46,11 @@ export const Building: React.FC = () => {
 
   const [deleteBuildingData, setDeleteBuildingData] = useState<BuildingData | null>(null)
 
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject()
-  //#endregion
-
-  //#region BUILDING LIST STATE CONTEXT
   const { listState, updateListState, resetFilters, clearBuildingContext } = useBuildingListState();
 
   const { page, filters, sortInfo, searchTerm } = listState;
-  //#endregion
-
-  //#region DATA LOAD BUILDING
+  
 
   const loadBuildings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
     await runApiWithLoader(
@@ -78,6 +69,8 @@ export const Building: React.FC = () => {
           RoadWidth: filterParams.RoadWidth?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
+          WardName: filterParams.WardName?.trim() || undefined,
+          Category: filterParams.Category?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, buildingColumns)
         };
 
@@ -108,9 +101,6 @@ export const Building: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
 
     if (!projectId) return;
@@ -141,9 +131,6 @@ export const Building: React.FC = () => {
 
   }, [filters]);
 
-  //#endregion
-
-  //#region SEARCH BUILDING FILTER
 
   const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
 
@@ -172,18 +159,12 @@ export const Building: React.FC = () => {
     debouncedSearch(searchValue, false);
   };
 
-  //#endregion
-
-  //#region CLEAR SEARCH BUILDING
   const clearSearchBuildings = () => {
     debouncedSearch.cancel?.();
     resetFilters();
     setTempFilters({});
   };
 
-  //#endregion
-
-  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportBuildings = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -201,6 +182,8 @@ export const Building: React.FC = () => {
           RoadWidth: filters.RoadWidth?.trim() || undefined,
           CityName: filters.CityName?.trim() || undefined,
           VillageName: filters.VillageName?.trim() || undefined,
+          WardName: filters.WardName?.trim() || undefined,
+          Category: filters.Category?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, buildingColumns),
           ExportType: exportType
         };
@@ -223,9 +206,6 @@ export const Building: React.FC = () => {
   const handleExportBuildingExcel = () => handleExportBuildings('Excel');
   const handleExportBuildingPdf = () => handleExportBuildings('PDF');
 
-  //#endregion
-
-  //#region TABLE CONFIG
   const handlePageChange = useCallback((newPage: number) => {
     updateListState({ page: newPage });
   }, [updateListState]);
@@ -246,9 +226,7 @@ export const Building: React.FC = () => {
   );
 
   const buildingsForTable = useMemo(() => buildingList, [buildingList]);
-  //#endregion
-
-  //#region VIEW BUILDING DETAILS
+  
   const handleViewBuildingDetails = useCallback((row: BuildingData) => {
     updateListState({
       buildingId: row.BuildingId,
@@ -256,9 +234,7 @@ export const Building: React.FC = () => {
     });
     navigate('/building/view');
   }, [navigate, updateListState]);
-  //#endregion
-
-  //#region VIEW BUILDING DOCUMENT
+  
   const handleViewBuildingDocument = useCallback((row: BuildingData) => {
     updateListState({
       buildingId: row.BuildingId,
@@ -266,9 +242,7 @@ export const Building: React.FC = () => {
     });
     navigate('/building/document');
   }, [navigate, updateListState]);
-  //#endregion
-
-  //#region VIEW BUILDING DESCRIPTION
+ 
   const handleViewBuildingDescription = useCallback((row: BuildingData) => {
     updateListState({
       buildingId: row.BuildingId,
@@ -276,18 +250,13 @@ export const Building: React.FC = () => {
     });
     navigate('/building/description');
   }, [navigate, updateListState]);
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
+  
 
   const handleConfirmationDialogBoxOpen = useCallback((row: BuildingData) => {
     setDeleteBuildingData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
-  //#endregion
-
-  //#region TABLE COLUMN
   const buildingColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -314,6 +283,14 @@ export const Building: React.FC = () => {
         )
       },
       {
+        key: 'Category',
+        label: 'Category',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
         key: 'CTSNumber',
         label: 'CTS Number',
         width: '18',
@@ -335,7 +312,7 @@ export const Building: React.FC = () => {
         key: 'TotalPlotAreaSqMt',
         label: 'Total Plot Area (SqMt)',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -343,7 +320,7 @@ export const Building: React.FC = () => {
         key: 'TotalPlotAreaSqFt',
         label: 'Total Plot Area (SqFt)',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -351,7 +328,7 @@ export const Building: React.FC = () => {
         key: 'NumberOfWings',
         label: 'Wings',
         width: '12',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -359,7 +336,7 @@ export const Building: React.FC = () => {
         key: 'TotalNumberOfUnits',
         label: 'Total Units',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -367,7 +344,7 @@ export const Building: React.FC = () => {
         key: 'NumberOfFloors',
         label: 'Floors',
         width: '12',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -400,6 +377,14 @@ export const Building: React.FC = () => {
       {
         key: 'VillageName',
         label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'WardName',
+        label: 'Ward',
         width: '15',
         sortable: false,
         align: 'center',
@@ -502,9 +487,7 @@ export const Building: React.FC = () => {
     ],
     [canAction, handleViewBuildingDetails, handleViewBuildingDocument, handleConfirmationDialogBoxOpen]
   );
-  //#endregion
-
-  //#region CUSTOMIZE COLUMNS
+  
   const requiredBuildingColumnKeys: string[] = ['BuildingName'];
 
   const allBuildingColumnKeys: string[] = buildingColumns.map(c => c.key);
@@ -536,17 +519,11 @@ export const Building: React.FC = () => {
     () => buildingColumns.filter(col => selectedBuildingColumnKeys.includes(col.key)),
     [buildingColumns, selectedBuildingColumnKeys]
   );
-  //#endregion
-
-  //#region  HANDLE CHANGE EVENT
 
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  //#endregion
-
-  //#region  DELETE VENDOR EVENT
   const handleDeleteBuilding = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -614,9 +591,6 @@ export const Building: React.FC = () => {
       'Delete Building'
     )
   }
-
-  //#endregion
-
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -717,6 +691,15 @@ export const Building: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
+              <Input
+                label='Category'
+                type="text"
+                value={tempFilters.Category || ''}
+                onChange={e => handleFilterChange('Category', e.target.value)}
+                placeholder="Enter Category"
+              />
+            </div>
+            <div>
 
               <Input
                 label='Building Name'
@@ -765,6 +748,15 @@ export const Building: React.FC = () => {
                 value={tempFilters.VillageName || ''}
                 onChange={e => handleFilterChange('VillageName', e.target.value)}
                 placeholder="Enter Village"
+              />
+            </div>
+            <div>
+              <Input
+                label='Ward'
+                type="text"
+                value={tempFilters.WardName || ''}
+                onChange={e => handleFilterChange('WardName', e.target.value)}
+                placeholder="Enter Ward"
               />
             </div>
           </div>

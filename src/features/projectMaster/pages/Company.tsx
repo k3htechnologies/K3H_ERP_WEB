@@ -71,16 +71,12 @@ const Company: React.FC = () => {
     searchCompany(value)
   }, 350)
 
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
 
     loadProjectMasterWithCompany(projectId);
 
   }, []);
-  //#endregion
-  //#region FETCH COMPANY MASTER DETAILS
+
   const loadProjectMasterWithCompany = async (ProjectId: number) => {
     await runApiWithLoader(
       setIsLoading,

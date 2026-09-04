@@ -445,8 +445,6 @@ export const Ticket: React.FC = () => {
 
     const ticketColumns = useMemo<TableColumn[]>(() => {
         const userDept = LocalStorageHelper.getStoredEmployeeData()?.Department;
-        const userDesignation = LocalStorageHelper.getStoredEmployeeData()?.Designation;
-        console.log('The user designation is ', userDesignation);
         const isITDept = userDept === "Information Technology";
 
         const columns: TableColumn[] = [
@@ -806,7 +804,6 @@ export const Ticket: React.FC = () => {
                             availableFilesURL={documentURL ?? ""}
                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                             maxFiles={5}
-                            maxSizeMB={10}
                             error={errors.DocumentURL}
                             onRemoveExisting={(url) => {
                                 setRemovedDocumentURLs((prev) => [...prev, url]);

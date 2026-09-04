@@ -22,7 +22,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import { filterChallanNumber, filterNumbers, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -95,18 +95,20 @@ export const AddUpdateGRN = () => {
     }, [addMaterialPopUp]);
 
     useEffect(() => {
-        const materialdata = [
+
+        const uniqueMaterials = [
             ...new Map(
-                (detailData || []).map(x => [
-                    x.MaterialMasterId,
-                    x
-                ])
-            ).values()
-        ];
-        setMaterialOptions(materialdata.map(x => ({
-            label: x.MaterialName,
-            value: String(x.MaterialMasterId)
-        })));
+                (detailData || []).map(item => [
+                    item.MaterialMasterId,
+                    item
+                ])).values()];
+
+        setMaterialOptions(
+            uniqueMaterials.map(item => ({
+                label: item.MaterialName,
+                value: String(item.MaterialMasterId)
+            }))
+        );
     }, [detailData]);
 
     const loadGRNData = async () => {
@@ -114,6 +116,7 @@ export const AddUpdateGRN = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey,
@@ -141,24 +144,24 @@ export const AddUpdateGRN = () => {
 
                         }));
 
-                        setMaterialList(e.MaterialRequisitionDetailGRNData.map((x: any) => {
-                            const matched = detailData.find(
-                                d =>
-                                    d.MaterialName === x.MaterialName &&
-                                    d.SubMaterialName === x.SubMaterialName
+                        setMaterialList(e.MaterialRequisitionDetailGRNData.map((prev: any) => {
+                            const matched = detailData.find(d =>
+                                d.MaterialName === prev.MaterialName &&
+                                d.SubMaterialName === prev.SubMaterialName
                             );
+
                             return {
-                                MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId,
+                                MaterialRequisitionDetailGRNId: prev.MaterialRequisitionDetailGRNId,
                                 MaterialRequisitionDetailId: matched?.MaterialRequisitionDetailId ?? 0,
                                 MaterialMasterId: matched?.MaterialMasterId ?? 0,
                                 SubMaterialMasterId: matched?.SubMaterialMasterId ?? 0,
-                                MaterialName: x.MaterialName,
-                                SubMaterialName: x.SubMaterialName,
+                                MaterialName: prev.MaterialName,
+                                SubMaterialName: prev.SubMaterialName,
                                 UomCode: matched?.UomCode ?? "",
                                 UomMasterId: matched?.UomMasterId ?? 0,
                                 MaterialQuantity: matched?.MaterialQuantity ?? 0,
-                                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
-                                QualityAnalystRemark: x.QualityAnalystRemark,
+                                TotalReceivedMaterialQuantity: prev.TotalReceivedMaterialQuantity,
+                                QualityAnalystRemark: prev.QualityAnalystRemark,
                                 TotalReceivedQuantityByRequisition: matched?.MaterialReceivedQuantityTillDate ?? 0,
                                 IsTolerant: matched?.IsTolerant ?? false,
                                 TolerancePercentage: matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
@@ -273,9 +276,10 @@ export const AddUpdateGRN = () => {
             label: "Action",
             align: "right",
             render: (_value, row) => {
-                const index = materialList.findIndex(x =>
-                    x.MaterialMasterId === row.MaterialMasterId &&
-                    x.SubMaterialMasterId === row.SubMaterialMasterId
+
+                const index = materialList.findIndex(item =>
+                    item.MaterialMasterId === row.MaterialMasterId &&
+                    item.SubMaterialMasterId === row.SubMaterialMasterId
                 );
 
                 return canAction ? (
@@ -289,7 +293,10 @@ export const AddUpdateGRN = () => {
                             color="transparent"
                             isborderRadius
                             size="sm"
-                            style={{ color: "#2563eb", padding: "4px" }}
+                            style={{
+                                color: "#2563eb",
+                                padding: "4px"
+                            }}
                             leftIcon={<Edit className="h-4 w-4" />}
                             title="Edit Material Requisition"
                         />
@@ -322,43 +329,50 @@ export const AddUpdateGRN = () => {
     ], [canAction, materialList, materialOptions, handleEditMaterial]);
 
     const subMaterialOptions = useMemo(() => {
-        if (!materialData.MaterialMasterId) return [];
+        if (!materialData.MaterialMasterId) {
+            return [];
+        }
 
-        return detailData.filter(x => x.MaterialMasterId === materialData.MaterialMasterId)
-            .map(x => ({
-                label: x.SubMaterialName,
-                value: String(x.SubMaterialMasterId)
+        return detailData.filter(item =>
+            item.MaterialMasterId === materialData.MaterialMasterId)
+            .map(item => ({
+                label: item.SubMaterialName,
+                value: String(item.SubMaterialMasterId)
             }));
+
     }, [materialData.MaterialMasterId, detailData]);
 
     const createDropdownInitialValue = (id: number | null, label: string) => {
-        if (!id || !label) return null;
+        if (!id || !label) {
+            return null;
+        }
         return { label, value: String(id) };
     };
 
-    const selectedMaterialDetail = detailData.find(x =>
-        x.MaterialMasterId === materialData.MaterialMasterId &&
-        x.SubMaterialMasterId === materialData.SubMaterialMasterId
-    ) as any;
-
-    const selectedMaterialSubMaterial = materialSubMaterialList.find(x =>
-        x.MaterialMasterId === materialData.MaterialMasterId &&
-        x.SubMaterialMasterId === materialData.SubMaterialMasterId
+    const selectedMaterialDetail = detailData.find(item =>
+        item.MaterialMasterId === materialData.MaterialMasterId &&
+        item.SubMaterialMasterId === materialData.SubMaterialMasterId
     );
 
-    const AddedQuantity = materialList.filter(x =>
-        x.MaterialMasterId === materialData.MaterialMasterId &&
-        x.SubMaterialMasterId === materialData.SubMaterialMasterId
-    )
-        .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
-
-    const ReceivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
-    const totalReceived = ReceivedQuantity + AddedQuantity;
-
-    const pendingQuantity = Math.max(
-        parseFloat((materialData.MaterialQuantity - totalReceived).toFixed(2)),
-        0
+    const selectedMaterialSubMaterial = materialSubMaterialList.find(item =>
+        item.MaterialMasterId === materialData.MaterialMasterId &&
+        item.SubMaterialMasterId === materialData.SubMaterialMasterId
     );
+
+    const addedQuantity = materialList.filter(item =>
+
+        item.MaterialMasterId === materialData.MaterialMasterId &&
+        item.SubMaterialMasterId === materialData.SubMaterialMasterId
+
+    ).reduce((total, item) =>
+        total + (item.TotalReceivedMaterialQuantity ?? 0), 0);
+
+    const receivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
+
+    const totalReceived = receivedQuantity + addedQuantity;
+
+    const pendingQuantity = Math.max(Number(
+        (materialData.MaterialQuantity - totalReceived).toFixed(2)), 0);
 
     const isToleranceAllowed =
         materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
@@ -416,12 +430,12 @@ export const AddUpdateGRN = () => {
         form.append('VehicleNumber', formData.VehicleNumber ?? '');
         form.append('MaterialRequisitionGRNId', formData.MaterialRequisitionGRNId.toString());
         const filtered = materialList
-            .filter(x => x.TotalReceivedMaterialQuantity > 0)
-            .map(x => ({
-                MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId ?? 0,
-                MaterialRequisitionDetailId: x.MaterialRequisitionDetailId,
-                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
-                QualityAnalystRemark: x.QualityAnalystRemark,
+            .filter(item => item.TotalReceivedMaterialQuantity > 0)
+            .map(item => ({
+                MaterialRequisitionDetailGRNId: item.MaterialRequisitionDetailGRNId ?? 0,
+                MaterialRequisitionDetailId: item.MaterialRequisitionDetailId,
+                TotalReceivedMaterialQuantity: item.TotalReceivedMaterialQuantity,
+                QualityAnalystRemark: item.QualityAnalystRemark,
             }));
 
         form.append('MaterialRequisitionDetailGRNJSON', JSON.stringify(filtered));
@@ -438,7 +452,6 @@ export const AddUpdateGRN = () => {
     };
 
     const handleSave = async () => {
-
         if (materialList.length === 0) {
             addToast({ type: "error", title: "Please select at least one Material" });
             return;
@@ -474,13 +487,8 @@ export const AddUpdateGRN = () => {
                 return response;
             },
             undefined,
-            (error: unknown) => {
-                const errorMessage =
-                    error instanceof Error
-                        ? error.message
-                        : "Failed to save material requisition";
-
-                addToast({ type: "error", title: errorMessage });
+            (error: any) => {
+                addToast({ type: "error", title: error?.message || 'Failed to save material requisition' });
             },
             undefined,
             "Saving Data"
@@ -512,9 +520,8 @@ export const AddUpdateGRN = () => {
                 }
             },
             undefined,
-            (error: unknown) => {
-                const errorMessage = error instanceof Error ? error.message : "Failed to load vendor data";
-                addToast({ type: "error", title: errorMessage });
+            (error: any) => {
+                addToast({ type: "error", title: error?.message || 'Failed to load vendor data' });
             },
             undefined,
             "Loading Data"
@@ -554,8 +561,8 @@ export const AddUpdateGRN = () => {
     };
 
     const saveMaterial = () => {
-
         setErrors({});
+
         const validation = validateMaterialDetailsForm();
 
         if (!validation.isValid) {
@@ -565,9 +572,9 @@ export const AddUpdateGRN = () => {
 
         const otherRowsQuantity = materialList
             .filter((_, i) => i !== editIndex)
-            .filter(x =>
-                x.MaterialMasterId === materialData.MaterialMasterId &&
-                x.SubMaterialMasterId === materialData.SubMaterialMasterId
+            .filter(data =>
+                data.MaterialMasterId === materialData.MaterialMasterId &&
+                data.SubMaterialMasterId === materialData.SubMaterialMasterId
             )
             .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
 
@@ -600,6 +607,18 @@ export const AddUpdateGRN = () => {
         setAddMaterialPopUp(false);
         setEditIndex(null);
         setMaterialData(initialFormState());
+    };
+
+    const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionGRNRequest, value: any) => {
+
+        setFormData((prev) => ({ ...prev, [field]: value, }));
+        setErrors((prev) => ({ ...prev, [field]: "", }));
+    };
+
+    const handleMaterialFieldChange = (field: keyof MaterialRequisitionDetailGRN, value: any) => {
+
+        setMaterialData((prev) => ({ ...prev, [field]: value, }));
+        setErrors((prev) => ({ ...prev, [field]: "", }));
     };
 
     return (
@@ -648,7 +667,7 @@ export const AddUpdateGRN = () => {
                                 label="Vehicle No."
                                 placeholder="Enter Vehicle No."
                                 value={formData.VehicleNumber ?? ""}
-                                onChange={(e) => setFormData(prev => ({ ...prev, VehicleNumber: e.target.value }))}
+                                onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
                                 maxLength={10}
                                 error={errors.VehicleNumber}
                                 required
@@ -659,7 +678,7 @@ export const AddUpdateGRN = () => {
                                 label="Challan No."
                                 placeholder="Challan No."
                                 value={formData.ChallanNumber}
-                                onChange={(e) => setFormData(prev => ({ ...prev, ChallanNumber: filterChallanNumber(e.target.value) }))}
+                                onChange={(e) => handleFieldChange("ChallanNumber", filterChallanNumber(e.target.value))}
                                 maxLength={15}
                                 error={errors.ChallanNumber}
                                 required
@@ -686,7 +705,7 @@ export const AddUpdateGRN = () => {
 
                         <div className="flex items-center justify-between pb-3">
                             <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
-                                onChange={(e) => setFormData(prev => ({ ...prev, Remarks: e.target.value }))}
+                                onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                                 placeholder="Enter Remark"
                                 error={errors.Remarks}
                                 required
@@ -743,21 +762,20 @@ export const AddUpdateGRN = () => {
                         title="Select Material"
                         size="lg"
                         dataFetchCallBack={async () => ({
-                            itemList: materialOptions,
-                            totalNumberOfRecord: materialOptions.length
+                            itemList: materialOptions, totalNumberOfRecord: materialOptions.length
                         })}
                         onSelected={(item) => {
                             const id = item ? Number(item.value) : 0;
 
                             const selected = detailData.find(
-                                x => x.MaterialMasterId === id
+                                data => data.MaterialMasterId === id
                             );
 
                             if (!selected) return;
 
                             const selectedUOM = materialSubMaterialList.find(
-                                x => x.MaterialMasterId === selected.MaterialMasterId &&
-                                    x.SubMaterialMasterId === selected.SubMaterialMasterId
+                                data => data.MaterialMasterId === selected.MaterialMasterId &&
+                                    data.SubMaterialMasterId === selected.SubMaterialMasterId
                             );
 
                             setMaterialData(prev => ({
@@ -799,12 +817,12 @@ export const AddUpdateGRN = () => {
                             const id = item ? Number(item.value) : 0;
 
                             const selected = detailData.find(
-                                x => x.SubMaterialMasterId === id
+                                data => data.SubMaterialMasterId === id
                             );
 
                             const selectedUOM = materialSubMaterialList.find(
-                                x => x.MaterialMasterId === materialData.MaterialMasterId &&
-                                    x.SubMaterialMasterId === id
+                                data => data.MaterialMasterId === materialData.MaterialMasterId &&
+                                    data.SubMaterialMasterId === id
                             );
 
                             setMaterialData(prev => ({
@@ -835,51 +853,30 @@ export const AddUpdateGRN = () => {
                         required
                         disabled
                         value={`${pendingQuantity}`}
-                        onChange={(e) => {
-
-                            const value = e.target.value;
-                            setMaterialData(prev => ({
-                                ...prev,
-                                MaterialQuantity: value === "" ? 0 : Number(value)
-                            }));
-                        }}
+                        onChange={(e) => handleMaterialFieldChange("MaterialQuantity", e.target.value === "" ? 0 : Number(e.target.value))}
                         placeholder="Pending Quantity"
                         min={0}
                         error={errors.MaterialQuantity}
                     />
 
                     <Input
-                        type="number"
                         label="Received Quantity"
                         required
                         value={materialData.TotalReceivedMaterialQuantity}
-                        onChange={(e) => {
-
-                            const value = e.target.value;
-                            setMaterialData(prev => ({
-                                ...prev,
-                                TotalReceivedMaterialQuantity: value === "" ? 0 : Number(value)
-                            }));
-                        }}
+                        onChange={(e) => handleMaterialFieldChange("TotalReceivedMaterialQuantity", filterNumbers(e.target.value))}
                         placeholder="Quantity"
-                        min={0}
-                        step="0.01"
                         error={errors.TotalReceivedMaterialQuantity}
                     />
 
                     <TextArea
                         label="Quality Analyst Remark"
                         value={materialData.QualityAnalystRemark}
-                        onChange={(e) =>
-                            setMaterialData(prev => ({
-                                ...prev,
-                                QualityAnalystRemark: e.target.value
-                            }))
-                        }
+                        onChange={(e) => handleMaterialFieldChange("QualityAnalystRemark", e.target.value)}
                         required
                         error={errors.QualityAnalystRemark}
                     />
                 </div>
+
             </Modal >
         </>
     )

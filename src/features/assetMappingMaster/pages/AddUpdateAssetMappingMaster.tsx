@@ -63,7 +63,6 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   const [isEditAllowedForAssetAndEmployee, SetIsEditAllowedForAssetAndEmployee] = useState<boolean>(true);
 
-
   const [dropdownLabels, setDropdownLabels] = useState<{
     employeeName?: string;
     assetName?: string;
@@ -197,11 +196,13 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
     const v_returnDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.ReturnDate ? new Date(formData.ReturnDate) : undefined);
 
+    const v_purchaseDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(purchaseDate ? new Date(purchaseDate) : undefined);
+
     if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate!, v_assignedDate!)) {
       newErrors.AssignedDate = "Assigned Date must be greater than or equal to Joining Date";
     }
 
-    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(purchaseDate!, v_assignedDate!)) {
+    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(v_purchaseDate!, v_assignedDate!)) {
       newErrors.AssignedDate = "Assigned Date must be greater than or equal to Purchase Date";
     }
 
@@ -309,6 +310,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
                   handleFieldChange("AssetMasterId", Number(item.value));
                   setAssetMasterData(item as unknown as AssetMasterData);
+                  setPurchaseDate(item.PurchaseDate ?? "");
 
                 }}
                 initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
@@ -365,8 +367,8 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                     <FieldItem label="Designation" value={employeeDetails?.Designation || "-"} />
                     <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
                     <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
-                    <FieldItem label="Email ID" value={employeeDetails?.EmailId || "-"} />
-                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber || "-"} />
+                    <FieldItem label="E-Mail ID" value={employeeDetails?.EmailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'}/>
                     <FieldItem label="Joining Date" value={formatDate_dd_mm_yyyy(employeeDetails?.JoiningDate || "-")} />
                   </div>
                 </div>

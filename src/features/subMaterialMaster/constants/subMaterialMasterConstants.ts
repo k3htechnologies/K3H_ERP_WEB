@@ -6,9 +6,9 @@ export const INITIAL_FORM_STATE: AddUpdateSubMaterialMasterRequest = {
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   MaterialMasterId: 0,
   SubMaterialName: '',
-  UomMasterId: 0
-  ,
-  IsTolerant: false
+  UomMasterId: 0,
+  LeadTimeInDays: 0,
+  IsTolerant: false,
 };
 
 export const REQUIRED_COLUMN_KEYS: string[] = ['SubMaterialName', 'Actions'];
@@ -21,7 +21,7 @@ export const getSubMaterialMasterColumns = (): TableColumn[] => [
   {
     key: 'SubMaterialName',
     label: 'Sub Material Name',
-    width: '33',
+    width: '20',
     sortable: true,
     fixed: 'left',
     align: 'left'
@@ -31,21 +31,35 @@ export const getSubMaterialMasterColumns = (): TableColumn[] => [
     label: 'Material Name',
     width: '30',
     sortable: false,
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'Uom',
     label: 'UOM',
+    width: '30',
+    sortable: false,
+    align: 'left'
+  },
+  {
+    key: 'LeadTimeInDays',
+    label: 'Lead Time (Days)',
     width: '20',
     sortable: false,
-    align: 'center'
+    align: 'left'
+  },
+  {
+    key: 'IsTolerant',
+    label: 'Is Tolerant',
+    width: '20',
+    sortable: false,
+    align: 'left'
   },
   {
     key: 'IsTolerant',
     label: 'Tolerance',
     width: '10',
     sortable: false,
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'Actions',

@@ -1,4 +1,4 @@
-import { MATERIAL_REQUISITION_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants/staticData";
+import { INVOICE_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -19,7 +19,7 @@ import { useEffect, useState } from "react";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { Loader } from "@/core/utils/loader";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ totalAmount = 0, editData }) => {
 
@@ -28,7 +28,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
     const { MaterialRequisitionId, MaterialRequisitionInvoiceId } = useParams();
     const { listState } = useMaterialRequisitionListState();
     const { projectId } = useProject();
-    const { canAction: canMakePayments } = useMenuPermissions(ModuleAction.makePayments);
+    const { canAction: canMakePayments } = useMenuPermissions('Make Payments');
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
 
@@ -371,7 +371,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                     label="Payment Type" required
                     value={formData.PaymentType}
                     onChange={(e) => handleFieldChange("PaymentType", String(e))}
-                    options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                    options={INVOICE_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
                     error={errors.PaymentType}
                 />
 

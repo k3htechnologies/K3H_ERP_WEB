@@ -7,6 +7,7 @@ export interface FilterWithPaginationTenantRequest {
   ProjectId?: number
   BuildingId?: number
   TenantId?: number
+  SystemGeneratedCode?: string | ''
   FlatNumber?: string | ''
   ApplicantName?: string | ''
   FlatConfiguration?: string | ''
@@ -17,6 +18,7 @@ export interface FilterWithPaginationTenantRequest {
   Flat?: string | ''
   ParkingNumber?: string | ''
   SortBy?: string
+
   UnitAnnexureSurveyNumber?: string | '';
   UnitCarpetAreaSqFt?: number;
   UnitFacing?: string | '';
@@ -270,7 +272,6 @@ export interface AddUpdateTenantDocumentRequest {
   BuildingId: number;
   ProjectId: number;
   DocumentName: string | null;
-
   DocumentURL: File[] | null;
   RemoveDocumentURL: string;
 
@@ -287,30 +288,5 @@ export interface DeleteTenantDocumentRequest {
 export type TenantDocumentListResponse = ApiResponse<TenantDocumentData[]>;
 export type TenantDocumentSaveResponse = ApiResponse<TenantDocumentData[]>;
 export type TenantDocumentDeleteResponse = ApiResponse<number>;
-
-// public class AddUpdateTenant
-// {
-//     public int TenantId { get; set; } = 0;
-//     public Guid? Uniquekey { get; set; } = Guid.NewGuid();
-//     public int BuildingId { get; set; } = 0;
-//     public int ProjectId { get; set; } = 0;
-//     public string UnitAnnexureSurveyNumber { get; set; } = string.Empty;        // (T) Flat Number
-//     public decimal? UnitCarpetAreaSqFt { get; set; } = 0;            // (T) Carpet Area
-//     public string? UnitFacing { get; set; } = string.Empty;                         // (D) North, South, East, West
-//     public string UnitType { get; set; } = string.Empty;          // (D) Residential / Commercial
-//     public string? UnitConfiguration { get; set; } = string.Empty;               // (D) 1BHK, 2BHK, Shop, Office
-
-//     //============================================================= [TENANT OFFER] ======================================================================================
-//     public decimal? ExtraFreeCarpetAreaOfferedPercent { get; set; } = 0;
-//     public decimal? FreeMOFACarpetAreaSqFt { get; set; } = 0;
-//     public decimal? NewEligibilityMOFACarpetAreaSqFt { get; set; } = 0;
-//     public decimal?  NewEligibilityRERACarpetAreaSqFt { get; set; } = 0;
-//     public decimal?  MOFACarpetAreaPurchasedSqFt { get; set; } = 0;
-//     public decimal?  RERACarpetAreaPurchasedSqFt { get; set; } = 0;
-//     public decimal?  TotalNewMOFACarpetAreaSqFt { get; set; } = 0;
-//     public decimal?  TotalNewRERACarpetAreaSqFt { get; set; } = 0;
-//     public decimal?  DeckAreaSqFt { get; set; } = 0;
-//     public decimal? TotalNewRERACarpetAreaWithDeckSqFt { get; set; } = 0;
-// }
 
 

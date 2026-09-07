@@ -233,6 +233,7 @@ import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
 import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
 import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
 import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
+import AccountDashboard from '@/features/accountDashboard/pages/AccountDashbaord';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -312,6 +313,8 @@ function App() {
             <Route path="materialMaster" element={<MaterialMaster />} />
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
+
+
 
             {/* SETTING -> COMPANY SETUP -> PROJECT */}
             <Route path="projectMaster" element={<ProjectMasterListStateProvider><ProjectMaster /></ProjectMasterListStateProvider>} />
@@ -419,6 +422,10 @@ function App() {
             <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
             <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
             <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
+
+
+            {/* Account Dashbaord */}
+            <Route path="accountDashboard" element={<AccountDashboard />} />
 
             {/* TAX TRACKER */}
             <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />

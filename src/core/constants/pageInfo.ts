@@ -379,6 +379,12 @@ export const getPageInfo = (path: string) => {
                 description: 'Tax Tracker for tracking notices issued by authorities across India',
             }
 
+        // Account Dashboard 
+        case 'accountDashboard':
+            return {
+                title: 'Account Dashboard',
+                description: 'Account Dashboard Description is working'
+            }
 
             {/* INVENTORY AND REPORT */ }
 

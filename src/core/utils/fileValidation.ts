@@ -7,6 +7,9 @@ import { countryList } from "@/ui/components/forms/MobileNumberInput";
 export const filterNumbers = (value: string): string =>
   value.replace(/[^0-9]/g, "");
 
+export const filterNumbersWithHyphen = (value: string): string =>
+  value.replace(/[^0-9-]/g, "");
+
 // ----------------------------------
 // 🔹 FILTER ONLY LETTERS (A–Z + space)
 // ----------------------------------
@@ -31,20 +34,20 @@ export const filterMobile = (value: string): string =>
 //   return regex.test(mobile.trim());
 // };
 
-export const isValidMobile = ( mobile: string, countryCode?: string): boolean => {
+export const isValidMobile = (mobile: string, countryCode?: string): boolean => {
 
-  if(!countryCode){
+  if (!countryCode) {
 
     countryCode = "+91";
   }
 
   if (!mobile) return false;
 
-  const country = countryList.find( (x) => x.code === countryCode);
+  const country = countryList.find((x) => x.code === countryCode);
 
   if (!country) return false;
-  
-  const regex = country.regex || new RegExp( `^\\d{${country.mobileLength}}$`);
+
+  const regex = country.regex || new RegExp(`^\\d{${country.mobileLength}}$`);
 
   return regex.test(mobile.trim());
 };
@@ -330,7 +333,7 @@ export const isValidWebsiteUrl = (url: string): boolean => {
     /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/i;
 
   return urlRegex.test(url);
-  
+
 };
 
 // ----------------------------------

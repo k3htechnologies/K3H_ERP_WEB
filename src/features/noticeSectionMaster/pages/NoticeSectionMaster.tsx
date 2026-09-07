@@ -221,7 +221,7 @@ export const NoticeSectionMaster: React.FC = () => {
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteNoticeSectionMaster}
                 loading={isLoading}
-                pageName='notice section'
+                pageName='Notice Section'
             />
 
         </div>

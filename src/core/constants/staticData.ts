@@ -495,7 +495,7 @@ export const MASTER_DATA = {
     "Supreme Court of India",
   ],
 
-  paymentMode: ["Cheque", 'Challan',"Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
+  paymentMode: ["Cheque", 'Challan', "Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
 
   paymentType: ["Advance", "Late Fee", "Penalty", "Regular"],
 
@@ -623,7 +623,7 @@ export const MASTER_DATA = {
   ibmObmReportStage: ["IBM", "OBM"],
 
   noticeType: [
-    "GST (Goverment Service Tax)",
+    "GST (Government Service Tax)",
     "Income Tax",
     "PF (Provident Fund)",
     "ESIC (Employee State Insurance)",
@@ -709,7 +709,7 @@ export const MASTER_DATA = {
 
   termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
-  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending"],
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending"],
 
   vendorType: ["Material", "Contractor", "Both"],
 

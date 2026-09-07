@@ -36,6 +36,8 @@ import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeCol
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateTaxTrackerRequest => ({
     TaxTrackerId: 0,
@@ -81,6 +83,8 @@ const getInitialRequestFormState = (): AddUpdateTaxTrackerDocumentRequest => ({
 export const TaxTracker: React.FC = () => {
 
     const [taxTrackerList, setTaxTrackerList] = useState<TaxTrackerData[]>([]);
+
+
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
@@ -378,7 +382,7 @@ export const TaxTracker: React.FC = () => {
 
             {
                 key: 'Authority',
-                label: 'Authority',
+                label: 'Authority Type',
                 width: '30',
                 align: 'left',
                 render: value => value || ''
@@ -434,6 +438,21 @@ export const TaxTracker: React.FC = () => {
 
                     const isClosed = row.NoticeStatus === 'Closed';
 
+                    const isRowInitialNotice =
+                        row?.TaxTrackerDocumentDetailsData?.length === 1 &&
+                        (!row?.TaxTrackerDocumentDetailsData?.[0]?.RequestType ||
+                            row?.TaxTrackerDocumentDetailsData?.[0]?.RequestType === "Notice" ||
+                            row?.TaxTrackerDocumentDetailsData?.[0]?.RequestType === "");
+
+                    const isDeleteDisabled = row?.IsDelete || !isRowInitialNotice;
+
+                    let deleteTitle = 'Delete Tax Notice';
+                    if (row?.IsDelete) {
+                        deleteTitle = 'Notice is already deleted';
+                    } else if (!isRowInitialNotice) {
+                        deleteTitle = '';
+                    }
+
                     return (
                         <div className="flex items-center justify-center gap-2">
                             <Button
@@ -446,42 +465,40 @@ export const TaxTracker: React.FC = () => {
                                 variant="solid"
                                 colorMode="extraLight"
                                 style={{
-                                    width: "35px", height: "35px",
-                                    color: isClosed ? '#9ca3af' : 'blue',
+                                    width: "40px", height: "35px",
                                     opacity: isClosed ? 0.5 : 1,
                                     cursor: isClosed ? 'not-allowed' : 'pointer',
                                 }}
                                 size="sm"
-                                title={isClosed ? 'Notice is closed' : 'Request Appeal'}
+                                title={isClosed ? 'Notice is closed' : 'Request'}
                                 disabled={isClosed}
                                 centerIcon={<Plus className="h-4 w-4" />}
                             >
                             </Button>
 
-                            {row?.IsDelete === true && (
-                                <Button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
 
-                                        if (!row.IsDelete) {
-                                            handleConfirmationDialogBoxOpen(row);
-                                        }
-                                    }}
-                                    color="red"
-                                    variant="solid"
-                                    colorMode="extraLight"
-                                    style={{
-                                        color: row.IsDelete ? '#9ca3af' : 'red',
-                                        opacity: row.IsDelete ? 0.5 : 1,
-                                        cursor: row.IsDelete ? 'not-allowed' : 'pointer',
-                                    }}
-                                    size="sm"
-                                    title={row.IsDelete ? 'Notice is already deleted' : 'Delete Tax Notice'}
-                                    disabled={row.IsDelete}
-                                    centerIcon={<Trash2 className="h-4 w-4" />}
-                                />
-                            )}
+                                    if (!isDeleteDisabled) {
+                                        handleConfirmationDialogBoxOpen(row);
+                                    }
+                                }}
+                                color="red"
+                                variant="solid"
+                                colorMode="extraLight"
+                                style={{
+                                    width: "40px", height: "35px",
+                                    color: isDeleteDisabled ? '#f75d2aff' : 'red',
+                                    opacity: isDeleteDisabled ? 0.5 : 1,
+                                    cursor: isDeleteDisabled ? 'not-allowed' : 'pointer',
+                                }}
+                                size="sm"
+                                title={deleteTitle}
+                                disabled={isDeleteDisabled}
+                                centerIcon={<Trash2 className="h-4 w-4" />}
+                            />
                         </div>
                     )
                 }
@@ -538,8 +555,6 @@ export const TaxTracker: React.FC = () => {
 
                 const response = await taxTrackerService.apiCallDeleteTaxTracker(params);
 
-
-
                 if (E.isRight(response)) {
 
                     const newTotalRecords = pagination.totalRecords - 1;
@@ -583,11 +598,13 @@ export const TaxTracker: React.FC = () => {
     };
 
     const handleRequestFieldChange = (field: keyof AddUpdateTaxTrackerDocumentRequest, value: any) => {
-        setRequestFormData((prev) => ({ ...prev, [field]: value }));
+        setRequestFormData((prev) => ({
+            ...prev,
+            [field]: value,
+            ...(field === 'RequestType' ? { AmountUnderDisputeDate: null, } : {}),
+        }));
+        setErrors({})
 
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
     };
 
 
@@ -618,7 +635,7 @@ export const TaxTracker: React.FC = () => {
                     newErrors.OfficerName = "Officer Name is required.";
 
                 if (!requestFormData.OfficerAddress)
-                    newErrors.OfficerAddress = "Officer Address is required.";
+                    newErrors.OfficerAddress = "Divisional Address is required.";
 
                 break;
 
@@ -633,7 +650,7 @@ export const TaxTracker: React.FC = () => {
 
             case "Order":
                 if (!requestFormData.OrderStatus)
-                    newErrors.OrderStatus = "Order Status is required.";
+                    newErrors.OrderStatus = "Status is required.";
 
                 if (
                     requestFormData.OrderStatus === "Non-Favourable" &&
@@ -645,13 +662,10 @@ export const TaxTracker: React.FC = () => {
                 if (!requestFormData.AmountUnderDisputeDate)
                     newErrors.AmountUnderDisputeDate =
                         requestFormData.OrderStatus === "Non-Favourable"
-                            ? "Appeal Date is required."
-                            : "Order Date is required.";
+                            ? "Date is required."
+                            : "Date is required.";
 
-                if (
-                    requestFormData.OrderStatus === "Non-Favourable" &&
-                    !requestFormData.AmountUnderDispute
-                ) {
+                if (requestFormData.OrderStatus === "Non-Favourable" && (!requestFormData.AmountUnderDispute || Number(requestFormData.AmountUnderDispute) <= 0)) {
                     newErrors.AmountUnderDispute = "Amount Under Dispute is required.";
                 }
 
@@ -675,7 +689,7 @@ export const TaxTracker: React.FC = () => {
             case "Appeal":
 
                 if (!requestFormData.AmountUnderDisputeDate)
-                    newErrors.AmountUnderDisputeDate = "Appeal Date is required.";
+                    newErrors.AmountUnderDisputeDate = "Date Of Appeal is required.";
 
                 if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
                     newErrors.NoticeDocumentURL = "Document is required.";
@@ -848,7 +862,7 @@ export const TaxTracker: React.FC = () => {
                             setShowFilterPopup(true);
                         }}
                         isShowAddButton={canAction}
-                        addTitle="Add "
+                        addTitle="Add"
                         onAdd={handleAddTaxTracker}
                         isShowImportButton={false}
                         isShowExportButton={canExport && taxTrackerList.length > 0}
@@ -923,17 +937,53 @@ export const TaxTracker: React.FC = () => {
                 }
                 title={
                     requestFormData.RequestType
-                        ? `${requestFormData.RequestType}`
-                        : "Requests"
+                        ? `Add ${requestFormData.RequestType}`
+                        : "Add Requests"
                 }
                 onSubmit={handleRequestForm}
                 saveText="Save"
                 loading={isLoading}
-                size="xl"
+                size="large-half"
             >
-                <div className="space-y-4 p-6 bg-blue-100">
+                <div className="space-y-4 ">
+
+                    <section className="">
+
+                        <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                            <h4 className="text-sm font-semibold text-gray-900 mb-4">
+                                Notice Details
+                            </h4>
+                            <FieldItem label="Notice Title" value={appealSourceRow?.NoticeType || '-'} />
+                            <div className="grid grid-cols-1 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-4 gap-3 mt-4">
+                                <FieldItem label="Company Name" value={appealSourceRow?.CompanyName || '-'} />
+                                <FieldItem label="Financial Year" value={appealSourceRow?.FinancialYear || '-'} />
+                                <div>
+                                    <p className="text-sm font-medium text-[#1D1D1D80]">Notice Status</p>
+                                    {appealSourceRow?.NoticeStatus ? (
+                                        <span
+                                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                                            style={(() => {
+                                                const { bg, text } = getNoticeStatusColor(appealSourceRow.NoticeStatus);
+                                                return { backgroundColor: bg, color: text };
+                                            })()}
+                                        >
+                                            {appealSourceRow.NoticeStatus}
+                                        </span>
+                                    ) : (
+                                        <p className="text-sm font-medium text-gray-800">-</p>
+                                    )}
+                                </div>
+                                <FieldItem label="Authority Type" value={appealSourceRow?.Authority || '-'} />
+                                <FieldItem label="Government Compliance" value={appealSourceRow?.GovernmentCompliance || '-'} />
+                                <FieldItem label="Notice U/S" value={appealSourceRow?.NoticeSection || '-'} />
+                                <FieldItem label="Notice Date" value={appealSourceRow?.NoticeDate ? formatDate_dd_MonthName_yy(appealSourceRow?.NoticeDate) : '-'} />
+                                <FieldItem label="Reply Due Date" value={appealSourceRow?.DueDate ? formatDate_dd_MonthName_yy(appealSourceRow?.DueDate) : '-'} />
+                            </div>
+
+                        </div>
 
 
+                    </section>
 
                     <div>
                         <SinglePageSelection
@@ -952,8 +1002,8 @@ export const TaxTracker: React.FC = () => {
                         <>
                             <div>
                                 <SinglePageSelection
-                                    label="Select Authority"
-                                    placeholder='Select Authority'
+                                    label="Select Authority Type"
+                                    placeholder='Select Authority Type'
                                     required
                                     value={requestFormData.AuthorityType || ''}
                                     onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
@@ -970,7 +1020,8 @@ export const TaxTracker: React.FC = () => {
                                     required
                                     value={requestFormData.OfficerName ?? ""}
                                     onChange={(e) => handleRequestFieldChange("OfficerName", e.target.value)}
-                                    error={errors.OfficerName} />
+                                    error={errors.OfficerName}
+                                    maxLength={250} />
                             </div>
 
                             <div>
@@ -981,24 +1032,27 @@ export const TaxTracker: React.FC = () => {
                                     className='thin-scroll'
                                     value={requestFormData.OfficerAddress || ''}
                                     onChange={(e) => handleRequestFieldChange("OfficerAddress", e.target.value)}
-                                    error={errors.OfficerAddress} />
+                                    error={errors.OfficerAddress}
+                                    maxLength={200} />
                             </div>
 
                             <div>
                                 <DatePickerInput
-                                    label={`${requestFormData.RequestType} Date`}
+                                    label={`Date`}
                                     placeholder={`Enter ${requestFormData.RequestType} Date`}
                                     value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
                                     onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                     required
-                                    error={errors.AmountUnderDisputeDate} />
+                                    error={errors.AmountUnderDisputeDate}
+                                    minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
+                                />
                             </div>
 
                             <div className="mt-5">
                                 <MultiFilePicker
-                                    label={`${requestFormData.RequestType} Document`}
+                                    label={`Document`}
                                     required
-                                    placeholder={`Select ${requestFormData.RequestType} Document`}
+                                    placeholder={`Select Document`}
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
@@ -1013,6 +1067,7 @@ export const TaxTracker: React.FC = () => {
                             </div>
                         </>
                     )}
+
 
                     {requestFormData.RequestType === 'Appeal' && (() => {
                         const lastOrderRecord = appealSourceRow?.TaxTrackerDocumentDetailsData
@@ -1038,7 +1093,7 @@ export const TaxTracker: React.FC = () => {
                                             Order Details
                                         </p>
                                         <div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' }}>
+                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 2fr)', gap: '20px' }}>
                                                 <div>
                                                     <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Date</p>
                                                     <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
@@ -1056,11 +1111,11 @@ export const TaxTracker: React.FC = () => {
                                                 </div>
 
                                                 <div>
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute</p>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute (₹)</p>
                                                     <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
                                                         {lastOrderRecord.AmountUnderDispute
-                                                            ? (lastOrderRecord.AmountUnderDispute)
-                                                            : '—'}
+                                                            ? formatCurrency(lastOrderRecord.AmountUnderDispute)
+                                                            : '₹0'}
                                                     </p>
                                                 </div>
 
@@ -1071,21 +1126,28 @@ export const TaxTracker: React.FC = () => {
                                                     </p>
                                                 </div>
                                             </div>
-
-
                                             {/* Description */}
                                             <div style={{ marginTop: '12px' }}>
                                                 <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Description</p>
-                                                <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
+                                                <p
+                                                    className="break-all whitespace-pre-wrap"
+                                                    style={{
+                                                        fontSize: '14px',
+                                                        fontWeight: 500,
+                                                        color: '#111111f1',
+                                                        wordBreak: 'break-word',
+                                                        overflowWrap: 'anywhere'
+                                                    }}
+                                                >
                                                     {lastOrderRecord.NoticeDescription || '—'}
                                                 </p>
                                             </div>
                                         </div>
 
                                         {lastOrderRecord.NoticeDocumentURL && (
-                                            <div className="mt-3">
-                                                <p style={{ fontSize: '14px', color: '#6b7280' }}>Order Document</p>
-                                                <div className="inline-flex items-center gap-1 px-3 py-1.5 border rounded-md mt-3 text-xs font-medium cursor-pointer">
+                                            <div className="mt-4">
+                                                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px', fontWeight: 500, letterSpacing: '0.05em' }}>Order Document</p>
+                                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 rounded-md text-xs font-medium cursor-pointer transition-all bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-300">
                                                     <MultiImageViewer
                                                         images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}
                                                         title="Document"
@@ -1100,8 +1162,8 @@ export const TaxTracker: React.FC = () => {
 
                                 <div className="mt-5">
                                     <DatePickerInput
-                                        label="Appeal Due Date"
-                                        placeholder="Enter Appeal Due Date"
+                                        label="Date of Appeal"
+                                        placeholder="Enter Date Of Appeal"
                                         value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
                                         onChange={(val) => {
                                             const appealDueDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
@@ -1111,17 +1173,18 @@ export const TaxTracker: React.FC = () => {
                                         }}
                                         required
                                         error={errors.AmountUnderDisputeDate}
+                                        minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
                                     />
                                 </div>
 
                                 <div>
                                     <DatePickerInput
-                                        label="Date of Appeal"
-                                        placeholder="Enter Date of Appeal"
+
+                                        label="Appeal Due Date"
+                                        placeholder="Enter Appeal Due Date"
                                         value={formatDate_dd_mm_yyyy(requestFormData.DateOfAppeal)}
                                         onChange={() => { }}
                                         disabled
-                                        required
                                         error={errors.DateOfAppeal}
                                     />
                                 </div>
@@ -1156,7 +1219,9 @@ export const TaxTracker: React.FC = () => {
                                     value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
                                     onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                     required
-                                    error={errors.AmountUnderDisputeDate} />
+                                    error={errors.AmountUnderDisputeDate}
+                                    minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
+                                />
                             </div>
                             <div className="mt-5">
                                 <MultiFilePicker
@@ -1184,7 +1249,7 @@ export const TaxTracker: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Status"
-                                    placeholder="Select Order Status"
+                                    placeholder="Select Status"
                                     required
                                     value={requestFormData.OrderStatus || ""}
                                     onChange={(e) => handleRequestFieldChange("OrderStatus", String(e))}
@@ -1199,7 +1264,7 @@ export const TaxTracker: React.FC = () => {
                             {requestFormData.OrderStatus && (
                                 <div>
                                     <DatePickerInput
-                                        label="Order Date"
+                                        label="Date"
                                         placeholder="Enter Date"
                                         value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
                                         onChange={(val) =>
@@ -1210,6 +1275,7 @@ export const TaxTracker: React.FC = () => {
                                         }
                                         required
                                         error={errors.AmountUnderDisputeDate}
+                                        minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
                                     />
                                 </div>
                             )}
@@ -1218,8 +1284,8 @@ export const TaxTracker: React.FC = () => {
                                 <div>
                                     <div>
                                         <SinglePageSelection
-                                            label="Select Authority"
-                                            placeholder='Select Authority'
+                                            label="Select Authority Type"
+                                            placeholder='Select Authority Type'
                                             required
                                             value={requestFormData.AuthorityType || ''}
                                             onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
@@ -1230,8 +1296,8 @@ export const TaxTracker: React.FC = () => {
 
                                     <div className="mt-5">
                                         <Input
-                                            label="Amount Under Dispute"
-                                            placeholder="Enter Amount"
+                                            label="Amount Under Dispute (₹)"
+                                            placeholder="Enter Amount Under Dispute"
                                             value={requestFormData.AmountUnderDispute || ''}
                                             required
                                             onChange={(e) =>
@@ -1254,10 +1320,10 @@ export const TaxTracker: React.FC = () => {
                                             ? "Order Document"
                                             : requestFormData.OrderStatus === "Favourable"
                                                 ? "Document"
-                                                : `${requestFormData.RequestType} Document`
+                                                : `Document`
                                     }
                                     required
-                                    placeholder={`Select ${requestFormData.RequestType} Document`}
+                                    placeholder={`Select Document`}
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
@@ -1277,9 +1343,9 @@ export const TaxTracker: React.FC = () => {
                         <>
                             <div className="mt-5">
                                 <MultiFilePicker
-                                    label={`${requestFormData.RequestType} Document`}
+                                    label={`Document`}
                                     required
-                                    placeholder={`Select ${requestFormData.RequestType} Document`}
+                                    placeholder={`Select Document`}
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
@@ -1296,7 +1362,6 @@ export const TaxTracker: React.FC = () => {
 
                         </>
                     )}
-
                     <div className="mt-5">
                         <TextArea
                             label="Description"
@@ -1305,17 +1370,17 @@ export const TaxTracker: React.FC = () => {
                             className='thin-scroll'
                             value={requestFormData.NoticeDescription || ''}
                             onChange={(e) => handleRequestFieldChange("NoticeDescription", e.target.value)}
-                            error={errors.NoticeDescription} />
+                            error={errors.NoticeDescription}
+                            maxLength={500} />
                     </div>
                 </div>
-            </Modal>
-
+            </Modal >
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => {
                     setShowFilterPopup(false);
                 }}
-                title="Filter By Tax Tracker"
+                title="Filter - Tax Tracker"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -1442,7 +1507,7 @@ export const TaxTracker: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-        </div>
+        </div >
     )
 }
 

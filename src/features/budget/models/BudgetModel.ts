@@ -27,6 +27,15 @@ export interface BudgetData {
     Level2Name: string | null
     LevelId3: number | 0
     Level3Name: string | null
+    LevelId4: number | 0
+    Level4Name: string | null
+
+    Level4MaterialName:string| null;
+    Level4SubMaterialUomCode:string| null;
+    Level4SubMaterialUom:string| null;
+    Level4LeadTimeInDays: number | 0,
+    Level4IsTolerant?: boolean,
+
     Floor: string | null
     InventoryFlatId: string | null
     Flat: string | null
@@ -57,6 +66,7 @@ export interface AddUpdateBudget {
     LevelId1: number | 0
     LevelId2: number | 0
     LevelId3: number | 0
+    LevelId4: number | 0
     OrderBy: number | 0
     UomMasterId: number | 0
     InventoryFlatId: string | null

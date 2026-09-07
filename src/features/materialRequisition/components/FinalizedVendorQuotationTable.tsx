@@ -2,6 +2,9 @@ import { useMemo, useState, useCallback, useEffect } from "react"
 import { DataTableEditable, type EditableColumnGroup, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable"
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import { computeAmount, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
+import { Input } from "@/ui/components/forms/Input"
+import { allowPercentage,  filterNumbersWithDecimal } from "@/core/utils/fileValidation"
+import { formatCurrency } from "@/core/utils/comman"
 
 type Row =
     {
@@ -98,20 +101,17 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                             {row?.MaterialName || row?.Logistics || ""}
                         </span>
 
-                        <span className="text-gray-400 text-xs font-light">
+                        <span className="text-gray-400 text-xs">
                             <TooltipText text={row?.SubMaterialName || ""} />
                         </span>
 
                         <span
                             className={`mt-1 inline-block px-2 py-0.5 text-xs rounded-full font-semibold w-fit
-                                ${isService
-                                    ? "bg-purple-100 text-purple-700"
-                                    : "bg-blue-100 text-blue-700"
-                                }`}
+                                ${isService ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700" }`}
                         >
                             {isService ? "SERVICE" : "MATERIAL"}
                         </span>
-                        
+
                     </div>
                 )
             }
@@ -122,12 +122,14 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             type: "number",
             editable: isEditing,
             width: 100,
-            align: "center",
+            align: "right",
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (_value, row) => (
-                <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 inline-flex items-center gap-1">
-                    {row?.MaterialQuantity || '-'} {row?.UomCode}
-                </span>
+                <div className="w-full flex justify-end items-start p-0 m-0">
+                    <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 leading-none">
+                        {row?.MaterialQuantity || "-"} {row?.UomCode}
+                    </span>
+                </div>
             )
         },
         {
@@ -135,7 +137,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             label: "UNIT PRICE (₹)",
             type: "number",
             editable: isEditing,
-            width: 100,
+            width: 120,
             align: "right",
             prefix: "₹",
             headerClassName: "bg-[#253E60] text-white tracking-[0.8px]",
@@ -147,9 +149,11 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 </span>
 
                 return (
-                    <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 inline-flex items-center gap-1">
-                        {row?.MaterialPerUnit || '-'}
-                    </span>
+                    <div className="flex justify-end w-full">
+                        <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
+                            {row?.MaterialPerUnit || '-'}
+                        </span>
+                    </div>
                 )
             },
             renderEditor: (_value, onChange, row) => {
@@ -157,18 +161,20 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 if (row?.Logistics) return <span className=" text-gray-300">-</span>
 
                 return (
-                    <input
-                        type="number"
-                        defaultValue={row?.MaterialPerUnit ?? 0}
-                        onChange={e => onChange(Number(e.target.value) || 0)}
-                        className="w-full px-2 py-1.5 text-sm rounded border border-blue-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-right"
+                    <Input
+
+                        type="text"
+                        value={row?.MaterialPerUnit ?? 0}
+                        onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
+
                     />
+
                 )
             }
         },
         {
             key: "Amount",
-            label: "AMOUNT(₹)",
+            label: "AMOUNT (₹)",
             type: "number",
             editable: isEditing,
             width: 120,
@@ -178,18 +184,17 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             renderEditor: (_value, onChange, row) => {
                 if (row.Logistics) {
                     return (
-                        <input
-                            type="number"
-                            defaultValue={row.Amount ?? 0}
-                            onChange={e => onChange(Number(e.target.value) || 0)}
-                            className="w-full px-2 py-1.5 text-sm 
-                            focus:ring-2 focus:ring-blue-500 outline-none text-right"
+                        <Input
+                            type="text"
+                            value={row?.Amount ?? 0}
+                            onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
+
                         />
                     )
                 }
                 return (
                     <span className="w-full block text-right pr-1 font-bold text-black-300">
-                        ₹{computeAmount(row).toLocaleString()}
+                        {formatCurrency(computeAmount(row))}
                     </span>
                 )
             },
@@ -199,30 +204,60 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 </span>
             )
         },
-
         {
             key: "CGST",
-            label: "CGST(%)",
+            label: "CGST (%)",
             type: "number",
             editable: isEditing,
-            width: 90,
+            width: 50,
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
+
+            renderEditor: (_value, onChange, row) => (
+                <Input
+                    type="text"
+                    value={row?.CGST ?? ""}
+                    onChange={(e) => {
+                        const val = allowPercentage(e.target.value);
+
+                        if (val !== null) {
+                            onChange(filterNumbersWithDecimal(val));
+                        }
+                    }}
+                    className="text-right"
+                />
+            ),
+
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
                     : "text-gray-400 font-semibold bg-gray-100"
         },
+
         {
             key: "SGST",
-            label: "SGST(%)",
+            label: "SGST (%)",
             editable: isEditing,
             type: "number",
-            width: 90,
+            width: 50,
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
+            renderEditor: (_value, onChange, row) => (
+                <Input
+                    type="text"
+                    value={row?.SGST ?? ""}
+                    onChange={(e) => {
+                        const val = allowPercentage(e.target.value);
+
+                        if (val !== null) {
+                            onChange(filterNumbersWithDecimal(val));
+                        }
+                    }}
+                    className="text-right"
+                />
+            ),
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
@@ -230,13 +265,27 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         },
         {
             key: "UGST",
-            label: "UGST(%)",
+            label: "UGST (%)",
             editable: isEditing,
             type: "number",
-            width: 90,
+            width: 50,
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
+            renderEditor: (_value, onChange, row) => (
+                <Input
+                    type="text"
+                    value={row?.UGST ?? ""}
+                    onChange={(e) => {
+                        const val = allowPercentage(e.target.value);
+
+                        if (val !== null) {
+                            onChange(filterNumbersWithDecimal(val));
+                        }
+                    }}
+                    className="text-right"
+                />
+            ),
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
@@ -244,13 +293,27 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         },
         {
             key: "TGST",
-            label: "IGST(%)",
+            label: "IGST (%)",
             editable: isEditing,
             type: "number",
-            width: 90,
+            width: 50,
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
+            renderEditor: (_value, onChange, row) => (
+                <Input
+                    type="text"
+                    value={row?.TGST ?? ""}
+                    onChange={(e) => {
+                        const val = allowPercentage(e.target.value);
+
+                        if (val !== null) {
+                            onChange(filterNumbersWithDecimal(val));
+                        }
+                    }}
+                    className="text-right"
+                />
+            ),
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
@@ -258,11 +321,11 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         },
         {
             key: "Total",
-            label: "TOTAL",
+            label: "TOTAL (₹)",
             type: "computed",
             compute: computeGrandTotal,
             editable: false,
-            width: 120,
+            width: 50,
             align: "right",
             prefix: "₹",
             headerClassName: "bg-[#1E3A5F] text-green-200 tracking-[1px]",
@@ -280,23 +343,21 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 {!isEditing ? (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                    >
+                        className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
                         Edit
                     </button>
                 ) : (
                     <div className="flex gap-2">
+
                         <button
                             onClick={handleCancel}
-                            className="px-4 py-2 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg"
-                        >
+                            className="px-4 py-2 text-md bg-gray-200 hover:bg-gray-300 rounded-lg">
                             Cancel
                         </button>
 
                         <button
                             onClick={handleSave}
-                            className="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
-                        >
+                            className="px-4 py-2 text-md bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
                             Save
                         </button>
 

@@ -48,7 +48,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     const location = useLocation();
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
-    const { canView: canFinalizedVendorView } = useMenuPermissions('Finalize Vendor');
+    const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
     const currentUniquekey = listState.Uniquekey
@@ -411,7 +411,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 <Tabs
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
-                    islarge
+                    islarge={true}
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>

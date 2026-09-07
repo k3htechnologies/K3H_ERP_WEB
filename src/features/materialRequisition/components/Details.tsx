@@ -208,7 +208,7 @@ export const Details: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
-                    <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
+                    <FieldItem label="MR Code" value={matrialRequisitionData?.SystemGeneratedCode} />
                     <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                     <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
 

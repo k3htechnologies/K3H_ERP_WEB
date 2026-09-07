@@ -20,6 +20,8 @@ import { vendorFinalizationService } from "@/features/materialRequisition/servic
 import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import { formatCurrency } from "@/core/utils/comman";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 export const Overview: React.FC = () => {
 
@@ -264,7 +266,7 @@ export const Overview: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4 border-b border-[#135bec2e]">
-                            <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
+                            <FieldItem label="MR Code" value={matrialRequisitionData?.SystemGeneratedCode} />
                             <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                             <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
 
@@ -309,19 +311,19 @@ export const Overview: React.FC = () => {
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
                         <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE]">
                             <h4 className="text-sm font-semibold text-[#C2410C]">
-                                Vendor And Amount Details
+                                Vendor & Amount Details
                             </h4>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4 border-b border-[#135bec2e]">
-                            <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
+                            <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName}/>
                             <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
-                            <FieldItem label="Base Amount" value={`₹ ${computeBaseTotal(Vendoramount).toFixed(2)}`} />
-                            <FieldItem label="Total Tax" value={`₹ ${computeTaxTotal(Vendoramount).toFixed(2)}`} />
-                            <FieldItem label="Grand Total" value={`₹ ${computeLinesTotal(Vendoramount).toFixed(2)}`} />
-                            <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
-                            <FieldItem label="Paid Amount" value={`₹ ${amountPaid.toFixed(2)}`} />
-                            <FieldItem label="Pending Amount" value={`₹ ${(computeLinesTotal(Vendoramount) - amountPaid).toFixed(2)}`} />
+                            <FieldItem label="Base Amount" value={formatCurrency(computeBaseTotal(Vendoramount))} />
+                            <FieldItem label="Total Tax" value={formatCurrency(computeTaxTotal(Vendoramount))} />
+                            <FieldItem label="Grand Total" value={formatCurrency(computeLinesTotal(Vendoramount))} />
+                            <FieldItem label="Estimated Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
+                            <FieldItem label="Paid Amount (₹)" value={formatCurrency(amountPaid)} />
+                            <FieldItem label="Pending Amount (₹)" value={formatCurrency(computeLinesTotal(Vendoramount) - amountPaid)} />
                         </div>
                     </section>
 
@@ -336,7 +338,7 @@ export const Overview: React.FC = () => {
                         </div>
 
                         <div className="overflow-y-auto thin-scroll h-[200px]">
-                            <DataTableWithOutBorder
+                            <DataTableWithHeaderRowDivider
                                 columns={MatrialRequisitionDetailColumns}
                                 data={matrialRequisitionDetailData}
                                 emptyMessage="No Material Requisition Details Found"
@@ -356,7 +358,7 @@ export const Overview: React.FC = () => {
                         </div>
 
                         <div className="overflow-y-auto thin-scroll h-[200px]">
-                            <DataTableWithOutBorder
+                            <DataTableWithHeaderRowDivider
                                 columns={MaterialRequisitionInvoiceColumns}
                                 data={MaterialRequisitionInvoiceData}
                                 emptyMessage="No Material Invoice Details Found"

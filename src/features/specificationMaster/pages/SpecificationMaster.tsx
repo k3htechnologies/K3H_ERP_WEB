@@ -22,6 +22,8 @@ import type { AddUpdateSpecificationMaster, DeleteSpecificationMasterRequest, fi
 import { specificationMasterService } from "@/features/specificationMaster/services/SpecificationMasterService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { handleExportFile } from "@/core/utils/exportFile";
+import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { fetchSubMaterialMasterDropdown } from "@/features/subMaterialMaster/subMaterialMasterDropdown";
 
 const initialFormState = (): AddUpdateSpecificationMaster => ({
     SpecificationMasterId: 0,
@@ -30,6 +32,9 @@ const initialFormState = (): AddUpdateSpecificationMaster => ({
     UomMasterId: 0,
     LevelId1: 0,
     LevelId2: 0,
+    LevelId3: 0,
+    SubMaterialMasterId: 0,
+    Quantity: 0
 });
 
 export const SpecificationMaster: React.FC = () => {
@@ -48,18 +53,19 @@ export const SpecificationMaster: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { canAction, canExport } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
-    const [dropdownLabels, setDropdownLabels] = useState<{ uom?: string; }>({});
+    const [dropdownLabels, setDropdownLabels] = useState<{ uom?: string; LevelId3?: string }>({});
     const dtRef = useRef<DataTableExpandableRef | null>(null);
     const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
     const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
     const [childRefreshKey, setChildRefreshKey] = useState(0);
     const [isExpandedEdit, setIsExpandedEdit] = useState(false);
-    const [parentNames, setParentNames] = useState({ categoryName: "", subCategoryName: "", });
+    const [parentNames, setParentNames] = useState({ categoryName: "", subCategoryName: "", description: "" });
 
     const SpecificationMasterTabsList = [
         { id: "L1", label: "L1" },
         { id: "L2", label: "L2" },
         { id: "L3", label: "L3" },
+        { id: "L4", label: "L4" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(SpecificationMasterTabsList[0].id);
@@ -116,10 +122,14 @@ export const SpecificationMaster: React.FC = () => {
                     CategoryName: editSpecificationMasterData.CategoryName ?? "",
                     LevelId1: editSpecificationMasterData.LevelId1,
                     LevelId2: editSpecificationMasterData.LevelId2,
-                    UomMasterId: editSpecificationMasterData.UomMasterId
+                    LevelId3: editSpecificationMasterData.LevelId3 || 0,
+                    UomMasterId: editSpecificationMasterData.UomMasterId,
+                    Quantity: editSpecificationMasterData.Quantity || 0,
+                    SubMaterialMasterId: editSpecificationMasterData.SubMaterialMasterId || 0,
                 });
                 setDropdownLabels({
                     uom: editSpecificationMasterData.UomCode || "",
+                    LevelId3: editSpecificationMasterData.SubMaterialName || "",
                 });
             }
             setErrors({});
@@ -135,12 +145,16 @@ export const SpecificationMaster: React.FC = () => {
 
         const fieldName = modalLabel;
 
-        if (!formData.CategoryName?.trim()) {
-            newErrors.CategoryName = `${fieldName} is required`;
+        if (activeTab !== "L4") {
 
-        } else if (formData.CategoryName.length > 100) {
-            newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
+            if (!formData.CategoryName?.trim()) {
+                newErrors.CategoryName = `${fieldName} is required`;
+
+            } else if (formData.CategoryName.length > 100) {
+                newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
+            }
         }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors,
@@ -154,7 +168,10 @@ export const SpecificationMaster: React.FC = () => {
             CategoryName: formData.CategoryName,
             LevelId1: formData.LevelId1,
             LevelId2: formData.LevelId2,
+            LevelId3: formData.LevelId3,
             UomMasterId: formData.UomMasterId,
+            Quantity: formData.Quantity,
+            SubMaterialMasterId: formData.SubMaterialMasterId,
         }
     }
 
@@ -251,6 +268,7 @@ export const SpecificationMaster: React.FC = () => {
         setParentNames({
             categoryName: row.Level1Name || "",
             subCategoryName: row.Level2Name || "",
+            description: row.Level3Name || "",
         });
 
         setEditSpecificationMasterData({
@@ -371,6 +389,13 @@ export const SpecificationMaster: React.FC = () => {
                     LevelId1: row.LevelId1,
                     LevelId2: row.SpecificationMasterId,
                 };
+
+            case "L4":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.LevelId2,
+                    LevelId3: row.SpecificationMasterId,
+                };
         }
     };
 
@@ -422,24 +447,41 @@ export const SpecificationMaster: React.FC = () => {
                                         e.stopPropagation();
 
                                         const nextLevel = buildNextLevelIds(row);
+
                                         if (activeTab === "L2") {
                                             setParentNames({
-                                                categoryName: row.CategoryName,
+                                                categoryName: row.CategoryName || "",
                                                 subCategoryName: "",
+                                                description: "",
                                             });
                                         }
-                                        else if (activeTab === "L3") {
+
+                                        if (activeTab === "L3") {
                                             setParentNames({
                                                 categoryName: row.Level1Name || "",
-                                                subCategoryName: row.CategoryName,
+                                                subCategoryName: row.CategoryName || "",
+                                                description: "",
+                                            });
+                                        }
+
+                                        if (activeTab === "L4") {
+                                            setParentNames({
+                                                categoryName: row.Level1Name || "",
+                                                subCategoryName: row.Level2Name || "",
+                                                description: row.Level3Name || "",
                                             });
                                         }
 
                                         setExpandedParentId(row.SpecificationMasterId);
                                         setExpandedParentRow(row);
+
                                         setFormData({
                                             ...initialFormState(),
                                             ...nextLevel,
+
+                                            ...(activeTab === "L3" && {
+                                                CategoryName: row.CategoryName || "",
+                                            }),
                                         });
 
                                         setEditSpecificationMasterData(null);
@@ -700,6 +742,7 @@ export const SpecificationMaster: React.FC = () => {
                         setParentNames({
                             categoryName: "",
                             subCategoryName: "",
+                            description: ""
                         });
                         setExpandedParentId(null);
                         setExpandedParentRow(null);
@@ -763,21 +806,6 @@ export const SpecificationMaster: React.FC = () => {
                 } : undefined}
             />
 
-            {/* <LevelTree
-                response={specificationMasterlist}
-                config={{
-                    idKey: "SpecificationMasterId",
-                    levels: [
-                        { idKey: "LevelId1", nameKey: "Level1Name" },
-                        { idKey: "LevelId2", nameKey: "Level2Name" },
-                        { idKey: "LevelId3", nameKey: "Level3Name" },
-                    ]
-                }}
-                columns={SpecificationMasterColumns}
-                emptyMessage="No Budget Data"
-                loading={isLoading}
-            /> */}
-
             <Modal
                 isOpen={isAddUpdateModalOpen}
                 onSubmit={handleAddUpdateSpecificationMaster}
@@ -808,7 +836,7 @@ export const SpecificationMaster: React.FC = () => {
                             />
                         )}
 
-                        {activeTab === "L3" && (
+                        {(activeTab === "L3" || activeTab === "L4") && (
                             <Input
                                 label="Sub Category Name"
                                 value={parentNames.subCategoryName}
@@ -817,15 +845,25 @@ export const SpecificationMaster: React.FC = () => {
                         )}
 
                         <div>
-                            <Input
-                                label={modalLabel}
-                                value={formData.CategoryName ?? ""}
-                                placeholder={`Enter ${modalLabel} `}
-                                onChange={(e) => handleFieldChange("CategoryName", e.target.value)}
-                                error={errors.CategoryName}
-                                maxLength={100}
-                                required
-                            />
+                            {activeTab === "L4" ? (
+                                <Input
+                                    label="Description"
+                                    value={formData.CategoryName ?? ""}
+                                    disabled
+                                />
+                            ) : (
+                                <Input
+                                    label={modalLabel}
+                                    value={formData.CategoryName ?? ""}
+                                    placeholder={`Enter ${modalLabel}`}
+                                    onChange={(e) =>
+                                        handleFieldChange("CategoryName", e.target.value)
+                                    }
+                                    error={errors.CategoryName}
+                                    maxLength={100}
+                                    required
+                                />
+                            )}
                         </div>
 
                         {showUom && (
@@ -844,6 +882,35 @@ export const SpecificationMaster: React.FC = () => {
                                     }}
                                     initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
                                 />
+                            </div>
+                        )}
+
+                        {activeTab === "L4" && (
+                            <div>
+                                <div>
+                                    <Input
+                                        label="Quantity"
+                                        value={formData.Quantity ?? ""}
+                                        placeholder="Enter Quantity"
+                                        onChange={(e) => handleFieldChange("Quantity", filterNumbersWithDecimal(e.target.value))}
+                                        error={errors.Quantity}
+                                        maxLength={5}
+                                        required
+                                    />
+                                </div>
+
+                                <div>
+                                    <SingleSelectDropdownWithPagination
+                                        label="Sub Material"
+                                        title="Sub Material"
+                                        size="lg"
+                                        dataFetchCallBack={fetchSubMaterialMasterDropdown}
+                                        onSelected={(item) => {
+                                            handleFieldChange("SubMaterialMasterId", item ? Number(item.value) : 0);
+                                        }}
+                                        initialValue={createDropdownInitialValue(formData.SubMaterialMasterId, dropdownLabels.LevelId3)}
+                                    />
+                                </div>
                             </div>
                         )}
                     </div>

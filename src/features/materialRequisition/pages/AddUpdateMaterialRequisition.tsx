@@ -34,6 +34,8 @@ import {
     getBudgetL4Dropdown,
 } from "@/features/budget/budgetDropdown";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -62,11 +64,14 @@ const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
     Level3Name: "",
     LevelId4: 0,
     Level4Name: "",
+    Level4SubMaterialUomCode: "",
+    Level4SubMaterialUom: "",
     MaterialQuantity: 0,
     RequiredDate: "",
     MaterialRequisitionType: "",
     Remark: ""
 })
+
 
 export const AddUpdateMaterialRequisition = () => {
 
@@ -111,7 +116,19 @@ export const AddUpdateMaterialRequisition = () => {
 
 
     const [active, setActive] = useState<string>(MaterialRequisitionTab[0].id);
-    
+
+    const [subMaterialDetails, setSubMaterialDetails] = useState<{
+        MaterialName: string;
+        SubMaterialName: string;
+        Uom: string;
+        UomCode: string;
+        MaterialRate: number;
+        LeadTimeInDays: number;
+        IsTolerant: boolean;
+        RequiredDate: string;
+        Quantity: number;
+    } | null>(null);
+
 
     useEffect(() => {
         if (!MaterialRequisitionId) return;
@@ -245,11 +262,12 @@ export const AddUpdateMaterialRequisition = () => {
                                     Level3Name: item.Level3Name,
                                     LevelId4: item.LevelId4,
                                     Level4Name: item.Level4Name,
+                                    Level4SubMaterialUomCode: item.Level4SubMaterialUomCode,
+                                    Level4SubMaterialUom: item.Level4SubMaterialUom,
                                     MaterialQuantity: item.MaterialQuantity,
                                     RequiredDate: item.RequiredDate,
                                     MaterialRequisitionType: item.MaterialRequisitionType,
                                     Remark: item.Remark
-
                                 }))
                             );
                         }
@@ -276,6 +294,7 @@ export const AddUpdateMaterialRequisition = () => {
     const handleAddMaterial = async () => {
         setErrors({});
         setDropdownMaterialResetKey(prev => prev + 1);
+        setSubMaterialDetails(null);
         setAddMaterialPopUp(true);
         setEditIndex(null);
         setMaterialData(initialFormState());
@@ -285,7 +304,10 @@ export const AddUpdateMaterialRequisition = () => {
         setErrors({});
         setEditIndex(index);
 
-        setActive(row.MaterialRequisitionType?.toUpperCase() === "DIRECT" ? "Direct" : "In - Direct");
+        const isDirect = row.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        setActive(isDirect ? "Direct" : "In - Direct");
+        
 
         setMaterialData({
             MaterialMasterId: row.MaterialMasterId,
@@ -302,12 +324,44 @@ export const AddUpdateMaterialRequisition = () => {
             Level3Name: row.Level3Name,
             LevelId4: row.LevelId4,
             Level4Name: row.Level4Name,
+            Level4SubMaterialUomCode: row.Level4SubMaterialUomCode,
+            Level4SubMaterialUom: row.Level4SubMaterialUom,
             MaterialQuantity: row.MaterialQuantity,
             RequiredDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(row.RequiredDate) || convert_dd_mm_yyyy_To_Yyyy_mm_dd(row.RequiredDate) || "",
 
             MaterialRequisitionType: row.MaterialRequisitionType,
             Remark: row.Remark
         });
+
+         if (isDirect && row.LevelId4) {
+            const selected = projectBudgetList.find(
+                budget =>
+                    budget.LevelType === "L4" &&
+                    budget.LevelId1 === row.LevelId1 &&
+                    budget.LevelId2 === row.LevelId2 &&
+                    budget.LevelId3 === row.LevelId3 &&
+                    budget.LevelId4 === row.LevelId4
+            );
+
+            if (selected) {
+                setSubMaterialDetails({
+                    MaterialName: selected.Level4MaterialName ?? "",
+                    SubMaterialName: selected.Level4Name ?? row.Level4Name ??  "",
+                    Uom: selected.Level4SubMaterialUom ?? "",
+                    UomCode:  selected.Level4SubMaterialUomCode ?? "",
+                    MaterialRate: Number(selected.MaterialCost ?? 0 ),
+                    LeadTimeInDays: Number(selected.Level4LeadTimeInDays ?? 0),
+                    Quantity: Number(selected.Quantity ?? 0),
+                    IsTolerant: selected.Level4IsTolerant ?? false,
+                    RequiredDate: formatDate_dd_mm_yyyy(row.RequiredDate) || ""
+                });
+            } else {
+                setSubMaterialDetails(null);
+            }
+        } else {
+            setSubMaterialDetails(null);
+        }
+
         setDropdownLabels({
             materialName: row.MaterialName || "",
             uom: row.UomCode || "",
@@ -317,7 +371,7 @@ export const AddUpdateMaterialRequisition = () => {
             level4Name: row.Level4Name || "",
         });
         setAddMaterialPopUp(true);
-    }, []);
+    }, [projectBudgetList]);
 
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => {
         const columns: TableColumn[] = [
@@ -330,7 +384,9 @@ export const AddUpdateMaterialRequisition = () => {
             }
         ];
 
-        if (active === "Direct") {
+       const isDirect =   materialList[0]?.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT";
+
+        if (isDirect) {
             columns.push(
                 {
                     key: "Level1Name",
@@ -402,13 +458,7 @@ export const AddUpdateMaterialRequisition = () => {
                         />
                     )
                 },
-                {
-                    key: "UomCode",
-                    label: "UOM",
-                    align: "left",
-                    width: "20",
-                    render: (value) => value || "-"
-                }
+                
             );
         }
 
@@ -416,14 +466,17 @@ export const AddUpdateMaterialRequisition = () => {
             {
                 key: "MaterialQuantity",
                 label: "Quantity",
-                align: "left",
-                width: "20",
-                render: (value) => value ?? 0
+                align: "right",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
             },
+            
             {
                 key: "RequiredDate",
                 label: "Required Date",
-                align: "left",
+                align: "center",
                 width: "30",
                 render: (value) =>
                     value ? formatDate_dd_MonthName_yy(value) : "-"
@@ -440,7 +493,7 @@ export const AddUpdateMaterialRequisition = () => {
             {
                 key: "action",
                 label: "Action",
-                align: "right",
+                align: "center",
                 render: (_value, row) => {
                     const index = materialList.findIndex(
                         item =>
@@ -764,7 +817,11 @@ export const AddUpdateMaterialRequisition = () => {
 
             <Modal
                 isOpen={addMaterialPopUp}
-                onClose={() => setAddMaterialPopUp(false)}
+                onClose={() => {
+                    setAddMaterialPopUp(false);
+                    setSubMaterialDetails(null);
+                    setErrors({});
+                }}
                 title="Add Material"
                 onSubmit={e => {
                     e.preventDefault();
@@ -826,6 +883,8 @@ export const AddUpdateMaterialRequisition = () => {
                                         onSelected={(item) => {
                                             const levelId1 = Number(item?.value ?? 0);
 
+                                            setSubMaterialDetails(null);
+
                                             setMaterialData(prev => ({
                                                 ...prev,
 
@@ -840,6 +899,9 @@ export const AddUpdateMaterialRequisition = () => {
 
                                                 LevelId4: 0,
                                                 Level4Name: "",
+
+                                                MaterialQuantity: 0,
+                                                RequiredDate: "",
                                             }));
 
 
@@ -849,6 +911,8 @@ export const AddUpdateMaterialRequisition = () => {
                                                 LevelId2: "",
                                                 LevelId3: "",
                                                 LevelId4: "",
+                                                MaterialQuantity: "",
+                                                RequiredDate: "",
                                             }));
                                         }}
                                         error={errors.LevelId1}
@@ -877,6 +941,8 @@ export const AddUpdateMaterialRequisition = () => {
                                         onSelected={(item) => {
                                             const levelId2 = Number(item?.value ?? 0);
 
+                                            setSubMaterialDetails(null);
+
                                             setMaterialData(prev => ({
                                                 ...prev,
 
@@ -888,6 +954,8 @@ export const AddUpdateMaterialRequisition = () => {
 
                                                 LevelId4: 0,
                                                 Level4Name: "",
+                                                MaterialQuantity: 0,
+                                                RequiredDate: "",
                                             }));
 
                                             setErrors(prev => ({
@@ -895,13 +963,15 @@ export const AddUpdateMaterialRequisition = () => {
                                                 LevelId2: "",
                                                 LevelId3: "",
                                                 LevelId4: "",
+                                                MaterialQuantity: "",
+                                                RequiredDate: "",
                                             }));
                                         }}
                                         error={errors.LevelId2}
                                     />
 
                                     <SingleSelectDropdownWithPagination
-                                    key={`SubCategory-${materialData.LevelId2}`}
+                                        key={`SubCategory-${materialData.LevelId2}`}
                                         label="Description"
                                         title="Select Description"
                                         required
@@ -922,7 +992,10 @@ export const AddUpdateMaterialRequisition = () => {
                                             };
                                         }}
                                         onSelected={(item) => {
+
                                             const levelId3 = Number(item?.value ?? 0);
+
+                                            setSubMaterialDetails(null);
 
                                             setMaterialData(prev => ({
                                                 ...prev,
@@ -932,19 +1005,23 @@ export const AddUpdateMaterialRequisition = () => {
 
                                                 LevelId4: 0,
                                                 Level4Name: "",
+                                                MaterialQuantity: 0,
+                                                RequiredDate: "",
                                             }));
 
                                             setErrors(prev => ({
                                                 ...prev,
                                                 LevelId3: "",
                                                 LevelId4: "",
+                                                MaterialQuantity: "",
+                                                RequiredDate: "",
                                             }));
                                         }}
                                         error={errors.LevelId3}
                                     />
 
                                     <SingleSelectDropdownWithPagination
-                                    key={`Description-${materialData.LevelId3}`}
+                                        key={`Description-${materialData.LevelId3}`}
                                         label="Sub Material"
                                         title="Select Sub Material"
                                         required
@@ -966,20 +1043,66 @@ export const AddUpdateMaterialRequisition = () => {
                                             };
                                         }}
                                         onSelected={(item) => {
+
                                             const levelId4 = Number(item?.value ?? 0);
+
+                                            const selected = projectBudgetList.find(
+                                                budget =>
+                                                    budget.LevelType === "L4" &&
+                                                    budget.LevelId1 === materialData.LevelId1 &&
+                                                    budget.LevelId2 === materialData.LevelId2 &&
+                                                    budget.LevelId3 === materialData.LevelId3 &&
+                                                    budget.LevelId4 === levelId4
+                                            );
+
+                                            if (!selected) {
+                                                setSubMaterialDetails(null);
+                                                setMaterialData(prev => ({
+                                                    ...prev,
+                                                    LevelId4: 0,
+                                                    Level4Name: '',
+                                                    RequiredDate: "",
+                                                }));
+                                                return;
+                                            }
+
+                                            const leadTime = Number(selected.Level4LeadTimeInDays ?? 0);
+
+                                            const requiredDate = new Date();
+                                            requiredDate.setDate(requiredDate.getDate() + leadTime);
+
+                                            const yyyy = requiredDate.getFullYear();
+                                            const mm = String(requiredDate.getMonth() + 1).padStart(2, "0");
+                                            const dd = String(requiredDate.getDate()).padStart(2, "0");
+
+                                            setSubMaterialDetails({
+                                                MaterialName: selected.Level4MaterialName ?? "",
+                                                SubMaterialName: selected.Level4Name ?? item?.label ?? "",
+                                                Uom: selected.Level4SubMaterialUom ?? "",
+                                                UomCode: selected.Level4SubMaterialUomCode ?? "",
+                                                MaterialRate: Number(selected.MaterialCost ?? 0),
+                                                LeadTimeInDays: leadTime,
+                                                Quantity: Number(selected.Quantity ?? 0),
+                                                IsTolerant: selected.Level4IsTolerant ?? false,
+                                                RequiredDate: `${dd}/${mm}/${yyyy}`,
+                                            });
 
                                             setMaterialData(prev => ({
                                                 ...prev,
-
                                                 LevelId4: levelId4,
                                                 Level4Name: item?.label ?? "",
+                                                RequiredDate: `${yyyy}-${mm}-${dd}`,
+                                                Level4SubMaterialUomCode:  selected.Level4SubMaterialUomCode ?? "",
+                                                Level4SubMaterialUom: selected.Level4SubMaterialUom ?? "",
                                             }));
 
                                             setErrors(prev => ({
                                                 ...prev,
                                                 LevelId4: "",
+                                                RequiredDate: "",
                                             }));
                                         }}
+
                                         error={errors.LevelId4}
 
                                     />
@@ -987,18 +1110,57 @@ export const AddUpdateMaterialRequisition = () => {
                                     <Input
                                         label="Quantity"
                                         required
-                                        value={materialData.MaterialQuantity}
+                                        value={materialData.MaterialQuantity || ""}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
+
+                                            if (value === "") {
+                                                setMaterialData(prev => ({
+                                                    ...prev,
+                                                    MaterialQuantity: 0
+                                                }));
+
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    MaterialQuantity: ""
+                                                }));
+
+                                                return;
+                                            }
+
+                                            const quantity = Number(value);
+
+                                            if (Number.isNaN(quantity)) {
+                                                return;
+                                            }
+
+                                            const maxQuantity = Number(subMaterialDetails?.Quantity ?? 0);
+
+                                            if (quantity > maxQuantity) {
+                                                setErrors(prev => ({
+                                                    ...prev,
+                                                    MaterialQuantity: `Quantity cannot be greater than ${maxQuantity}`
+                                                }));
+                                                return;
+                                            }
+
+                                            setMaterialData(prev => ({
+                                                ...prev,
+                                                MaterialQuantity: quantity
+                                            }));
+
+                                            setErrors(prev => ({
+                                                ...prev,
+                                                MaterialQuantity: ""
+                                            }));
                                         }}
                                         placeholder="Enter Quantity"
+                                        max={subMaterialDetails?.Quantity}
                                         error={errors.MaterialQuantity}
                                     />
 
                                     <DatePickerInput
                                         label="Required Date"
-                                        required
                                         value={formatDate_dd_mm_yyyy(
                                             materialData.RequiredDate
                                         )}
@@ -1009,6 +1171,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                     convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? "",
                                             }))
                                         }
+                                        disabled
                                         placeholder="DD/MM/YYYY"
                                         error={errors.RequiredDate}
                                     />
@@ -1016,6 +1179,27 @@ export const AddUpdateMaterialRequisition = () => {
 
 
                                 </div>
+                                {subMaterialDetails && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                                            <FieldItem label="Material Name" value={subMaterialDetails.MaterialName} />
+
+                                            <FieldItem  label="Sub Material Name" value={subMaterialDetails.SubMaterialName} className="font-medium text-blue-900"  />
+
+                                            <FieldItem  label="UOM"  value={`${subMaterialDetails.Uom || "-"} (${subMaterialDetails.UomCode || "-"})`} />
+
+                                            <FieldItem  label="Material Rate"  value={formatCurrency(subMaterialDetails.MaterialRate)}  />
+
+                                            <FieldItem  label="Required Quantity" value={subMaterialDetails.Quantity} />
+
+                                            <FieldItem label="Lead Time (Days)" value={subMaterialDetails.LeadTimeInDays ?? 0} />
+
+                                            <FieldItem  label="Is Tolerant"  value={subMaterialDetails.IsTolerant ? "YES" : "NO"} />
+
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div>
                                     <TextArea

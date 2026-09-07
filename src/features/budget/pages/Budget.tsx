@@ -258,14 +258,12 @@ export const Budget: React.FC = () => {
 
         if (addLevel === "L3") {
 
-            const isEmpty = (val: any) => val === undefined || val === null || val === "";
+              const isEmpty = (val: any) => val === undefined || val === null || val === "";
 
             if (isEmpty(formData?.LabourCost)) {
                 newErrors.LabourCost = "Labour Rate is Required"
             }
-            if (isEmpty(formData?.MaterialCost)) {
-                newErrors.MaterialCost = "Material Rate is Required"
-            }
+            
             if (isEmpty(formData?.Quantity)) {
                 newErrors.Quantity = "Quantity is Required"
             }
@@ -512,17 +510,18 @@ export const Budget: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+        
         {
-            key: 'LabourCost',
-            label: 'Labour Rate (₹)',
+            key: "MaterialCost",
+            label: "Material Rate (₹)",
             width: '15',
             sortable: false,
             align: 'left',
             render: value => value ? formatCurrency(value) : '0'
         },
         {
-            key: "MaterialCost",
-            label: "Material Rate (₹)",
+            key: 'LabourCost',
+            label: 'Labour Rate (₹)',
             width: '15',
             sortable: false,
             align: 'left',
@@ -1201,11 +1200,11 @@ export const Budget: React.FC = () => {
                                         <Input
                                             label="Material Rate (₹)"
                                             placeholder="Enter Material Rate"
-                                            value={formData?.MaterialCost ?? ""}
+                                            value={formData?.MaterialCost || 0}
                                             onChange={(e) => handleFieldChange("MaterialCost", filterNumbersWithDecimal(e.target.value))}
                                             error={errors.MaterialCost}
-                                            min={0}
                                             required
+                                            disabled
                                         />
                                     </div>
 

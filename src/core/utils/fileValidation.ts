@@ -573,4 +573,5 @@ export const isValidVehicleNumber = (value: string): boolean => {
 export const filterChallanNumber = (value: string): string =>
   value.replace(/[^A-Za-z0-9/-]/g, "").toUpperCase().slice(0, 15);
 
-
+export const filterNumbersWithHyphen = (value: string): string =>
+  value.replace(/[^0-9-]/g, "");

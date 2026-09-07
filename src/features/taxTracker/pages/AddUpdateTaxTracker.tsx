@@ -19,7 +19,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { taxTrackerService } from "@/features/taxTracker/services/TaxTrackerService";
 import * as E from 'fp-ts/Either';
 import useToast from "@/core/hooks/useToast";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbersWithHyphen, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { fetchCompanyMasterDropdown } from "@/features/companyMaster/companyMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -170,12 +170,14 @@ export const AddUpdateTaxTracker: React.FC = () => {
             newErrors.FinancialYear = 'Financial Year is required.';
         } else if (!/^\d{4}-\d{4}$/.test(formData.FinancialYear)) {
             newErrors.FinancialYear = 'Financial Year must be in YYYY-YYYY format (e.g. 2024-2025).';
+        } else if (parseInt(formData.FinancialYear.split("-")[0]) > parseInt(formData.FinancialYear.split("-")[1])) {
+            newErrors.FinancialYear = 'First financial year cannot be greater than second financial year.';
         }
         if (!formData.CompanyId) {
             newErrors.CompanyId = 'Company is required.';
         }
         if (!formData.NoticeType) {
-            newErrors.NoticeType = 'Notice Type is required.';
+            newErrors.NoticeType = 'Notice Title is required.';
         }
         if (!formData.NoticeSectionMasterId) {
             newErrors.NoticeSectionMasterId = 'Notice U/S is required.';
@@ -195,7 +197,7 @@ export const AddUpdateTaxTracker: React.FC = () => {
         if (!formData.DueDate) {
             newErrors.DueDate = 'Reply Due Date is required.';
         }
-        if (formData.DueDate && formData.NoticeDate && formData.DueDate < formData.NoticeDate) {
+        if (formData.DueDate && formData.NoticeDate && formData.DueDate <= formData.NoticeDate) {
             newErrors.DueDate = "Reply Due Date should be greater than Notice Date.";
         }
         if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs)) {
@@ -315,6 +317,8 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                         label="Government Compliance"
                                         onChange={(e) => {
                                             handleFieldChange("GovernmentCompliance", String(e));
+                                            setFormData((prev) => ({ ...prev, NoticeSectionMasterId: 0 }));
+                                            setDropdownLabels((prev) => ({ ...prev, noticeSectionLabel: undefined }));
                                         }}
                                         options={NOTICE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                                         value={formData.GovernmentCompliance ?? ''}
@@ -355,9 +359,9 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                 <Input
                                     type="text"
                                     label="Financial Year"
-                                    placeholder="Enter Year"
+                                    placeholder="Enter Financial Year"
                                     value={formData.FinancialYear}
-                                    onChange={(e) => handleFieldChange('FinancialYear', e.target.value)}
+                                    onChange={(e) => handleFieldChange('FinancialYear', filterNumbersWithHyphen(e.target.value))}
                                     error={errors.FinancialYear}
                                     maxLength={9}
                                     required
@@ -391,6 +395,7 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                     placeholder="Enter Notice Title"
                                     required
                                     value={formData.NoticeType ?? ""}
+                                    maxLength={250}
                                     onChange={(e) => handleFieldChange("NoticeType", e.target.value)}
                                     error={errors.NoticeType}
 
@@ -404,8 +409,8 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                     size="lg"
                                     required
                                     disabled={!formData.GovernmentCompliance}
-                                    dataFetchCallBack={(pageNumber) =>
-                                        fetchNoticeSectionDropdown(pageNumber, formData.GovernmentCompliance || "")
+                                    dataFetchCallBack={(pageNumber, searchFilter) =>
+                                        fetchNoticeSectionDropdown(pageNumber, formData.GovernmentCompliance || "", searchFilter as { value?: string } | undefined)
                                     }
                                     onSelected={(item) => {
                                         if (!item) {
@@ -465,7 +470,9 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <Input type="text" label="Officer Name" placeholder="Officer Name" required value={formData.OfficerName ?? ""} onChange={(e) => handleFieldChange("OfficerName", e.target.value)} error={errors.OfficerName} />
+                                <Input type="text" label="Officer Name" placeholder="Officer Name" required value={formData.OfficerName ?? ""} onChange={(e) => handleFieldChange("OfficerName", e.target.value)}
+                                    maxLength={250}
+                                    error={errors.OfficerName} />
                             </div>
                         </div>
                         <div>
@@ -476,7 +483,8 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                 className='thin-scroll'
                                 value={formData.OfficerAddress || ''}
                                 onChange={(e) => handleFieldChange("OfficerAddress", e.target.value)}
-                                error={errors.OfficerAddress} />
+                                error={errors.OfficerAddress}
+                                maxLength={200} />
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
@@ -506,7 +514,8 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                     className='thin-scroll'
                                     value={formData.NoticeDescription || ''}
                                     onChange={(e) => handleFieldChange("NoticeDescription", e.target.value)}
-                                    error={errors.NoticeDescription} />
+                                    error={errors.NoticeDescription}
+                                    maxLength={500} />
                             </div>
                         </div>
                     </div>

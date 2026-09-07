@@ -57,7 +57,6 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     SubMaterialMasterId: number;
     UomMasterId: number;
     UomCode: string;
-
     LevelId1: number,
     Level1Name: string | null
     LevelId2: number,
@@ -66,6 +65,8 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     Level3Name: string | null
     LevelId4:number,
     Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
     MaterialQuantity: number;
     RequiredDate: string | null;
     MaterialRequisitionType: string;
@@ -91,6 +92,8 @@ export interface MaterialRequisitionDetailData {
     Level3Name: string | null
     LevelId4:number,
     Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
     MaterialQuantity: number;
     RequiredDate: string;
     MaterialReceivedQuantityTillDate: number;

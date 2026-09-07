@@ -416,8 +416,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                 />
             </div>
 
-            {activeTab === 'Details' && <Details />}
             {activeTab === 'Overview' && <Overview />}
+            {activeTab === 'Details' && <Details />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor />}
             {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}

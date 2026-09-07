@@ -233,24 +233,17 @@ export const Details: React.FC = () => {
 
                     {ShowSplitButton && !active && (
                         <Button
-                            size="md"
                             color="blue"
-                            style={{
-                                padding: "2px 16px",
-                            }}
-                            onClick={() => setActive(true)}
-                        >
+                            size="sm"
+                            onClick={() => setActive(true)} >
                             Split
                         </Button>
                     )}
                 </div>
 
-                <div className="lg:col-span-5 px-2 pb-3 overflow-y-auto thin-scroll h-[250px]">
+                <div className="lg:col-span-5 px-2 pb-3 overflow-y-auto thin-scroll">
                     {matrialRequisitionDetailData.map((item, index) => (
-                        <div
-                            key={index}
-                            className="flex items-center gap-3 bg-gray-100 rounded-lg p-2 mt-2"
-                        >
+                        <div key={index} className="flex items-center gap-3 bg-gray-100 rounded-lg p-2 mt-2">
                             {active && (
                                 <Checkbox size="sm"
                                     checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
@@ -265,12 +258,32 @@ export const Details: React.FC = () => {
                             )}
 
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
-                                <FieldItem label="Material Name" value={item.MaterialName} />
-                                <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ""} />} />
-                                <FieldItem label="Uom" value={item.Uom} />
-                                <FieldItem label="Quantity" value={item.MaterialQuantity} />
-                                <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)}
-                                />
+                                {item.MaterialRequisitionType?.toUpperCase() === "DIRECT" ? (
+                                    <>
+                                        <FieldItem label="Category" value={item.Level1Name || "-"} />
+
+                                        <FieldItem label="Sub Category" value={item.Level2Name || "-"} />
+
+                                        <FieldItem label="Description" value={item.Level3Name ?? ""} />
+
+                                        <FieldItem label="Sub Material" value={item.Level4Name ?? ""} />
+
+                                        <FieldItem label="Quantity" value={item.MaterialQuantity} />
+
+                                        <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+
+                                    </>
+                                ) : (
+                                    <>
+                                        <FieldItem label="Material Name" value={item.MaterialName} />
+                                        <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ""} />} />
+                                        <FieldItem label="Uom" value={item.Uom} />
+                                        <FieldItem label="Quantity" value={item.MaterialQuantity} />
+                                        <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+                                    </>
+                                )}
+
+
                             </div>
                         </div>
                     ))}

@@ -19,9 +19,9 @@ import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendo
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService";
 import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { formatCurrency } from "@/core/utils/comman";
-import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { DataTableWithHeaderRowDivider, type TableColumn } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 export const Overview: React.FC = () => {
 
@@ -137,9 +137,8 @@ export const Overview: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setMaterialRequisitionInvoiceData(response.right.Data);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
                 }
+
                 return response;
             },
             undefined,
@@ -157,66 +156,129 @@ export const Overview: React.FC = () => {
     const amountPaid = MaterialRequisitionInvoiceData.reduce(
         (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0), 0);
 
-    const MatrialRequisitionDetailColumns = useMemo<any[]>(
-        () => [
+    const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
+
+        const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const columns: TableColumn[] = [
             {
-                key: "MaterialName",
-                label: "Material Name",
+                key: "MaterialRequisitionType",
+                label: "Type",
                 align: "left",
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
-                )
-            },
-            {
-                key: "SubMaterialName",
-                label: "Sub Material Name",
-                align: "left",
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
-                )
-            },
+                width: "30",
+                render: (value) => value || "-"
+            }
+        ];
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        }
+
+        columns.push(
             {
                 key: "MaterialQuantity",
-                label: "Material Quantity",
+                label: "Quantity",
                 align: "left",
-                render: (value: string) => (
-                    <span className="font-medium text-black">
-                        {(value || '')}
-                    </span>
-                )
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? value : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
             },
+
             {
-                key: "MaterialReceivedQuantityTillDate",
-                label: "Received Quantity",
+                key: "RequiredDate",
+                label: "Required Date",
                 align: "left",
-                render: (value: string) => (
-                    <span className="font-medium text-black">
-                        {(value || '')}
-                    </span>
-                )
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
             },
             {
                 key: "Remark",
                 label: "Remark",
                 align: "left",
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
+                width: "30",
+                render: (value) => (
+                    <FieldInfoTooltip value={value} />
                 )
             },
-        ], []
-    );
+
+        );
+
+        return columns;
+    }, [matrialRequisitionDetailData]);
 
     const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
         () => [
@@ -316,7 +378,7 @@ export const Overview: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4 border-b border-[#135bec2e]">
-                            <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName}/>
+                            <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
                             <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
                             <FieldItem label="Base Amount" value={formatCurrency(computeBaseTotal(Vendoramount))} />
                             <FieldItem label="Total Tax" value={formatCurrency(computeTaxTotal(Vendoramount))} />
@@ -333,11 +395,11 @@ export const Overview: React.FC = () => {
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
                         <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE]">
                             <h4 className="text-sm font-semibold text-[#7E22CE]">
-                                Matrial Requisition Detail
+                                Material Requisition Detail
                             </h4>
                         </div>
 
-                        <div className="overflow-y-auto thin-scroll h-[200px]">
+                        <div className="overflow-y-auto thin-scroll">
                             <DataTableWithHeaderRowDivider
                                 columns={MatrialRequisitionDetailColumns}
                                 data={matrialRequisitionDetailData}
@@ -357,7 +419,7 @@ export const Overview: React.FC = () => {
                             </h4>
                         </div>
 
-                        <div className="overflow-y-auto thin-scroll h-[200px]">
+                        <div className="overflow-y-auto thin-scroll">
                             <DataTableWithHeaderRowDivider
                                 columns={MaterialRequisitionInvoiceColumns}
                                 data={MaterialRequisitionInvoiceData}

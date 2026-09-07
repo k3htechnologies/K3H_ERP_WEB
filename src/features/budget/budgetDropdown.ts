@@ -6,13 +6,18 @@ import { budgetService } from "@/features/budget/services/BudgetService";
 export interface BudgetDropdownItem {
     label: string;
     value: string;
-
     LevelType: string;
-
     LevelId1: number;
     LevelId2: number;
     LevelId3: number;
     LevelId4: number;
+    Level4MaterialName:string| null;
+    Level4SubMaterialUomCode:string| null;
+    Level4SubMaterialUom:string| null;
+    Level4LeadTimeInDays: number | 0,
+    Level4IsTolerant?: boolean,
+    MaterialCost: number | 0,
+    Quantity: number | 0
 }
 
 export const fetchProjectBudget = async ( projectId: number): Promise<BudgetData[]> => {
@@ -80,7 +85,14 @@ export const getBudgetL1Dropdown = (budgetList: BudgetData[]): BudgetDropdownIte
                     LevelId1: item.LevelId1,
                     LevelId2: 0,
                     LevelId3: 0,
-                    LevelId4: 0
+                    LevelId4: 0,
+                    Level4MaterialName: null,
+                    Level4SubMaterialUomCode: null,
+                    Level4SubMaterialUom: null,
+                    Level4LeadTimeInDays: 0,
+                    Level4IsTolerant: false,
+                    MaterialCost:0,
+                    Quantity:0
                 });
             }
         });
@@ -119,7 +131,14 @@ export const getBudgetL2Dropdown = ( budgetList: BudgetData[], levelId1: number 
                     LevelId1: item.LevelId1,
                     LevelId2: item.LevelId2,
                     LevelId3: 0,
-                    LevelId4: 0
+                    LevelId4: 0,
+                    Level4MaterialName: null,
+                    Level4SubMaterialUomCode: null,
+                    Level4SubMaterialUom: null,
+                    Level4LeadTimeInDays: 0,
+                    Level4IsTolerant: false,
+                    MaterialCost:0,
+                    Quantity:0
                 });
             }
         });
@@ -159,7 +178,14 @@ export const getBudgetL3Dropdown = ( budgetList: BudgetData[], levelId1: number,
                     LevelId1: item.LevelId1,
                     LevelId2: item.LevelId2,
                     LevelId3: item.LevelId3,
-                    LevelId4: 0
+                    LevelId4: 0,
+                    Level4MaterialName: null,
+                    Level4SubMaterialUomCode: null,
+                    Level4SubMaterialUom: null,
+                    Level4LeadTimeInDays: 0,
+                    Level4IsTolerant: false,
+                    MaterialCost:0,
+                    Quantity:0
                 });
             }
         });
@@ -217,7 +243,15 @@ export const getBudgetL4Dropdown = (budgetList: BudgetData[], levelId1: number, 
                     LevelId1: item.LevelId1,
                     LevelId2: item.LevelId2,
                     LevelId3: item.LevelId3,
-                    LevelId4: item.LevelId4
+                    LevelId4: item.LevelId4,
+                    Level4MaterialName: item.Level4MaterialName,
+                    Level4SubMaterialUomCode: item.Level4SubMaterialUomCode,
+                    Level4SubMaterialUom: item.Level4SubMaterialUom,
+                    Level4LeadTimeInDays: item.Level4LeadTimeInDays,
+                    Level4IsTolerant: item.Level4IsTolerant,
+                    MaterialCost:item.MaterialCost,
+                    Quantity:item.Quantity
+
                 });
             }
         });

@@ -220,6 +220,9 @@ export const ViewTaxTracker: React.FC = () => {
         fd.append('RequestType', 'Reopen');
         fd.append('NoticeStatus', 'Reopened');
 
+        const latestAuthority = taxTrackerDetailsData.slice().reverse().find(d => d.AuthorityType)?.AuthorityType || detailsData?.Authority || '';
+        fd.append('AuthorityType', latestAuthority);
+
         noticeDocumentURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append('NoticeDocumentURL', file);

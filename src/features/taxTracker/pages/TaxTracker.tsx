@@ -601,7 +601,21 @@ export const TaxTracker: React.FC = () => {
         setRequestFormData((prev) => ({
             ...prev,
             [field]: value,
-            ...(field === 'RequestType' ? { AmountUnderDisputeDate: null, } : {}),
+            ...(field === 'RequestType' ? {
+                OrderStatus: null,
+                AuthorityType: '',
+                AmountUnderDispute: 0,
+                AmountUnderDisputeDate: null,
+                OfficerName: null,
+                OfficerAddress: null,
+                DateOfAppeal: null,
+                NoticeDescription: null,
+            } : {}),
+            ...(field === 'OrderStatus' ? {
+                AuthorityType: '',
+                AmountUnderDispute: 0,
+                AmountUnderDisputeDate: null,
+            } : {}),
         }));
         setErrors({})
 
@@ -742,8 +756,10 @@ export const TaxTracker: React.FC = () => {
 
         fd.append('TaxTrackerDocumentId', String(requestFormData.TaxTrackerDocumentId ?? 0));
         fd.append('Uniquekey', formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        const latestAuthority = appealSourceRow?.TaxTrackerDocumentDetailsData?.slice().reverse().find(d => d.AuthorityType)?.AuthorityType || appealSourceRow?.Authority || '';
+
         fd.append('TaxTrackerId', requestFormData.TaxTrackerId.toString());
-        fd.append('AuthorityType', requestFormData.AuthorityType || '');
+        fd.append('AuthorityType', requestFormData.AuthorityType || latestAuthority);
         fd.append('RequestType', requestFormData.RequestType || '');
         fd.append('NoticeDescription', requestFormData.NoticeDescription || '');
         fd.append('OfficerName', requestFormData.OfficerName || '');
@@ -998,33 +1014,65 @@ export const TaxTracker: React.FC = () => {
                         />
                     </div>
 
+
+
                     {requestFormData.RequestType === 'Notice' && (
                         <>
-                            <div>
-                                <SinglePageSelection
-                                    label="Select Authority Type"
-                                    placeholder='Select Authority Type'
-                                    required
-                                    value={requestFormData.AuthorityType || ''}
-                                    onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
-                                    options={AUTHORITY_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.AuthorityType}
-                                />
-                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <SinglePageSelection
+                                        label="Select Authority Type"
+                                        placeholder='Select Authority Type'
+                                        required
+                                        value={requestFormData.AuthorityType || ''}
+                                        onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
+                                        options={AUTHORITY_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                        error={errors.AuthorityType}
+                                    />
+                                </div>
 
-                            <div>
-                                <Input
-                                    type="text"
-                                    label="Officer Name"
-                                    placeholder="Officer Name"
-                                    required
-                                    value={requestFormData.OfficerName ?? ""}
-                                    onChange={(e) => handleRequestFieldChange("OfficerName", e.target.value)}
-                                    error={errors.OfficerName}
-                                    maxLength={250} />
-                            </div>
+                                <div>
+                                    <Input
+                                        type="text"
+                                        label="Officer Name"
+                                        placeholder="Officer Name"
+                                        required
+                                        value={requestFormData.OfficerName ?? ""}
+                                        onChange={(e) => handleRequestFieldChange("OfficerName", e.target.value)}
+                                        error={errors.OfficerName}
+                                        maxLength={250} />
+                                </div>
+                                <div>
+                                    <MultiFilePicker
+                                        label={`Document`}
+                                        required
+                                        placeholder={`Select Document`}
+                                        value={noticeDocumentURLFiles}
+                                        onChange={setNoticeDocumentURLFiles}
+                                        availableFilesURL={noticeDocumentURL ?? ""}
+                                        allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                        maxFiles={5}
+                                        maxSizeMB={10}
+                                        onRemoveExisting={(url) => {
+                                            setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
+                                        }}
+                                        error={errors.NoticeDocumentURL}
+                                    />
+                                </div>
+                                <div>
+                                    <DatePickerInput
+                                        label={`Date`}
+                                        placeholder={`Enter ${requestFormData.RequestType} Date`}
+                                        value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
+                                        onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                        required
+                                        error={errors.AmountUnderDisputeDate}
+                                        minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
+                                    />
+                                </div>
 
-                            <div>
+                            </div>
+                            <div className="mt-5 -mb-4">
                                 <TextArea
                                     label="Divisional Address"
                                     placeholder="Divisional Address"
@@ -1035,161 +1083,172 @@ export const TaxTracker: React.FC = () => {
                                     error={errors.OfficerAddress}
                                     maxLength={200} />
                             </div>
-
-                            <div>
-                                <DatePickerInput
-                                    label={`Date`}
-                                    placeholder={`Enter ${requestFormData.RequestType} Date`}
-                                    value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
-                                    onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    required
-                                    error={errors.AmountUnderDisputeDate}
-                                    minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
-                                />
-                            </div>
-
-                            <div className="mt-5">
-                                <MultiFilePicker
-                                    label={`Document`}
-                                    required
-                                    placeholder={`Select Document`}
-                                    value={noticeDocumentURLFiles}
-                                    onChange={setNoticeDocumentURLFiles}
-                                    availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                                    maxFiles={5}
-                                    maxSizeMB={10}
-                                    onRemoveExisting={(url) => {
-                                        setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
-                                    }}
-                                    error={errors.NoticeDocumentURL}
-                                />
-                            </div>
                         </>
                     )}
 
+                    <div>
+                        {requestFormData.RequestType === 'Appeal' && (() => {
+                            const lastOrderRecord = appealSourceRow?.TaxTrackerDocumentDetailsData
+                                ?.filter(d => d.RequestType === 'Order')
+                                ?.at(-1) ?? null;
 
-                    {requestFormData.RequestType === 'Appeal' && (() => {
-                        const lastOrderRecord = appealSourceRow?.TaxTrackerDocumentDetailsData
-                            ?.filter(d => d.RequestType === 'Order')
-                            ?.at(-1) ?? null;
+                            const isNonFavourable = lastOrderRecord?.OrderStatus === 'Non-Favourable';
 
-                        const isNonFavourable = lastOrderRecord?.OrderStatus === 'Non-Favourable';
+                            return (
+                                <>
+                                    {lastOrderRecord && isNonFavourable && (
+                                        <div
+                                            style={{
+                                                background: '#f9fafb',
+                                                border: '1px solid #93c5fd',
+                                                borderLeft: '4px solid #3b82f6',
+                                                borderRadius: '10px',
+                                                padding: '14px 16px',
+                                                marginBottom: '4px',
+                                            }}
+                                        >
+                                            <p style={{ fontSize: '11px', fontWeight: 700, color: '#111111f1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
+                                                Order Details
+                                            </p>
+                                            <div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 2fr)', gap: '20px' }}>
+                                                    <div>
+                                                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Date</p>
+                                                        <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
+                                                            {lastOrderRecord.AmountUnderDisputeDate
+                                                                ? formatDate_dd_MonthName_yy(lastOrderRecord.AmountUnderDisputeDate)
+                                                                : '—'}
+                                                        </p>
+                                                    </div>
 
-                        return (
-                            <>
-                                {lastOrderRecord && isNonFavourable && (
-                                    <div
-                                        style={{
-                                            background: '#f9fafb',
-                                            border: '1px solid #93c5fd',
-                                            borderLeft: '4px solid #3b82f6',
-                                            borderRadius: '10px',
-                                            padding: '14px 16px',
-                                            marginBottom: '4px',
-                                        }}
-                                    >
-                                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#111111f1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '10px' }}>
-                                            Order Details
-                                        </p>
+                                                    <div style={{ textAlign: 'left' }}>
+                                                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Status</p>
+                                                        <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
+                                                            {lastOrderRecord.OrderStatus || '—'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div>
+                                                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute (₹)</p>
+                                                        <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
+                                                            {lastOrderRecord.AmountUnderDispute
+                                                                ? formatCurrency(lastOrderRecord.AmountUnderDispute)
+                                                                : '₹0'}
+                                                        </p>
+                                                    </div>
+
+                                                    <div style={{ textAlign: 'left' }}>
+                                                        <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Authority Type</p>
+                                                        <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
+                                                            {lastOrderRecord.AuthorityType || '—'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                {/* Description */}
+                                                <div style={{ marginTop: '12px' }}>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Description</p>
+                                                    <p
+                                                        className="break-all whitespace-pre-wrap"
+                                                        style={{
+                                                            fontSize: '14px',
+                                                            fontWeight: 500,
+                                                            color: '#111111f1',
+                                                            wordBreak: 'break-word',
+                                                            overflowWrap: 'anywhere'
+                                                        }}
+                                                    >
+                                                        {lastOrderRecord.NoticeDescription || '—'}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {lastOrderRecord.NoticeDocumentURL && (
+                                                <div className="mt-4">
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px', fontWeight: 500, letterSpacing: '0.05em' }}>Order Document</p>
+                                                    <div className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 rounded-md text-xs font-medium cursor-pointer transition-all bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-300">
+                                                        <MultiImageViewer
+                                                            images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}
+                                                            title="Document"
+                                                            isIcon={true}
+                                                            triggerLabel="Document"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
                                         <div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 2fr)', gap: '20px' }}>
-                                                <div>
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Date</p>
-                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
-                                                        {lastOrderRecord.AmountUnderDisputeDate
-                                                            ? formatDate_dd_MonthName_yy(lastOrderRecord.AmountUnderDisputeDate)
-                                                            : '—'}
-                                                    </p>
-                                                </div>
-
-                                                <div style={{ textAlign: 'left' }}>
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Order Status</p>
-                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
-                                                        {lastOrderRecord.OrderStatus || '—'}
-                                                    </p>
-                                                </div>
-
-                                                <div>
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Amount Under Dispute (₹)</p>
-                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
-                                                        {lastOrderRecord.AmountUnderDispute
-                                                            ? formatCurrency(lastOrderRecord.AmountUnderDispute)
-                                                            : '₹0'}
-                                                    </p>
-                                                </div>
-
-                                                <div style={{ textAlign: 'left' }}>
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Authority Type</p>
-                                                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#111111f1' }}>
-                                                        {lastOrderRecord.AuthorityType || '—'}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            {/* Description */}
-                                            <div style={{ marginTop: '12px' }}>
-                                                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '2px' }}>Description</p>
-                                                <p
-                                                    className="break-all whitespace-pre-wrap"
-                                                    style={{
-                                                        fontSize: '14px',
-                                                        fontWeight: 500,
-                                                        color: '#111111f1',
-                                                        wordBreak: 'break-word',
-                                                        overflowWrap: 'anywhere'
-                                                    }}
-                                                >
-                                                    {lastOrderRecord.NoticeDescription || '—'}
-                                                </p>
-                                            </div>
+                                            <DatePickerInput
+                                                label="Date of Appeal"
+                                                placeholder="Enter Date Of Appeal"
+                                                value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
+                                                onChange={(val) => {
+                                                    const appealDueDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
+                                                    const appealDate = getDateOfAppeal(appealDueDate);
+                                                    handleRequestFieldChange("AmountUnderDisputeDate", appealDueDate);
+                                                    handleRequestFieldChange("DateOfAppeal", appealDate);
+                                                }}
+                                                required
+                                                error={errors.AmountUnderDisputeDate}
+                                                minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
+                                            />
                                         </div>
 
-                                        {lastOrderRecord.NoticeDocumentURL && (
-                                            <div className="mt-4">
-                                                <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px', fontWeight: 500, letterSpacing: '0.05em' }}>Order Document</p>
-                                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 rounded-md text-xs font-medium cursor-pointer transition-all bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-300">
-                                                    <MultiImageViewer
-                                                        images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}
-                                                        title="Document"
-                                                        isIcon={true}
-                                                        triggerLabel="Document"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
+                                        <div>
+                                            <DatePickerInput
+                                                label="Appeal Due Date"
+                                                placeholder="Enter Appeal Due Date"
+                                                value={formatDate_dd_mm_yyyy(requestFormData.DateOfAppeal)}
+                                                onChange={() => { }}
+                                                disabled
+                                                error={errors.DateOfAppeal}
+                                            />
+                                        </div>
                                     </div>
-                                )}
 
-                                <div className="mt-5">
+                                    <div className="mt-5">
+                                        <MultiFilePicker
+                                            label="Documents"
+                                            required
+                                            placeholder="Select Documents"
+                                            value={noticeDocumentURLFiles}
+                                            onChange={setNoticeDocumentURLFiles}
+                                            availableFilesURL={noticeDocumentURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                            maxFiles={5}
+                                            maxSizeMB={10}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
+                                            }}
+                                            error={errors.NoticeDocumentURL}
+                                        />
+
+                                    </div>
+
+                                </>
+                            );
+                        })()}
+
+                    </div>
+
+
+                    <div className="grid grid-cols-2 gap-4  pb-3">
+                        {requestFormData.RequestType === 'Reply' && (
+                            <>
+                                <div>
                                     <DatePickerInput
-                                        label="Date of Appeal"
-                                        placeholder="Enter Date Of Appeal"
+                                        label="Date"
+                                        placeholder="Enter Date"
                                         value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
-                                        onChange={(val) => {
-                                            const appealDueDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
-                                            const appealDate = getDateOfAppeal(appealDueDate);
-                                            handleRequestFieldChange("AmountUnderDisputeDate", appealDueDate);
-                                            handleRequestFieldChange("DateOfAppeal", appealDate);
-                                        }}
+                                        onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                         required
                                         error={errors.AmountUnderDisputeDate}
                                         minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
                                     />
                                 </div>
-
-                                <div>
-                                    <DatePickerInput
-
-                                        label="Appeal Due Date"
-                                        placeholder="Enter Appeal Due Date"
-                                        value={formatDate_dd_mm_yyyy(requestFormData.DateOfAppeal)}
-                                        onChange={() => { }}
-                                        disabled
-                                        error={errors.DateOfAppeal}
-                                    />
-                                </div>
-
-                                <div className="mt-5">
+                                <div className="">
                                     <MultiFilePicker
                                         label="Documents"
                                         required
@@ -1204,144 +1263,127 @@ export const TaxTracker: React.FC = () => {
                                             setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
                                         }}
                                         error={errors.NoticeDocumentURL}
+
                                     />
                                 </div>
                             </>
-                        );
-                    })()}
+                        )}
 
-                    {requestFormData.RequestType === 'Reply' && (
-                        <>
-                            <div>
-                                <DatePickerInput
-                                    label="Date"
-                                    placeholder="Enter Date"
-                                    value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
-                                    onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    required
-                                    error={errors.AmountUnderDisputeDate}
-                                    minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
-                                />
-                            </div>
-                            <div className="mt-5">
-                                <MultiFilePicker
-                                    label="Documents"
-                                    required
-                                    placeholder="Select Documents"
-                                    value={noticeDocumentURLFiles}
-                                    onChange={setNoticeDocumentURLFiles}
-                                    availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                                    maxFiles={5}
-                                    maxSizeMB={10}
-                                    onRemoveExisting={(url) => {
-                                        setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
-                                    }}
-                                    error={errors.NoticeDocumentURL}
+                    </div>
 
-                                />
-                            </div>
-                        </>
-                    )}
 
-                    {requestFormData.RequestType === 'Order' && (
-                        <>
-                            <div>
-                                <SinglePageSelection
-                                    label="Status"
-                                    placeholder="Select Status"
-                                    required
-                                    value={requestFormData.OrderStatus || ""}
-                                    onChange={(e) => handleRequestFieldChange("OrderStatus", String(e))}
-                                    options={ORDER_STATUS_OPTIONS.map((opt) => ({
-                                        label: opt.name,
-                                        value: opt.id,
-                                    }))}
-                                    error={errors.OrderStatus}
-                                />
-                            </div>
 
-                            {requestFormData.OrderStatus && (
-                                <div>
-                                    <DatePickerInput
-                                        label="Date"
-                                        placeholder="Enter Date"
-                                        value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
-                                        onChange={(val) =>
-                                            handleRequestFieldChange(
-                                                "AmountUnderDisputeDate",
-                                                convert_dd_mm_yyyy_To_Yyyy_mm_dd(val)
-                                            )
+                    <div >
+                        {requestFormData.RequestType === 'Order' && (
+                            <>
+                                <div >
+                                    <div className="grid grid-cols-2 gap-4 -mt-2">
+                                        <div className="-mt-2">
+                                            <SinglePageSelection
+                                                label="Status"
+                                                placeholder="Select Status"
+                                                required
+                                                value={requestFormData.OrderStatus || ""}
+                                                onChange={(e) => handleRequestFieldChange("OrderStatus", String(e))}
+                                                options={ORDER_STATUS_OPTIONS.map((opt) => ({
+                                                    label: opt.name,
+                                                    value: opt.id,
+                                                }))}
+                                                error={errors.OrderStatus}
+                                            />
+                                        </div>
+
+                                        {requestFormData.OrderStatus && (
+                                            <div className="-mt-2">
+                                                <DatePickerInput
+                                                    label="Date"
+                                                    placeholder="Enter Date"
+                                                    value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
+                                                    onChange={(val) =>
+                                                        handleRequestFieldChange(
+                                                            "AmountUnderDisputeDate",
+                                                            convert_dd_mm_yyyy_To_Yyyy_mm_dd(val)
+                                                        )
+                                                    }
+                                                    required
+                                                    error={errors.AmountUnderDisputeDate}
+                                                    minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
+                                                />
+                                            </div>
+                                        )}
+
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 mt-4">
+                                        {requestFormData.OrderStatus === "Non-Favourable" && (
+                                            <>
+                                                <div>
+                                                    <SinglePageSelection
+                                                        label="Select Authority Type"
+                                                        placeholder='Select Authority Type'
+                                                        required
+                                                        value={requestFormData.AuthorityType || ''}
+                                                        onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
+                                                        options={AUTHORITY_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                                        error={errors.AuthorityType}
+                                                    />
+                                                </div>
+
+                                                <div className="">
+                                                    <Input
+                                                        label="Amount Under Dispute (₹)"
+                                                        placeholder="Enter Amount Under Dispute"
+                                                        value={requestFormData.AmountUnderDispute || ''}
+                                                        required
+                                                        onChange={(e) =>
+                                                            handleRequestFieldChange(
+                                                                "AmountUnderDispute",
+                                                                filterNumbersWithDecimal(e.target.value) || ""
+                                                            )
+                                                        }
+                                                        error={errors.AmountUnderDispute}
+                                                        rightIcon="₹"
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
+
+                                    </div>
+
+
+                                </div>
+                                <div className="mt-1 pb-4">
+                                    <MultiFilePicker
+                                        label={
+                                            requestFormData.OrderStatus === "Non-Favourable"
+                                                ? "Document"
+                                                : requestFormData.OrderStatus === "Favourable"
+                                                    ? "Document"
+                                                    : `Document`
                                         }
                                         required
-                                        error={errors.AmountUnderDisputeDate}
-                                        minDate={appealSourceRow?.NoticeDate ? new Date(appealSourceRow.NoticeDate) : undefined}
+                                        placeholder={`Select Document`}
+                                        value={noticeDocumentURLFiles}
+                                        onChange={setNoticeDocumentURLFiles}
+                                        availableFilesURL={noticeDocumentURL ?? ""}
+                                        allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                        maxFiles={5}
+                                        maxSizeMB={10}
+                                        onRemoveExisting={(url) => {
+                                            setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
+                                        }}
+                                        error={errors.NoticeDocumentURL}
                                     />
                                 </div>
-                            )}
 
-                            {requestFormData.OrderStatus === "Non-Favourable" && (
-                                <div>
-                                    <div>
-                                        <SinglePageSelection
-                                            label="Select Authority Type"
-                                            placeholder='Select Authority Type'
-                                            required
-                                            value={requestFormData.AuthorityType || ''}
-                                            onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
-                                            options={AUTHORITY_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                                            error={errors.AuthorityType}
-                                        />
-                                    </div>
+                            </>
+                        )}
 
-                                    <div className="mt-5">
-                                        <Input
-                                            label="Amount Under Dispute (₹)"
-                                            placeholder="Enter Amount Under Dispute"
-                                            value={requestFormData.AmountUnderDispute || ''}
-                                            required
-                                            onChange={(e) =>
-                                                handleRequestFieldChange(
-                                                    "AmountUnderDispute",
-                                                    filterNumbersWithDecimal(e.target.value) || ""
-                                                )
-                                            }
-                                            error={errors.AmountUnderDispute}
-                                            rightIcon="₹"
-                                        />
-                                    </div>
-                                </div>
-                            )}
-
-                            <div className="mt-5">
-                                <MultiFilePicker
-                                    label={
-                                        requestFormData.OrderStatus === "Non-Favourable"
-                                            ? "Order Document"
-                                            : requestFormData.OrderStatus === "Favourable"
-                                                ? "Document"
-                                                : `Document`
-                                    }
-                                    required
-                                    placeholder={`Select Document`}
-                                    value={noticeDocumentURLFiles}
-                                    onChange={setNoticeDocumentURLFiles}
-                                    availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                                    maxFiles={5}
-                                    maxSizeMB={10}
-                                    onRemoveExisting={(url) => {
-                                        setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
-                                    }}
-                                    error={errors.NoticeDocumentURL}
-                                />
-                            </div>
-                        </>
-                    )}
+                    </div>
 
                     {requestFormData.RequestType === 'Close-Notice' && (
                         <>
-                            <div className="mt-5">
+                            <div className="-mt-8 pb-4">
                                 <MultiFilePicker
                                     label={`Document`}
                                     required
@@ -1362,7 +1404,7 @@ export const TaxTracker: React.FC = () => {
 
                         </>
                     )}
-                    <div className="mt-5">
+                    <div className="-mt-4">
                         <TextArea
                             label="Description"
                             placeholder="Enter Description"

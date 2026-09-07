@@ -129,6 +129,7 @@ export const AddUpdateGRN = () => {
                 if (E.isRight(response)) {
 
                     const data = response.right.Data;
+
                     const e = data?.[0];
 
                     if (e) {
@@ -371,11 +372,9 @@ export const AddUpdateGRN = () => {
 
     const totalReceived = receivedQuantity + addedQuantity;
 
-    const pendingQuantity = Math.max(Number(
-        (materialData.MaterialQuantity - totalReceived).toFixed(2)), 0);
+    const pendingQuantity = Math.max(Number((materialData.MaterialQuantity - totalReceived).toFixed(2)), 0);
 
-    const isToleranceAllowed =
-        materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
+    const isToleranceAllowed = materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
 
     const tolerancePercentage =
         materialData.TolerancePercentage ?? selectedMaterialDetail?.TolerancePercentage ?? selectedMaterialDetail?.Tolerance ??
@@ -464,6 +463,7 @@ export const AddUpdateGRN = () => {
             setErrors(validation.errors);
             return;
         }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -515,6 +515,7 @@ export const AddUpdateGRN = () => {
                 if (E.isRight(apiResponse)) {
 
                     setMaterialSubMaterialList(apiResponse.right.Data.MaterialMasterSubMaterialMasterData);
+
                 } else {
                     addToast({ type: "error", title: "Error Fetching material list" });
                 }
@@ -564,7 +565,6 @@ export const AddUpdateGRN = () => {
         setErrors({});
 
         const validation = validateMaterialDetailsForm();
-
         if (!validation.isValid) {
             setErrors(validation.errors);
             return;
@@ -610,13 +610,11 @@ export const AddUpdateGRN = () => {
     };
 
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionGRNRequest, value: any) => {
-
         setFormData((prev) => ({ ...prev, [field]: value, }));
         setErrors((prev) => ({ ...prev, [field]: "", }));
     };
 
     const handleMaterialFieldChange = (field: keyof MaterialRequisitionDetailGRN, value: any) => {
-
         setMaterialData((prev) => ({ ...prev, [field]: value, }));
         setErrors((prev) => ({ ...prev, [field]: "", }));
     };

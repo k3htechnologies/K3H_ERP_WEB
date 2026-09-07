@@ -112,7 +112,6 @@ export const AddUpdateMaterialRequisition = () => {
     }, [materialsubmaterialList]);
 
     const validateMaterialForm = (): {
-
         isValid: boolean;
         errors: { [key: string]: string };
 
@@ -134,7 +133,6 @@ export const AddUpdateMaterialRequisition = () => {
             newErrors.MaterialQuantity = "Required Quantity must be greater than 0";
         }
 
-
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors,
@@ -146,6 +144,7 @@ export const AddUpdateMaterialRequisition = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+                
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: 1,
                     PageSize: 1,
@@ -314,10 +313,10 @@ export const AddUpdateMaterialRequisition = () => {
             label: "Action",
             align: "right",
             render: (_value, row) => {
-                const index = materialList.findIndex(
-                    item =>
-                        item.MaterialMasterId === row.MaterialMasterId &&
-                        item.SubMaterialMasterId === row.SubMaterialMasterId
+
+                const index = materialList.findIndex(item =>
+                    item.MaterialMasterId === row.MaterialMasterId &&
+                    item.SubMaterialMasterId === row.SubMaterialMasterId
                 );
 
                 return canAction ? (
@@ -399,7 +398,6 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const validateMaterialRequisitionForm = (): {
-
         isValid: boolean
         errors: { [key: string]: string }
     } => {

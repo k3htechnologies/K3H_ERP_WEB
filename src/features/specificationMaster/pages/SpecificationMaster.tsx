@@ -86,8 +86,7 @@ export const SpecificationMaster: React.FC = () => {
                     PageSize: pagination.pageSize,
                     LevelType: activeTab,
                     CategoryName: searchText ?? filterParams.CategoryName,
-                    SpecificationMasterId: filterParams.SpecificationMasterId
-                        ? Number(filterParams.SpecificationMasterId) : undefined,
+                    SpecificationMasterId: filterParams.SpecificationMasterId ? Number(filterParams.SpecificationMasterId) : undefined,
                     SortBy: getSortByParam(sort ?? null, SpecificationMasterColumns),
                 };
 
@@ -137,7 +136,6 @@ export const SpecificationMaster: React.FC = () => {
     }, [isAddUpdateModalOpen, editSpecificationMasterData]);
 
     const ValidateAddUpdateSpecificationMasterForm = (): {
-
         isValid: boolean;
         errors: { [key: string]: string };
     } => {
@@ -185,6 +183,7 @@ export const SpecificationMaster: React.FC = () => {
             setErrors(validation.errors);
             return
         }
+
         runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -214,6 +213,7 @@ export const SpecificationMaster: React.FC = () => {
                                 dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
                             }
                         }, 50);
+
                     } else {
                         const parentId = expandedParentId;
 

@@ -16,7 +16,8 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import RichTextEditor from "@/ui/components/forms/RichTextEditor";
-import {  useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useViewportHeight } from "@/core/utils/useViewportHeight";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -55,6 +56,8 @@ export const PurchaseOrder: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isMaximized, setIsMaximized] = useState(false);
     const { canAction: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
+
+    const pdfHeight = useViewportHeight(180, 300, 1200);
 
     useEffect(() => {
         if (!projectId) return
@@ -271,7 +274,7 @@ export const PurchaseOrder: React.FC = () => {
     const isPdf = (url: string) => url.toLowerCase().includes(".pdf") || url.startsWith("blob:");
 
     return (
-        <div className="bg-white p-1 h-[500px]">
+        <div className="bg-white p-1 w-full">
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
             <div className="flex justify-end gap-2">
@@ -311,48 +314,62 @@ export const PurchaseOrder: React.FC = () => {
             </div>
 
             {hasPurchaseOrder && (
-                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-1 mb-4 ">
+                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-1 mb-4">
 
-                    <div className="flex justify-between">
-                        <h2 className="text-lg font-semibold mb-2">Purchase Order File</h2>
+                   
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-lg font-semibold mb-2">
+                            Purchase Order
+                        </h2>
+
                         <button
                             onClick={() => setIsMaximized(true)}
-                            className="px-2 py-2 mb-2 hover:bg-gray-100 rounded">
+                            className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
+                        >
                             <Maximize2 className="h-5 w-5 text-gray-700" />
                         </button>
                     </div>
 
-                    <div className="h-[400px]">
+                   
+                    <div
+                        className="w-full" style={{ height: `${pdfHeight - 180}px` }}  >
                         {isPdf(materialRequisitionPurchaseOrder?.PurchaseOrderURL ?? '') && (
                             <iframe
                                 src={materialRequisitionPurchaseOrder?.PurchaseOrderURL ?? ''}
-                                className="w-full h-full"
+                                className="w-full h-full border-0"
                                 title="pdf-preview"
                             />
                         )}
                     </div>
 
+                    {/* Created By */}
                     <div className="text-sm text-gray-600 mt-2">
                         <span className="font-medium">
                             Created By {materialRequisitionPurchaseOrder?.CreatedBy || "-"} on{" "}
                             {materialRequisitionPurchaseOrder?.CreatedDate
-                                ? formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder?.CreatedDate)
+                                ? formatDate_dd_MonthName_yy(
+                                    materialRequisitionPurchaseOrder.CreatedDate
+                                )
                                 : "-"}
                         </span>
                     </div>
 
-                    <div className="absolute bottom-4 right-10">
+                    
+                    <div className="flex justify-end mt-2 mb-2 mr-2">
                         <Button
                             color="red"
                             variant="solid"
                             onClick={() =>
-                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData)
+                                handleConfirmationDialogBoxOpen(
+                                    materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData
+                                )
                             }
                             className="px-4 py-2 rounded-md"
                         >
                             Delete
                         </Button>
                     </div>
+
                 </div>
             )}
 

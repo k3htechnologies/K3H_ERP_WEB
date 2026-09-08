@@ -571,3 +571,7 @@ export const isValidVehicleNumber = (value: string): boolean => {
 
   return vehicleNumberRegex.test(value.trim());
 };
+
+// VALIDATE CHALLAN NUMBER 
+export const filterNumbersWithHyphen = (value: string): string =>
+  value.replace(/[^0-9-]/g, "");

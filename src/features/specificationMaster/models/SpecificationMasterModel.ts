@@ -30,6 +30,8 @@ export interface SpecificationMasterData {
     MaterialName:string| null;
     SubMaterialUomCode:string| null;
     SubMaterialUom:string| null;
+    LeadTimeInDays: number | 0,
+    IsTolerant?: boolean,
     Quantity: number;
     CreatedById: number | 0
     CreatedBy: string | ''

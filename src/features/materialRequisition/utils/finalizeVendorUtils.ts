@@ -11,17 +11,12 @@ export const computeTaxPercent = (r: any): number =>
   Number(r.UGST || 0) +
   Number(r.TGST || 0)
 
-export const computeTaxAmount = (r: any): number =>
-  computeAmount(r) * computeTaxPercent(r) / 100
+export const computeTaxAmount = (r: any): number => computeAmount(r) * computeTaxPercent(r) / 100
 
-export const computeGrandTotal = (r: any): number =>
-  computeAmount(r) + computeTaxAmount(r)
+export const computeGrandTotal = (r: any): number => computeAmount(r) + computeTaxAmount(r)
 
-export const computeBaseTotal = (lines: any[]): number =>
-  lines.reduce((s, r) => s + computeAmount(r), 0)
+export const computeBaseTotal = (lines: any[]): number =>  lines.reduce((s, r) => s + computeAmount(r), 0)
 
-export const computeTaxTotal = (lines: any[]): number =>
-  lines.reduce((s, r) => s + computeTaxAmount(r), 0)
+export const computeTaxTotal = (lines: any[]): number =>  lines.reduce((s, r) => s + computeTaxAmount(r), 0)
 
-export const computeLinesTotal = (rows?: any[]): number =>
-  (rows ?? []).reduce((sum, r) => sum + computeGrandTotal(r), 0)
+export const computeLinesTotal = (rows?: any[]): number => (rows ?? []).reduce((sum, r) => sum + computeGrandTotal(r), 0)

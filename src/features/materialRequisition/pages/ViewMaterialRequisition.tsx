@@ -411,13 +411,13 @@ export const ViewMaterialRequisition: React.FC = () => {
                 <Tabs
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
-                    islarge
+                    islarge={true}
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
 
-            {activeTab === 'Details' && <Details />}
             {activeTab === 'Overview' && <Overview />}
+            {activeTab === 'Details' && <Details />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor />}
             {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}

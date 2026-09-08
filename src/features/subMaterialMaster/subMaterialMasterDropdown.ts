@@ -19,8 +19,18 @@ export const fetchSubMaterialMasterDropdown = async (pageNumber: number, params?
 
         const itemList = (apiResponse?.Data || []).map((d: any) => ({
             label: d.SubMaterialName,
-            value: String(d.SubMaterialMasterId)
+            value: String(d.SubMaterialMasterId),
+            MaterialMasterId: d.MaterialMasterId,
+            MaterialCode: d.MaterialCode,
+            MaterialName: d.MaterialName,
+            SubMaterialName: d.SubMaterialName,
+            UomMasterId: d.UomMasterId,
+            UomCode: d.UomCode,
+            Uom: d.Uom,
+            LeadTimeInDays: d.LeadTimeInDays,
+            IsTolerant: d.IsTolerant
         }));
+
 
 
         return {
@@ -32,4 +42,17 @@ export const fetchSubMaterialMasterDropdown = async (pageNumber: number, params?
         console.error('FETCH SUB MATERIAL MASTER DROPDOWN ERROR', err);
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
+};
+
+export const fetchSubMaterialMasterById = async (subMaterialId: number) => {
+    const responseEither = await subMaterialMasterService.apiCallPullSubMaterialMaster({
+        PageSize: 1,
+        PageNumber: 1,
+        SubMaterialMasterId: subMaterialId,
+        IsCheckPermission: false,
+    });
+
+    if (E.isLeft(responseEither)) return null;
+
+    return responseEither.right.Data?.[0] || null;
 };

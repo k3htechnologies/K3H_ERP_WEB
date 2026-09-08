@@ -50,7 +50,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         textColor: "text-[#116EB2]",
         labelColor: "text-[#116EB2]",
         fieldTextColor: "text-[#116EB2]",
-        footerColor: "text-[#116EB2]",
+        footerColor: "text-slate-700",
         borderColor: "border-[#0C8CE9]",
         badgeColor: "border-[#0C8CE9] text-[#116EB2] hover:bg-[#C8D7FF]"
     },
@@ -60,7 +60,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         textColor: "text-[#0E568B]",
         labelColor: "text-[#116EB2]",
         fieldTextColor: "text-[#0A3D62]",
-        footerColor: "text-[#4A7B9D]",
+        footerColor: "text-slate-700",
         borderColor: "border-[#BCD7EA]",
         badgeColor: "border-[#96C2DF] text-[#0E568B] bg-white hover:bg-[#DCEEFB]"
     },
@@ -74,7 +74,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         textColor: "text-white",
         labelColor: "text-gray-300",
         fieldTextColor: "text-white",
-        footerColor: "text-black",
+        footerColor: "text-slate-700",
         borderColor: "border-transparent",
         badgeColor: "border-white text-white hover:bg-white/10"
     },
@@ -84,7 +84,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         textColor: "text-white",
         labelColor: "text-gray-300",
         fieldTextColor: "text-white",
-        footerColor: "text-gray-300",
+        footerColor: "text-slate-700",
         borderColor: "border-transparent",
         badgeColor: "border-white text-white hover:bg-white/10"
     },
@@ -94,7 +94,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         textColor: "text-slate-900",
         labelColor: "text-slate-600",
         fieldTextColor: "text-slate-900",
-        footerColor: "text-slate-500",
+        footerColor: "text-slate-700",
         borderColor: "border-slate-300",
         badgeColor: "border-slate-400 text-slate-700 bg-slate-50 hover:bg-slate-200"
     },
@@ -104,7 +104,7 @@ const REQUEST_TYPE_CONFIGS: Record<string, CardConfig> = {
         textColor: "text-gray-900",
         labelColor: "text-gray-600",
         fieldTextColor: "text-gray-900",
-        footerColor: "text-gray-600",
+        footerColor: "text-slate-700",
         borderColor: "border-gray-300",
         badgeColor: "border-gray-500 text-gray-700 hover:bg-gray-200"
     }

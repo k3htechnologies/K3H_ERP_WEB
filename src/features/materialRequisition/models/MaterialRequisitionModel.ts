@@ -55,14 +55,22 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     MaterialName: string;
     SubMaterialName: string;
     SubMaterialMasterId: number;
-    MaterialQuantity: number;
     UomMasterId: number;
     UomCode: string;
+    LevelId1: number,
+    Level1Name: string | null
+    LevelId2: number,
+    Level2Name: string | null
+    LevelId3:number,
+    Level3Name: string | null
+    LevelId4:number,
+    Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
+    MaterialQuantity: number;
     RequiredDate: string | null;
     MaterialRequisitionType: string;
-    SpecificationMasterId: number;
-    CategoryName: string;
-    Remark: string ;
+    Remark: string;
 }
 
 export interface MaterialRequisitionDetailData {
@@ -73,12 +81,23 @@ export interface MaterialRequisitionDetailData {
     MaterialName: string;
     SubMaterialName: string;
     SubMaterialMasterId: number;
-    MaterialQuantity: number;
     UomMasterId: number;
     UomCode: string;
     Uom: string;
+    LevelId1: number,
+    Level1Name: string | null
+    LevelId2: number,
+    Level2Name: string | null
+    LevelId3:number,
+    Level3Name: string | null
+    LevelId4:number,
+    Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
+    MaterialQuantity: number;
     RequiredDate: string;
     MaterialReceivedQuantityTillDate: number;
+    MaterialRequisitionType:  string | null;
     Remark: string | null
     CreatedById: number;
     CreatedBy: string;

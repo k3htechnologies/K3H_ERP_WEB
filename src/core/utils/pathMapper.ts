@@ -143,6 +143,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/jobrolemaster': '/jobRoleMaster',
         '/jobopenings': '/jobOpenings',
 
+        // PURCHASE MATERIAL REQUISITION
         '/materialrequisition': '/materialRequisition',
     }
 

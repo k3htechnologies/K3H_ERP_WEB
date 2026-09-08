@@ -27,6 +27,7 @@ import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService"
 import { Loader } from "@/core/utils/loader";
+import { formatCurrency } from "@/core/utils/comman"
 
 const DEFAULT_LOGISTICS = [
     { Logistics: "Transportation" },
@@ -455,7 +456,7 @@ export const FinalizedVendor: React.FC = () => {
                             key={vendor.VendorId}
                             showline
                             height={70}
-                            expandedheight={400}
+                            expandedheight={900}
                             title={
                                 <div className="grid grid-cols-12 gap-4">
 
@@ -484,20 +485,14 @@ export const FinalizedVendor: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        <Copy className="text-gray-500 cursor-pointer mt-1"
-                                            size={16}
-                                            onClick={() => {
-                                                navigator.clipboard.writeText(vendor.EmailId)
-                                                addToast({ type: "success", title: "Email ID copied to clipboard", })
-                                            }}
-                                        />
+                                        
                                     </div>
 
-                                    <div className="col-span-9 grid grid-cols-4 gap-4">
-                                        <FieldItem label="BASE AMOUNT" value={`₹${computeBaseTotal(headerLines).toFixed(2)}`} />
-                                        <FieldItem label="TOTAL TAX" value={`₹${computeTaxTotal(headerLines).toFixed(2)}`} />
-                                        <FieldItem label="GRAND TOTAL" value={`₹${computeLinesTotal(headerLines).toFixed(2)}`} />
-                                        <FieldItem label="EST. DELIVERY" value={`${firstTerm?.ExpectedDeliveryInDays || 0} Days`} />
+                                    <div className="col-span-9 grid grid-cols-4 gap-11">
+                                        <FieldItem label="Base Amount (₹)" value={`₹${computeBaseTotal(headerLines).toFixed(2)}`} />
+                                        <FieldItem label="Total Tax (₹)" value={`₹${computeTaxTotal(headerLines).toFixed(2)}`} />
+                                        <FieldItem label="Grand Total (₹)" value={`₹${computeLinesTotal(headerLines).toFixed(2)}`} />
+                                        <FieldItem label="Estimate Delivery (Days)" value={`${firstTerm?.ExpectedDeliveryInDays || 0} Days`} />
                                     </div>
 
                                 </div>
@@ -527,17 +522,17 @@ export const FinalizedVendor: React.FC = () => {
 
                                                 <div className="flex justify-between text-sm bg-green-100 p-3 rounded">
                                                     <span>Total Amount</span>
-                                                    <span>{baseAmount.toFixed(2)}</span>
+                                                    <span>{formatCurrency(baseAmount)}</span>
                                                 </div>
 
                                                 <div className="flex justify-between text-sm bg-gray-100 p-3 rounded">
                                                     <span>Tax</span>
-                                                    <span>{taxAmount.toFixed(2)}</span>
+                                                    <span>{formatCurrency(taxAmount)}</span>
                                                 </div>
 
                                                 <div className="flex justify-between text-sm bg-blue-100 p-3 rounded">
                                                     <span>Grand Total</span>
-                                                    <span>{grandTotal.toFixed(2)}</span>
+                                                    <span>{formatCurrency(grandTotal)}</span>
                                                 </div>
 
                                             </div>

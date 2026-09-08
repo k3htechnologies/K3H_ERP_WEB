@@ -49,14 +49,17 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
                     ...col,
 
                     render: (_value: any, row: GatePassData) => {
-                        
+
 
                         const isDeleteDisabled = !canAction || !row.IsDelete;
 
                         const isOutDisabled = !!row.OutDateTime || row.IsDelete;
 
-                        const isBellDisabled = !canAction || !!row.OutDateTime;
+                        const passTimeReached = row.PassDateTime
+                            ? new Date(row.PassDateTime) <= new Date()
+                            : false;
 
+                        const isBellDisabled = !canAction || !!row.OutDateTime || !passTimeReached;
 
                         return (
                             <div className="flex items-center justify-center gap-2">

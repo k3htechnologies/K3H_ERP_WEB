@@ -19,7 +19,7 @@ import type { AddUpdateMaterialRequestQuotation } from "@/features/materialRequi
 import { Button } from "@/ui/components/forms/Button"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms/Input"
-import { CheckLine, Copy, MessageSquareQuote, Scale } from "lucide-react"
+import { CheckLine, MessageSquareQuote, Scale } from "lucide-react"
 import { handleExportFile } from "@/core/utils/exportFile"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel"

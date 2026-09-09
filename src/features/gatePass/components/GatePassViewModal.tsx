@@ -76,7 +76,7 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
             <div className="space-y-6">
 
                 <FieldItem
-                    label={data.FullName}
+                    label="Visitor Name"
                     value={`${data.FullName || '-'}${Number(data.NoOfParticipants) > 0 ? ` + ${data.NoOfParticipants}` : ''}`}
                     isRow
                     withBorder={true}

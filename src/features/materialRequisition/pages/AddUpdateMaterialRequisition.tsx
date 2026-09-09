@@ -72,7 +72,6 @@ const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
     Remark: ""
 })
 
-
 export const AddUpdateMaterialRequisition = () => {
 
     const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +88,6 @@ export const AddUpdateMaterialRequisition = () => {
     const [documentURL, setDocumentURL] = useState<string>("");
     const { canAction } = useMenuPermissions("/materialRequisition");
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "", level1Name: "", level2Name: "", level3Name: "", level4Name: "" });
     const [dropdownMaterialResetKey, setDropdownMaterialResetKey] = useState(0);
     const [dropdownSubMaterialResetKey, setDropdownSubMaterialResetKey] = useState(-1);
@@ -114,7 +112,6 @@ export const AddUpdateMaterialRequisition = () => {
                 ])
     ];
 
-
     const [active, setActive] = useState<string>(MaterialRequisitionTab[0].id);
 
     const [subMaterialDetails, setSubMaterialDetails] = useState<{
@@ -128,7 +125,6 @@ export const AddUpdateMaterialRequisition = () => {
         RequiredDate: string;
         Quantity: number;
     } | null>(null);
-
 
     useEffect(() => {
         if (!MaterialRequisitionId) return;
@@ -156,7 +152,6 @@ export const AddUpdateMaterialRequisition = () => {
         );
     }, [materialsubmaterialList]);
 
-
     useEffect(() => {
         if (!projectId) {
             setProjectBudgetList([]);
@@ -171,9 +166,6 @@ export const AddUpdateMaterialRequisition = () => {
         loadProjectBudget();
     }, [projectId]);
 
-
-
-
     useEffect(() => {
         if (!projectId) {
             setProjectBudgetList([]);
@@ -187,8 +179,6 @@ export const AddUpdateMaterialRequisition = () => {
 
         loadProjectBudget();
     }, [projectId]);
-
-
 
     const validateMaterialForm = (): {
         isValid: boolean;
@@ -217,7 +207,6 @@ export const AddUpdateMaterialRequisition = () => {
 
             if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
                 newErrors.SubMaterialMasterId = "Sub Material is required";
-
         }
 
         if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0) {
@@ -226,7 +215,6 @@ export const AddUpdateMaterialRequisition = () => {
         } else if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0) {
             newErrors.MaterialQuantity = "Required Quantity must be greater than 0";
         }
-
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -325,7 +313,6 @@ export const AddUpdateMaterialRequisition = () => {
 
         setActive(isDirect ? "Direct" : "In - Direct");
         
-
         setMaterialData({
             MaterialMasterId: row.MaterialMasterId,
             SubMaterialMasterId: row.SubMaterialMasterId,
@@ -345,7 +332,6 @@ export const AddUpdateMaterialRequisition = () => {
             Level4SubMaterialUom: row.Level4SubMaterialUom,
             MaterialQuantity: row.MaterialQuantity,
             RequiredDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(row.RequiredDate) || convert_dd_mm_yyyy_To_Yyyy_mm_dd(row.RequiredDate) || "",
-
             MaterialRequisitionType: row.MaterialRequisitionType,
             Remark: row.Remark
         });

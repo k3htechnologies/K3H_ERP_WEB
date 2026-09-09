@@ -54,9 +54,9 @@ export const SubMaterialMasterViewModal: React.FC<SubMaterialMasterViewModalProp
       <div className="space-y-6">
         <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} />
         <FieldItem label="Sub Material Name" value={data.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-        <FieldItem label="UOM" value={data.Uom} isRow withBorder={true} />
+        <FieldItem label="UOM" value={`${data.Uom} (${data.UomCode})`} isRow withBorder={true} />
         <FieldItem label="Lead Time (Days)" value={data.LeadTimeInDays} isRow withBorder={true} />
-        <FieldItem label="Is Tolerant" value={data.IsTolerant ? "YES" : "NO"} isRow withBorder={true}  />
+        <FieldItem label="Is Tolerant" value={data.IsTolerant ? "YES" : "NO"} isRow withBorder={true} />
 
         <h4 className="text-lg font-semibold">
           Action Details

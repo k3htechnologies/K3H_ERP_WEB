@@ -163,10 +163,34 @@ export const ViewBrokerageInvoice: React.FC = () => {
         await loadBrokerageInvoice(1, "");
     }
 
-    const handleAddBrokerageInvoice = (BrokerageInvoiceId: number) => {
-        navigate(`/brokerage/brokerageInvoice/add/${BrokerageInvoiceId}`);
+    const calculateInvoice = () => {
+        const invoiceAmount = brokerageInvoiceList.reduce(
+            (total, item) => total + Number(item.InvoiceAmount || 0),
+            0
+        );
+
+        const paymentAmount = brokerageInvoiceList.reduce(
+            (total, item) => total + Number(item.PaymentAmount || 0),
+            0
+        );
+
+        return {
+            invoiceAmount,
+            paymentAmount,
+        };
     };
 
+    const handleAddBrokerageInvoice = (BrokerageInvoiceId: number) => {
+        const { invoiceAmount, paymentAmount } = calculateInvoice();
+
+        navigate(`/brokerage/brokerageInvoice/add/${BrokerageInvoiceId}`, {
+            state: {
+                InvoiceAmount: invoiceAmount,
+                PaymentAmount: paymentAmount,
+            },
+        });
+    };
+    
     const handleAddPaidBrokerageBooking = (row: BrokerageInvoiceData) => {
         navigate(`/brokerage/PaidBrokerageBooking/add/${row.BrokerageInvoiceId}`, {
             state: {

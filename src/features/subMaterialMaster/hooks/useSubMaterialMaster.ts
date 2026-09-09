@@ -22,7 +22,7 @@ import { getInitialFormState, getSubMaterialMasterColumns, REQUIRED_COLUMN_KEYS 
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const useSubMaterialMaster = () => {
-  
+
   const [subMaterialMasterList, setSubMaterialMasterList] = useState<SubMaterialMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -100,7 +100,7 @@ export const useSubMaterialMaster = () => {
 
         setDropdownLabels({
           materialName: editingSubMaterialMasterData.MaterialName || "",
-          uom: editingSubMaterialMasterData.UomCode || ""
+          uom: `${editingSubMaterialMasterData.Uom} (${editingSubMaterialMasterData.UomCode})`
         });
       } else {
         setFormData(getInitialFormState());
@@ -222,7 +222,7 @@ export const useSubMaterialMaster = () => {
   //#endregion
 
   //#region HANDLE PAGE CHANGE EVENT
-  
+
   const handlePageChange = useCallback((page: number) => {
     loadSubMaterials(page, filters, sortInfo, searchTerm || undefined);
   }, [sortInfo, searchTerm]);
@@ -236,7 +236,7 @@ export const useSubMaterialMaster = () => {
     loadSubMaterials(1, filters, sort, searchTerm || undefined);
 
   }, [filters, searchTerm]);
-  
+
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS

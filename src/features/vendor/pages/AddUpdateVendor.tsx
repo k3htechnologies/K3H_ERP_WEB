@@ -222,13 +222,13 @@ export const AddUpdateVendor: React.FC = () => {
             setGSTCertificateURL(row.GSTCertificateURL)
             setRemovedGSTCertificateUrls([]);
 
-            
+
             setSelectedCountryId(row.CountryMasterId ?? null);
             setSelectedStateId(row.StateMasterId ?? null);
             setSelectedDistrictId(row.DistrictMasterId ?? null);
             setSelectedCityId(row.CityMasterId ?? null);
           }
-          
+
           if (row.AvailableMaterialList) {
             const materialIds = row.AvailableMaterialList.split(",")
               .map((id) => Number(id.trim()))
@@ -565,7 +565,7 @@ export const AddUpdateVendor: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-        {}
+        { }
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Basic Details
@@ -644,7 +644,7 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {}
+        { }
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Government Identifiers
@@ -672,8 +672,6 @@ export const AddUpdateVendor: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={5}
               onRemoveExisting={(url) => {
@@ -702,8 +700,6 @@ export const AddUpdateVendor: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={5}
               onRemoveExisting={(url) => {
@@ -732,8 +728,6 @@ export const AddUpdateVendor: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={5}
               onRemoveExisting={(url) => {
@@ -743,7 +737,7 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {}
+        { }
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Address Details
@@ -905,7 +899,7 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {}
+        { }
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
             Material and Contract Management
@@ -923,7 +917,7 @@ export const AddUpdateVendor: React.FC = () => {
             isChips
           />
 
-          {}
+          { }
           {activeTab === "material" && (
             <div className="space-y-4">
 

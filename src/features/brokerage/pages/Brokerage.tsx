@@ -221,6 +221,7 @@ export const Brokerage: React.FC = () => {
             bookingName: row.ApplicantName ?? "",
             cpName: row.ChannelPartnerName ?? "",
             cpMobileNumber: row.ChannelPartnerMobileNumber ?? "",
+            channelPartnerMobileNumberCountryCode: row.ChannelPartnerMobileNumberCountryCode ?? "",
             cpCompany: row.ChannelPartnerCompany ?? "",
             agreementValue: row.AgreementValue,
             brokerageAmount: row.BrokerageAmount,

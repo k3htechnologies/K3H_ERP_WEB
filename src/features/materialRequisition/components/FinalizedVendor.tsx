@@ -5,7 +5,7 @@ import type { FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationV
 import { useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
-import {  useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import { runApiWithLoader } from "@/core/utils"
 import * as E from "fp-ts/Either"
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService"
@@ -27,7 +27,8 @@ import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService"
 import { Loader } from "@/core/utils/loader";
-import { formatCurrency } from "@/core/utils/comman"
+import { formatCurrency } from "@/core/utils/comman";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog"
 
 const DEFAULT_LOGISTICS = [
     { Logistics: "Transportation" },
@@ -63,10 +64,16 @@ export const FinalizedVendor: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [materialRequisitionVendorSelectedList, setMaterialRequisitionVendorSelectedList] = useState<any[]>([])
     const [materialRequisitionVendorFinalizedList, setMaterialRequisitionVendorFinalizedList] = useState<any[]>([])
+    const [liveQuotationLines, setLiveQuotationLines] = useState<Record<string, any[]>>({});
 
+    const [expectedDeliveryDays, setExpectedDeliveryDays] = useState<Record<number, string>>({});
+    const [expectedPaymentDays, setExpectedPaymentDays] = useState<Record<number, string>>({});
+    const [editingQuotationKey, setEditingQuotationKey] = useState<string | null>(null);
     const { canAction: cangetCompare } = useMenuPermissions('Get Compare');
     const { canAction: cangetQuotation } = useMenuPermissions('Get Quotation');
     const { canAction: canfinalizeVendor } = useMenuPermissions('Finalized Vendor');
+
+    const [isFinalizeConfirmationOpen, setIsFinalizeConfirmationOpen] = useState(false);
 
     useEffect(() => {
         if (!projectId) return
@@ -121,6 +128,7 @@ export const FinalizedVendor: React.FC = () => {
                 const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
 
                 if (E.isRight(response)) {
+
                     setMaterialRequisitionVendorSelectedList(response.right.Data)
                 }
                 return response
@@ -159,6 +167,87 @@ export const FinalizedVendor: React.FC = () => {
         }
     }
 
+    const addSelectedVendors = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const vendorIds = selectedVendorIds.join(",")
+
+                const payload = PushVendorForEnquiry(vendorIds)
+
+                const response = await vendorFinalizationService.apiCallToAddVendorForEnquiry(payload)
+
+                if (E.isRight(response)) {
+
+                    const selected = materialRequisitionVendorFinalizedList.filter(v => selectedVendorIds.includes(v.VendorId))
+
+                    setMaterialRequisitionVendorSelectedList(selected)
+
+                    setMaterialRequisitionVendorFinalizedList(prev => prev.filter(v => !selectedVendorIds.includes(v.VendorId)));
+
+                    setQuotationAvailable(false)
+
+                    setSelectedVendorIds([])
+
+                    await loadSelectedVendor()
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                } else {
+                    addToast({ type: "error", title: response.left?.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Getting Quotation from Vendors'
+        )
+    };
+
+    const buildPayload = (vendor: any, term: any, lines: any[]): AddUpdateMaterialRequestQuotation => ({
+        MaterialRequisitionId: Number(currentMaterialRequisitionId),
+        Uniquekey: term.Uniquekey || currentUniquekey || "",
+        MaterialRequisitionQuotationTermsId: term.MaterialRequisitionQuotationTermsId,
+        ProjectId: Number(projectId),
+        VendorId: vendor.VendorId,
+        ExpectedDeliveryInDays: Number(expectedDeliveryDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedDeliveryInDays ?? 0),
+        ExpectedPaymentInDays: Number(expectedPaymentDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedPaymentInDays ?? 0),
+        Total: computeLinesTotal(lines),
+        MaterialRequisitionQuotationJSON: JSON.stringify(lines),
+    })
+
+    const saveData = async (vendor: any, term: any, lines: any[]) => {
+
+        if (computeLinesTotal(lines) === 0) {
+            addToast({ type: "error", title: "Please add price at least one quotation item." });
+            return;
+        }
+
+        await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
+
+            const payload = buildPayload(vendor, term, lines)
+
+            const response = await materialRequisitionQuotationService.apiCallToAddMaterialRequisitionQuotation(payload)
+
+            if (E.isRight(response)) {
+
+                await loadSelectedVendor();
+
+                addToast({ type: "success", title: response.right.SuccessMessage[0] })
+            }
+            else {
+                addToast({ type: "error", title: response.left.message })
+            }
+            return response
+        })
+    }
+
     const handleApprovalSubmit = async (remark: string) => {
 
         const payload: UpdateModulesWorkflowApprovalRequest = {
@@ -180,6 +269,7 @@ export const FinalizedVendor: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
                     setIsApprovalActionModalOpen(false);
+
                     await loadSelectedVendor();
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -195,109 +285,23 @@ export const FinalizedVendor: React.FC = () => {
         );
     };
 
-    const finalizeVendor = async (vendorId: string) => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload = PushVendorForEnquiry(vendorId)
-
-                const response = await vendorFinalizationService.apiCallAddFinalizedVendor(payload)
-
-                if (E.isRight(response)) {
-
-                    setMaterialRequisitionVendorSelectedList(prev =>
-                        prev.map(v => v.VendorId === Number(vendorId) ? { ...v, IsFinalized: true } : v)
-                    )
-
-                    setCheckedFinalVendor(Number(vendorId))
-                    addToast({ type: "success", title: response.right.SuccessMessage[0] })
-                }
-                else {
-                    addToast({ type: "error", title: response.left.message })
-                }
-                return response
-            }
-        )
-    }
-
-    const addSelectedVendors = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const vendorIds = selectedVendorIds.join(",")
-
-                const payload = PushVendorForEnquiry(vendorIds)
-
-                const response = await vendorFinalizationService.apiCallToAddVendorForEnquiry(payload)
-
-                if (E.isRight(response)) {
-
-                    const selected = materialRequisitionVendorFinalizedList.filter(v =>
-                        selectedVendorIds.includes(v.VendorId))
-
-                    setMaterialRequisitionVendorSelectedList(selected)
-
-                    setMaterialRequisitionVendorFinalizedList(prev =>
-                        prev.filter(v => !selectedVendorIds.includes(v.VendorId))
-                    )
-
-                    setQuotationAvailable(false)
-                    setSelectedVendorIds([])
-                    await loadSelectedVendor()
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                } else {
-                    addToast({ type: "error", title: response.left?.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message })
-            },
-            undefined,
-            'Getting Quotation from Vendors'
-        )
+    const handleApprovalLog = () => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "FINALIZED VENDOR",
+            Id: currentMaterialRequisitionId ?? 0,
+            ProjectId: projectId ?? 0,
+        };
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
     };
 
-    const buildPayload = (vendor: any, term: any, lines: any[]): AddUpdateMaterialRequestQuotation => ({
-        MaterialRequisitionId: Number(currentMaterialRequisitionId),
-        Uniquekey: currentUniquekey || "",
-        MaterialRequisitionQuotationTermsId: term.MaterialRequisitionQuotationTermsId,
-        ProjectId: Number(projectId),
-        VendorId: vendor.VendorId,
-        ExpectedDeliveryInDays: term.ExpectedDeliveryInDays,
-        ExpectedPaymentInDays: term.ExpectedPaymentInDays,
-        Total: computeLinesTotal(lines),
-        MaterialRequisitionQuotationJSON: JSON.stringify(lines),
-    })
+    const handleApproveRejectVendor = (approvalType: "approve" | "reject") => {
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+    };
 
-    const saveData = async (vendor: any, term: any, lines: any[]) => {
 
-        await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
-
-            const payload = buildPayload(vendor, term, lines)
-
-            const response = await materialRequisitionQuotationService.apiCallToAddMaterialRequisitionQuotation(payload)
-
-            if (E.isRight(response)) {
-
-                addToast({ type: "success", title: response.right.SuccessMessage[0] })
-            }
-            else {
-                addToast({ type: "error", title: response.left.message })
-            }
-            return response
-        })
-    }
-
-    const handleCompareVendor = async (exportType: 'Excel' | 'PDF') => {
+    const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
 
         if (materialRequisitionVendorSelectedList.length !== 2) {
             addToast({ type: "error", title: "Please select atleast two vendors to compare." })
@@ -318,7 +322,7 @@ export const FinalizedVendor: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    handleExportFile(response, exportType, 'Vendor Comparison', addToast);
+                    handleExportFile(response, 'Excel', 'Vendor Comparison', addToast);
                 }
                 return response
             },
@@ -328,53 +332,65 @@ export const FinalizedVendor: React.FC = () => {
             'Preparing Export'
         );
     };
+    const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART')
+
+    const finalizeVendor = () => {
+
+        if (!checkedFinalVendor) {
+
+            addToast({ type: "warning", title: "Select vendor to finalize" })
+            return
+        }
+
+        setIsFinalizeConfirmationOpen(true)
+    }
+
+    const handleConfirmFinalizeVendor = async () => {
+
+        if (!checkedFinalVendor) return
+
+        const vendorId = String(checkedFinalVendor)
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload = PushVendorForEnquiry(vendorId)
+
+                const response = await vendorFinalizationService.apiCallAddFinalizedVendor(payload)
+
+                if (E.isRight(response)) {
+
+                    setMaterialRequisitionVendorSelectedList(prev => prev.map(v => v.VendorId === Number(vendorId) ? { ...v, IsFinalized: true } : v))
+
+                    setCheckedFinalVendor(Number(vendorId))
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] })
+
+                    setIsFinalizeConfirmationOpen(false);
+
+                    loadSelectedVendor();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message })
+                }
+
+                return response
+            }
+        )
+    }
+
 
     const finalizedVendor = materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
     const isAnyFinalized = !!finalizedVendor
     const isApprovalAvailable = finalizedVendor?.IsApproval === true
 
-    const handleApprovalLog = () => {
-        const request: ModulesApprovalStatusRequest = {
-            ModuleName: "FINALIZED VENDOR",
-            Id: currentMaterialRequisitionId ?? 0,
-            ProjectId: projectId ?? 0,
-        };
-        setApprovalLogRequest(request);
-        setIsApprovalLogModalOpen(true);
-    };
-
-    const handleApproveRejectVendor = (approvalType: "approve" | "reject") => {
-        setApprovalActionType(approvalType);
-        setIsApprovalActionModalOpen(true);
-    };
-
-    const finalizeSelectedVendors = async () => {
-
-        if (!checkedFinalVendor) {
-            addToast({ type: "warning", title: "Select vendor to finalize" })
-            return
-        }
-        await finalizeVendor(String(checkedFinalVendor))
-    }
-
-    const handleExportCompareVendorExcel = () => handleCompareVendor('Excel')
 
     return (
         <div className="space-y-4">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
             <div className="flex justify-end gap-2">
-
-                {isAnyFinalized && canfinalizeVendor && (
-                    <ApprovalActions
-                        approvalStatus={finalizedVendor?.VendorFinalizationApproval}
-                        onApprove={() => handleApproveRejectVendor("approve")}
-                        onReject={() => handleApproveRejectVendor("reject")}
-                        showApproval={isApprovalAvailable}
-                        isIcons={true}
-                        onHistory={handleApprovalLog}
-                    />
-                )}
 
                 {isAnyFinalized &&
                     <ApprovalLogModal
@@ -386,9 +402,9 @@ export const FinalizedVendor: React.FC = () => {
                     />
                 }
 
-                {!isAnyFinalized && cangetCompare && (
+                {!isAnyFinalized && cangetCompare && materialRequisitionVendorSelectedList.length > 1 && (
                     <Button
-                        size="sm"
+                        size="md"
                         style={{
                             color: '#135BEC',
                             backgroundColor: '#E8F0FF',
@@ -401,36 +417,35 @@ export const FinalizedVendor: React.FC = () => {
                     </Button>
                 )}
 
-                {!isAnyFinalized && canfinalizeVendor && (
+                {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
                     <Button
-                        size="sm"
+                        size="md"
                         style={{
                             color: '#00A800',
                             backgroundColor: '#E8FBE8',
                             padding: '4px 8px',
                         }}
-                       
+
                         leftIcon={<CheckLine size={20} />}
-                        onClick={finalizeSelectedVendors}
+                        onClick={finalizeVendor}
                     >
                         Finalize Vendor
                     </Button>
                 )}
 
                 <ApprovalActionModal
-                    title='Document'
+                    title='Finalize Vendor'
                     isOpen={isApprovalActionModalOpen}
                     onClose={() => setIsApprovalActionModalOpen(false)}
                     actionType={approvalActionType}
                     titleText={finalizedVendor?.VendorName}
-                    subTitleText={""}
                     onSubmit={handleApprovalSubmit}
                     loading={isLoading}
                 />
 
                 {!isAnyFinalized && cangetQuotation && (
                     <Button
-                        size="sm"
+                        size="md"
                         style={{
                             color: '#d35400',
                             backgroundColor: '#FDE6D3',
@@ -445,94 +460,216 @@ export const FinalizedVendor: React.FC = () => {
             </div>
 
             {materialRequisitionVendorSelectedList.length === 0
-                ? <NoDataView />
+                ? <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                    <NoDataView />
+                </section>
+
                 : materialRequisitionVendorSelectedList.map((vendor: any) => {
 
-                    const firstTerm = vendor.MaterialRequisitionQuotationTermsData?.[0]
-                    const headerLines = resolveLines(firstTerm, detailData)
+                    const firstTerm = vendor.MaterialRequisitionQuotationTermsData?.[0];
+
+                    const originalHeaderLines = resolveLines(firstTerm, detailData);
+
+                    const quotationKey = `${vendor.VendorId}-${firstTerm?.MaterialRequisitionQuotationTermsId}`;
+
+                    const headerLines = liveQuotationLines[quotationKey] ?? originalHeaderLines;
 
                     return (
                         <ExpandableCard
                             key={vendor.VendorId}
                             showline
-                            height={70}
+                            height={120}
                             expandedheight={900}
+                            bgColor="bg-white"
+                            isShadow={false}
                             title={
-                                <div className="grid grid-cols-12 gap-4">
+                                <div className="flex flex-col">
 
-                                    <div className="col-span-3 flex items-start gap-4">
+                                    <div className="relative w-full pr-12">
 
-                                        <Checkbox
-                                            checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
-                                            disabled={!canAction || (isAnyFinalized && !vendor.IsFinalized)}
-                                            onChange={() =>
-                                                canAction && setCheckedFinalVendor(
-                                                    checkedFinalVendor === vendor.VendorId
-                                                        ? null : vendor.VendorId
-                                                )
-                                            }
-                                            onClick={(e) => e.stopPropagation()}
-                                            size="sm"
-                                        />
+                                        <div className="flex gap-3">
 
-                                        <div className="flex flex-col">
-                                            <div className="font-medium">
-                                                {vendor.VendorName}
+                                            <Checkbox
+                                                checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
+                                                disabled={!canAction || (isAnyFinalized && !vendor.IsFinalized)}
+                                                onChange={() =>
+                                                    canAction &&
+                                                    setCheckedFinalVendor(
+                                                        checkedFinalVendor === vendor.VendorId
+                                                            ? null
+                                                            : vendor.VendorId
+                                                    )
+                                                }
+                                                onClick={(e) => e.stopPropagation()}
+                                                size="md"
+                                            />
+
+                                            <div className="flex flex-col">
+
+                                                <div className="font-medium text-gray-900 leading-none">
+                                                    {vendor.VendorName}
+                                                </div>
+
+                                                <div className="text-sm text-gray-500 mt-2">
+                                                    {vendor.CompanyName || "-"}
+                                                </div>
+
                                             </div>
 
-                                            <div className="text-sm text-gray-500">
-                                                {vendor.CompanyName}
-                                            </div>
                                         </div>
 
-                                        
+
+                                        {isAnyFinalized && canfinalizeVendor && checkedFinalVendor === vendor.VendorId && (
+                                                <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center">
+                                                    <ApprovalActions
+                                                        approvalStatus={finalizedVendor?.VendorFinalizationApproval}
+                                                        onApprove={() => handleApproveRejectVendor("approve")}
+                                                        onReject={() => handleApproveRejectVendor("reject")}
+                                                        showApproval={isApprovalAvailable}
+                                                        isIcons={false}
+                                                        onHistory={handleApprovalLog}
+                                                    />
+                                                </div>
+                                            )}
+
                                     </div>
 
-                                    <div className="col-span-9 grid grid-cols-4 gap-11">
-                                        <FieldItem label="Base Amount (₹)" value={`₹${computeBaseTotal(headerLines).toFixed(2)}`} />
-                                        <FieldItem label="Total Tax (₹)" value={`₹${computeTaxTotal(headerLines).toFixed(2)}`} />
-                                        <FieldItem label="Grand Total (₹)" value={`₹${computeLinesTotal(headerLines).toFixed(2)}`} />
-                                        <FieldItem label="Estimate Delivery (Days)" value={`${firstTerm?.ExpectedDeliveryInDays || 0} Days`} />
+
+                                    <div className="ml-[33px] mt-4 grid grid-cols-[180px_180px_180px_200px] gap-x-20">
+
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-gray-500">
+                                                Base Amount (₹)
+                                            </span>
+
+                                            <span className="text-sm font-semibold text-gray-900 mt-1">
+                                                {formatCurrency(computeBaseTotal(headerLines))}
+                                            </span>
+                                        </div>
+
+
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-gray-500">
+                                                Total Tax (₹)
+                                            </span>
+
+                                            <span className="text-sm font-semibold text-gray-900 mt-1">
+                                                {formatCurrency(computeTaxTotal(headerLines))}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-gray-500">
+                                                Grand Total (₹)
+                                            </span>
+
+                                            <span className="text-sm font-semibold text-gray-900 mt-1">
+                                                {formatCurrency(computeLinesTotal(headerLines))}
+                                            </span>
+                                        </div>
+
+
+                                        <div className="flex flex-col">
+                                            <span className="text-sm text-gray-500">
+                                                Expected Delivery (Days)
+                                            </span>
+
+                                            <span className="text-sm font-semibold text-gray-900 mt-1">
+                                                {firstTerm?.ExpectedDeliveryInDays || 0} Days
+                                            </span>
+                                        </div>
+
                                     </div>
 
                                 </div>
                             }
                             child={
                                 <div className="p-2 space-y-4">
-                                    {(vendor.MaterialRequisitionQuotationTermsData?.length
-                                        ? vendor.MaterialRequisitionQuotationTermsData
-                                        : [{}]
+                                    {(vendor.MaterialRequisitionQuotationTermsData?.length ? vendor.MaterialRequisitionQuotationTermsData : [{}]
                                     ).map((term: any, idx: number) => {
+
                                         const lines = resolveLines(term, detailData)
 
                                         if (!lines?.length) {
                                             return <NoDataView key={idx} />
                                         }
-                                        const baseAmount = computeBaseTotal(lines)
-                                        const taxAmount = computeTaxTotal(lines)
-                                        const grandTotal = computeLinesTotal(lines)
 
                                         return (
                                             <div key={idx}>
+
                                                 <FinalizedVendorQuotationTable
                                                     data={lines}
-                                                    isEditable={false}
-                                                    onSave={(updatedLines) => saveData(vendor, term, updatedLines)}
+                                                    isEditable={editingQuotationKey === quotationKey}
+                                                    onEditModeChange={(editing) => {
+                                                        setEditingQuotationKey(
+                                                            editing ? quotationKey : null
+                                                        )
+                                                    }}
+
+                                                    onChange={(updatedLines) => {
+                                                        setLiveQuotationLines(prev => ({
+                                                            ...prev,
+                                                            [quotationKey]: updatedLines
+                                                        }));
+                                                    }}
+                                                    onSave={(updatedLines) =>
+                                                        saveData(vendor, term, updatedLines)
+                                                    }
+                                                    VendorFinalizationApprovalStatus={listState.VendorFinalizationApprovalStatus}
                                                 />
+                                                <div className="flex justify-between text-sm bg-green-100 p-3">
 
-                                                <div className="flex justify-between text-sm bg-green-100 p-3 rounded">
-                                                    <span>Total Amount</span>
-                                                    <span>{formatCurrency(baseAmount)}</span>
+                                                    <span>Expected Delivery (Days)</span>
+                                                    <span>
+                                                        {editingQuotationKey === quotationKey ? (
+                                                            <Input
+                                                                type="text"
+                                                                rightIcon="Days"
+                                                                maxLength={5}
+                                                                value={
+                                                                    expectedDeliveryDays[term.MaterialRequisitionQuotationTermsId]
+                                                                    ?? String(term?.ExpectedDeliveryInDays ?? "")
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value.replace(/\D/g, "");
+
+                                                                    setExpectedDeliveryDays(prev => ({
+                                                                        ...prev,
+                                                                        [term.MaterialRequisitionQuotationTermsId]: value
+                                                                    }));
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span>{`${term?.ExpectedDeliveryInDays ?? 0} Days`}</span>
+                                                        )}
+                                                    </span>
                                                 </div>
 
-                                                <div className="flex justify-between text-sm bg-gray-100 p-3 rounded">
-                                                    <span>Tax</span>
-                                                    <span>{formatCurrency(taxAmount)}</span>
-                                                </div>
+                                                <div className="flex justify-between text-sm bg-gray-100 p-3">
+                                                    <span>Expected Payment (Days)</span>
+                                                    <span>
+                                                        {editingQuotationKey === quotationKey ? (
+                                                            <Input
+                                                                type="text"
+                                                                rightIcon="Days"
+                                                                maxLength={5}
+                                                                value={
+                                                                    expectedPaymentDays[term.MaterialRequisitionQuotationTermsId]
+                                                                    ?? String(term?.ExpectedPaymentInDays ?? "")
+                                                                }
+                                                                onChange={(e) => {
+                                                                    const value = e.target.value.replace(/\D/g, "");
 
-                                                <div className="flex justify-between text-sm bg-blue-100 p-3 rounded">
-                                                    <span>Grand Total</span>
-                                                    <span>{formatCurrency(grandTotal)}</span>
+                                                                    setExpectedPaymentDays(prev => ({
+                                                                        ...prev,
+                                                                        [term.MaterialRequisitionQuotationTermsId]: value
+                                                                    }));
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span>{`${term?.ExpectedPaymentInDays ?? 0} Days`}</span>
+                                                        )}
+                                                    </span>
                                                 </div>
 
                                             </div>
@@ -541,18 +678,18 @@ export const FinalizedVendor: React.FC = () => {
                                 </div>
                             }
                         />
+
                     )
                 })
             }
 
             <Modal
                 isOpen={isQuotationAvailable}
-                saveText="Add"
-                resetText=""
+                saveText={selectedVendorIds.length > 0 ? "Add" : ""}
                 onSubmit={addSelectedVendors}
                 onClose={() => { setQuotationAvailable(false) }}
                 onCancel={() => { setQuotationAvailable(false) }}
-                title={'Vendors Available'}
+                title='Vendors Available for Enquiry'
                 loading={isLoading}
                 size='half-screen'
             >
@@ -567,7 +704,7 @@ export const FinalizedVendor: React.FC = () => {
 
                             <Input
                                 type="text"
-                                placeholder="Search Vendor"
+                                placeholder="Search Vendor Name"
                                 value={searchVendor}
                                 onChange={(e) => setSearchVendor(e.target.value)}
                             />
@@ -590,16 +727,13 @@ export const FinalizedVendor: React.FC = () => {
                             </div>
                         ) : (
                             materialRequisitionVendorFinalizedList
-                                .filter(v =>
-                                    v.VendorName?.toLowerCase().includes(searchVendor.toLowerCase())
-                                ).map((vendor: any) => {
+                                .filter(v => v.VendorName?.toLowerCase().includes(searchVendor.toLowerCase())).map((vendor: any) => {
 
                                     const checked = selectedVendorIds.includes(vendor.VendorId)
 
                                     return (
-                                        <div
-                                            key={vendor.VendorId}
-                                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
+                                        <div key={vendor.VendorId}
+                                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-200"
                                             onClick={() => canAction && toggleVendor(vendor.VendorId)}
                                         >
                                             <Checkbox
@@ -609,27 +743,32 @@ export const FinalizedVendor: React.FC = () => {
                                                 onClick={(e) => e.stopPropagation()}
                                             />
 
-                                            <div className="flex justify-between items-start w-full">
+                                            <div className="flex justify-between items-start w-full gap-8">
 
-                                                <div>
+                                                <div className="space-y-1">
                                                     <div className="font-medium">
-                                                        {vendor.VendorName}
+                                                        <FieldItem label="Vendor Name" value={vendor?.VendorName ?? '-'} isRow isUsedForInventoryFlat />
                                                     </div>
 
                                                     <div className="text-sm text-gray-500">
-                                                        {vendor.CompanyName}
+
+                                                        <FieldItem label="Company Name" value={vendor?.CompanyName ?? '-'} isRow isUsedForInventoryFlat />
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        <FieldItem label="Mobile Number" value={vendor?.MobileNumber ? `${vendor?.MobileNumberCountryCode || "+91"} ${vendor.MobileNumber}` : "-"} isRow isUsedForInventoryFlat />
+
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        <FieldItem label="E-Mail ID" value={vendor?.EmailId ?? '-'} isRow isUsedForInventoryFlat />
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        <FieldItem label="GST Number" value={vendor?.GSTNumber ?? '-'} isRow isUsedForInventoryFlat />
+                                                    </div>
+                                                    <div className="text-sm text-gray-500">
+                                                        <FieldItem label="Address" value={vendor?.Address ?? '-'} isRow isUsedForInventoryFlat />
                                                     </div>
                                                 </div>
 
-                                                <div className="text-right">
-                                                    <div className="text-sm text-gray-500">
-                                                        {vendor.MobileNumber}
-                                                    </div>
-
-                                                    <div className="text-sm text-gray-500">
-                                                        {vendor.EmailId}
-                                                    </div>
-                                                </div>
 
                                             </div>
 
@@ -641,6 +780,20 @@ export const FinalizedVendor: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+
+            <DeleteDialog
+                isOpen={isFinalizeConfirmationOpen}
+                onClose={() => {
+                    setIsFinalizeConfirmationOpen(false)
+                }}
+                onConfirm={handleConfirmFinalizeVendor}
+                loading={isLoading}
+                variant="generate"
+                confirmText="Final"
+                title="Finalize Vendor"
+                message={`Are you sure you want to finalize ${materialRequisitionVendorSelectedList.find(v => v.VendorId === checkedFinalVendor)?.VendorName ?? "this vendor"
+                    }?`}
+            />
 
         </div>
     )

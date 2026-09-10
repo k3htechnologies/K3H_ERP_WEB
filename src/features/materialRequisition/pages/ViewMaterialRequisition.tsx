@@ -8,14 +8,14 @@ import { Invoice } from "@/features/materialRequisition/components/invoice/Invoi
 import Overview from "@/features/materialRequisition/components/Overview";
 import PurchaseOrder from "@/features/materialRequisition/components/PurchaseOrder";
 import GRN from "@/features/materialRequisition/components/GRN/GRN";
-import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { DeleteMaterialRequisitionRequest, FilterMaterialRequisitionOverview, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { Button, Input } from "@/ui/components/forms";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
-import { Copy, X } from "lucide-react";
+import { CircleX, Copy } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { FinalizedVendor } from "@/features/materialRequisition/components/FinalizedVendor";
@@ -27,11 +27,14 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { filterNumbers } from "@/core/utils/fileValidation";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import type { MaterialRequisitionInvoiceData } from "../models/MaterialRequisitionInvoiceModel";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
+    const [materialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([]);
+
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
@@ -47,6 +50,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [isEditModalOpen, setEditIsModalOpen] = useState(false);
     const location = useLocation();
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
+
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
     const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
@@ -64,17 +68,48 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     ].filter(Boolean) as { id: string; label: string }[];
 
-    const handleBackToListMaterialRequisition = () => {
-        navigate('/materialRequisition');
-    };
-
     const [activeTab, setActiveTab] = useState<string>(location.state?.activeTab || MaterialRequisitionTabList?.[0]?.id || '');
 
     useEffect(() => {
         if (!projectId || !currentMaterialRequisitionId || currentMaterialRequisitionId === 0) return;
 
-        loadMaterialRequisition()
+        loadMaterialRequisitionOverview();
+
     }, [projectId, currentMaterialRequisitionId, addToast]);
+
+    const loadMaterialRequisitionOverview = async () => {
+        runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterMaterialRequisitionOverview = {
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                };
+
+                const response = await materialRequisitionService.apiCallPullMaterialRequisitionOverview(params);
+
+                if (E.isRight(response)) {
+
+                    const data = response.right.Data;
+
+                    const item = Array.isArray(data) ? data[0] : data;
+
+                    setMaterialRequisitionData(item ?? null);
+
+                    setMaterialRequisitionDetailData(item?.MaterialRequisitionDetailData ?? []);
+
+                    setMaterialRequisitionInvoiceData(item?.MaterialRequisitionInvoiceData ?? []);
+
+                    setDetailData(item?.MaterialRequisitionDetailData);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            });
+    }
 
     const CopyMaterialRequisitionFormData = (): FormData => {
 
@@ -99,38 +134,6 @@ export const ViewMaterialRequisition: React.FC = () => {
         ));
         return fd;
     };
-
-    const loadMaterialRequisition = async () => {
-        runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
-
-                    const item = Array.isArray(data) ? data[0] : data;
-
-                    setMaterialRequisitionData(item ?? null);
-
-                    setDetailData(item?.MaterialRequisitionDetailData);
-
-                    setMaterialRequisitionDetailData(item?.MaterialRequisitionDetailData ?? []);
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-                return response;
-            });
-    }
 
     const handleCopyMaterialRequisition = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -182,15 +185,6 @@ export const ViewMaterialRequisition: React.FC = () => {
             'Copy Material Requisition'
         );
     };
-
-    const handleEditRequisitionModal = () => {
-        setEditIsModalOpen(false)
-    }
-
-    const handleOpenRequisitionModal = () => {
-        setEditableDetails(matrialRequisitionDetailData);
-        setEditIsModalOpen(true);
-    }
 
     const RemarkEditor = ({ value, onChange, }: {
         value?: string; onChange: (value: string) => void;
@@ -339,7 +333,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                     setIsCloseRequisitionDialogOpen(false);
 
-                    loadMaterialRequisition();
+                    // loadMaterialRequisition();
                 } else {
                     addToast({ type: "error", title: response.left.message });
                     setIsCloseRequisitionDialogOpen(false);
@@ -351,6 +345,19 @@ export const ViewMaterialRequisition: React.FC = () => {
             undefined,
             "Closing Requisition",
         );
+    };
+
+    const handleEditRequisitionModal = () => {
+        setEditIsModalOpen(false)
+    }
+
+    const handleOpenRequisitionModal = () => {
+        setEditableDetails(matrialRequisitionDetailData);
+        setEditIsModalOpen(true);
+    }
+
+    const handleBackToListMaterialRequisition = () => {
+        navigate('/materialRequisition');
     };
 
     return (
@@ -384,7 +391,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                         </Button>
                     )}
 
-                    {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && activeTab === 'Details' && (
+                    {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && matrialRequisitionData?.FinalVendor && activeTab === 'Details' && (
                         <div className="flex justify-end pb-2">
                             <Button
                                 size="mxs"
@@ -394,20 +401,21 @@ export const ViewMaterialRequisition: React.FC = () => {
                                     padding: '4px 8px',
                                     backgroundColor: '#FFF2F2'
                                 }}
+
                                 onClick={() => {
                                     setSelectedMaterialRequisitionItem(matrialRequisitionData);
                                     setIsCloseRequisitionDialogOpen(true);
                                 }}
                             >
-                                <X className="h-4 w-4" color="red" />
-                                Close Requisition
+                                <CircleX className="h-5 w-5 text-red-600 fill-red-100" />
+                                Close
                             </Button>
                         </div>
                     )}
                 </div>
             </div>
 
-            <div className="pt-3 pb-2">
+            <div className="pt-5">
                 <Tabs
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
@@ -416,12 +424,12 @@ export const ViewMaterialRequisition: React.FC = () => {
                 />
             </div>
 
-            {activeTab === 'Overview' && <Overview />}
-            {activeTab === 'Details' && <Details />}
+            {activeTab === 'Overview' && (<Overview matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData} />)}
+            {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor />}
-            {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
-            {activeTab === 'GRN' && <GRN />}
+            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} />)}
+            {activeTab === 'Invoice' && <Invoice />}
 
             <Modal
                 isOpen={isEditModalOpen}

@@ -22,8 +22,13 @@ import { Edit } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
 
-export const GRN: React.FC = () => {
+interface GRNProps {
+    matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+}
+
+export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -48,8 +53,12 @@ export const GRN: React.FC = () => {
     }, [projectId, currentMaterialRequisitionId])
 
     const handleAddGRN = useCallback(() => {
-        navigate('/grn/add');
-    }, [navigate]);
+        navigate('/grn/add', {
+            state: {
+                matrialRequisitionDetailData,
+            },
+        });
+    }, [navigate, matrialRequisitionDetailData,]);
 
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
@@ -251,7 +260,7 @@ export const GRN: React.FC = () => {
     ], []);
 
     return (
-        <div className="pt-2">
+        <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
             <TableActionToolbar
@@ -263,15 +272,15 @@ export const GRN: React.FC = () => {
                 }}
                 onClearSearch={clearSearchGRN}
                 isShowAddButton={canAction && !materialRequisitionStatus}
-                addTitle="Add GRN"
+                addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}
-                addExtraTitle='View Summary'
+                addExtraTitle='Summary'
                 onAddExtra={() => {
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
-                
+
             />
 
             <DataTableExpandable

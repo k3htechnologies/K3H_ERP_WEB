@@ -1,28 +1,24 @@
 import { Loader } from "@/core/utils/loader"
-import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { Button } from "@/ui/components/forms/Button";
-import { Modal } from "@/ui/components/Modal/Modal";
-import { Edit, Plus, Trash2 } from "lucide-react";
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/core/hooks/useToast";
-import { technicalService } from "@/features/technical/services/TechnicalService";
-import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
-import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import * as E from "fp-ts/Either";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { Input } from "@/ui/components/forms/Input";
-import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, filterNumbers, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import { filterChallanNumber, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import type { TableColumn } from "@/ui/components/DataTable/DataTable";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -45,6 +41,17 @@ const initialFormState = (): MaterialRequisitionDetailGRN => ({
     MaterialQuantity: 0,
     UomMasterId: 0,
     UomCode: "",
+    LevelId1: 0,
+    Level1Name: "",
+    LevelId2: 0,
+    Level2Name: "",
+    LevelId3: 0,
+    Level3Name: "",
+    LevelId4: 0,
+    Level4Name: "",
+    Level4SubMaterialUomCode: "",
+    Level4SubMaterialUom: "",
+    MaterialRequisitionType: "",
     TotalReceivedMaterialQuantity: 0,
     QualityAnalystRemark: '',
     MaterialRequisitionDetailGRNId: 0,
@@ -58,21 +65,15 @@ export const AddUpdateGRN = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [addMaterialPopUp, setAddMaterialPopUp] = useState(false);
     const { addToast } = useToast();
     const [materialList, setMaterialList] = useState<MaterialRequisitionDetailGRN[]>([]);
     const [materialData, setMaterialData] = useState<MaterialRequisitionDetailGRN>(() => initialFormState());
-    const [materialSubMaterialList, setMaterialSubMaterialList] = useState<MaterialSubMaterialUOM[]>([]);
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionGRNRequest>(() => initialFormStateMaterialRequisition())
     const [uploadChallanFiles, setUploadChallanFiles] = useState<(File | string)[]>([]);
     const [removedUploadChallanUrls, setRemovedUploadChallanUrls] = useState<string[]>([]);
     const [uploadChallanURL, setuploadChallanURL] = useState<string>();
     const { canAction } = useMenuPermissions("/materialRequisition");
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const [dropdownMaterialResetKey] = useState(0);
-    const [dropdownSubMaterialResetKey, setDropdownSubMaterialResetKey] = useState(-1);
-    const [materialOptions, setMaterialOptions] = useState<any[]>([]);
-    const [editIndex, setEditIndex] = useState<number | null>(null);
     const navigate = useNavigate();
     const { projectId } = useProject();
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
@@ -83,33 +84,25 @@ export const AddUpdateGRN = () => {
     const { detailData } = useMaterialRequisitionListState()
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
 
-    useEffect(() => {
-        if (!MaterialRequisitionId) return;
-        loadGRNData();
-    }, [MaterialRequisitionId]);
+    const location = useLocation();
+
+    const {
+        matrialRequisitionDetailData = [],
+    } = location.state ?? {};
 
     useEffect(() => {
-        if (addMaterialPopUp) {
-            loadMaterialsSubMaterialMasterUOM();
+        if (matrialRequisitionDetailData.length > 0) {
+            setMaterialList(
+                matrialRequisitionDetailData as MaterialRequisitionDetailGRN[]
+            );
         }
-    }, [addMaterialPopUp]);
+    }, [matrialRequisitionDetailData]);
 
     useEffect(() => {
+        if (!MaterialRequisitionId || detailData.length === 0) return;
 
-        const uniqueMaterials = [
-            ...new Map(
-                (detailData || []).map(item => [
-                    item.MaterialMasterId,
-                    item
-                ])).values()];
-
-        setMaterialOptions(
-            uniqueMaterials.map(item => ({
-                label: item.MaterialName,
-                value: String(item.MaterialMasterId)
-            }))
-        );
-    }, [detailData]);
+        loadGRNData();
+    }, [MaterialRequisitionId, detailData]);
 
     const loadGRNData = async () => {
         await runApiWithLoader(
@@ -128,271 +121,34 @@ export const AddUpdateGRN = () => {
 
                 if (E.isRight(response)) {
 
-                    const data = response.right.Data;
-
-                    const e = data?.[0];
+                    const e = response.right.Data?.[0];
 
                     if (e) {
                         setFormData(prev => ({
                             ...prev,
-                            MaterialRequisitionId: e.MaterialRequisitionId ?? prev.MaterialRequisitionId,
-                            Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-                            ProjectId: e.ProjectId ?? prev.ProjectId,
-                            Remarks: e.Remarks ?? prev.Remarks,
-                            VehicleNumber: e.VehicleNumber ?? prev.VehicleNumber,
-                            ChallanNumber: e.ChallanNumber ?? prev.ChallanNumber,
-                            MaterialRequisitionGRNId: e.MaterialRequisitionGRNId ?? prev.MaterialRequisitionGRNId,
-
                         }));
 
-                        setMaterialList(e.MaterialRequisitionDetailGRNData.map((prev: any) => {
-                            const matched = detailData.find(d =>
-                                d.MaterialName === prev.MaterialName &&
-                                d.SubMaterialName === prev.SubMaterialName
-                            );
-
-                            return {
-                                MaterialRequisitionDetailGRNId: prev.MaterialRequisitionDetailGRNId,
-                                MaterialRequisitionDetailId: matched?.MaterialRequisitionDetailId ?? 0,
-                                MaterialMasterId: matched?.MaterialMasterId ?? 0,
-                                SubMaterialMasterId: matched?.SubMaterialMasterId ?? 0,
-                                MaterialName: prev.MaterialName,
-                                SubMaterialName: prev.SubMaterialName,
-                                UomCode: matched?.UomCode ?? "",
-                                UomMasterId: matched?.UomMasterId ?? 0,
-                                MaterialQuantity: matched?.MaterialQuantity ?? 0,
-                                TotalReceivedMaterialQuantity: prev.TotalReceivedMaterialQuantity,
-                                QualityAnalystRemark: prev.QualityAnalystRemark,
-                                TotalReceivedQuantityByRequisition: matched?.MaterialReceivedQuantityTillDate ?? 0,
-                                IsTolerant: matched?.IsTolerant ?? false,
-                                TolerancePercentage: matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
-                            };
-                        }));
-                        setuploadChallanURL(e.UploadChallanURL ?? undefined);
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
                     }
                 } else {
-                    addToast({ type: "error", title: response.left.message });
+                    addToast({ type: 'error', title: response.left.message });
                 }
                 return response;
             },
             undefined,
             (error: any) => {
-                addToast({ type: "error", title: error.message });
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
-            "Loading GRN",
+            'Loading GRN Data'
         );
     };
 
-    const handleAddMaterial = async () => {
-        setErrors({});
-        setAddMaterialPopUp(true);
-        setEditIndex(null);
-        setMaterialData(initialFormState());
-    }
-
-    const handleEditMaterial = useCallback((row: MaterialRequisitionDetailGRN, index: number) => {
-        setErrors({});
-        setEditIndex(index);
-        setMaterialData({
-            MaterialMasterId: row.MaterialMasterId,
-            SubMaterialMasterId: row.SubMaterialMasterId,
-            UomCode: row.UomCode,
-            UomMasterId: row.UomMasterId,
-            TotalReceivedMaterialQuantity: row.TotalReceivedMaterialQuantity,
-            SubMaterialName: row.SubMaterialName,
-            MaterialName: row.MaterialName,
-            QualityAnalystRemark: row.QualityAnalystRemark,
-            MaterialRequisitionDetailGRNId: row.MaterialRequisitionDetailGRNId,
-            MaterialRequisitionDetailId: row.MaterialRequisitionDetailId,
-            MaterialQuantity: row.MaterialQuantity,
-            TotalReceivedQuantityByRequisition: row.TotalReceivedQuantityByRequisition ?? 0,
-            IsTolerant: row.IsTolerant ?? false,
-            TolerancePercentage: row.TolerancePercentage ?? 0,
-        });
-        setAddMaterialPopUp(true);
-    }, [materialOptions]);
-
-    const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "MaterialName",
-            label: "Material",
-            align: "left",
-            width: "30",
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            )
-        },
-        {
-            key: "SubMaterialName",
-            label: "Sub Material",
-            align: "left",
-            width: "30",
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            )
-        },
-        {
-            key: "MaterialQuantity",
-            label: "Quantity",
-            align: "left"
-
-        },
-        {
-            key: "UomCode",
-            label: "UOM",
-            align: "left"
-        },
-
-        {
-            key: "TotalReceivedMaterialQuantity",
-            label: "Received Quantity",
-            align: "left",
-        },
-        {
-            key: "QualityAnalystRemark",
-            label: "Quality Analyst Remark",
-            align: "left",
-            width: "30",
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            )
-        },
-        {
-            key: "action",
-            label: "Action",
-            align: "right",
-            render: (_value, row) => {
-
-                const index = materialList.findIndex(item =>
-                    item.MaterialMasterId === row.MaterialMasterId &&
-                    item.SubMaterialMasterId === row.SubMaterialMasterId
-                );
-
-                return canAction ? (
-                    <div className="flex items-center justify-center gap-2">
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleEditMaterial(row, index);
-                            }}
-                            color="transparent"
-                            isborderRadius
-                            size="sm"
-                            style={{
-                                color: "#2563eb",
-                                padding: "4px"
-                            }}
-                            leftIcon={<Edit className="h-4 w-4" />}
-                            title="Edit Material Requisition"
-                        />
-
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setMaterialList(prev =>
-                                    prev.filter((_, i) => i !== index)
-                                );
-                            }}
-                            disabled={formData.MaterialRequisitionGRNId > 0}
-                            color="transparent"
-                            isborderRadius
-                            size="sm"
-                            style={{
-                                color: "red",
-                                padding: "4px 8px",
-                            }}
-                            title="Delete Material"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ) : null;
-            }
-        }
-
-    ], [canAction, materialList, materialOptions, handleEditMaterial]);
-
-    const subMaterialOptions = useMemo(() => {
-        if (!materialData.MaterialMasterId) {
-            return [];
-        }
-
-        return detailData.filter(item =>
-            item.MaterialMasterId === materialData.MaterialMasterId)
-            .map(item => ({
-                label: item.SubMaterialName,
-                value: String(item.SubMaterialMasterId)
-            }));
-
-    }, [materialData.MaterialMasterId, detailData]);
-
-    const createDropdownInitialValue = (id: number | null, label: string) => {
-        if (!id || !label) {
-            return null;
-        }
-        return { label, value: String(id) };
-    };
-
-    const selectedMaterialDetail = detailData.find(item =>
-        item.MaterialMasterId === materialData.MaterialMasterId &&
-        item.SubMaterialMasterId === materialData.SubMaterialMasterId
-    );
-
-    const selectedMaterialSubMaterial = materialSubMaterialList.find(item =>
-        item.MaterialMasterId === materialData.MaterialMasterId &&
-        item.SubMaterialMasterId === materialData.SubMaterialMasterId
-    );
-
-    const addedQuantity = materialList.filter(item =>
-
-        item.MaterialMasterId === materialData.MaterialMasterId &&
-        item.SubMaterialMasterId === materialData.SubMaterialMasterId
-
-    ).reduce((total, item) =>
-        total + (item.TotalReceivedMaterialQuantity ?? 0), 0);
-
-    const receivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
-
-    const totalReceived = receivedQuantity + addedQuantity;
-
-    const pendingQuantity = Math.max(Number((materialData.MaterialQuantity - totalReceived).toFixed(2)), 0);
-
-    const isToleranceAllowed = materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
-
-    const tolerancePercentage =
-        materialData.TolerancePercentage ?? selectedMaterialDetail?.TolerancePercentage ?? selectedMaterialDetail?.Tolerance ??
-        selectedMaterialSubMaterial?.MaterialTolerant ?? 0;
-
-    const allowedReceivedQuantity = isToleranceAllowed
-        ? pendingQuantity + (pendingQuantity * tolerancePercentage) / 100
-        : pendingQuantity;
-
-    const currentEditedRowQuantity = editIndex !== null ? materialList[editIndex]?.TotalReceivedMaterialQuantity ?? 0 : 0;
-    const effectiveAllowedReceivedQuantity = editIndex !== null
-        ? currentEditedRowQuantity + allowedReceivedQuantity
-        : allowedReceivedQuantity;
-
     const validateMaterialRequisitionGRNForm = (): {
-
         isValid: boolean
         errors: { [key: string]: string }
+
     } => {
         const newErrors: { [key: string]: string } = {};
 
@@ -428,6 +184,7 @@ export const AddUpdateGRN = () => {
         form.append('ChallanNumber', formData.ChallanNumber);
         form.append('VehicleNumber', formData.VehicleNumber ?? '');
         form.append('MaterialRequisitionGRNId', formData.MaterialRequisitionGRNId.toString());
+
         const filtered = materialList
             .filter(item => item.TotalReceivedMaterialQuantity > 0)
             .map(item => ({
@@ -463,7 +220,6 @@ export const AddUpdateGRN = () => {
             setErrors(validation.errors);
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -495,120 +251,6 @@ export const AddUpdateGRN = () => {
         );
     };
 
-    const loadMaterialsSubMaterialMasterUOM = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const employeeData = LocalStorageHelper.getStoredEmployeeData();
-                const projectId = employeeData?.ProjectData?.[0]?.ProjectId ?? 0;
-                const ClientRegistrationId = Number(employeeData?.ClientRegistrationId);
-
-                const params: FilterWithPaginationMaterialSubMaterialMasterUOM = {
-                    ProjectId: projectId,
-                    ClientRegistrationId: ClientRegistrationId
-                };
-
-                const apiResponse = await technicalService.apiCallMaterialSubMaterialMasterUOMList(params);
-
-                if (E.isRight(apiResponse)) {
-
-                    setMaterialSubMaterialList(apiResponse.right.Data.MaterialMasterSubMaterialMasterData);
-
-                } else {
-                    addToast({ type: "error", title: "Error Fetching material list" });
-                }
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error?.message || 'Failed to load vendor data' });
-            },
-            undefined,
-            "Loading Data"
-        );
-    };
-
-    const validateMaterialDetailsForm = (): {
-
-        isValid: boolean;
-        errors: { [key: string]: string };
-    } => {
-        const newErrors: { [key: string]: string } = {};
-
-        if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0)
-            newErrors.MaterialMasterId = "Material is required";
-
-        if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
-            newErrors.SubMaterialMasterId = "Sub Material is required";
-
-        if (!materialData.TotalReceivedMaterialQuantity)
-            newErrors.TotalReceivedMaterialQuantity = "Received Quantity is required";
-
-        else if (materialData.TotalReceivedMaterialQuantity > effectiveAllowedReceivedQuantity) {
-            if (isToleranceAllowed) {
-                newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than allowed quantity ${effectiveAllowedReceivedQuantity} (${pendingQuantity} + ${tolerancePercentage}% tolerance).`;
-            } else {
-                newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than pending quantity ${effectiveAllowedReceivedQuantity}.`;
-            }
-        }
-        if (!materialData.QualityAnalystRemark)
-            newErrors.QualityAnalystRemark = "Quality Analyst Remark is required"
-
-        return {
-            isValid: Object.keys(newErrors).length === 0,
-            errors: newErrors,
-        };
-    };
-
-    const saveMaterial = () => {
-        setErrors({});
-
-        const validation = validateMaterialDetailsForm();
-        if (!validation.isValid) {
-            setErrors(validation.errors);
-            return;
-        }
-
-        const otherRowsQuantity = materialList
-            .filter((_, i) => i !== editIndex)
-            .filter(data =>
-                data.MaterialMasterId === materialData.MaterialMasterId &&
-                data.SubMaterialMasterId === materialData.SubMaterialMasterId
-            )
-            .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
-
-        const cumulativeTotal = otherRowsQuantity + materialData.TotalReceivedMaterialQuantity;
-        const maxAllowedTotal = isToleranceAllowed
-            ? materialData.MaterialQuantity + (materialData.MaterialQuantity * tolerancePercentage) / 100
-            : materialData.MaterialQuantity;
-
-        if (cumulativeTotal > maxAllowedTotal) {
-            setErrors({
-                TotalReceivedMaterialQuantity: `Total received (${cumulativeTotal}) cannot exceed ${maxAllowedTotal}. Already added: ${otherRowsQuantity}.`
-            });
-            return;
-        }
-
-        const newItem: MaterialRequisitionDetailGRN = {
-            ...materialData
-        };
-
-        setMaterialList(prev => {
-            const updated = [...prev];
-
-            if (editIndex !== null) {
-                updated[editIndex] = newItem;
-            } else {
-                updated.push(newItem);
-            }
-            return updated;
-        });
-        setAddMaterialPopUp(false);
-        setEditIndex(null);
-        setMaterialData(initialFormState());
-    };
-
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionGRNRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value, }));
         setErrors((prev) => ({ ...prev, [field]: "", }));
@@ -619,45 +261,199 @@ export const AddUpdateGRN = () => {
         setErrors((prev) => ({ ...prev, [field]: "", }));
     };
 
+    const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
+
+        const isDirect = materialList?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const columns: TableColumn[] = [];
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        }
+        columns.push(
+            {
+                key: "MaterialQuantity",
+                label: "Quantity",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
+            },
+            {
+                key: "RequiredDate",
+                label: "Required Date",
+                align: "left",
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
+            },
+            {
+                key: "MaterialReceivedQuantityTillDate",
+                label: "Received Quantity Till Date",
+                align: "left",
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
+            },
+            {
+                key: "TotalReceivedMaterialQuantity",
+                label: "Received Material Quantity",
+                align: "left",
+                width: "30",
+                render: (value: any, row: MaterialRequisitionDetailGRN) => {
+                    return (
+                        <Input
+                            label=""
+                            value={value ?? 0}
+                            onChange={(e) => {
+                                const receivedQuantity = Number(e.target.value);
+
+                                setMaterialList(prev =>
+                                    prev.map(item =>
+                                        item.MaterialRequisitionDetailId ===
+                                            row.MaterialRequisitionDetailId
+                                            ? {
+                                                ...item,
+                                                TotalReceivedMaterialQuantity:
+                                                    receivedQuantity,
+                                            } : item
+                                    )
+                                );
+                            }}
+                        />
+                    );
+                },
+            },
+            // {
+            //     key: "QualityAnalystRemark",
+            //     label: "Quality Analyst Remark",
+            //     align: "left",
+            //     width: "30",
+            //     render: (value: any, row: MaterialRequisitionDetailGRN) => {
+            //         return (
+            //             <TextArea
+            //                 label=""
+            //                 value={value ?? ""}
+            //                 onChange={(e) => {
+            //                     const remark = e.target.value;
+
+            //                     setMaterialList(prev =>
+            //                         prev.map(item =>
+            //                             item.MaterialRequisitionDetailId ===
+            //                                 row.MaterialRequisitionDetailId
+            //                                 ? {
+            //                                     ...item,
+            //                                     QualityAnalystRemark: remark,
+            //                                 } : item
+            //                         )
+            //                     );
+            //                 }}
+            //             />
+            //         );
+            //     },
+            // }
+        );
+
+        return columns;
+    }, [materialList]);
+
     return (
         <>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 pt-5">
                 <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
 
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">GRN Details </h3>
-                        <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
 
-                            <h3 className="text-md font-medium text-gray-500">
-                                Material Details
-                            </h3>
-
-                            <Button
-                                type="button"
-                                color="blue"
-                                size="sm"
-                                onClick={handleAddMaterial}
-                                leftIcon={<Plus className="h-4 w-4" />}
-                            >
-                                Add Material
-                            </Button>
-
-                        </div>
-
-                        {materialList.length > 0 && (
-                            <div className="pb-2">
-                                <DataTable
+                        {materialList.length > 0 ? (
+                            <div className="border border-[#33333321] rounded-xl overflow-hidden mb-4 overflow-y-auto thin-scroll">
+                                <DataTableWithHeaderRowDivider
+                                    columns={MatrialRequisitionDetailColumns}
                                     data={materialList}
-                                    columns={MaterialRequisitionColumns}
+                                    emptyMessage="No Material Requisition Details Found"
+                                    fixedHeight={true}
                                     className="flex-1"
-                                    emptyMessage="No GRN Data Found"
                                 />
                             </div>
+                        ) : (
+                            <div className="flex items-center justify-center">
+                                <span className="text-gray-500 text-sm font-medium">No materials found</span>
+                            </div>
                         )}
-
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
 
                         <div className="flex grid grid-cols-3 gap-4">
                             <Input
@@ -727,155 +523,6 @@ export const AddUpdateGRN = () => {
                 />
 
             </div>
-
-            <Modal
-                isOpen={addMaterialPopUp}
-                onClose={() => {
-                    setAddMaterialPopUp(false);
-                    setMaterialData(initialFormState());
-                }}
-                title={editIndex !== null ? "Update Material" : "Add Material"}
-                onSubmit={e => {
-                    e.preventDefault();
-                    saveMaterial();
-                }}
-                saveText={editIndex !== null ? "Update" : "Add"}
-                cancelText="Cancel"
-                onCancel={() => {
-                    setAddMaterialPopUp(false);
-                    setMaterialData(initialFormState());
-                }}
-                size="small-half"
-            >
-                <div className="space-y-4">
-                    <SingleSelectDropdownWithPagination
-                        required
-                        label="Material"
-                        key={dropdownMaterialResetKey}
-                        disabled={editIndex !== null}
-                        initialValue={createDropdownInitialValue(
-                            materialData.MaterialMasterId,
-                            materialData.MaterialName,
-                        )}
-                        title="Select Material"
-                        size="lg"
-                        dataFetchCallBack={async () => ({
-                            itemList: materialOptions, totalNumberOfRecord: materialOptions.length
-                        })}
-                        onSelected={(item) => {
-                            const id = item ? Number(item.value) : 0;
-
-                            const selected = detailData.find(
-                                data => data.MaterialMasterId === id
-                            );
-
-                            if (!selected) return;
-
-                            const selectedUOM = materialSubMaterialList.find(
-                                data => data.MaterialMasterId === selected.MaterialMasterId &&
-                                    data.SubMaterialMasterId === selected.SubMaterialMasterId
-                            );
-
-                            setMaterialData(prev => ({
-                                ...prev,
-                                MaterialMasterId: selected.MaterialMasterId,
-                                MaterialName: selected.MaterialName,
-                                SubMaterialMasterId: selected.SubMaterialMasterId,
-                                SubMaterialName: selected.SubMaterialName,
-                                UomCode: selected.UomCode,
-                                UomMasterId: selected.UomMasterId,
-                                MaterialQuantity: selected.MaterialQuantity,
-                                RequiredDate: selected.RequiredDate,
-                                MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId,
-                                TotalReceivedQuantityByRequisition: selected.MaterialReceivedQuantityTillDate ?? 0,
-                                IsTolerant: selected.IsTolerant ?? selectedUOM?.IsTolerant ?? false,
-                                TolerancePercentage: selected.TolerancePercentage ?? selected.Tolerance ?? selectedUOM?.MaterialTolerant ?? 0,
-                            }));
-                            setDropdownSubMaterialResetKey(p => p + 1);
-                        }}
-                        error={errors.MaterialMasterId}
-                    />
-
-                    <SingleSelectDropdownWithPagination
-                        required
-                        label="Sub Material"
-                        disabled={editIndex !== null}
-                        key={dropdownSubMaterialResetKey}
-                        initialValue={createDropdownInitialValue(
-                            materialData.SubMaterialMasterId,
-                            materialData.SubMaterialName
-                        )}
-                        title="Select SubMaterial"
-                        size="lg"
-                        dataFetchCallBack={async () => ({
-                            itemList: subMaterialOptions,
-                            totalNumberOfRecord: subMaterialOptions.length
-                        })}
-                        onSelected={(item) => {
-                            const id = item ? Number(item.value) : 0;
-
-                            const selected = detailData.find(
-                                data => data.SubMaterialMasterId === id
-                            );
-
-                            const selectedUOM = materialSubMaterialList.find(
-                                data => data.MaterialMasterId === materialData.MaterialMasterId &&
-                                    data.SubMaterialMasterId === id
-                            );
-
-                            setMaterialData(prev => ({
-                                ...prev,
-                                SubMaterialMasterId: id,
-                                SubMaterialName: selected?.SubMaterialName ?? "",
-                                UomCode: selected?.UomCode ?? "",
-                                UomMasterId: selected?.UomMasterId ?? 0,
-                                MaterialRequisitionDetailId: selected?.MaterialRequisitionDetailId ?? 0,
-                                TotalReceivedQuantityByRequisition: selected?.MaterialReceivedQuantityTillDate ?? prev.TotalReceivedQuantityByRequisition ?? 0,
-                                IsTolerant: selected?.IsTolerant ?? selectedUOM?.IsTolerant ?? prev.IsTolerant ?? false,
-                                TolerancePercentage: selected?.TolerancePercentage ?? selected?.Tolerance ?? selectedUOM?.TolerancePercentage ?? selectedUOM?.Tolerance ?? prev.TolerancePercentage ?? 0,
-                            }));
-                        }}
-                        error={errors.SubMaterialMasterId}
-                    />
-
-                    <Input type="text" disabled label="UOM"
-                        value={materialData.UomCode}
-                        placeholder="UOM"
-                        maxLength={250}
-                        error={errors.UomMasterId}
-                    />
-
-                    <Input
-                        type="text"
-                        label="Pending Quantity"
-                        required
-                        disabled
-                        value={`${pendingQuantity}`}
-                        onChange={(e) => handleMaterialFieldChange("MaterialQuantity", e.target.value === "" ? 0 : Number(e.target.value))}
-                        placeholder="Pending Quantity"
-                        min={0}
-                        error={errors.MaterialQuantity}
-                    />
-
-                    <Input
-                        label="Received Quantity"
-                        required
-                        value={materialData.TotalReceivedMaterialQuantity}
-                        onChange={(e) => handleMaterialFieldChange("TotalReceivedMaterialQuantity", filterNumbers(e.target.value))}
-                        placeholder="Quantity"
-                        error={errors.TotalReceivedMaterialQuantity}
-                    />
-
-                    <TextArea
-                        label="Quality Analyst Remark"
-                        value={materialData.QualityAnalystRemark}
-                        onChange={(e) => handleMaterialFieldChange("QualityAnalystRemark", e.target.value)}
-                        required
-                        error={errors.QualityAnalystRemark}
-                    />
-                </div>
-
-            </Modal >
         </>
     )
 }

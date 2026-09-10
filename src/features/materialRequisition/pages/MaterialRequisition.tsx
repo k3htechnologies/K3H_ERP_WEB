@@ -32,6 +32,10 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { copyToClipboard, formatCurrency } from "@/core/utils/comman";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { Input } from "@/ui/components/forms";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -51,6 +55,10 @@ export const MaterialRequisition: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
+    const [vendorName, setVendorName] = useState<string | null>("");
+
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchMaterialRequisition(value)
@@ -84,6 +92,7 @@ export const MaterialRequisition: React.FC = () => {
                     MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
                     MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
                     SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
+                    VendorName: filterParams.VendorName?.trim() ?? undefined,
                     FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
@@ -120,7 +129,14 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId ?? 0, MaterialRequisitionStage: row.MaterialRequisitionStage ?? "", MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "", SystemGeneratedCode: row.SystemGeneratedCode ?? "", Uniquekey: row.Uniquekey ?? "" });
+        updateListState({
+            MaterialRequisitionId: row.MaterialRequisitionId ?? 0,
+            MaterialRequisitionStage: row.MaterialRequisitionStage ?? "",
+            MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "",
+            SystemGeneratedCode: row.SystemGeneratedCode ?? "",
+            VendorFinalizationApprovalStatus:row.VendorFinalizationApprovalStatus,
+            Uniquekey: row.Uniquekey ?? ""
+        });
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
 
@@ -141,6 +157,17 @@ export const MaterialRequisition: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }), [pagination, handlePageChange]);
+
+    const handleApprovalLog = (row: MaterialRequisitionData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "FINALIZED VENDOR",
+            Id: row.MaterialRequisitionId,
+            ProjectId: projectId ?? 0,
+        };
+        setVendorName(row.FinalVendor)
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
 
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
         {
@@ -200,7 +227,7 @@ export const MaterialRequisition: React.FC = () => {
             key: 'FinalVendor',
             label: 'Vendor Name',
             width: '15',
-            sortable: true,
+            sortable: false,
             align: 'left',
             render: (value: string, row: any) => {
                 return (
@@ -236,12 +263,30 @@ export const MaterialRequisition: React.FC = () => {
             },
         },
         {
+            key: "VendorFinalizationApprovalStatus",
+            label: "Vendor Finalization Status",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApproval}
+                    isIcons={true}
+                    onHistory={() => handleApprovalLog(row)}
+
+                />
+
+            )
+        },
+        {
             key: 'TotalPoAmount',
-            label: 'Total Po Amount (₹)',
+            label: 'Total PO Amount (₹)',
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => formatCurrency(value) || '-'
+            render: (value) => formatCurrency(value) || 0
         },
         {
             key: 'TotalInvoiceAmount',
@@ -249,7 +294,23 @@ export const MaterialRequisition: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => formatCurrency(value) || '-'
+            render: (value) => formatCurrency(value) || 0
+        },
+        {
+            key: 'PaidAmount',
+            label: 'Paid Amount (₹)',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => formatCurrency(value) || 0
+        },
+        {
+            key: 'TotalInvoice',
+            label: 'Total Invoice',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => value || 0
         },
         {
             key: 'Actions',
@@ -309,7 +370,7 @@ export const MaterialRequisition: React.FC = () => {
                 );
             }
         }
-    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction]);
+    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction, handleApprovalLog]);
 
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 
@@ -464,6 +525,7 @@ export const MaterialRequisition: React.FC = () => {
                     MaterialRequisitionStatus: filters?.MaterialRequisitionStatus ?? undefined,
                     MaterialRequisitionStage: filters?.MaterialRequisitionStage ?? undefined,
                     SystemGeneratedCode: searchTerm ?? filters?.SystemGeneratedCode ?? undefined,
+                    VendorName: filters.VendorName?.trim() ?? undefined,
                     FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
                     ToDate: filters?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
                     ExportType: exportType
@@ -484,6 +546,8 @@ export const MaterialRequisition: React.FC = () => {
 
     const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
     const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
+
+
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
@@ -506,7 +570,7 @@ export const MaterialRequisition: React.FC = () => {
                 }}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeMaterialRequisitionColumnsModal(true)}
-                isShowAddButton={canAction}
+                isShowAddButton={canAction && Number(projectId) > 0}
                 addTitle="Add"
                 onAdd={handleAddMaterialRequisitionModal}
                 isShowImportButton={canAction}
@@ -576,11 +640,24 @@ export const MaterialRequisition: React.FC = () => {
                 size="small-half"
             >
                 <div className="space-y-4">
-
+                    <div>
+                        <Input type="text"
+                            label='MR Code'
+                            value={tempFilters?.SystemGeneratedCode ?? ''}
+                            onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+                            placeholder="Enter MR Code" />
+                    </div>
+                    <div>
+                        <Input type="text"
+                            label='Vendor Name'
+                            value={tempFilters?.VendorName ?? ''}
+                            onChange={e => handleFilterChange('VendorName', e.target.value)}
+                            placeholder="Enter Vendor Name" />
+                    </div>
                     <div>
                         <SinglePageSelection
-                            label="Material Requisition Stage"
-                            placeholder="Select Stage"
+                            label="Requisition Stage"
+                            placeholder="Select Requisition Stage"
                             value={tempFilters?.MaterialRequisitionStage || ""}
                             options={MATERIAL_REQUISITION_STAGES_OPTIONS.map((stage) => ({ label: stage.name, value: stage.id }))}
                             onChange={(value) => handleFilterChange('MaterialRequisitionStage', String(value))}
@@ -589,8 +666,8 @@ export const MaterialRequisition: React.FC = () => {
 
                     <div>
                         <SinglePageSelection
-                            label="Material Requisition Status"
-                            placeholder="Select Status"
+                            label="Requisition Status"
+                            placeholder="Select Requisition Status"
                             value={tempFilters?.MaterialRequisitionStatus || ""}
                             options={MATERIAL_REQUISITION_STATUS_OPTIONS.map((status) => ({ label: status.name, value: status.id }))}
                             onChange={(value) => handleFilterChange('MaterialRequisitionStatus', String(value))}
@@ -619,6 +696,14 @@ export const MaterialRequisition: React.FC = () => {
 
                 </div>
             </Modal>
+
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Finalized Vendor'
+                titleText={vendorName ?? ""}
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest}
+            />
 
         </div>
     )

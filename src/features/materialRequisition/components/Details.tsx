@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
-import { useEffect, useState } from "react";
-import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import {  useMemo, useState } from "react";
+import type {  MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
@@ -16,70 +16,29 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { Button } from "@/ui/components/forms";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { DataTableWithHeaderRowDivider, type TableColumn } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
-export const Details: React.FC = () => {
+interface OverviewProps {
+    matrialRequisitionData: MaterialRequisitionData | null;
+    matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+}
+
+export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matrialRequisitionDetailData }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
-    const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
-    const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
-    const [isDeleteRequisitionDialogOpen, setIsDeleteRequisitionDialogOpen] = useState(false);
     const [active, setActive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey;
     const navigate = useNavigate();
-
-    useEffect(() => {
-        if (!projectId) return;
-
-        fetchDetailsData();
-    }, [projectId, currentMaterialRequisitionId])
-
-    const fetchDetailsData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
-
-                    setMaterialRequisitionData(Array.isArray(data) ? (data[0] ?? null) : data);
-
-                    const Item = Array.isArray(data) ? data[0] : data;
-
-                    setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Material Requisition",
-        );
-    };
 
     const PushSplitMaterialRequisitionFormData = (): FormData => {
 
@@ -127,8 +86,6 @@ export const Details: React.FC = () => {
 
                     setActive(false);
 
-                    fetchDetailsData();
-
                     setMaterialRequisitionList(prev => [newRecord, ...prev]);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
@@ -150,54 +107,128 @@ export const Details: React.FC = () => {
         );
     };
 
-    const handleDeleteRequest = async () => {
-        if (!deleteData) return;
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const payload: DeleteMaterialRequisitionRequest = {
-                    MaterialRequisitionId: deleteData.MaterialRequisitionId,
-                    Uniquekey: deleteData.Uniquekey,
-                    ProjectId: Number(projectId)
-                };
-
-                const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-
-                    navigate("/materialRequisition");
-
-                    setIsDeleteRequisitionDialogOpen(false);
-
-                    fetchDetailsData();
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                    setIsDeleteRequisitionDialogOpen(false);
-                }
-                setDeleteData(null)
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Deleting Requisition'
-        );
-    };
-
-    const selectedMaterials = matrialRequisitionDetailData.filter(item =>
-        selectedIds.includes(item.MaterialRequisitionDetailId)
-    );
+    const selectedMaterials = matrialRequisitionDetailData.filter(item =>selectedIds.includes(item.MaterialRequisitionDetailId) );
 
     const ShowSplitButton = matrialRequisitionData?.IsSplit && active !== true
 
+    const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
+
+        const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const columns: TableColumn[] = [];
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        }
+
+        columns.push(
+            {
+                key: "MaterialQuantity",
+                label: "Quantity",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
+            },
+
+            {
+                key: "RequiredDate",
+                label: "Required Date",
+                align: "left",
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
+            },
+            {
+                key: "Remark",
+                label: "Remark",
+                align: "left",
+                width: "30",
+                render: (value) => (
+                    <FieldInfoTooltip value={value} />
+                )
+            },
+
+        );
+
+        return columns;
+    }, [matrialRequisitionDetailData]);
+
     return (
-        <div className="justify-center">
+        <div className="justify-center pt-5">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="border border-[#33333321] rounded-xl overflow-hidden mb-4 mt-2">
@@ -226,68 +257,45 @@ export const Details: React.FC = () => {
             </div>
 
             <section className="border border-[#33333321] rounded-xl overflow-hidden mb-4">
-                <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-[#7E22CE]">
-                        Material Details
+                 <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+
+                    <h4 className="text-sm font-semibold text-[#7E22CE] flex items-center gap-2">
+                        Material Details :
+                        <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#7E22CE] text-white text-xs font-bold">
+                            {matrialRequisitionDetailData.length}
+                        </span>
                     </h4>
 
-                    {ShowSplitButton && !active && (
-                        <Button
-                            color="blue"
-                            size="sm"
-                            onClick={() => setActive(true)} >
-                            Split
-                        </Button>
-                    )}
+                    <div className="flex items-center gap-2">
+                        {ShowSplitButton && !active && (
+                            <Button
+                                color="blue"
+                                size="sm"
+                                onClick={() => setActive(true)}
+                            >
+                                Split
+                            </Button>
+                        )}
+
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#7E22CE] text-[#ffffff] text-xs font-medium">
+                            {matrialRequisitionDetailData?.[0]?.MaterialRequisitionType || "-"}
+                        </span>
+
+                    </div>
+
                 </div>
 
-                <div className="lg:col-span-5 px-2 pb-3 overflow-y-auto thin-scroll">
-                    {matrialRequisitionDetailData.map((item, index) => (
-                        <div key={index} className="flex items-center gap-3 bg-gray-100 rounded-lg p-2 mt-2">
-                            {active && (
-                                <Checkbox size="sm"
-                                    checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
-                                    onChange={() => {
-                                        setSelectedIds(prev =>
-                                            prev.includes(item.MaterialRequisitionDetailId)
-                                                ? prev.filter(id => id !== item.MaterialRequisitionDetailId)
-                                                : [...prev, item.MaterialRequisitionDetailId]
-                                        );
-                                    }}
-                                />
-                            )}
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
-                                {item.MaterialRequisitionType?.toUpperCase() === "DIRECT" ? (
-                                    <>
-                                        <FieldItem label="Category" value={item.Level1Name || "-"} />
-
-                                        <FieldItem label="Sub Category" value={item.Level2Name || "-"} />
-
-                                        <FieldItem label="Description" value={item.Level3Name ?? ""} />
-
-                                        <FieldItem label="Sub Material" value={item.Level4Name ?? ""} />
-
-                                        <FieldItem label="Quantity" value={item.MaterialQuantity} />
-
-                                        <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
-
-                                    </>
-                                ) : (
-                                    <>
-                                        <FieldItem label="Material Name" value={item.MaterialName} />
-                                        <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ""} />} />
-                                        <FieldItem label="Uom" value={item.Uom} />
-                                        <FieldItem label="Quantity" value={item.MaterialQuantity} />
-                                        <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
-                                    </>
-                                )}
-
-
-                            </div>
-                        </div>
-                    ))}
+                <div className="overflow-y-auto thin-scroll">
+                    <DataTableWithHeaderRowDivider
+                        columns={MatrialRequisitionDetailColumns}
+                        data={matrialRequisitionDetailData}
+                        emptyMessage="No Material Requisition Details Found"
+                        fixedHeight={true}
+                        className="flex-1"
+                    />
                 </div>
+
 
                 {active && (
                     <div className="flex justify-end items-center gap-2 px-3 py-2 border-t border-[#D0D7DE] bg-white">
@@ -331,7 +339,7 @@ export const Details: React.FC = () => {
                 </div>
 
                 <div className="p-4">
-                    <span>{matrialRequisitionData?.Remarks}</span>
+                    <span>{matrialRequisitionData?.Remarks || "-"}</span>
                 </div>
             </section>
 
@@ -350,23 +358,7 @@ export const Details: React.FC = () => {
                 </div>
             </section>
 
-            <div className="pt-2 flex justify-end gap-2">
-                <Button
-                    size="md"
-                    color="transparent"
-                    style={{
-                        color: '#1D1D1D',
-                        padding: '4px 12px',
-                        backgroundColor: '#D0D7DE'
-                    }}
-                    onClick={() => {
-                        setDeleteData(matrialRequisitionData);
-                        setIsDeleteRequisitionDialogOpen(true)
-                    }}
-                >
-                    Delete
-                </Button>
-            </div>
+
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -394,19 +386,7 @@ export const Details: React.FC = () => {
                 </div>
             </Modal>
 
-            <ConfirmationDialogBox
-                isOpen={isDeleteRequisitionDialogOpen}
-                onClose={() => {
-                    setIsDeleteRequisitionDialogOpen(false);
-                    setDeleteData(null);
-                }}
-                onConfirm={handleDeleteRequest}
-                title="Delete Requisition"
-                message={`Are you sure you want to Delete this Material Requisition?`}
-                confirmText="Delete"
-                cancelText="Cancel"
-                loading={isLoading}
-            />
+
         </div>
     )
 }

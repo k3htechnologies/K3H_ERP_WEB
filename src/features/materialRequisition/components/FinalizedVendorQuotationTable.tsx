@@ -3,7 +3,7 @@ import { DataTableEditable, type EditableColumnGroup, type EditableTableColumn }
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import { computeAmount, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { Input } from "@/ui/components/forms/Input"
-import { allowPercentage,  filterNumbersWithDecimal } from "@/core/utils/fileValidation"
+import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation"
 import { formatCurrency } from "@/core/utils/comman"
 
 type Row =
@@ -12,10 +12,11 @@ type Row =
         MaterialName: string
         MaterialQuantity: number
         MaterialPerUnit: number
-        CGST: number
-        SGST: number
-        UGST: number
-        IGST: number
+        CGST: number | string
+        SGST: number | string
+        UGST: number | string
+        IGST: number | string
+        TGST?: number | string
         Amount: number
         Logistics?: string
     }
@@ -28,21 +29,27 @@ interface Props {
     vendorId?: number
     termId?: number
     onSave?: (rows: Row[]) => void
+    onEditModeChange?: (isEditing: boolean) => void
+    VendorFinalizationApprovalStatus?: string
 }
 
 export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     data,
     onChange,
-    onSave
+    onSave,
+    onEditModeChange,
+    VendorFinalizationApprovalStatus
 }) => {
     const [rows, setRows] = useState<Row[]>(data)
     const [stagedRows, setStagedRows] = useState<Row[]>(data)
     const [isEditing, setIsEditing] = useState(false)
 
     useEffect(() => {
-        setRows(data)
-        setStagedRows(data)
-    }, [data])
+        if (!isEditing) {
+            setRows(data)
+            setStagedRows(data)
+        }
+    }, [data, isEditing]);
 
     const computedRows = useMemo(
         () =>
@@ -55,8 +62,28 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     )
 
     const handleChange = useCallback((newRows: Row[]) => {
-        setStagedRows(newRows)
-    }, [])
+        const updatedRows = newRows.map(row => {
+            const amount = row.Logistics
+                ? Number(row.Amount ?? 0)
+                : Number(row.MaterialPerUnit ?? 0);
+
+            if (amount <= 0) {
+                return {
+                    ...row,
+                    CGST: 0,
+                    SGST: 0,
+                    UGST: 0,
+                    TGST: 0,
+                };
+            }
+
+            return row;
+        });
+
+        setStagedRows(updatedRows);
+
+        onChange?.(updatedRows);
+    }, [onChange]);
 
     const handleSave = () => {
         setRows(stagedRows)
@@ -68,11 +95,13 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             }))
         )
         setIsEditing(false)
+        onEditModeChange?.(false)
     }
 
     const handleCancel = () => {
         setStagedRows(rows)
         setIsEditing(false)
+        onEditModeChange?.(false)
     }
 
     const GROUPS: EditableColumnGroup[] = [
@@ -81,6 +110,16 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "TGST"], background: "#1E3A5F", color: "#FDE68A" },
         { label: "SUMMARY", keys: ["Total"], background: "#0F2744" }
     ]
+
+    const isServiceRow = (row: Row) => !!row?.Logistics;
+
+    const hasAmount = (row: Row) => {
+        const amount = isServiceRow(row)
+            ? Number(row?.Amount ?? 0)
+            : Number(row?.MaterialPerUnit ?? 0);
+
+        return amount > 0;
+    };
 
     const columns: EditableTableColumn[] = useMemo(() => [
         {
@@ -96,19 +135,27 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 const isService = !!row?.Logistics
                 return (
                     <div className="flex flex-col">
+                        {row.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT" ? (
+                            <>
+                                <span className="text-gray-900">
+                                    {row?.MaterialName || row?.Logistics || ""}
+                                </span>
 
-                        <span className="text-gray-900">
-                            {row?.MaterialName || row?.Logistics || ""}
-                        </span>
+                                <span className="text-gray-400 text-xs">
+                                    <TooltipText text={row?.SubMaterialName || ""} />
+                                </span>
+                            </>
+                        ) :
+                            <>
+                                <span className="text-gray-900">
+                                    {row?.Level4Name || row?.Logistics || ""}
+                                </span>
+                            </>
+                        }
 
-                        <span className="text-gray-400 text-xs">
-                            <TooltipText text={row?.SubMaterialName || ""} />
-                        </span>
 
-                        <span
-                            className={`mt-1 inline-block px-2 py-0.5 text-xs rounded-full font-semibold w-fit
-                                ${isService ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700" }`}
-                        >
+                        <span className={`mt-1 inline-block px-2 py-0.5 text-xs rounded-full font-semibold w-fit
+                           ${isService ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
                             {isService ? "SERVICE" : "MATERIAL"}
                         </span>
 
@@ -127,7 +174,10 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             render: (_value, row) => (
                 <div className="w-full flex justify-end items-start p-0 m-0">
                     <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 leading-none">
-                        {row?.MaterialQuantity || "-"} {row?.UomCode}
+                        {row?.MaterialQuantity || "-"}{" "}
+                        {row?.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
+                            ? row?.Level4SubMaterialUomCode
+                            : row?.UomCode}
                     </span>
                 </div>
             )
@@ -214,20 +264,31 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
 
-            renderEditor: (_value, onChange, row) => (
-                <Input
-                    type="text"
-                    value={row?.CGST ?? ""}
-                    onChange={(e) => {
-                        const val = allowPercentage(e.target.value);
+            renderEditor: (_value, onChange, row) => {
 
-                        if (val !== null) {
-                            onChange(filterNumbersWithDecimal(val));
-                        }
-                    }}
-                    className="text-right"
-                />
-            ),
+                if (!hasAmount(row)) {
+                    return (
+                        <span className="text-gray-300 text-right block">
+                            -
+                        </span>
+                    );
+                }
+
+                return (
+                    <Input
+                        type="text"
+                        value={row?.CGST ?? ""}
+                        onChange={(e) => {
+                            const val = allowPercentage(e.target.value);
+
+                            if (val !== null) {
+                                onChange(val === "" ? 0 : filterNumbersWithDecimal(val));
+                            }
+                        }}
+                        className="text-right"
+                    />
+                );
+            },
 
             cellClassName: (value) =>
                 value !== 0
@@ -244,20 +305,30 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            renderEditor: (_value, onChange, row) => (
-                <Input
-                    type="text"
-                    value={row?.SGST ?? ""}
-                    onChange={(e) => {
-                        const val = allowPercentage(e.target.value);
+            renderEditor: (_value, onChange, row) => {
 
-                        if (val !== null) {
-                            onChange(filterNumbersWithDecimal(val));
-                        }
-                    }}
-                    className="text-right"
-                />
-            ),
+                if (!hasAmount(row)) {
+                    return (
+                        <span className="text-gray-300 text-right block">
+                            -
+                        </span>
+                    );
+                }
+                return (
+                    <Input
+                        type="text"
+                        value={row?.SGST ?? ""}
+                        onChange={(e) => {
+                            const val = allowPercentage(e.target.value);
+
+                            if (val !== null) {
+                                onChange(val === "" ? 0 : filterNumbersWithDecimal(val));
+                            }
+                        }}
+                        className="text-right"
+                    />
+                );
+            },
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
@@ -272,20 +343,30 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            renderEditor: (_value, onChange, row) => (
-                <Input
-                    type="text"
-                    value={row?.UGST ?? ""}
-                    onChange={(e) => {
-                        const val = allowPercentage(e.target.value);
+            renderEditor: (_value, onChange, row) => {
 
-                        if (val !== null) {
-                            onChange(filterNumbersWithDecimal(val));
-                        }
-                    }}
-                    className="text-right"
-                />
-            ),
+                if (!hasAmount(row)) {
+                    return (
+                        <span className="text-gray-300 text-right block">
+                            -
+                        </span>
+                    );
+                }
+                return (
+                    <Input
+                        type="text"
+                        value={row?.UGST ?? ""}
+                        onChange={(e) => {
+                            const val = allowPercentage(e.target.value);
+
+                            if (val !== null) {
+                                onChange(val === "" ? 0 : filterNumbersWithDecimal(val));
+                            }
+                        }}
+                        className="text-right"
+                    />
+                );
+            },
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
@@ -300,20 +381,32 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            renderEditor: (_value, onChange, row) => (
-                <Input
-                    type="text"
-                    value={row?.TGST ?? ""}
-                    onChange={(e) => {
-                        const val = allowPercentage(e.target.value);
+            renderEditor: (_value, onChange, row) => {
 
-                        if (val !== null) {
-                            onChange(filterNumbersWithDecimal(val));
-                        }
-                    }}
-                    className="text-right"
-                />
-            ),
+                if (!hasAmount(row)) {
+                    return (
+                        <span className="text-gray-300 text-right block">
+                            -
+                        </span>
+                    );
+                }
+                return (
+                    <Input
+                        type="text"
+                        value={row?.TGST ?? ""}
+                        onChange={(e) => {
+                            const val = allowPercentage(e.target.value);
+
+                            if (val !== null) {
+                                onChange(val === "" ? 0 : filterNumbersWithDecimal(val));
+                            }
+                        }}
+
+
+                        className="text-right"
+                    />
+                );
+            },
             cellClassName: (value) =>
                 value !== 0
                     ? "text-yellow-600 font-semibold bg-yellow-50"
@@ -334,19 +427,24 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     ], [isEditing])
 
     return (
-        <div className="space-y-4 bg-white rounded-xl shadow-sm">
-            <div className="flex items-center justify-between p-4">
+        <div className="space-y-4 rounded-xl">
+            <div className="flex items-center justify-between">
                 <div className="text-lg font-semibold text-gray-900">
                     Quotation
                 </div>
+                    {
+                    VendorFinalizationApprovalStatus?.toUpperCase() !== "APPROVED" && (
+                        !isEditing ? (
 
-                {!isEditing ? (
-                    <button
-                        onClick={() => setIsEditing(true)}
-                        className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                        Edit
-                    </button>
-                ) : (
+                        <button
+                            onClick={() => {
+                                setIsEditing(true)
+                                onEditModeChange?.(true)
+                            }}
+                            className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                            Edit
+                        </button>
+                    ) : (
                     <div className="flex gap-2">
 
                         <button
@@ -362,6 +460,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                         </button>
 
                     </div>
+                    )
                 )}
             </div>
 

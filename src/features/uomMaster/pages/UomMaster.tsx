@@ -16,7 +16,6 @@ import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 export const UomMaster: React.FC = () => {
 
   const {
-    // State
     uomMasterList,
     isLoading,
     loadingMessage,

@@ -21,8 +21,18 @@ export interface SpecificationMasterData {
     LevelType: string | null
     Level1Name: string | null
     Level2Name: string | null
+    Level3Name: string | null
     LevelId1: number | 0
     LevelId2: number | 0
+    LevelId3: number | 0
+    SubMaterialMasterId: number | 0;
+    SubMaterialName: string | null;
+    MaterialName:string| null;
+    SubMaterialUomCode:string| null;
+    SubMaterialUom:string| null;
+    LeadTimeInDays: number | 0,
+    IsTolerant?: boolean,
+    Quantity: number;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -38,6 +48,9 @@ export interface AddUpdateSpecificationMaster {
     UomMasterId: number | 0
     LevelId1: number | 0,
     LevelId2: number | 0,
+    LevelId3: number | 0;
+    SubMaterialMasterId: number | 0;
+    Quantity: number;
 }
 
 export interface DeleteSpecificationMasterRequest {

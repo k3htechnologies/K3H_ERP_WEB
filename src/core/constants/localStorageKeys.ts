@@ -125,6 +125,8 @@ export const LOCAL_STORAGE_KEYS = {
     PROJECT_LAND_SELECTED_COLUMNS: 'projectLand.selectedColumns',
     PROJECT_REDEVELOPMENT_SELECTED_COLUMNS: 'projectLead.selectedColumns',
 
+    //PURCHASE  MATERIAL REQUISITION
+    MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
 
 
 
@@ -160,5 +162,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     PROJECT_REDEVELOPMENT: 'projectLead.listState',
     JOB_ROLE_MASTER: 'jobRoleMaster.listState',
     JOB_OPENING: 'jobOpening.listState',
+    MATERIAL_REQUISITION: 'materialRequisition.listState',
+
 
 } as const

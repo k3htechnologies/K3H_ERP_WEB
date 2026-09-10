@@ -617,7 +617,7 @@ export const TaxTracker: React.FC = () => {
                 AmountUnderDisputeDate: null,
             } : {}),
         }));
-        setErrors({});
+        setErrors({})
 
     };
 
@@ -664,7 +664,7 @@ export const TaxTracker: React.FC = () => {
 
             case "Order":
                 if (!requestFormData.OrderStatus)
-                    newErrors.OrderStatus = "Order Status is required.";
+                    newErrors.OrderStatus = "Status is required.";
 
                 if (
                     requestFormData.OrderStatus === "Non-Favourable" &&
@@ -679,7 +679,7 @@ export const TaxTracker: React.FC = () => {
                             ? "Date is required."
                             : "Date is required.";
 
-                if (requestFormData.OrderStatus === "Non-Favourable" && (!requestFormData.AmountUnderDispute || Number(requestFormData.AmountUnderDispute) < 0)) {
+                if (requestFormData.OrderStatus === "Non-Favourable" && (!requestFormData.AmountUnderDispute || Number(requestFormData.AmountUnderDispute) <= 0)) {
                     newErrors.AmountUnderDispute = "Amount Under Dispute is required.";
                 } else if (Number(requestFormData.AmountUnderDispute) === 0) {
                     newErrors.AmountUnderDispute = "Amount Under Dispute cannot be zero.";
@@ -1030,6 +1030,8 @@ export const TaxTracker: React.FC = () => {
                         />
                     </div>
 
+
+
                     {requestFormData.RequestType === 'Notice' && (
                         <>
                             <div className="grid grid-cols-2 gap-4">
@@ -1178,7 +1180,7 @@ export const TaxTracker: React.FC = () => {
 
                                             {lastOrderRecord.NoticeDocumentURL && (
                                                 <div className="mt-4">
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px' }}>Order Document</p>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px', fontWeight: 500, letterSpacing: '0.05em' }}>Order Document</p>
                                                     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 rounded-md text-xs font-medium cursor-pointer transition-all bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-300">
                                                         <MultiImageViewer
                                                             images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}

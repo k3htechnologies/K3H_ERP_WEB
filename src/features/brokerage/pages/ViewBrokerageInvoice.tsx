@@ -340,23 +340,23 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
             {
                 key: "InvoiceAmount",
-                label: "Invoice Amount",
+                label: "Invoice (₹)",
                 width: "14",
                 sortable: false,
                 align: "right",
-                render: value => value || '0'
+                render: value => formatCurrency(value) || '0'
             },
             {
                 key: "PaymentAmount",
-                label: "Paid Invoice Amount",
+                label: "Paid (₹)",
                 width: "14",
                 sortable: false,
                 align: "right",
-                render: value => value || '0'
+                render: value => formatCurrency(value) || '0'
             },
             {
                 key: "PendingAmount",
-                label: "Pending Amount",
+                label: "Pending (₹)",
                 width: "14",
                 sortable: false,
                 align: "right",
@@ -365,7 +365,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     const paid = Number(row.PaymentAmount || 0);
                     const pending = invoice - paid;
 
-                    return pending >= 0 ? pending : 0;
+                    return pending >= 0 ? formatCurrency(pending) : '0';
                 }
             },
 
@@ -727,23 +727,22 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
                                             <div className="flex items-center gap-2">
                                                 {canMakePaymentAction && row.ApprovalStatus.toUpperCase() === "APPROVED" && (
-                                                    <div className="ml-4 whitespace-nowrap">
+                                                    <div className="ml-4 mt-2 whitespace-nowrap">
 
                                                         {pending > 0 ? (
                                                             <Button
-                                                                size="sm"
-                                                                style={{
-                                                                    color: '#FFFFFF',
-                                                                    padding: '4px 8px',
-                                                                    backgroundColor: '#135BEC'
-                                                                }}
-                                                                onClick={() => handleAddPaidBrokerageBooking(row)}
-                                                            >
+                                                                color="blue"
+                                                                variant="solid"
+                                                                size="md"
+                                                                style={{ width: '140px', height: '37px' }}
+                                                                onClick={() => handleAddPaidBrokerageBooking(row)}>
                                                                 Make Payment
                                                             </Button>
                                                         ) : (
                                                             <div>
-                                                                <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-1 rounded-md inline-block">Fully Paid</span>
+                                                                 <span className="px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+                                                                                        Fully Paid
+                                                                                      </span>
                                                             </div>
                                                         )}
 

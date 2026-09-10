@@ -709,7 +709,7 @@ export const MASTER_DATA = {
 
   termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
-  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending"],
+   noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending", "Pending"],
 
   vendorType: ["Material", "Contractor", "Both"],
 
@@ -772,6 +772,11 @@ export const MASTER_DATA = {
     "JobQualification",
     "JobSkills",
   ],
+
+   materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
+
+  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Ongoing'],
+
 
 } as const;
 
@@ -930,6 +935,8 @@ export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.m
   name,
 }));
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
+export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
+export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 
 
 

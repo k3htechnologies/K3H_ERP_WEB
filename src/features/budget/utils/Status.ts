@@ -3,7 +3,9 @@ export const getBudgetStatusColor = (status: string = "") => {
         L1: { bg: "#00236F", text: "#FFFFFF" },
         L2: { bg: "#3730A3", text: "#FFFFFF" },
         L3: { bg: "#334155", text: "#FFFFFF" },
+        L4: { bg: "#0F766E", text: "#FFFFFF" }
     };
+
 
     return map[status] ?? { bg: "#F3F4F6", text: "#111827" };
 };

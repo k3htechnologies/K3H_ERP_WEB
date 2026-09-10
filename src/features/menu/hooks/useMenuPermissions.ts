@@ -15,6 +15,7 @@ export interface MenuPermissions {
   path: string
 }
 
+
 const normalizePath = (path: string): string => {
   if (!path) return '/'
   const trimmed = path.trim()

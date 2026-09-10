@@ -502,12 +502,13 @@ export const ViewTaxTracker: React.FC = () => {
                                                             }
                                                         />
 
+
                                                         {/* Amount Under Dispute */}
                                                         {latestOrderDoc?.OrderStatus !== "Favourable" && (
                                                             <div className="">
                                                                 <FieldItem
                                                                     label="Amount Under Dispute (₹)"
-                                                                    value={formatCurrency(Number(latestOrderDoc.AmountUnderDispute?.toFixed(2)) ?? 0)}
+                                                                    value={formatCurrency(latestOrderDoc.AmountUnderDispute)}
                                                                 />
                                                             </div>
                                                         )}
@@ -919,6 +920,17 @@ export const ViewTaxTracker: React.FC = () => {
                                 value={reopenFormData?.NoticeDescription || ''}
                                 onChange={(e) => setReopenFormData({ ...reopenFormData, NoticeDescription: e.target.value })}
                                 error={errors?.NoticeDescription}
+                            />
+                        </div>
+
+                        <div>
+                            <Checkbox
+                                label="Are you sure you want to reopen this case?"
+                                checked={confirmReopen}
+                                onChange={(e) => {
+                                    setConfirmReopen(e.target.checked)
+                                    setErrors({});
+                                }}
                             />
                         </div>
 

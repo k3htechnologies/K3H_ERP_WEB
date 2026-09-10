@@ -39,6 +39,7 @@ import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/
 import { LevelTree } from "@/ui/components/DataTable/Leveltree";
 import { fetchPaginatedFlatsDropdown } from "@/features/inventory/PaginatedFlatsDropDown";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
@@ -47,6 +48,7 @@ const initialFormState = (): AddUpdateBudget => ({
     LevelId1: 0,
     LevelId2: 0,
     LevelId3: 0,
+    LevelId4: 0,
     OrderBy: 0,
     UomMasterId: 0,
     InventoryFlatId: "",
@@ -77,11 +79,11 @@ export const Budget: React.FC = () => {
     const [filters, setFilters] = useState<FilterInfo>({});
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [showFilterPopup, setShowFilterPopup] = useState(false);
-    const [addLevel, setAddLevel] = useState<"L1" | "L2" | "L3">("L1");
-    const [dropdownLabels, setDropdownLabels] = useState<{ level1Name?: string; level2Name?: string, level3Name?: string, flat?: string }>({});
+    const [addLevel, setAddLevel] = useState<"L1" | "L2" | "L3" | "L4">("L1");
+    const [dropdownLabels, setDropdownLabels] = useState<{ level1Name?: string; level2Name?: string, level3Name?: string, level4Name?: string, flat?: string }>({});
     const [selectedUom, setSelectedUom] = useState("");
     const [selectFlatValues, setSelectFlatValues] = useState<string | number | null>(null);
-    const [parentData, setParentData] = useState({ category: "", subCategory: "", });
+    const [parentData, setParentData] = useState({ category: "", subCategory: "", descripation: "", subMaterialName: "" });
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -197,8 +199,12 @@ export const Budget: React.FC = () => {
                 } else if (editBudgetData.LevelType === "L2") {
                     setAddLevel("L2");
 
-                } else {
+                } else if (editBudgetData.LevelType === "L3") {
                     setAddLevel("L3");
+
+                }
+                else {
+                    setAddLevel("L4");
                 }
                 setFormData({
                     BudgetId: editBudgetData.BudgetId,
@@ -207,6 +213,7 @@ export const Budget: React.FC = () => {
                     LevelId1: editBudgetData.LevelId1,
                     LevelId2: editBudgetData.LevelId2,
                     LevelId3: editBudgetData.LevelId3,
+                    LevelId4: editBudgetData.LevelId4,
                     UomMasterId: editBudgetData.UomMasterId,
                     OrderBy: editBudgetData.OrderBy,
                     InventoryFlatId: editBudgetData.InventoryFlatId,
@@ -222,6 +229,7 @@ export const Budget: React.FC = () => {
                     level1Name: editBudgetData.Level1Name || "",
                     level2Name: editBudgetData.Level2Name || "",
                     level3Name: editBudgetData.Level3Name || "",
+                    level4Name: editBudgetData.Level4Name || "",
                     flat: editBudgetData.Flat || ""
                 });
                 setSelectedUom(editBudgetData.Uom ?? "");
@@ -250,19 +258,29 @@ export const Budget: React.FC = () => {
 
         if (addLevel === "L3") {
 
-            const isEmpty = (val: any) => val === undefined || val === null || val === "";
+              const isEmpty = (val: any) => val === undefined || val === null || val === "";
 
             if (isEmpty(formData?.LabourCost)) {
                 newErrors.LabourCost = "Labour Rate is Required"
             }
-            if (isEmpty(formData?.MaterialCost)) {
-                newErrors.MaterialCost = "Material Rate is Required"
-            }
+            
             if (isEmpty(formData?.Quantity)) {
                 newErrors.Quantity = "Quantity is Required"
             }
             if (isEmpty(formData?.PMCost)) {
                 newErrors.PMCost = "P&M Rate is Required"
+            }
+        }
+
+        if (addLevel === "L4") {
+            const isEmpty = (val: any) => val === undefined || val === null || val === "";
+
+            if (isEmpty(formData.Quantity)) {
+                newErrors.Quantity = "Quantity is Required";
+            }
+
+            if (isEmpty(formData.MaterialCost)) {
+                newErrors.MaterialCost = "Material Rate is Required";
             }
         }
         return {
@@ -271,20 +289,19 @@ export const Budget: React.FC = () => {
         }
     }
 
-    const hasRateValue =
-        String(formData?.LabourCost ?? "") !== "" ||
-        String(formData?.MaterialCost ?? "") !== "" ||
-        String(formData?.PMCost ?? "") !== "";
+    const totalRate =
+        addLevel === "L3"
+            ? Number(formData?.LabourCost || 0) +
+            Number(formData?.MaterialCost || 0) +
+            Number(formData?.PMCost || 0)
+            : addLevel === "L4"
+                ? Number(formData?.MaterialCost || 0)
+                : null;
 
-    const totalRate = hasRateValue
-        ? Number(formData?.LabourCost || 0) +
-        Number(formData?.MaterialCost || 0) +
-        Number(formData?.PMCost || 0)
-        : null;
-
-    const budget = hasRateValue
-        ? Number(formData?.Quantity || 0) * (totalRate ?? 0)
-        : null;
+    const budget =
+        addLevel === "L3" || addLevel === "L4"
+            ? Number(formData?.Quantity || 0) * (totalRate ?? 0)
+            : null;
 
     const PushBudgetFormData = (): AddUpdateBudget => {
         return {
@@ -294,6 +311,7 @@ export const Budget: React.FC = () => {
             LevelId1: formData.LevelId1,
             LevelId2: formData.LevelId2,
             LevelId3: formData.LevelId3,
+            LevelId4: formData.LevelId4,
             OrderBy: formData.OrderBy,
             UomMasterId: formData.UomMasterId,
             InventoryFlatId: formData.InventoryFlatId,
@@ -389,9 +407,12 @@ export const Budget: React.FC = () => {
     const handleExportBudgetPdf = () => handleExportBudget("PDF")
 
     const handleEditBudget = useCallback((row: BudgetData) => {
+
         setParentData({
             category: row.Level1Name || "",
             subCategory: row.Level2Name || "",
+            descripation: row.Level3Name || "",
+            subMaterialName: row.Level4Name || "",
         });
         setEditBudgetData({
             ...row,
@@ -489,17 +510,18 @@ export const Budget: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+        
         {
-            key: 'LabourCost',
-            label: 'Labour Rate (₹)',
+            key: "MaterialCost",
+            label: "Material Rate (₹)",
             width: '15',
             sortable: false,
             align: 'left',
             render: value => value ? formatCurrency(value) : '0'
         },
         {
-            key: "MaterialCost",
-            label: "Material Rate (₹)",
+            key: 'LabourCost',
+            label: 'Labour Rate (₹)',
             width: '15',
             sortable: false,
             align: 'left',
@@ -548,8 +570,16 @@ export const Budget: React.FC = () => {
             render: (_value, row) => {
 
                 const isApproved = row.ApprovalStatus === "Approved" || row.ApprovalStatus === "Partial Approved";
-                const showAddButton = row.LevelType !== "L3";
-                const accessToEdit = canAction && row.IsAccessToDelete === true && !isApproved;
+                const showAddButton = !["L3", "L4"].includes(row.LevelType);
+                const accessToEdit =
+                                canAction &&
+                                !isApproved &&
+                                (
+                                    row.LevelType === "L3" ||
+                                    row.LevelType === "L4" ||
+                                    row.IsAccessToDelete === true
+                                );
+                                
                 const canAdd = canAction && !isApproved;
 
                 return (
@@ -576,6 +606,8 @@ export const Budget: React.FC = () => {
                                         setParentData({
                                             category: row.Level1Name || "",
                                             subCategory: "",
+                                            descripation: "",
+                                            subMaterialName: "",
                                         });
                                         setFormData({
                                             ...initialFormState(),
@@ -583,6 +615,7 @@ export const Budget: React.FC = () => {
                                             LevelId1: row.LevelId1,
                                             LevelId2: 0,
                                             LevelId3: 0,
+                                            LevelId4: 0,
                                         });
                                     }
 
@@ -594,14 +627,39 @@ export const Budget: React.FC = () => {
                                             LevelId1: row.LevelId1,
                                             LevelId2: row.LevelId2,
                                             LevelId3: 0,
+                                            LevelId4: 0,
                                         });
                                         setSelectFlatValues("");
                                         setParentData({
                                             category: row.Level1Name || "",
                                             subCategory: row.Level2Name || "",
+                                            descripation: "",
+                                            subMaterialName: "",
                                         });
                                         setIsAddUpdateModalOpen(true);
                                     }
+                                    if (row.LevelType === "L3") {
+                                        setAddLevel("L4");
+
+                                        setFormData({
+                                            ...initialFormState(),
+                                            ProjectId: Number(projectId),
+                                            LevelId1: row.LevelId1,
+                                            LevelId2: row.LevelId2,
+                                            LevelId3: row.BudgetId,
+                                            LevelId4: 0,
+                                        });
+
+                                        setParentData({
+                                            category: row.Level1Name || "",
+                                            subCategory: row.Level2Name || "",
+                                            descripation: row.Level3Name || "",
+                                            subMaterialName: "",
+                                        });
+
+                                        setIsAddUpdateModalOpen(true);
+                                    }
+
                                     setIsAddUpdateModalOpen(true);
                                 }}
                                 leftIcon={<Plus className="h-4 w-4" />}
@@ -684,6 +742,8 @@ export const Budget: React.FC = () => {
         setParentData({
             category: "",
             subCategory: "",
+            descripation: "",
+            subMaterialName: ""
         })
         setFormData({
             ...initialFormState(),
@@ -691,6 +751,7 @@ export const Budget: React.FC = () => {
             LevelId1: 0,
             LevelId2: 0,
             LevelId3: 0,
+            LevelId4: 0,
         });
         setIsAddUpdateModalOpen(true);
     };
@@ -703,6 +764,7 @@ export const Budget: React.FC = () => {
                     LevelId1: row.BudgetId,
                     LevelId2: 0,
                     LevelId3: 0,
+                    LevelId4: 0,
                 };
 
             case "L2":
@@ -710,13 +772,22 @@ export const Budget: React.FC = () => {
                     LevelId1: row.LevelId1,
                     LevelId2: row.BudgetId,
                     LevelId3: 0,
+                    LevelId4: 0,
                 };
 
             case "L3":
                 return {
                     LevelId1: row.LevelId1,
                     LevelId2: row.LevelId2,
-                    LevelId3: row.BudgetId
+                    LevelId3: row.BudgetId,
+                    LevelId4: 0,
+                }
+            case "L4":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.LevelId2,
+                    LevelId3: row.LevelId3,
+                    LevelId4: row.BudgetId,
                 }
 
             default:
@@ -724,6 +795,7 @@ export const Budget: React.FC = () => {
                     LevelId1: 0,
                     LevelId2: 0,
                     LevelId3: 0,
+                    LevelId4: 0,
                 };
         }
     };
@@ -843,7 +915,7 @@ export const Budget: React.FC = () => {
                 }}
             />
 
-            {Number(projectId) >0 && (
+            {Number(projectId) > 0 && (
                 <div className="flex justify-end mt-1 w-full border border-gray-200 shadow-sm">
                     <div className="flex justify-end pb-2 gap-2 p-2">
                         <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
@@ -869,6 +941,7 @@ export const Budget: React.FC = () => {
                         { idKey: "LevelId1", nameKey: "Level1Name" },
                         { idKey: "LevelId2", nameKey: "Level2Name" },
                         { idKey: "LevelId3", nameKey: "Level3Name" },
+                        { idKey: "LevelId4", nameKey: "Level4Name" },
                     ]
                 }}
                 columns={visibleBudgetColumns}
@@ -876,6 +949,7 @@ export const Budget: React.FC = () => {
                     "#E3F7FF",
                     "#FBFCFC",
                     "#F2F4F8",
+                    "#F9FAFB",
                 ]}
                 emptyMessage="No Budget Data"
                 loading={isLoading}
@@ -926,6 +1000,8 @@ export const Budget: React.FC = () => {
                     setParentData({
                         category: "",
                         subCategory: "",
+                        descripation: "",
+                        subMaterialName: ""
                     });
                     setSelectedUom("");
                     setSelectFlatValues("")
@@ -937,110 +1013,156 @@ export const Budget: React.FC = () => {
                     setParentData({
                         category: "",
                         subCategory: "",
+                        descripation: "",
+                        subMaterialName: ""
                     });
                     setSelectedUom("");
                     setSelectFlatValues("")
                 }}
-                title={editBudgetData ? "Update Budget" : "Add Budget"}
+                title={
+                    editBudgetData
+                        ? addLevel === "L1"
+                            ? "Update Category"
+                            : addLevel === "L2"
+                                ? "Update Sub Category"
+                                : addLevel === "L3"
+                                    ? "Update Description"
+                                    : "Update Sub Material"
+                                    
+                        : addLevel === "L1"
+                            ? "Add Category"
+                            : addLevel === "L2"
+                                ? "Add Sub Category"
+                                : addLevel === "L3"
+                                    ? "Add Description"
+                                    : "Add Sub Material"
+                }
                 saveText={editBudgetData ? "Update" : "Add"}
-                size="xl"
+                size={addLevel === "L1" || addLevel === "L2" ? "xl" : "small50"}
                 loading={isLoading}
             >
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
-                        {addLevel !== "L1" && (
-                            <Input
-                                label="Category"
-                                value={parentData.category}
-                                disabled
-                            />
-                        )}
 
-                        {addLevel === "L3" && (
-                            <Input
-                                label="Sub Category"
-                                value={parentData.subCategory}
-                                disabled
-                            />
-                        )}
+                        <div className={`grid grid-cols-1 ${addLevel === "L1" || addLevel === "L2"
+                            ? "md:grid-cols-1"
+                            : "md:grid-cols-2"
+                            } gap-3`} >
 
-                        <div>
-                            <SingleSelectDropdownWithPagination
-                                label={
-                                    addLevel === "L1"
-                                        ? "Category"
-                                        : addLevel === "L2"
-                                            ? "Sub Category"
-                                            : "Description"
-                                }
-                                title={
-                                    addLevel === "L1"
-                                        ? "Select Category"
-                                        : addLevel === "L2"
-                                            ? "Select Sub Category"
-                                            : "Select Description"
-                                }
-                                size="lg"
-                                dataFetchCallBack={fetchSpecificationMasterDropdown(
-                                    addLevel,
-                                    addLevel === "L1"
-                                        ? undefined
-                                        : addLevel === "L2"
-                                            ? formData.LevelId1
-                                            : formData.LevelId2
-                                )}
-                                onSelected={(item) => {
-                                    if (!item) {
+                            {addLevel !== "L1" && (
+                                <Input
+                                    label="Category"
+                                    value={parentData.category}
+                                    disabled
+                                />
+                            )}
+
+                            {(addLevel === "L3" || addLevel === "L4") && (
+                                <Input
+                                    label="Sub Category"
+                                    value={parentData.subCategory}
+                                    disabled
+                                />
+                            )}
+
+                            {addLevel === "L4" && (
+                                <>
+                                    <Input
+                                        label="Description"
+                                        value={parentData.descripation}
+                                        disabled
+                                    />
+
+                                    <Input
+                                        label="Sub Material Name"
+                                        value={parentData.subMaterialName}
+                                        disabled
+                                    />
+                                </>
+                            )}
+                        </div>
+
+                        {addLevel !== "L4" && (
+
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                   disabled={editBudgetData?.LevelType === "L3" && !editBudgetData?.IsAccessToDelete }
+                                    label={
+                                        addLevel === "L1"
+                                            ? "Category"
+                                            : addLevel === "L2"
+                                                ? "Sub Category"
+                                                : "Description"
+                                    }
+                                    title={
+                                        addLevel === "L1"
+                                            ? "Select Category"
+                                            : addLevel === "L2"
+                                                ? "Select Sub Category"
+                                                : "Select Description"
+                                    }
+                                    size="lg"
+                                    dataFetchCallBack={fetchSpecificationMasterDropdown(
+                                        addLevel,
+                                        addLevel === "L1"
+                                            ? undefined
+                                            : addLevel === "L2"
+                                                ? formData.LevelId1
+                                                : formData.LevelId2
+                                    )}
+                                    onSelected={(item) => {
+                                        if (!item) {
+                                            switch (addLevel) {
+                                                case "L1":
+                                                    handleFieldChange("LevelId1", 0);
+                                                    break;
+
+                                                case "L2":
+                                                    handleFieldChange("LevelId2", 0);
+                                                    break;
+
+                                                case "L3":
+                                                    handleFieldChange("LevelId3", 0);
+                                                    setSelectedUom("");
+                                                    break;
+                                            }
+                                            return;
+                                        }
+
                                         switch (addLevel) {
                                             case "L1":
-                                                handleFieldChange("LevelId1", 0);
+                                                handleFieldChange("LevelId1", Number(item.value));
                                                 break;
 
                                             case "L2":
-                                                handleFieldChange("LevelId2", 0);
+                                                handleFieldChange("LevelId2", Number(item.value));
                                                 break;
 
                                             case "L3":
-                                                handleFieldChange("LevelId3", 0);
-                                                setSelectedUom("");
+                                                handleFieldChange("LevelId3", Number(item.value));
+                                                setSelectedUom(item.uom ?? "");
                                                 break;
                                         }
-                                        return;
+                                    }}
+                                    initialValue={
+                                        addLevel === "L1"
+                                            ? createDropdownInitialValue(formData.LevelId1, dropdownLabels.level1Name)
+                                            : addLevel === "L2"
+                                                ? createDropdownInitialValue(formData.LevelId2, dropdownLabels.level2Name)
+                                                : createDropdownInitialValue(formData.LevelId3, dropdownLabels.level3Name)
                                     }
-
-                                    switch (addLevel) {
-                                        case "L1":
-                                            handleFieldChange("LevelId1", Number(item.value));
-                                            break;
-
-                                        case "L2":
-                                            handleFieldChange("LevelId2", Number(item.value));
-                                            break;
-
-                                        case "L3":
-                                            handleFieldChange("LevelId3", Number(item.value));
-                                            setSelectedUom(item.uom ?? "");
-                                            break;
-                                    }
-                                }}
-                                initialValue={
-                                    addLevel === "L1"
-                                        ? createDropdownInitialValue(formData.LevelId1, dropdownLabels.level1Name)
+                                    required
+                                    error={addLevel === "L1" ? errors.LevelId1
                                         : addLevel === "L2"
-                                            ? createDropdownInitialValue(formData.LevelId2, dropdownLabels.level2Name)
-                                            : createDropdownInitialValue(formData.LevelId3, dropdownLabels.level3Name)
-                                }
-                                required
-                                error={addLevel === "L1" ? errors.LevelId1
-                                    : addLevel === "L2"
-                                        ? errors.LevelId2 : errors.LevelId3
-                                }
-                            />
-                        </div>
+                                            ? errors.LevelId2 : errors.LevelId3
+                                    }
+                                />
+                            </div>
+                        )}
 
                         {addLevel === "L3" && (
                             <>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
                                         <Input
                                             label="UOM"
@@ -1078,11 +1200,11 @@ export const Budget: React.FC = () => {
                                         <Input
                                             label="Material Rate (₹)"
                                             placeholder="Enter Material Rate"
-                                            value={formData?.MaterialCost ?? ""}
+                                            value={formData?.MaterialCost || 0}
                                             onChange={(e) => handleFieldChange("MaterialCost", filterNumbersWithDecimal(e.target.value))}
                                             error={errors.MaterialCost}
-                                            min={0}
                                             required
+                                            disabled
                                         />
                                     </div>
 
@@ -1150,6 +1272,108 @@ export const Budget: React.FC = () => {
                                 </div>
                             </>
                         )}
+
+                        {addLevel === "L4" && (
+                            <>
+                                {editBudgetData && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                            <FieldItem
+                                                label="Material Name"
+                                                value={editBudgetData.Level4MaterialName || "-"}
+                                                isRow={false}
+
+                                            />
+
+
+                                            <FieldItem
+                                                label="UOM"
+                                                value={`${editBudgetData.Level4SubMaterialUom || "-"} (${editBudgetData.Level4SubMaterialUomCode || "-"})`}
+                                                isRow={false}
+
+                                            />
+
+                                            <FieldItem
+                                                label="Lead Time (Days)"
+                                                value={editBudgetData.Level4LeadTimeInDays ?? 0}
+                                                isRow={false}
+
+                                            />
+
+                                            <FieldItem
+                                                label="Is Tolerant"
+                                                value={editBudgetData.Level4IsTolerant ? "YES" : "NO"}
+                                                isRow={false}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+
+                                    <div>
+                                        <Input
+                                            label="Quantity"
+                                            placeholder="Enter Quantity"
+                                            value={formData?.Quantity ?? ""}
+                                            onChange={(e) => handleFieldChange("Quantity", filterNumbersWithDecimal(e.target.value))}
+                                            error={errors.Quantity}
+                                            min={0}
+                                            required
+                                            disabled
+                                        />
+                                    </div>
+
+
+
+                                    <div>
+                                        <Input
+                                            label="Material Rate (₹)"
+                                            placeholder="Enter Material Rate"
+                                            value={formData?.MaterialCost ?? ""}
+                                            onChange={(e) => handleFieldChange("MaterialCost", filterNumbersWithDecimal(e.target.value))}
+                                            error={errors.MaterialCost}
+                                            min={0}
+                                            required
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input
+                                            label="Total Rate (₹)"
+                                            value={totalRate !== null ? totalRate.toFixed(2) : ""}
+                                            disabled
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input
+                                            label="Budget Amount (₹)"
+                                            value={budget !== null ? budget.toFixed(2) : ""}
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+
+
+
+                                <div>
+                                    <TextArea
+                                        label="Remark"
+                                        placeholder="Enter Remark"
+                                        className='thin-scroll'
+                                        value={formData?.Remark || ""}
+                                        onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                        rows={3}
+                                        error={errors.Remark}
+                                        autoResize={false}
+                                    />
+                                </div>
+                            </>
+                        )}
+
+
                     </div>
                 </div>
             </Modal>

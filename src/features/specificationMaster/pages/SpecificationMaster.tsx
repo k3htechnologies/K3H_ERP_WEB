@@ -22,6 +22,10 @@ import type { AddUpdateSpecificationMaster, DeleteSpecificationMasterRequest, fi
 import { specificationMasterService } from "@/features/specificationMaster/services/SpecificationMasterService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { handleExportFile } from "@/core/utils/exportFile";
+import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { fetchSubMaterialMasterById, fetchSubMaterialMasterDropdown } from "@/features/subMaterialMaster/subMaterialMasterDropdown";
+import type { SubMaterialMasterData } from "@/features/subMaterialMaster/models/SubMaterialMasterModel";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 const initialFormState = (): AddUpdateSpecificationMaster => ({
     SpecificationMasterId: 0,
@@ -30,6 +34,9 @@ const initialFormState = (): AddUpdateSpecificationMaster => ({
     UomMasterId: 0,
     LevelId1: 0,
     LevelId2: 0,
+    LevelId3: 0,
+    SubMaterialMasterId: 0,
+    Quantity: 0
 });
 
 export const SpecificationMaster: React.FC = () => {
@@ -48,21 +55,23 @@ export const SpecificationMaster: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { canAction, canExport } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
-    const [dropdownLabels, setDropdownLabels] = useState<{ uom?: string; }>({});
+    const [dropdownLabels, setDropdownLabels] = useState<{ uom?: string; LevelId3?: string }>({});
     const dtRef = useRef<DataTableExpandableRef | null>(null);
     const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
     const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
     const [childRefreshKey, setChildRefreshKey] = useState(0);
     const [isExpandedEdit, setIsExpandedEdit] = useState(false);
-    const [parentNames, setParentNames] = useState({ categoryName: "", subCategoryName: "", });
+    const [parentNames, setParentNames] = useState({ categoryName: "", subCategoryName: "", description: "" });
 
     const SpecificationMasterTabsList = [
         { id: "L1", label: "L1" },
         { id: "L2", label: "L2" },
         { id: "L3", label: "L3" },
+        { id: "L4", label: "L4" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(SpecificationMasterTabsList[0].id);
+    const [subMaterialDetails, setSubMaterialDetails] = useState<SubMaterialMasterData | null>(null);
 
     useEffect(() => {
 
@@ -101,7 +110,6 @@ export const SpecificationMaster: React.FC = () => {
             },
             undefined,
             (error: any) =>
-
                 addToast({ type: 'error', title: error.message }),
             undefined,
             'Loading Specification Master'
@@ -117,11 +125,22 @@ export const SpecificationMaster: React.FC = () => {
                     CategoryName: editSpecificationMasterData.CategoryName ?? "",
                     LevelId1: editSpecificationMasterData.LevelId1,
                     LevelId2: editSpecificationMasterData.LevelId2,
-                    UomMasterId: editSpecificationMasterData.UomMasterId
+                    LevelId3: editSpecificationMasterData.LevelId3 || 0,
+                    UomMasterId: editSpecificationMasterData.UomMasterId,
+                    Quantity: editSpecificationMasterData.Quantity || 0,
+                    SubMaterialMasterId: editSpecificationMasterData.SubMaterialMasterId || 0,
                 });
                 setDropdownLabels({
                     uom: editSpecificationMasterData.UomCode || "",
+                    LevelId3: editSpecificationMasterData.SubMaterialName || "",
                 });
+
+                if (editSpecificationMasterData.SubMaterialMasterId) {
+                    fetchSubMaterialMasterById(editSpecificationMasterData.SubMaterialMasterId).then((subMaterial) => {
+                        if (!subMaterial) return;
+                        setSubMaterialDetails(subMaterial);
+                    });
+                }
             }
             setErrors({});
         }
@@ -136,12 +155,26 @@ export const SpecificationMaster: React.FC = () => {
 
         const fieldName = modalLabel;
 
-        if (!formData.CategoryName?.trim()) {
-            newErrors.CategoryName = `${fieldName} is required`;
+        if (activeTab !== "L4") {
 
-        } else if (formData.CategoryName.length > 100) {
-            newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
+            if (!formData.CategoryName?.trim()) {
+                newErrors.CategoryName = `${fieldName} is required`;
+
+            } else if (formData.CategoryName.length > 100) {
+                newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
+            }
+        } else {
+
+            if (!formData.Quantity) {
+                newErrors.Quantity = "Quantity is required";
+            }
+
+            if (!formData.SubMaterialMasterId) {
+                newErrors.SubMaterialMasterId = "Sub Material is required";
+            }
+
         }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors,
@@ -155,7 +188,10 @@ export const SpecificationMaster: React.FC = () => {
             CategoryName: formData.CategoryName,
             LevelId1: formData.LevelId1,
             LevelId2: formData.LevelId2,
+            LevelId3: formData.LevelId3,
             UomMasterId: formData.UomMasterId,
+            Quantity: formData.Quantity,
+            SubMaterialMasterId: formData.SubMaterialMasterId,
         }
     }
 
@@ -252,6 +288,7 @@ export const SpecificationMaster: React.FC = () => {
         setParentNames({
             categoryName: row.Level1Name || "",
             subCategoryName: row.Level2Name || "",
+            description: row.Level3Name || "",
         });
 
         setEditSpecificationMasterData({
@@ -372,12 +409,20 @@ export const SpecificationMaster: React.FC = () => {
                     LevelId1: row.LevelId1,
                     LevelId2: row.SpecificationMasterId,
                 };
+
+            case "L4":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.LevelId2,
+                    LevelId3: row.SpecificationMasterId,
+                };
         }
     };
 
     const isExpandable = activeTab !== "L1";
     const showUom = activeTab === "L3" && (formData.LevelId2 > 0 || (editSpecificationMasterData?.LevelId2 ?? 0) > 0);
     const showUomColumn = activeTab === "L3";
+    const showL4 = activeTab === "L4";
 
     const SpecificationMasterColumns = useMemo<TableColumn[]>(() => [
         ...(isExpandable ? [{
@@ -421,26 +466,43 @@ export const SpecificationMaster: React.FC = () => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
+                                         setSubMaterialDetails(null);
 
                                         const nextLevel = buildNextLevelIds(row);
+
                                         if (activeTab === "L2") {
                                             setParentNames({
-                                                categoryName: row.CategoryName,
+                                                categoryName: row.CategoryName || "",
                                                 subCategoryName: "",
+                                                description: "",
                                             });
                                         }
-                                        else if (activeTab === "L3") {
+
+                                        if (activeTab === "L3") {
                                             setParentNames({
                                                 categoryName: row.Level1Name || "",
-                                                subCategoryName: row.CategoryName,
+                                                subCategoryName: row.CategoryName || "",
+                                                description: "",
                                             });
                                         }
+
+                                        if (activeTab === "L4") {
+                                            setParentNames({
+                                                categoryName: row.Level1Name || "",
+                                                subCategoryName: row.Level2Name || "",
+                                                description: row.CategoryName || "",
+                                            });
+                                        }
+
 
                                         setExpandedParentId(row.SpecificationMasterId);
                                         setExpandedParentRow(row);
+
                                         setFormData({
                                             ...initialFormState(),
                                             ...nextLevel,
+
+                                            CategoryName: "",
                                         });
 
                                         setEditSpecificationMasterData(null);
@@ -508,14 +570,52 @@ export const SpecificationMaster: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+        ...(showL4
+            ? [{
+                key: "MaterialName",
+                label: "Material Name",
+                width: "25",
+                sortable: false,
+                align: "left" as const,
+                render: (value: any) => value || "-"
+            }]
+            : []),
         {
             key: 'CategoryName',
-            label: showUomColumn ? 'Description' : 'Sub Category Name ',
+            label: showL4 ? 'Sub Material Name' : showUomColumn ? 'Description' : 'Sub Category Name ',
             width: '25',
             sortable: false,
             align: 'left',
             render: value => value || '-'
         },
+        ...(showL4
+            ? [
+                {
+                    key: "Quantity",
+                    label: "Quantity",
+                    width: "25",
+                    sortable: false,
+                    align: "left" as const,
+                    render: (_value: any, row: any) =>
+                        row.Quantity ? `${row.Quantity} ${row.SubMaterialUomCode || ""}` : "0"
+                },
+                {
+                    key: "LeadTimeInDays",
+                    label: "Lead Time (Days)",
+                    width: "25",
+                    sortable: false,
+                    align: "left" as const,
+                    render: (value: any) => value ? `${value} days` : "-"
+                },
+                {
+                    key: "IsTolerant",
+                    label: "Is Tolerant",
+                    width: "25",
+                    sortable: false,
+                    align: "left" as const,
+                    render: (value: any) => value == 1 ? 'Yes' : 'No'
+                }]
+            : []),
         ...(showUomColumn
             ? [{
                 key: "UomCode",
@@ -577,7 +677,7 @@ export const SpecificationMaster: React.FC = () => {
                 );
             }
         }
-    ], [showUomColumn, canAction, handleConfirmationBoxOpen]);
+    ], [showUomColumn, canAction, handleConfirmationBoxOpen, showL4]);
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: page });
@@ -629,44 +729,61 @@ export const SpecificationMaster: React.FC = () => {
         );
     };
 
-    const modalTitle = editSpecificationMasterData
-        ? isExpandedEdit
-            ? activeTab === "L2"
-                ? "Update Sub Category Name"
-                : "Update Description"
-            : activeTab === "L1"
-                ? "Update Category Name"
-                : activeTab === "L2"
+    const modalTitle =
+        editSpecificationMasterData
+            ? isExpandedEdit
+                ? activeTab === "L2"
+                    ? "Update Sub Category Name"
+                    : activeTab === "L3"
+                        ? "Update Description"
+                        : activeTab === "L4"
+                            ? "Update Sub Material"
+                            : "Update Description"
+                : activeTab === "L1"
                     ? "Update Category Name"
-                    : "Update Sub Category Name"
-        : activeTab === "L1"
-            ? "Add Category Name"
-            : activeTab === "L2"
-                ? "Add Sub Category Name"
-                : "Add Description";
+                    : activeTab === "L2"
+                        ? "Update Sub Category Name"
+                        : activeTab === "L3"
+                            ? "Update Description"
+                            : "Update Sub Material"
+            : activeTab === "L1"
+                ? "Add Category Name"
+                : activeTab === "L2"
+                    ? "Add Sub Category Name"
+                    : activeTab === "L3"
+                        ? "Add Description"
+                        : "Add Sub Material";
 
 
     const modalLabel =
         activeTab === "L1"
             ? "Category Name"
             : activeTab === "L2"
-                ? (isExpandedEdit
-                    ? "Sub Category Name"
-                    : editSpecificationMasterData
-                        ? "Category Name"
-                        : "Sub Category Name"
-                )
-                : (isExpandedEdit
-                    ? "Description"
-                    : editSpecificationMasterData
+                ? (
+                    isExpandedEdit
                         ? "Sub Category Name"
-                        : "Description"
-                );
+                        : editSpecificationMasterData
+                            ? "Category Name"
+                            : "Sub Category Name"
+                )
+                : activeTab === "L3"
+                    ? (
+                        isExpandedEdit
+                            ? "Description"
+                            : editSpecificationMasterData
+                                ? "Sub Category Name"
+                                : "Description"
+                    )
+                    : "Sub Material";
 
     const deletePageName =
-        activeTab === "L1" ? "Category"
-            : activeTab === "L2" ? "Sub Category"
-                : "Description";
+        activeTab === "L1"
+            ? "Category"
+            : activeTab === "L2"
+                ? "Sub Category"
+                : activeTab === "L3"
+                    ? "Description"
+                    : "Sub Material";
 
     const handleExportSpecificationmasterExcel = () => handleExportSpecificationMaster("Excel");
     const habndleExportSpecificationmasterPdf = () => handleExportSpecificationMaster("PDF");
@@ -701,6 +818,7 @@ export const SpecificationMaster: React.FC = () => {
                         setParentNames({
                             categoryName: "",
                             subCategoryName: "",
+                            description: ""
                         });
                         setExpandedParentId(null);
                         setExpandedParentRow(null);
@@ -771,12 +889,14 @@ export const SpecificationMaster: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setEditSpecificationMasterData(null);
+                    setSubMaterialDetails(null);
                     setErrors({});
                 }}
                 onCancel={() => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setEditSpecificationMasterData(null);
+                    setSubMaterialDetails(null);
                     setErrors({});
                 }}
                 saveText={editSpecificationMasterData ? "Update " : "Add"}
@@ -787,31 +907,35 @@ export const SpecificationMaster: React.FC = () => {
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
                         {activeTab !== "L1" && (
-                            <Input
-                                label="Category Name"
-                                value={parentNames.categoryName}
-                                disabled
-                            />
+                            <Input label="Category Name" value={parentNames.categoryName} disabled />
                         )}
 
-                        {activeTab === "L3" && (
-                            <Input
-                                label="Sub Category Name"
-                                value={parentNames.subCategoryName}
-                                disabled
-                            />
+                        {(activeTab === "L3" || activeTab === "L4") && (
+                            <Input label="Sub Category Name" value={parentNames.subCategoryName} disabled />
                         )}
+
+
 
                         <div>
-                            <Input
-                                label={modalLabel}
-                                value={formData.CategoryName ?? ""}
-                                placeholder={`Enter ${modalLabel} `}
-                                onChange={(e) => handleFieldChange("CategoryName", e.target.value)}
-                                error={errors.CategoryName}
-                                maxLength={100}
-                                required
-                            />
+                            {activeTab === "L4" ? (
+                                <Input
+                                    label="Description"
+                                    value={parentNames.description ?? ""}
+                                    disabled
+                                />
+                            ) : (
+                                <Input
+                                    label={modalLabel}
+                                    value={formData.CategoryName ?? ""}
+                                    placeholder={`Enter ${modalLabel}`}
+                                    onChange={(e) =>
+                                        handleFieldChange("CategoryName", e.target.value)
+                                    }
+                                    error={errors.CategoryName}
+                                    maxLength={100}
+                                    required
+                                />
+                            )}
                         </div>
 
                         {showUom && (
@@ -830,6 +954,61 @@ export const SpecificationMaster: React.FC = () => {
                                     }}
                                     initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
                                 />
+                            </div>
+                        )}
+
+                        {activeTab === "L4" && (
+                            <div>
+                                <div>
+                                    <SingleSelectDropdownWithPagination
+                                        label="Sub Material"
+                                        required
+                                        title="Sub Material"
+                                        size="lg"
+                                        dataFetchCallBack={fetchSubMaterialMasterDropdown}
+                                        onSelected={(item) => {
+                                            if (!item) {
+                                                handleFieldChange("SubMaterialMasterId", null);
+                                                setSubMaterialDetails(null);
+                                                return;
+                                            }
+
+                                            setSubMaterialDetails(item as unknown as SubMaterialMasterData);
+
+                                            handleFieldChange("SubMaterialMasterId", Number(item.value));
+                                        }}
+
+                                        error={errors.SubMaterialMasterId}
+                                        initialValue={createDropdownInitialValue(formData.SubMaterialMasterId, dropdownLabels.LevelId3)}
+                                    />
+
+                                </div>
+
+                                {subMaterialDetails && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
+                                            <FieldItem label="Material Name" value={subMaterialDetails.MaterialName} isRow withBorder={true} />
+                                            <FieldItem label="Sub Material Name" value={subMaterialDetails.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+                                            <FieldItem label="UOM"   value={`${subMaterialDetails.Uom || "-"} (${subMaterialDetails.UomCode || "-"})`} isRow withBorder={true} />
+                                            <FieldItem label="Lead Time (Days)" value={subMaterialDetails.LeadTimeInDays} isRow withBorder={true} />
+                                            <FieldItem label="Is Tolerant" value={subMaterialDetails.IsTolerant ? "YES" : "NO"} isRow />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                <div className="mt-5">
+                                    <Input
+                                        label="Quantity"
+                                        value={formData.Quantity ?? ""}
+                                        placeholder="Enter Quantity"
+                                        onChange={(e) => handleFieldChange("Quantity", filterNumbersWithDecimal(e.target.value))}
+                                        error={errors.Quantity}
+                                        maxLength={5}
+                                        required
+                                    />
+
+                                </div>
                             </div>
                         )}
                     </div>

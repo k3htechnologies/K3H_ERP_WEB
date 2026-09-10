@@ -7,11 +7,12 @@ interface Props {
   alertsData: any[];
 }
 
-export default function OverviewCards({
-  buildingData = [],
-  tenantApplicantChargesData = [],
-  alertsData = [],
-}: Props) {
+export default function OverviewCards(
+  {
+    buildingData = [],
+    tenantApplicantChargesData = [],
+    alertsData = [],
+  }: Props) {
 
   const buildingCount = buildingData.length;
 
@@ -71,7 +72,7 @@ export default function OverviewCards({
       <div className="grid grid-cols-3 gap-4">
 
         {cards.map((c, i) => (
-          <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+          <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
             <div className="flex items-start gap-3">
 
               <div

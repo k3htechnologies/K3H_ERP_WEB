@@ -48,7 +48,7 @@ const VendorGraphCard: React.FC<Props> = ({ vendorGraphData }) => {
             {/* CENTER TOTAL */}
             <p className='text-sm font-bold text-center p-1 -mt-6'>{vendorGraphData?.length} Total Vendors </p>
           </div>
-          
+
           {/* Right LEGEND */}
           <div className="space-y-3">
             {vendorGraphData.map((t, i) => (

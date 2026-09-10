@@ -49,8 +49,8 @@ const AgreementGstTdsTotalReceivedSummary: React.FC<Props> = ({
                             key={t}
                             onClick={() => setActive(t)}
                             className={`px-3 py-1 text-xs rounded-md transition ${active === t
-                                    ? "bg-blue-600 text-white shadow"
-                                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                                ? "bg-blue-600 text-white shadow"
+                                : "bg-gray-200 text-gray-600 hover:bg-gray-300"
                                 }`}
                         >
                             {t}

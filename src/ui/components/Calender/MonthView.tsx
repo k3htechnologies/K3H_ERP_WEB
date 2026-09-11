@@ -33,7 +33,7 @@ export default function MonthView({
                 const dayEvents = events.filter(e =>
                     e.start.slice(0, 10) === dateStr
                 );
-                console.log("After date 2:", dayEvents);
+           
 
                 return (
                     <div

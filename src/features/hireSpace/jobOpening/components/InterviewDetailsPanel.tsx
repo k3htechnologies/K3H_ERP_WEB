@@ -34,8 +34,6 @@ export const InterviewDetailsPanel: React.FC<InterviewDetailsPanelProps> = ({
   showViewAllButton,
   className = '',
 }) => {
-
-  //#region RENDER
   return (
     <section className={`flex min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white p-4 ${className}`}>
       <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
@@ -140,5 +138,4 @@ export const InterviewDetailsPanel: React.FC<InterviewDetailsPanelProps> = ({
       )}
     </section>
   );
-  //#endregion
 };

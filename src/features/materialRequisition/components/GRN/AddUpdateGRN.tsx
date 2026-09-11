@@ -17,7 +17,6 @@ import { filterChallanNumber, hasAnyDocumentFile, isValidVehicleNumber } from "@
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
@@ -33,41 +32,12 @@ const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNR
     MaterialRequisitionDetailGRNJSON: ""
 })
 
-const initialFormState = (): MaterialRequisitionDetailGRN => ({
-    MaterialMasterId: 0,
-    MaterialName: "",
-    SubMaterialName: "",
-    SubMaterialMasterId: 0,
-    MaterialQuantity: 0,
-    UomMasterId: 0,
-    UomCode: "",
-    LevelId1: 0,
-    Level1Name: "",
-    LevelId2: 0,
-    Level2Name: "",
-    LevelId3: 0,
-    Level3Name: "",
-    LevelId4: 0,
-    Level4Name: "",
-    Level4SubMaterialUomCode: "",
-    Level4SubMaterialUom: "",
-    MaterialRequisitionType: "",
-    TotalReceivedMaterialQuantity: 0,
-    QualityAnalystRemark: '',
-    MaterialRequisitionDetailGRNId: 0,
-    MaterialRequisitionDetailId: 0,
-    TotalReceivedQuantityByRequisition: 0,
-    IsTolerant: false,
-    TolerancePercentage: 0,
-})
-
 export const AddUpdateGRN = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { addToast } = useToast();
     const [materialList, setMaterialList] = useState<MaterialRequisitionDetailGRN[]>([]);
-    const [materialData, setMaterialData] = useState<MaterialRequisitionDetailGRN>(() => initialFormState());
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionGRNRequest>(() => initialFormStateMaterialRequisition())
     const [uploadChallanFiles, setUploadChallanFiles] = useState<(File | string)[]>([]);
     const [removedUploadChallanUrls, setRemovedUploadChallanUrls] = useState<string[]>([]);
@@ -76,19 +46,22 @@ export const AddUpdateGRN = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const navigate = useNavigate();
     const { projectId } = useProject();
-    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
-    const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+
+    const { MaterialRequisitionId, MaterialRequisitionGRNId, } = useParams<{
+        MaterialRequisitionId?: string; MaterialRequisitionGRNId?: string;
+    }>();
+
     const { listState } = useMaterialRequisitionListState();
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey
-    const { detailData } = useMaterialRequisitionListState()
-    const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+
+    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentUniquekey = listState.Uniquekey;
+
+    const materialRequisitionGRNId = MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0;
+    const isAddMode = materialRequisitionGRNId === 0;
 
     const location = useLocation();
 
-    const {
-        matrialRequisitionDetailData = [],
-    } = location.state ?? {};
+    const { matrialRequisitionDetailData = [], } = location.state ?? {};
 
     useEffect(() => {
         if (matrialRequisitionDetailData.length > 0) {
@@ -99,49 +72,93 @@ export const AddUpdateGRN = () => {
     }, [matrialRequisitionDetailData]);
 
     useEffect(() => {
-        if (!MaterialRequisitionId || detailData.length === 0) return;
-
-        loadGRNData();
-    }, [MaterialRequisitionId, detailData]);
-
+        if (!isAddMode) {
+            loadGRNData();
+        }
+    }, [currentMaterialRequisitionId]);
+    
     const loadGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey,
                     ProjectId: Number(projectId),
-                    MaterialRequisitionGRNId: Number(MaterialRequisitionGRNId)
+                    MaterialRequisitionGRNId: materialRequisitionGRNId,
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
-
                     const e = response.right.Data?.[0];
 
                     if (e) {
                         setFormData(prev => ({
                             ...prev,
+                            MaterialRequisitionId: e.MaterialRequisitionId ?? currentMaterialRequisitionId,
+                            MaterialRequisitionGRNId: e.MaterialRequisitionGRNId ?? materialRequisitionGRNId,
+                            Uniquekey: e.Uniquekey ?? prev.Uniquekey,
+                            ProjectId: e.ProjectId ?? Number(projectId),
+                            ChallanNumber: e.ChallanNumber ?? "",
+                            Remarks: e.Remarks ?? "",
+                            VehicleNumber: e.VehicleNumber ?? "",
                         }));
 
+                        setMaterialList(
+                            (e.MaterialRequisitionDetailGRNData ?? []).map(item => {
+                                const Detail = matrialRequisitionDetailData.find(
+                                    (detail: any) =>
+                                        detail.MaterialRequisitionDetailId === item.MaterialRequisitionDetailId
+                                );
+
+                                return {
+                                    MaterialMasterId: Detail?.MaterialMasterId ?? 0,
+                                    MaterialName: item.MaterialName ?? Detail?.MaterialName ?? "",
+                                    SubMaterialName: item.SubMaterialName ?? Detail?.SubMaterialName ?? "",
+                                    SubMaterialMasterId: Detail?.SubMaterialMasterId ?? 0,
+                                    MaterialQuantity: item.MaterialQuantity ?? Detail?.MaterialQuantity ?? 0,
+                                    UomMasterId: Detail?.UomMasterId ?? 0,
+                                    UomCode: item.UomCode ?? Detail?.UomCode ?? "",
+                                    RequiredDate: item.RequiredDate ?? Detail?.RequiredDate ?? "",
+                                    MaterialReceivedQuantityTillDate: item.TotalReceivedMaterialQuantity ?? Detail?.MaterialReceivedQuantityTillDate ?? "",
+                                    LevelId1: Detail?.LevelId1 ?? 0,
+                                    Level1Name: Detail?.Level1Name ?? "",
+                                    LevelId2: Detail?.LevelId2 ?? 0,
+                                    Level2Name: Detail?.Level2Name ?? "",
+                                    LevelId3: Detail?.LevelId3 ?? 0,
+                                    Level3Name: Detail?.Level3Name ?? "",
+                                    LevelId4: Detail?.LevelId4 ?? 0,
+                                    Level4Name: Detail?.Level4Name ?? "",
+                                    Level4SubMaterialUomCode: Detail?.Level4SubMaterialUomCode ?? "",
+                                    Level4SubMaterialUom: Detail?.Level4SubMaterialUom ?? "",
+                                    MaterialRequisitionType: Detail?.MaterialRequisitionType ?? "",
+                                    TotalReceivedMaterialQuantity: item.TotalReceivedMaterialQuantity ?? 0,
+                                    QualityAnalystRemark: item.QualityAnalystRemark ?? "",
+                                    MaterialRequisitionDetailGRNId: item.MaterialRequisitionDetailGRNId ?? 0,
+                                    MaterialRequisitionDetailId: item.MaterialRequisitionDetailId ?? 0,
+                                    IsTolerant: Detail?.IsTolerant ?? false,
+                                    TolerancePercentage: Detail?.TolerancePercentage ?? 0,
+                                };
+                            }));
+
+                        setuploadChallanURL(e.UploadChallanURL ?? "");
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
                     }
                 } else {
-                    addToast({ type: 'error', title: response.left.message });
+                    addToast({ type: "error", title: response.left.message, });
                 }
+
                 return response;
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message });
+                addToast({ type: "error", title: error.message, });
             },
             undefined,
-            'Loading GRN Data'
+            "Loading GRN Data"
         );
     };
 
@@ -208,8 +225,15 @@ export const AddUpdateGRN = () => {
     };
 
     const handleSave = async () => {
-        if (materialList.length === 0) {
-            addToast({ type: "error", title: "Please select at least one Material" });
+
+        const receivedMaterials = materialList.filter(
+            item => Number(item.TotalReceivedMaterialQuantity) > 0
+        );
+
+        if (receivedMaterials.length === 0) {
+            addToast({
+                type: "error", title: "Please enter Received Quantity for at least one Material"
+            });
             return;
         }
 
@@ -247,17 +271,12 @@ export const AddUpdateGRN = () => {
                 addToast({ type: "error", title: error?.message || 'Failed to save material requisition' });
             },
             undefined,
-            "Saving Data"
+            isAddMode ? " Add GRN" : "Update GRN"
         );
     };
 
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionGRNRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value, }));
-        setErrors((prev) => ({ ...prev, [field]: "", }));
-    };
-
-    const handleMaterialFieldChange = (field: keyof MaterialRequisitionDetailGRN, value: any) => {
-        setMaterialData((prev) => ({ ...prev, [field]: value, }));
         setErrors((prev) => ({ ...prev, [field]: "", }));
     };
 
@@ -364,34 +383,61 @@ export const AddUpdateGRN = () => {
                 label: "Received Quantity Till Date",
                 align: "left",
                 width: "30",
-                render: (value) =>
-                    value ? formatDate_dd_MonthName_yy(value) : "-"
+                render: (value) => value || "-"
+            },
+            {
+                key: 'PendingQuantity',
+                label: 'Pending Quantity',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: (_value, row) => {
+
+                    const materialQuantity = row.MaterialQuantity
+                    const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
+                    const pending = materialQuantity - materialReceivedQuantityTillDate
+
+                    return pending
+                }
             },
             {
                 key: "TotalReceivedMaterialQuantity",
-                label: "Received Material Quantity",
+                label: "Received Quantity",
                 align: "left",
                 width: "30",
-                render: (value: any, row: MaterialRequisitionDetailGRN) => {
+                render: (value: any, row) => {
+
+                    const materialQuantity = row.MaterialQuantity
+                    const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
+                    const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
+
                     return (
                         <Input
                             label=""
                             value={value ?? 0}
                             onChange={(e) => {
-                                const receivedQuantity = Number(e.target.value);
+                                const raw = e.target.value;
+                                const receivedQuantity = Number(raw);
+
+                                if (receivedQuantity > pendingQuantity) {
+                                    addToast({
+                                        type: "error", title: `Received Quantity cannot exceed Pending Quantity (${pendingQuantity})`,
+                                    });
+                                    return;
+                                }
+
+                                if (receivedQuantity < 0) return;
 
                                 setMaterialList(prev =>
                                     prev.map(item =>
                                         item.MaterialRequisitionDetailId ===
                                             row.MaterialRequisitionDetailId
-                                            ? {
-                                                ...item,
-                                                TotalReceivedMaterialQuantity:
-                                                    receivedQuantity,
-                                            } : item
+                                            ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
+                                            : item
                                     )
                                 );
                             }}
+                            max={pendingQuantity}
                         />
                     );
                 },
@@ -511,7 +557,7 @@ export const AddUpdateGRN = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={formData.MaterialRequisitionId && formData.MaterialRequisitionId > 0 ? "Update" : "Add"}
+                    saveText={isAddMode ? "Add" : "Update"}
                     onCancel={() => navigate("/materialRequisition/view", {
                         state: { activeTab: "GRN" }
                     })}

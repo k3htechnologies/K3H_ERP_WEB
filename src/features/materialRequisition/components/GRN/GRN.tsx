@@ -73,7 +73,14 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
     };
 
     const handleGRNEdit = useCallback((row: MaterialRequisitionGRNData) => {
-        navigate(`/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`);
+        navigate(
+            `/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`,
+            {
+                state: {
+                    matrialRequisitionDetailData: row.MaterialRequisitionDetailGRNData ?? [],
+                },
+            }
+        );
     }, [navigate]);
 
     const loadGRNData = async () => {
@@ -110,45 +117,103 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
         );
     };
 
-    const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() =>
-        [
+    const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() => {
+
+        const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const columns: TableColumn[] = [];
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        }
+        columns.push(
             {
-                key: 'MaterialName',
-                label: 'Material Name',
-                width: '20',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => value || '-'
+                key: "MaterialQuantity",
+                label: "Quantity",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
             },
             {
-                key: 'SubMaterialName',
-                label: 'Sub Material',
-                width: '20',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
-                )
-            },
-            {
-                key: 'Uom',
-                label: 'UOM',
-                width: '20',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => value || '-'
-            },
-            {
-                key: 'MaterialQuantity',
-                label: 'Quantity',
-                width: '10',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => value || '-'
+                key: "RequiredDate",
+                label: "Required Date",
+                align: "left",
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
             },
             {
                 key: 'TotalReceivedMaterialQuantity',
@@ -158,17 +223,15 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                 align: 'left',
                 render: (value?: string) => value || '-'
             },
-            {
-                key: 'PendingQuantity',
-                label: 'Pending Quantity',
-                width: '10',
-                sortable: false,
-                align: 'left',
-                render: (_: any, row: MaterialRequisitionDetailGRNData) =>
-                    (row.MaterialQuantity || 0) -
-                    (row.TotalReceivedMaterialQuantity || 0)
-            },
-        ], [])
+        );
+
+        return columns;
+    }, [GRN]);
+
+    const firstGRNId = useMemo(() => {
+        const id = GRN[0]?.MaterialRequisitionGRNId;
+        return id != null ? String(id) : undefined;
+    }, [GRN]);
 
     const GRNColumns = useMemo<TableColumn[]>(() => [
         {
@@ -194,70 +257,29 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
             label: 'Actions',
             width: '10',
             align: 'center',
-            render: (_: any, row: any) => {
+            render: (_: any, row: MaterialRequisitionGRNData) => {
+                const isFirstRow = String(row.MaterialRequisitionGRNId) === firstGRNId;
+
                 return (
                     <div className="flex items-center justify-center gap-1">
-                        {canAction && (
-                            <>
-                                <Button
-                                    type="button"
-                                    color="transparent"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleGRNEdit(row);
-                                    }}
-                                    leftIcon={<Edit className="h-4 w-4" />}
-                                />
-                            </>
+                        {canAction && !materialRequisitionStatus && isFirstRow && (
+                            <Button
+                                type="button"
+                                color="transparent"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleGRNEdit(row);
+                                }}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                            />
                         )}
                     </div>
                 );
             }
         }
-    ], [canAction]);
-
-    const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: 'MaterialName',
-            label: 'Material Name',
-            width: '20',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => value || '-'
-        },
-        {
-            key: 'SubMaterialName',
-            label: 'Sub Material',
-            width: '20',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="180px"
-                    tooltipThreshold={18}
-                />
-            )
-        },
-        {
-            key: 'MaterialQuantity',
-            label: 'Quantity',
-            width: '10',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => value || '-'
-        },
-        {
-            key: 'TotalReceivedMaterialQuantity',
-            label: 'Received Quantity',
-            width: '10',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => value || '-'
-        },
-    ], []);
+    ], [canAction, materialRequisitionStatus, firstGRNId]);
 
     return (
         <div className="pt-5">
@@ -354,7 +376,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
 
                                     <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300 h-[220px]">
                                         <DataTableWithOutBorder
-                                            columns={MaterialRequisitionDetailColumns}
+                                            columns={MaterialRequisitionGRNColumns}
                                             data={item?.MaterialRequisitionDetailGRNData ?? []}
                                             emptyMessage="No Material Requisition Found"
                                             fixedHeight={true}

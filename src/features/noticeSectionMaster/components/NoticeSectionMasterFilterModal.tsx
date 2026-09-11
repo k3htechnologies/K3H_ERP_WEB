@@ -28,7 +28,9 @@ export const NoticeSectionMasterFilterModal: React.FC<NoticeSectionMasterFilterM
     tempFilters,
     onFilterChange,
     filterFields = [
-        { key: 'GovernmentCompliance', label: 'Government Compliance', placeholder: 'Enter Government Compliance' }
+        { key: 'GovernmentCompliance', label: 'Government Compliance', placeholder: 'Enter Government Compliance' },
+        { key: 'NoticeSection', label: 'Notice Section', placeholder: 'Enter Notice Section' }
+
     ]
 }) => {
     return (

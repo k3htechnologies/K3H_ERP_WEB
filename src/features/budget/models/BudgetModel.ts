@@ -42,6 +42,7 @@ export interface BudgetData {
     OrderBy: number | 0
     WBSCode: string | null
     Quantity: number | 0
+    ReceivedQuantity :  number | 0
     LabourCost: number | 0
     MaterialCost: number | 0
     PMCost: number | 0

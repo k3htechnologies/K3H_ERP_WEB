@@ -13,6 +13,7 @@ export type BookingBrokerageListState = {
   bookingName: string;
   cpName: string;
   cpMobileNumber: string;
+  channelPartnerMobileNumberCountryCode: string;
   cpCompany: string;
   agreementValue: number;
   brokerageAmount: number;
@@ -34,6 +35,7 @@ const getInitialState = (projectId: number | null): BookingBrokerageListState =>
       bookingName: "",
       cpName: "",
       cpMobileNumber: "",
+      channelPartnerMobileNumberCountryCode: "",
       cpCompany: "",
       agreementValue: 0,
       brokerageAmount: 0,
@@ -54,6 +56,7 @@ const getInitialState = (projectId: number | null): BookingBrokerageListState =>
           bookingName: parsed.state.bookingName || "",
           cpName: parsed.state.cpName || "",
           cpMobileNumber: parsed.state.cpMobileNumber || "",
+          channelPartnerMobileNumberCountryCode: parsed.state.channelPartnerMobileNumberCountryCode || "",
           cpCompany: parsed.state.cpCompany || "",
           agreementValue: parsed.state.agreementValue,
           brokerageAmount: parsed.state.brokerageAmount,
@@ -77,6 +80,7 @@ const getInitialState = (projectId: number | null): BookingBrokerageListState =>
     bookingName: "",
     cpName: "",
     cpMobileNumber: "",
+    channelPartnerMobileNumberCountryCode: "",
     cpCompany: "",
     agreementValue: 0,
     brokerageAmount: 0,
@@ -90,7 +94,7 @@ type BookingBrokerageListStateContextType = {
   updateListState: (updates: Partial<BookingBrokerageListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setBookingBrokerageContext: (bookingId: number, bookingName: string, cpName: string, cpMobileNumber: string, cpCompany: string, agreementValue: number, brokerageAmount: number, invoiceAmount: number, paymentPaidAmount: number) => void;
+  setBookingBrokerageContext: (bookingId: number, bookingName: string, cpName: string, cpMobileNumber: string, channelPartnerMobileNumberCountryCode: string, cpCompany: string, agreementValue: number, brokerageAmount: number, invoiceAmount: number, paymentPaidAmount: number) => void;
   clearBookingBrokerageContext: () => void;
 };
 
@@ -113,6 +117,7 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
         bookingName: "",
         cpName: "",
         cpMobileNumber: "",
+        channelPartnerMobileNumberCountryCode: "",
         cpCompany: "",
         agreementValue: 0,
         brokerageAmount: 0,
@@ -168,6 +173,7 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
       bookingName: "",
       cpName: "",
       cpMobileNumber: "",
+      channelPartnerMobileNumberCountryCode: "",
       cpCompany: "",
       agreementValue: 0,
       brokerageAmount: 0,
@@ -177,13 +183,14 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
     setListState(defaultState);
   }, []);
 
-  const setBookingBrokerageContext = useCallback((bookingId: number, bookingName: string, cpName: string, cpMobileNumber: string, cpCompany: string, agreementValue: number, brokerageAmount: number, invoiceAmount: number, paymentPaidAmount: number) => {
+  const setBookingBrokerageContext = useCallback((bookingId: number, bookingName: string, cpName: string, cpMobileNumber: string, channelPartnerMobileNumberCountryCode: string, cpCompany: string, agreementValue: number, brokerageAmount: number, invoiceAmount: number, paymentPaidAmount: number) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
       bookingName,
       cpName,
       cpMobileNumber,
+      channelPartnerMobileNumberCountryCode,
       cpCompany,
       agreementValue,
       brokerageAmount,
@@ -199,6 +206,7 @@ export const BookingBrokerageListStateProvider = ({ children }: { children: Reac
       bookingName: "",
       cpName: "",
       cpMobileNumber: "",
+      channelPartnerMobileNumberCountryCode: "",
       cpCompany: "",
       agreementValue: 0,
       brokerageAmount: 0,

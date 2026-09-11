@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel"
 
 export interface FilterWithPaginationMaterialRequisition {
     PageSize: number
@@ -10,6 +11,33 @@ export interface FilterWithPaginationMaterialRequisition {
     ToDate?: string | null
     MaterialRequisitionStage?: string | null
     MaterialRequisitionStatus?: string | null
+    VendorName?: string | null
+    SortBy?: string
+    ExportType?: "PDF" | "Excel"
+}
+
+export interface FilterMaterialRequisitionOverview {
+    ProjectId: number
+    MaterialRequisitionId?: number | 0
+    ExportType?: "PDF" | "Excel"
+}
+export interface FilterMaterialRequisitionDetails {
+    ProjectId: number
+    MaterialRequisitionId?: number | 0
+    ExportType?: "PDF" | "Excel"
+}
+
+export interface FilterWithPaginationMaterialRequisition {
+    PageSize: number
+    PageNumber: number
+    ProjectId: number
+    MaterialRequisitionId?: number | 0
+    SystemGeneratedCode?: string | null
+    FromDate?: string | null
+    ToDate?: string | null
+    MaterialRequisitionStage?: string | null
+    MaterialRequisitionStatus?: string | null
+    VendorName?: string | null
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }
@@ -26,6 +54,9 @@ export interface MaterialRequisitionData {
     MaterialRequisitionStage: string;
     MaterialRequisitionStatus: string;
     FinalVendor: string;
+    FinalVendorCompanyName: string;
+    FinalVendorMobileNumber: string;
+    FinalVendorGSTNumber: string;
     IsSplit: boolean;
     IsCopy: boolean;
     IsRequisitionAction: boolean;
@@ -43,34 +74,14 @@ export interface MaterialRequisitionData {
     TotalPoAmount: number;
     TotalInvoiceAmount: number;
     TotalInvoice: number;
+    TotalTaxAmount: number;
     PurchaseOrderURL: string;
     MaterialRequisitionDetailData: MaterialRequisitionDetailData[];
+    MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
     VendorName: string | null
     CompanyName: string | null
     ExpectedDeliveryInDays: number | 0
-}
-
-export interface AddUpdateMaterialRequisitionDetailRequest {
-    MaterialMasterId: number;
-    MaterialName: string;
-    SubMaterialName: string;
-    SubMaterialMasterId: number;
-    UomMasterId: number;
-    UomCode: string;
-    LevelId1: number,
-    Level1Name: string | null
-    LevelId2: number,
-    Level2Name: string | null
-    LevelId3:number,
-    Level3Name: string | null
-    LevelId4:number,
-    Level4Name: string | null
-    Level4SubMaterialUomCode: string | null
-    Level4SubMaterialUom: string | null
-    MaterialQuantity: number;
-    RequiredDate: string | null;
-    MaterialRequisitionType: string;
-    Remark: string;
+    ExpectedPaymentInDays: number | 0
 }
 
 export interface MaterialRequisitionDetailData {
@@ -88,16 +99,16 @@ export interface MaterialRequisitionDetailData {
     Level1Name: string | null
     LevelId2: number,
     Level2Name: string | null
-    LevelId3:number,
+    LevelId3: number,
     Level3Name: string | null
-    LevelId4:number,
+    LevelId4: number,
     Level4Name: string | null
     Level4SubMaterialUomCode: string | null
     Level4SubMaterialUom: string | null
     MaterialQuantity: number;
     RequiredDate: string;
     MaterialReceivedQuantityTillDate: number;
-    MaterialRequisitionType:  string | null;
+    MaterialRequisitionType: string | null;
     Remark: string | null
     CreatedById: number;
     CreatedBy: string;
@@ -119,7 +130,30 @@ export interface AddUpdateMaterialRequisitionRequest {
     MaterialRequisitionDetailJSON: string;
 }
 
-//used in delete and close both as the payload is same
+export interface AddUpdateMaterialRequisitionDetailRequest {
+    MaterialRequisitionDetailId: number;
+    MaterialMasterId: number;
+    MaterialName: string;
+    SubMaterialName: string;
+    SubMaterialMasterId: number;
+    UomMasterId: number;
+    UomCode: string;
+    LevelId1: number,
+    Level1Name: string | null
+    LevelId2: number,
+    Level2Name: string | null
+    LevelId3: number,
+    Level3Name: string | null
+    LevelId4: number,
+    Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
+    MaterialQuantity: number;
+    RequiredDate: string | null;
+    MaterialRequisitionType: string;
+    Remark: string;
+}
+
 export interface DeleteMaterialRequisitionRequest {
     MaterialRequisitionId: number,
     Uniquekey: string | null,
@@ -127,5 +161,7 @@ export interface DeleteMaterialRequisitionRequest {
 }
 
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
+export type MaterialRequisitionOverviewResponse = ApiResponse<MaterialRequisitionData[]>;
+export type MaterialRequisitionDetailsResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionSaveReponse = ApiResponse<MaterialRequisitionData>;
 export type MaterialRequisitionDeleteResponse = ApiResponse<number>;

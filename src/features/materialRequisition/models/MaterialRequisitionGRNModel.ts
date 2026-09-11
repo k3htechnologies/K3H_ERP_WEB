@@ -33,6 +33,17 @@ export interface MaterialRequisitionDetailGRNData {
     MaterialRequisitionDetailId: number | 0,
     MaterialName: string | null,
     SubMaterialName: string | null,
+    LevelId1: number,
+    Level1Name: string | null
+    LevelId2: number,
+    Level2Name: string | null
+    LevelId3: number,
+    Level3Name: string | null
+    LevelId4: number,
+    Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
+    MaterialRequisitionType: string | null;
     MaterialQuantity: number | 0,
     UomCode: string | null,
     Uom: string | null,
@@ -54,16 +65,27 @@ export interface AddUpdateMaterialRequisitionGRNRequest {
     VehicleNumber: string | null
     UploadChallanURL: string | null
     RemoveUploadChallanURL: string | ''
-    Remarks: string 
+    Remarks: string
     ProjectId: number | 0
-    MaterialRequisitionDetailGRNJSON:string
+    MaterialRequisitionDetailGRNJSON: string
 }
 
-export interface MaterialRequisitionDetailGRN{
+export interface MaterialRequisitionDetailGRN {
     MaterialMasterId: number;
     MaterialName: string;
     SubMaterialName: string;
     SubMaterialMasterId: number;
+    LevelId1: number,
+    Level1Name: string | null
+    LevelId2: number,
+    Level2Name: string | null
+    LevelId3: number,
+    Level3Name: string | null
+    LevelId4: number,
+    Level4Name: string | null
+    Level4SubMaterialUomCode: string | null
+    Level4SubMaterialUom: string | null
+    MaterialRequisitionType: string | null;
     UomMasterId: number;
     UomCode: string;
     MaterialQuantity: number | 0;

@@ -4,6 +4,7 @@ export interface FilterWithPaginationSubMaterialMaster {
     PageSize: number
     PageNumber: number
     IsCheckPermission?: boolean
+    MaterialMasterId?: number
     MaterialName?: string
     SubMaterialName?: string
     SubMaterialMasterId?: number
@@ -20,8 +21,8 @@ export interface SubMaterialMasterData {
     MaterialName: string | '',
     SubMaterialName: string,
     UomMasterId: number | 0,
-    UomCode: string | 0,
-    Uom: string | 0,
+    UomCode: string | '',
+    Uom: string | '',
     LeadTimeInDays: number | 0,
     IsTolerant?: boolean,
 

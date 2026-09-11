@@ -7,7 +7,7 @@ export interface FilterWithPaginationApprovedBankFolderRequest {
     ApprovedBankFolderId?: number
     BankName?: string
     SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
+    ExportType?: 'Excel' | 'PDF' | 'Zip'
 }
 
 export interface ApprovedBankFolderData {

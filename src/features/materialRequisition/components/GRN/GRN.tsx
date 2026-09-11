@@ -251,7 +251,7 @@ export const GRN: React.FC = () => {
     ], []);
 
     return (
-        <div className="pt-2">
+        <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
             <TableActionToolbar
@@ -263,10 +263,10 @@ export const GRN: React.FC = () => {
                 }}
                 onClearSearch={clearSearchGRN}
                 isShowAddButton={canAction && !materialRequisitionStatus}
-                addTitle="Add GRN"
+                addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}
-                addExtraTitle='View Summary'
+                addExtraTitle='Summary'
                 onAddExtra={() => {
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();

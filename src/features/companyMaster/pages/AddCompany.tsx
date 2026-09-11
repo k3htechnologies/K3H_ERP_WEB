@@ -793,26 +793,7 @@ const AddCompany: React.FC = () => {
     }
   };
 
-  //#endregion 
-
-  const ALLOWED_DOC_EXTENSIONS = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-
-  const hasInvalidFileFormat = (
-    files: (File | string)[] = [],
-    extraUrl?: string
-  ) => {
-    const allFiles = extraUrl ? [...files, extraUrl] : files;
-
-    return allFiles.some((file) => {
-      const name = typeof file === 'string' ? file : file.name;
-      const extension = name.split('.').pop()?.toLowerCase() || '';
-      return extension && !ALLOWED_DOC_EXTENSIONS.includes(extension);
-    });
-  };
-
-  const invalidFormatMessage = (label: string) =>
-    `${label} Uploaded files must be in a valid format (PDF, DOC, DOCX, JPG, JPEG, PNG).`;
-
+  
   //#region ADD UPDATE COMPANY PARTNER DATA
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
@@ -1373,20 +1354,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select GST Certificate'
                 error={errors.GSTCertificateURL}
                 value={gstGSTCertificateFiles}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("GST Certificate") });
-                    return;
-                  }
-                  setGSTCertificateFiles(files);
-                }}
+                onChange={setGSTCertificateFiles}
+                
                 availableFilesURL={gSTCertificateURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
                   "image/jpg",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                  "application/pdf"
                 ]}
                 maxFiles={5}
                 onRemoveExisting={(url) => {
@@ -1418,20 +1392,12 @@ const AddCompany: React.FC = () => {
                 placeholder='Select Pan Card'
                 error={errors.PanCardURL}
                 value={panURLFiles}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("Pan Card") });
-                    return;
-                  }
-                  setPANURLFiles(files);
-                }}
+                onChange={setPANURLFiles}
                 availableFilesURL={panURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
                   "image/jpg",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                  "application/pdf"
                 ]}
                 maxFiles={5}
                 onRemoveExisting={(url) => {
@@ -1465,20 +1431,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select CIN'
                 value={cinURLFiles}
                 error={errors.CINURL}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("CIN") });
-                    return;
-                  }
-                  setCINURLFiles(files);
-                }}
+                onChange={setCINURLFiles}
+                
                 availableFilesURL={cinURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
                   "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ]}
                 maxFiles={5}
                 onRemoveExisting={(url) => {
@@ -1512,20 +1471,12 @@ const AddCompany: React.FC = () => {
                 placeholder='Select TAN'
                 value={tanURLFiles}
                 error={errors.TANURL}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("TAN") });
-                    return;
-                  }
-                  setTANURLFiles(files);
-                }}
+                onChange={setTANURLFiles}
                 availableFilesURL={tanURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
                   "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ]}
                 maxFiles={5}
                 onRemoveExisting={(url) => {
@@ -1700,20 +1651,12 @@ const AddCompany: React.FC = () => {
                 required
                 error={errors.CompanyLetterheadHeaderURL}
                 value={companyLetterHeadHeaderFiles}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Header") });
-                    return;
-                  }
-                  setCompanyLetterHeadHeaderFiles(files);
-                }}
+                onChange={setCompanyLetterHeadHeaderFiles}
                 availableFilesURL={companyLetterHeadHeaderURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
                   "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ]}
                 maxFiles={1}
                 onRemoveExisting={(url) => {
@@ -1732,21 +1675,13 @@ const AddCompany: React.FC = () => {
                 required
                 value={companyLetterHeadFooterFiles}
                 error={errors.CompanyLetterheadFooterURL}
-                onChange={(files) => {
-                  
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Footer") });
-                    return;
-                  }
-                  setCompanyLetterHeadFooterFiles(files);
-                }}
+                onChange={setCompanyLetterHeadFooterFiles}
+                
                 availableFilesURL={companyLetterHeadFooterURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
                   "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ]}
                 maxFiles={1}
                 onRemoveExisting={(url) => {
@@ -1993,8 +1928,6 @@ const AddCompany: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={2}
               onRemoveExisting={(url) => {
@@ -2029,8 +1962,6 @@ const AddCompany: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={2}
               onRemoveExisting={(url) => {
@@ -2050,8 +1981,6 @@ const AddCompany: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={1}
               onRemoveExisting={(url) => {

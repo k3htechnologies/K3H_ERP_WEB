@@ -1,3 +1,4 @@
+const round2 = (value: number): number => Math.round((value + Number.EPSILON) * 100) / 100;
 const isLogistics = (r: any): boolean => !!r.Logistics
 
 export const computeAmount = (r: any): number =>
@@ -13,10 +14,10 @@ export const computeTaxPercent = (r: any): number =>
 
 export const computeTaxAmount = (r: any): number => computeAmount(r) * computeTaxPercent(r) / 100
 
-export const computeGrandTotal = (r: any): number => computeAmount(r) + computeTaxAmount(r)
+export const computeGrandTotal = (r: any): number => round2(computeAmount(r) + computeTaxAmount(r));
 
-export const computeBaseTotal = (lines: any[]): number =>  lines.reduce((s, r) => s + computeAmount(r), 0)
+export const computeBaseTotal = (lines: any[]): number =>  round2(lines.reduce((s, r) => s + computeAmount(r), 0))
 
-export const computeTaxTotal = (lines: any[]): number =>  lines.reduce((s, r) => s + computeTaxAmount(r), 0)
+export const computeTaxTotal = (lines: any[]): number =>  round2(lines.reduce((s, r) => s + computeTaxAmount(r), 0))
 
-export const computeLinesTotal = (rows?: any[]): number => (rows ?? []).reduce((sum, r) => sum + computeGrandTotal(r), 0)
+export const computeLinesTotal = (rows?: any[]): number => round2((rows ?? []).reduce((sum, r) => sum + computeGrandTotal(r), 0))

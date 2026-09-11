@@ -1,4 +1,4 @@
-import React, {  useState } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import type { AddUpdateGatePassRequest } from '@/features/gatePass/models/GatePassModel';
 import { Input } from '@/ui/components/forms';
@@ -60,7 +60,6 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
 
     const isDateSelected = Boolean(formData.PassDateTime && formData.PassDateTime.trim() !== "");
 
-
     return (
         <Modal
             isOpen={isOpen}
@@ -102,8 +101,6 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                     </div>
 
                     <div>
-
-
                         <Input
                             type="text"
                             label="Mobile Number"
@@ -149,6 +146,7 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             </div>
                         )}
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         <div>
@@ -162,6 +160,7 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                                 error={errors.Purpose}
                             />
                         </div>
+
                         <div>
                             <Input
                                 type="text"
@@ -175,7 +174,6 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             />
                         </div>
 
-
                         <DatePickerInput
                             label="Appointment Date"
                             required
@@ -183,7 +181,7 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             value={formatDate_dd_mm_yyyy(formData.PassDateTime ?? '')}
                             isDisplayCurrentDate
                             error={errors.PassDateTime}
-                           onChange={(val) => {
+                            onChange={(val) => {
                                 const newDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
                                 if (!val || !newDate) {
                                     onFieldChange('PassDateTime', '');
@@ -198,22 +196,18 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
 
                         <Input
                             label="Appointment Time"
-                            disabled={!isDateSelected}
                             readOnly
                             required
-
                             error={errors.PassTime}
                             value={
                                 formData.PassDateTime && formData.PassDateTime.length >= 16 ? formData.PassDateTime.substring(11, 16) : "00:00"
                             }
                             onClick={() => {
-                                if (!isDateSelected) return;
 
                                 setTimePickerField({
                                     field: "PassDateTime",
                                     value: formData.PassDateTime || "",
                                 });
-
                                 setIsTimePickerOpen(true);
                             }}
                             leftIcon={<Clock className={`h-8 w-8 ${!isDateSelected ? 'opacity-50' : ''}`} />}
@@ -239,9 +233,7 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
 
                                     onFieldChange(timePickerField.field, updatedDateTime);
                                 }
-
                                 setIsTimePickerOpen(false);
-
                                 setTimePickerField(null);
                             }}
                         />
@@ -263,7 +255,6 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                         />
                     </div>
 
-
                     <div>
                         <TextArea
                             label="Remark"
@@ -275,6 +266,7 @@ export const GatePassFormModal: React.FC<GatePassFormModalProps> = ({
                             onChange={(e) => onFieldChange("Remark", e.target.value)}
                         />
                     </div>
+
                 </div>
             </div>
         </Modal>

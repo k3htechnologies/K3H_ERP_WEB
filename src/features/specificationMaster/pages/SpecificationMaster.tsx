@@ -466,7 +466,7 @@ export const SpecificationMaster: React.FC = () => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                         setSubMaterialDetails(null);
+                                        setSubMaterialDetails(null);
 
                                         const nextLevel = buildNextLevelIds(row);
 
@@ -989,7 +989,7 @@ export const SpecificationMaster: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-1 gap-3">
                                             <FieldItem label="Material Name" value={subMaterialDetails.MaterialName} isRow withBorder={true} />
                                             <FieldItem label="Sub Material Name" value={subMaterialDetails.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-                                            <FieldItem label="UOM"   value={`${subMaterialDetails.Uom || "-"} (${subMaterialDetails.UomCode || "-"})`} isRow withBorder={true} />
+                                            <FieldItem label="UOM" value={`${subMaterialDetails.Uom || "-"} (${subMaterialDetails.UomCode || "-"})`} isRow withBorder={true} />
                                             <FieldItem label="Lead Time (Days)" value={subMaterialDetails.LeadTimeInDays} isRow withBorder={true} />
                                             <FieldItem label="Is Tolerant" value={subMaterialDetails.IsTolerant ? "YES" : "NO"} isRow />
 

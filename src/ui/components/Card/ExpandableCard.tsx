@@ -12,6 +12,9 @@ export interface ExpandableCardProps {
   child: ReactNode;
   defaultOpen?: boolean;
   onClick?: (isOpen: boolean) => void;
+  bgColor?: string,
+  isShadow?: boolean
+  titleClassName?: string;
 }
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
@@ -24,11 +27,14 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   expandedheight = 282,
   defaultOpen = false,
   onClick,
+  bgColor = "bg-[#F9FAFB]",
+  isShadow = true,
+  titleClassName
 }) => {
   const [isExpandableOpen, setExpandableOpen] = useState(defaultOpen);
 
   return (
-    <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-[10px] shadow-md">
+    <div className={`${bgColor} border border-[#135BEC30] rounded-[10px] ${isShadow ? "shadow-md" : ""}`}>
       <div className="flex items-center justify-between p-4 cursor-pointer"
 
         onClick={() => {
@@ -41,7 +47,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
 
         style={{ height: height }} >
 
-        <div className="flex flex-col">
+        <div className={`flex flex-col ${titleClassName}`}>
 
           <span className="font-medium text-gray-800"> {title} </span>
 

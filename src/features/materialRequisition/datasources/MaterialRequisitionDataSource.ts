@@ -1,10 +1,12 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDeleteResponse, MaterialRequisitionListResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterWithPaginationMaterialRequisition, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { MaterialRequisitionApi } from "@/features/materialRequisition/api/MaterialRequisitionApi";
 
 export abstract class MaterialRequisitionDatasource {
     abstract pullMaterialRequisition(params: FilterWithPaginationMaterialRequisition, signal?: AbortSignal): Promise<MaterialRequisitionListResponse>;
+    abstract pullMaterialRequisitionOverview(params: FilterMaterialRequisitionOverview, signal?: AbortSignal): Promise<MaterialRequisitionOverviewResponse>;
+    abstract pullMaterialRequisitionDetails(params: FilterMaterialRequisitionDetails, signal?: AbortSignal): Promise<MaterialRequisitionDetailsResponse>;
     abstract addUpdateMaterialRequisition(data: FormData): Promise<MaterialRequisitionSaveReponse>;
     abstract deleteMaterialRequisition(params: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse>;
     abstract closeMaterialRequisition(payload: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse>;
@@ -30,14 +32,14 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
             if (params.ToDate) queryParams.append('ToDate', params.ToDate);
             if (params.MaterialRequisitionStage?.trim()) queryParams.append('MaterialRequisitionStage', params.MaterialRequisitionStage.trim());
             if (params.MaterialRequisitionStatus?.trim()) queryParams.append('MaterialRequisitionStatus', params.MaterialRequisitionStatus.trim());
+            if (params.VendorName?.trim()) queryParams.append('VendorName', params.VendorName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionApi.PULL}?${queryParams.toString()}`, { signal }
             )
             
-            return response;
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION :', error);
@@ -51,15 +53,67 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
         }
     }
     
+    async pullMaterialRequisitionOverview(params: FilterMaterialRequisitionOverview, signal?: AbortSignal): Promise<MaterialRequisitionOverviewResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 10).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${MaterialRequisitionApi.PULL_MATERIAL_REQUISITION_OVERVIEW}?${queryParams.toString()}`, { signal }
+            )
+            
+        } catch (error: any) {
+
+            console.error('ERROR: PULL MATERIAL REQUISITION OVERVIEW:', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMaterialRequisitionOverview(params);
+            }
+
+            throw error
+        }
+    }
+
+    async pullMaterialRequisitionDetails(params: FilterMaterialRequisitionDetails, signal?: AbortSignal): Promise<MaterialRequisitionDetailsResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 10).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${MaterialRequisitionApi.PULL_MATERIAL_REQUISITION_DETAILS}?${queryParams.toString()}`, { signal }
+            )
+            
+        } catch (error: any) {
+
+            console.error('ERROR: PULL MATERIAL REQUISITION DETAILS:', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMaterialRequisitionDetails(params);
+            }
+
+            throw error
+        }
+    }
+
+    
     async addUpdateMaterialRequisition(formData: FormData): Promise<MaterialRequisitionSaveReponse> {
         try {
             
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
                 MaterialRequisitionApi.ADD_UPDATE,
                 formData
             )
 
-            return response
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE MATERIAL REQUISITION :', error)
@@ -82,11 +136,10 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
 
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+           return await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${MaterialRequisitionApi.DELETE}?${queryParams.toString()}`
             )
 
-            return response
 
         } catch (error) {
             console.error('ERROR: DELETE MATERIAL REQUISITION :', error)
@@ -102,11 +155,10 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
     async closeMaterialRequisition(payload: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse> {
         try {
         
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            return await this.k3hHttpClient.postRequestWithAuthentication(
                 `${MaterialRequisitionApi.CLOSE_REQUISITION}?${payload.toString()}`,payload
             )
 
-            return response
         
         } catch (error) {
 

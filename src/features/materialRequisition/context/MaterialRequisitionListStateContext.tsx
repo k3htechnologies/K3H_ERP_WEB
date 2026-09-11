@@ -19,6 +19,8 @@ export type MaterialRequisitionListState = {
     ToDate: string;
     MaterialRequisitionStage: string;
     MaterialRequisitionStatus: string;
+    VendorFinalizationApprovalStatus: string;
+    VendorName:string
 };
 
 export type MaterialRequisitionDetailItem = {
@@ -36,8 +38,6 @@ export type MaterialRequisitionDetailItem = {
     RequiredDate: string
     MaterialReceivedQuantityTillDate: number
     IsTolerant?: boolean
-    TolerancePercentage?: number
-    Tolerance?: number
 }
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION;
@@ -59,6 +59,8 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
             ToDate: "",
             MaterialRequisitionStage: "",
             MaterialRequisitionStatus: "",
+            VendorFinalizationApprovalStatus: "",
+            VendorName:""
         };
     }
 
@@ -77,6 +79,8 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
                     ToDate: parsed.state.ToDate || "",
                     MaterialRequisitionStage: parsed.state.MaterialRequisitionStage || "",
                     MaterialRequisitionStatus: parsed.state.MaterialRequisitionStatus || "",
+                    VendorFinalizationApprovalStatus: parsed.state.VendorFinalizationApprovalStatus || "",
+                    VendorName:parsed.state.VendorName || "",
                 };
             }
         }
@@ -98,6 +102,8 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
         ToDate: "",
         MaterialRequisitionStage: "",
         MaterialRequisitionStatus: "",
+        VendorFinalizationApprovalStatus: "",
+        VendorName:""
     };
 }
 
@@ -121,7 +127,7 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
     const allColumns = useMemo<TableColumn[]>(
         () => getMaterialRequisitionTableColumns(), []
     );
-    
+
     const [selectedColumnKeys, setSelectedColumnKeys] = useState<string[]>(() => {
         try {
             const stored = LocalStorageHelper.getMaterialRequisitionTableColumns();
@@ -195,6 +201,8 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             ToDate: "",
             MaterialRequisitionStage: "",
             MaterialRequisitionStatus: "",
+            VendorFinalizationApprovalStatus: "",
+            VendorName:""
         });
     }, [updateListState]);
 

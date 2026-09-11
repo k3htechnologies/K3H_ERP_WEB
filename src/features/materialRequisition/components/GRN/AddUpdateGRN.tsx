@@ -22,7 +22,8 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, hasAnyDocumentFile,isValidVehicleNumber } from "@/core/utils/fileValidation";
+import { filterChallanNumber, filterNumbers, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -45,6 +46,17 @@ const initialFormState = (): MaterialRequisitionDetailGRN => ({
     MaterialQuantity: 0,
     UomMasterId: 0,
     UomCode: "",
+    LevelId1: 0,
+    Level1Name: "",
+    LevelId2: 0,
+    Level2Name: "",
+    LevelId3: 0,
+    Level3Name: "",
+    LevelId4: 0,
+    Level4Name: "",
+    Level4SubMaterialUomCode: "",
+    Level4SubMaterialUom: "",
+    MaterialRequisitionType: "",
     TotalReceivedMaterialQuantity: 0,
     QualityAnalystRemark: '',
     MaterialRequisitionDetailGRNId: 0,
@@ -84,9 +96,10 @@ export const AddUpdateGRN = () => {
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
 
     useEffect(() => {
-        if (!MaterialRequisitionId) return;
+        if (!MaterialRequisitionId || detailData.length === 0) return;
+
         loadGRNData();
-    }, [MaterialRequisitionId]);
+    }, [MaterialRequisitionId, detailData]);
 
     useEffect(() => {
         if (addMaterialPopUp) {
@@ -95,18 +108,18 @@ export const AddUpdateGRN = () => {
     }, [addMaterialPopUp]);
 
     useEffect(() => {
-        const materialdata = [
-            ...new Map(
-                (detailData || []).map(x => [
-                    x.MaterialMasterId,
-                    x
-                ])
-            ).values()
-        ];
-        setMaterialOptions(materialdata.map(x => ({
-            label: x.MaterialName,
-            value: String(x.MaterialMasterId)
-        })));
+        const uniqueMaterials = [
+            ...new Map((detailData || []).map(item => [
+                item.MaterialMasterId,
+                item
+            ])).values()];
+
+        setMaterialOptions(
+            uniqueMaterials.map(item => ({
+                label: item.MaterialName,
+                value: String(item.MaterialMasterId)
+            }))
+        );
     }, [detailData]);
 
     const loadGRNData = async () => {
@@ -114,6 +127,7 @@ export const AddUpdateGRN = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey,
@@ -126,44 +140,49 @@ export const AddUpdateGRN = () => {
                 if (E.isRight(response)) {
 
                     const data = response.right.Data;
+
                     const e = data?.[0];
 
-                    if (e) {
-                        setFormData(prev => ({
-                            ...prev,
-                            MaterialRequisitionId: e.MaterialRequisitionId ?? prev.MaterialRequisitionId,
-                            Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-                            ProjectId: e.ProjectId ?? prev.ProjectId,
-                            Remarks: e.Remarks ?? prev.Remarks,
-                            VehicleNumber: e.VehicleNumber ?? prev.VehicleNumber,
-                            ChallanNumber: e.ChallanNumber ?? prev.ChallanNumber,
-                            MaterialRequisitionGRNId: e.MaterialRequisitionGRNId ?? prev.MaterialRequisitionGRNId,
+                    if (e.MaterialRequisitionDetailGRNData) {
+                        const grnDetails = e.MaterialRequisitionDetailGRNData;
 
-                        }));
+                        setMaterialList(
+                            grnDetails.map((item: any) => {
 
-                        setMaterialList(e.MaterialRequisitionDetailGRNData.map((x: any) => {
-                            const matched = detailData.find(
-                                d =>
-                                    d.MaterialName === x.MaterialName &&
-                                    d.SubMaterialName === x.SubMaterialName
-                            );
-                            return {
-                                MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId,
-                                MaterialRequisitionDetailId: matched?.MaterialRequisitionDetailId ?? 0,
-                                MaterialMasterId: matched?.MaterialMasterId ?? 0,
-                                SubMaterialMasterId: matched?.SubMaterialMasterId ?? 0,
-                                MaterialName: x.MaterialName,
-                                SubMaterialName: x.SubMaterialName,
-                                UomCode: matched?.UomCode ?? "",
-                                UomMasterId: matched?.UomMasterId ?? 0,
-                                MaterialQuantity: matched?.MaterialQuantity ?? 0,
-                                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
-                                QualityAnalystRemark: x.QualityAnalystRemark,
-                                TotalReceivedQuantityByRequisition: matched?.MaterialReceivedQuantityTillDate ?? 0,
-                                IsTolerant: matched?.IsTolerant ?? false,
-                                TolerancePercentage: matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
-                            };
-                        }));
+                                const matched = detailData.find(detail =>
+                                    Number(detail.MaterialRequisitionDetailId) ===
+                                    Number(item.MaterialRequisitionDetailId)
+                                );
+
+                                return {
+                                    MaterialMasterId: item.MaterialMasterId ?? matched?.MaterialMasterId ?? 0,
+                                    MaterialName: item.MaterialName ?? matched?.MaterialName ?? "",
+                                    SubMaterialMasterId: item.SubMaterialMasterId ?? matched?.SubMaterialMasterId ?? 0,
+                                    SubMaterialName: item.SubMaterialName ?? matched?.SubMaterialName ?? "",
+                                    UomCode: item.UomCode ?? matched?.UomCode ?? item.Level4SubMaterialUomCode ?? matched?.Level4SubMaterialUomCode ?? "",
+                                    UomMasterId: item.UomMasterId ?? matched?.UomMasterId ?? 0,
+                                    LevelId1: item.LevelId1 ?? matched?.LevelId1 ?? 0,
+                                    Level1Name: item.Level1Name ?? matched?.Level1Name ?? "",
+                                    LevelId2: item.LevelId2 ?? matched?.LevelId2 ?? 0,
+                                    Level2Name: item.Level2Name ?? matched?.Level2Name ?? "",
+                                    LevelId3: item.LevelId3 ?? matched?.LevelId3 ?? 0,
+                                    Level3Name: item.Level3Name ?? matched?.Level3Name ?? "",
+                                    LevelId4: item.LevelId4 ?? matched?.LevelId4 ?? 0,
+                                    Level4Name: item.Level4Name ?? matched?.Level4Name ?? "",
+                                    Level4SubMaterialUomCode: item.Level4SubMaterialUomCode ?? matched?.Level4SubMaterialUomCode ?? "",
+                                    Level4SubMaterialUom: item.Level4SubMaterialUom ?? matched?.Level4SubMaterialUom ?? "",
+                                    MaterialQuantity: item.MaterialQuantity ?? matched?.MaterialQuantity ?? 0,
+                                    MaterialRequisitionType: item.MaterialRequisitionType ?? matched?.MaterialRequisitionType ?? "",
+                                    MaterialRequisitionDetailGRNId: item.MaterialRequisitionDetailGRNId ?? 0,
+                                    MaterialRequisitionDetailId: item.MaterialRequisitionDetailId ?? 0,
+                                    TotalReceivedMaterialQuantity: item.TotalReceivedMaterialQuantity ?? 0,
+                                    QualityAnalystRemark: item.QualityAnalystRemark ?? "",
+                                    TotalReceivedQuantityByRequisition: item.TotalReceivedQuantityByRequisition ?? matched?.MaterialReceivedQuantityTillDate ?? 0,
+                                    IsTolerant: item.IsTolerant ?? matched?.IsTolerant ?? false,
+                                    TolerancePercentage: item.TolerancePercentage ?? matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
+                                };
+                            })
+                        );
                         setuploadChallanURL(e.UploadChallanURL ?? undefined);
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
@@ -182,16 +201,23 @@ export const AddUpdateGRN = () => {
         );
     };
 
-    const handleAddMaterial = async () => {
+    const handleAddMaterial = () => {
         setErrors({});
-        setAddMaterialPopUp(true);
         setEditIndex(null);
-        setMaterialData(initialFormState());
-    }
+
+        const materialType = detailData?.[0]?.MaterialRequisitionType?.trim().toUpperCase() ?? "";
+
+        setMaterialData({
+            ...initialFormState(),
+            MaterialRequisitionType: materialType === "DIRECT" ? "DIRECT" : "IN - DIRECT",
+        });
+        setAddMaterialPopUp(true);
+    };
 
     const handleEditMaterial = useCallback((row: MaterialRequisitionDetailGRN, index: number) => {
         setErrors({});
         setEditIndex(index);
+
         setMaterialData({
             MaterialMasterId: row.MaterialMasterId,
             SubMaterialMasterId: row.SubMaterialMasterId,
@@ -200,6 +226,17 @@ export const AddUpdateGRN = () => {
             TotalReceivedMaterialQuantity: row.TotalReceivedMaterialQuantity,
             SubMaterialName: row.SubMaterialName,
             MaterialName: row.MaterialName,
+            LevelId1: row.LevelId1,
+            Level1Name: row.Level1Name,
+            LevelId2: row.LevelId2,
+            Level2Name: row.Level2Name,
+            LevelId3: row.LevelId3,
+            Level3Name: row.Level3Name,
+            LevelId4: row.LevelId4,
+            Level4Name: row.Level4Name,
+            Level4SubMaterialUomCode: row.Level4SubMaterialUomCode,
+            Level4SubMaterialUom: row.Level4SubMaterialUom,
+            MaterialRequisitionType: row.MaterialRequisitionType,
             QualityAnalystRemark: row.QualityAnalystRemark,
             MaterialRequisitionDetailGRNId: row.MaterialRequisitionDetailGRNId,
             MaterialRequisitionDetailId: row.MaterialRequisitionDetailId,
@@ -211,161 +248,235 @@ export const AddUpdateGRN = () => {
         setAddMaterialPopUp(true);
     }, [materialOptions]);
 
-    const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "MaterialName",
-            label: "Material",
-            align: "left",
-            width: "30",
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            )
-        },
-        {
-            key: "SubMaterialName",
-            label: "Sub Material",
-            align: "left",
-            width: "30",
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            )
-        },
-        {
-            key: "MaterialQuantity",
-            label: "Quantity",
-            align: "left"
-
-        },
-        {
-            key: "UomCode",
-            label: "UOM",
-            align: "left"
-        },
-
-        {
-            key: "TotalReceivedMaterialQuantity",
-            label: "Received Quantity",
-            align: "left",
-        },
-        {
-            key: "QualityAnalystRemark",
-            label: "Quality Analyst Remark",
-            align: "left",
-            width: "30",
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
-            )
-        },
-        {
-            key: "action",
-            label: "Action",
-            align: "right",
-            render: (_value, row) => {
-                const index = materialList.findIndex(x =>
-                    x.MaterialMasterId === row.MaterialMasterId &&
-                    x.SubMaterialMasterId === row.SubMaterialMasterId
-                );
-
-                return canAction ? (
-                    <div className="flex items-center justify-center gap-2">
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleEditMaterial(row, index);
-                            }}
-                            color="transparent"
-                            isborderRadius
-                            size="sm"
-                            style={{ color: "#2563eb", padding: "4px" }}
-                            leftIcon={<Edit className="h-4 w-4" />}
-                            title="Edit Material Requisition"
-                        />
-
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                setMaterialList(prev =>
-                                    prev.filter((_, i) => i !== index)
-                                );
-                            }}
-                            disabled={formData.MaterialRequisitionGRNId > 0}
-                            color="transparent"
-                            isborderRadius
-                            size="sm"
-                            style={{
-                                color: "red",
-                                padding: "4px 8px",
-                            }}
-                            title="Delete Material"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ) : null;
+    const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => {
+        const columns: TableColumn[] = [
+            {
+                key: "MaterialRequisitionType",
+                label: "Type",
+                align: "left",
+                width: "30",
+                render: (value) => value || "-"
             }
+        ];
+
+        const isDirect = materialList[0]?.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT";
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
         }
 
-    ], [canAction, materialList, materialOptions, handleEditMaterial]);
+        columns.push(
+            {
+                key: "MaterialQuantity",
+                label: "Quantity",
+                align: "right",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
+            },
+            {
+                key: "QualityAnalystRemark",
+                label: "Remark",
+                align: "left",
+                width: "30",
+                render: (value) => (
+                    <FieldInfoTooltip value={value} />
+                )
+            },
+            {
+                key: "action",
+                label: "Action",
+                align: "center",
+                render: (_value, row) => {
+                    const index = materialList.findIndex(
+                        item =>
+                            item.LevelId1 === row.LevelId1 &&
+                            item.LevelId2 === row.LevelId2 &&
+                            item.LevelId3 === row.LevelId3 &&
+                            item.LevelId4 === row.LevelId4 &&
+                            item.MaterialMasterId === row.MaterialMasterId &&
+                            item.SubMaterialMasterId === row.SubMaterialMasterId
+                    );
+
+                    return canAction ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEditMaterial(row, index);
+                                }}
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{ color: "#2563eb", padding: "4px" }}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                                title="Edit Material Requisition"
+                            />
+
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+
+                                    setMaterialList(prev =>
+                                        prev.filter((_, i) => i !== index)
+                                    );
+                                }}
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{
+                                    color: "red",
+                                    padding: "4px 8px"
+                                }}
+                                title="Delete Material Requisition"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : null;
+                }
+            }
+        );
+
+        return columns;
+    }, [materialOptions, canAction, materialList, handleEditMaterial]);
 
     const subMaterialOptions = useMemo(() => {
         if (!materialData.MaterialMasterId) return [];
 
-        return detailData.filter(x => x.MaterialMasterId === materialData.MaterialMasterId)
-            .map(x => ({
-                label: x.SubMaterialName,
-                value: String(x.SubMaterialMasterId)
+        return detailData.filter(item =>
+            item.MaterialMasterId === materialData.MaterialMasterId)
+            .map(item => ({
+                label: item.SubMaterialName,
+                value: String(item.SubMaterialMasterId)
             }));
+
     }, [materialData.MaterialMasterId, detailData]);
 
     const createDropdownInitialValue = (id: number | null, label: string) => {
-        if (!id || !label) return null;
+        if (!id || !label) {
+            return null;
+        }
         return { label, value: String(id) };
     };
 
-    const selectedMaterialDetail = detailData.find(x =>
-        x.MaterialMasterId === materialData.MaterialMasterId &&
-        x.SubMaterialMasterId === materialData.SubMaterialMasterId
-    ) as any;
-
-    const selectedMaterialSubMaterial = materialSubMaterialList.find(x =>
-        x.MaterialMasterId === materialData.MaterialMasterId &&
-        x.SubMaterialMasterId === materialData.SubMaterialMasterId
+    const selectedMaterialDetail = detailData.find(item =>
+        materialData.MaterialRequisitionType?.toUpperCase() === "DIRECT"
+            ? (item.MaterialRequisitionDetailId) ===
+            (materialData.MaterialRequisitionDetailId)
+            : (item.MaterialMasterId) ===
+            (materialData.MaterialMasterId) &&
+            (item.SubMaterialMasterId) ===
+            (materialData.SubMaterialMasterId)
     );
 
-    const AddedQuantity = materialList.filter(x =>
-        x.MaterialMasterId === materialData.MaterialMasterId &&
-        x.SubMaterialMasterId === materialData.SubMaterialMasterId
-    )
-        .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
-
-    const ReceivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
-    const totalReceived = ReceivedQuantity + AddedQuantity;
-
-    const pendingQuantity = Math.max(
-        parseFloat((materialData.MaterialQuantity - totalReceived).toFixed(2)),
-        0
+    const selectedMaterialSubMaterial = materialSubMaterialList.find(item =>
+        item.MaterialMasterId === materialData.MaterialMasterId &&
+        item.SubMaterialMasterId === materialData.SubMaterialMasterId
     );
 
-    const isToleranceAllowed =
-        materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
+    const isDirectMaterial = materialData.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+    const addedQuantity = materialList
+        .filter((_item, index) => index !== editIndex)
+        .filter(item =>
+            isDirectMaterial
+                ? (item.MaterialRequisitionDetailId) ===
+                (materialData.MaterialRequisitionDetailId)
+                : (item.MaterialMasterId) ===
+                (materialData.MaterialMasterId) &&
+                (item.SubMaterialMasterId) ===
+                (materialData.SubMaterialMasterId)
+        )
+        .reduce((total, item) =>
+            total + (item.TotalReceivedMaterialQuantity ?? 0), 0
+        );
+
+    const receivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
+
+    const totalReceived = receivedQuantity + addedQuantity;
+
+    const pendingQuantity = Math.max(Number((materialData.MaterialQuantity - totalReceived).toFixed(2)), 0);
+
+    const isToleranceAllowed = materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
 
     const tolerancePercentage =
-        materialData.TolerancePercentage ?? selectedMaterialDetail?.TolerancePercentage ?? selectedMaterialDetail?.Tolerance ??
-        selectedMaterialSubMaterial?.MaterialTolerant ?? 0;
+        materialData.TolerancePercentage ?? selectedMaterialDetail?.TolerancePercentage ?? selectedMaterialDetail?.Tolerance  ?? 0;
 
     const allowedReceivedQuantity = isToleranceAllowed
         ? pendingQuantity + (pendingQuantity * tolerancePercentage) / 100
@@ -377,7 +488,6 @@ export const AddUpdateGRN = () => {
         : allowedReceivedQuantity;
 
     const validateMaterialRequisitionGRNForm = (): {
-
         isValid: boolean
         errors: { [key: string]: string }
     } => {
@@ -415,13 +525,14 @@ export const AddUpdateGRN = () => {
         form.append('ChallanNumber', formData.ChallanNumber);
         form.append('VehicleNumber', formData.VehicleNumber ?? '');
         form.append('MaterialRequisitionGRNId', formData.MaterialRequisitionGRNId.toString());
+
         const filtered = materialList
-            .filter(x => x.TotalReceivedMaterialQuantity > 0)
-            .map(x => ({
-                MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId ?? 0,
-                MaterialRequisitionDetailId: x.MaterialRequisitionDetailId,
-                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
-                QualityAnalystRemark: x.QualityAnalystRemark,
+            .filter(item => item.TotalReceivedMaterialQuantity > 0)
+            .map(item => ({
+                MaterialRequisitionDetailGRNId: item.MaterialRequisitionDetailGRNId ?? 0,
+                MaterialRequisitionDetailId: item.MaterialRequisitionDetailId,
+                TotalReceivedMaterialQuantity: item.TotalReceivedMaterialQuantity,
+                QualityAnalystRemark: item.QualityAnalystRemark,
             }));
 
         form.append('MaterialRequisitionDetailGRNJSON', JSON.stringify(filtered));
@@ -438,7 +549,6 @@ export const AddUpdateGRN = () => {
     };
 
     const handleSave = async () => {
-
         if (materialList.length === 0) {
             addToast({ type: "error", title: "Please select at least one Material" });
             return;
@@ -451,6 +561,7 @@ export const AddUpdateGRN = () => {
             setErrors(validation.errors);
             return;
         }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -474,13 +585,8 @@ export const AddUpdateGRN = () => {
                 return response;
             },
             undefined,
-            (error: unknown) => {
-                const errorMessage =
-                    error instanceof Error
-                        ? error.message
-                        : "Failed to save material requisition";
-
-                addToast({ type: "error", title: errorMessage });
+            (error: any) => {
+                addToast({ type: "error", title: error?.message || 'Failed to save material requisition' });
             },
             undefined,
             "Saving Data"
@@ -507,14 +613,14 @@ export const AddUpdateGRN = () => {
                 if (E.isRight(apiResponse)) {
 
                     setMaterialSubMaterialList(apiResponse.right.Data.MaterialMasterSubMaterialMasterData);
+
                 } else {
                     addToast({ type: "error", title: "Error Fetching material list" });
                 }
             },
             undefined,
-            (error: unknown) => {
-                const errorMessage = error instanceof Error ? error.message : "Failed to load vendor data";
-                addToast({ type: "error", title: errorMessage });
+            (error: any) => {
+                addToast({ type: "error", title: error?.message || 'Failed to load vendor data' });
             },
             undefined,
             "Loading Data"
@@ -522,30 +628,41 @@ export const AddUpdateGRN = () => {
     };
 
     const validateMaterialDetailsForm = (): {
-
         isValid: boolean;
         errors: { [key: string]: string };
     } => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0)
-            newErrors.MaterialMasterId = "Material is required";
+        const isDirect = materialData.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
-        if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
-            newErrors.SubMaterialMasterId = "Sub Material is required";
+        if (isDirect) {
+            if (!materialData.MaterialRequisitionDetailId || materialData.MaterialRequisitionDetailId === 0) {
+                newErrors.MaterialRequisitionDetailId = "Material is required";
+            }
+        } else {
+            if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0) {
+                newErrors.MaterialMasterId = "Material is required";
+            }
+            if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0) {
+                newErrors.SubMaterialMasterId = "Sub Material is required";
+            }
+        }
 
-        if (!materialData.TotalReceivedMaterialQuantity)
+        if (!materialData.TotalReceivedMaterialQuantity) {
             newErrors.TotalReceivedMaterialQuantity = "Received Quantity is required";
 
-        else if (materialData.TotalReceivedMaterialQuantity > effectiveAllowedReceivedQuantity) {
+        } else if (materialData.TotalReceivedMaterialQuantity > effectiveAllowedReceivedQuantity
+        ) {
             if (isToleranceAllowed) {
                 newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than allowed quantity ${effectiveAllowedReceivedQuantity} (${pendingQuantity} + ${tolerancePercentage}% tolerance).`;
             } else {
                 newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than pending quantity ${effectiveAllowedReceivedQuantity}.`;
             }
         }
-        if (!materialData.QualityAnalystRemark)
-            newErrors.QualityAnalystRemark = "Quality Analyst Remark is required"
+
+        if (!materialData.QualityAnalystRemark) {
+            newErrors.QualityAnalystRemark = "Quality Analyst Remark is required";
+        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -554,22 +671,29 @@ export const AddUpdateGRN = () => {
     };
 
     const saveMaterial = () => {
-
         setErrors({});
-        const validation = validateMaterialDetailsForm();
 
+        const validation = validateMaterialDetailsForm();
         if (!validation.isValid) {
             setErrors(validation.errors);
             return;
         }
 
+        const isDirectMaterial = materialData.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
         const otherRowsQuantity = materialList
             .filter((_, i) => i !== editIndex)
-            .filter(x =>
-                x.MaterialMasterId === materialData.MaterialMasterId &&
-                x.SubMaterialMasterId === materialData.SubMaterialMasterId
+            .filter(data =>
+                isDirectMaterial
+                    ? (data.MaterialRequisitionDetailId) === (materialData.MaterialRequisitionDetailId)
+                    : (data.MaterialMasterId) ===
+                    (materialData.MaterialMasterId) &&
+                    (data.SubMaterialMasterId) ===
+                    (materialData.SubMaterialMasterId)
             )
-            .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
+            .reduce((sum, row) =>
+                sum + (row.TotalReceivedMaterialQuantity ?? 0), 0
+            );
 
         const cumulativeTotal = otherRowsQuantity + materialData.TotalReceivedMaterialQuantity;
         const maxAllowedTotal = isToleranceAllowed
@@ -602,18 +726,27 @@ export const AddUpdateGRN = () => {
         setMaterialData(initialFormState());
     };
 
+    const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionGRNRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value, }));
+        setErrors((prev) => ({ ...prev, [field]: "", }));
+    };
+
+    const handleMaterialFieldChange = (field: keyof MaterialRequisitionDetailGRN, value: any) => {
+        setMaterialData((prev) => ({ ...prev, [field]: value, }));
+        setErrors((prev) => ({ ...prev, [field]: "", }));
+    };
+
     return (
         <>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 pt-5">
                 <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
 
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">GRN Details </h3>
-                        <div className="flex items-center justify-between">
 
-                            <h3 className="text-md font-medium text-gray-500">
+                        <div className="flex items-center justify-between border-b border-gray-500 pb-2">
+                            <h3 className="text-lg font-semibold text-gray-900">
                                 Material Details
                             </h3>
 
@@ -626,10 +759,9 @@ export const AddUpdateGRN = () => {
                             >
                                 Add Material
                             </Button>
-
                         </div>
 
-                        {materialList.length > 0 && (
+                        {materialList.length > 0 ? (
                             <div className="pb-2">
                                 <DataTable
                                     data={materialList}
@@ -637,6 +769,10 @@ export const AddUpdateGRN = () => {
                                     className="flex-1"
                                     emptyMessage="No GRN Data Found"
                                 />
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center">
+                                <span className="text-gray-500 text-sm font-medium">No materials found</span>
                             </div>
                         )}
 
@@ -648,7 +784,7 @@ export const AddUpdateGRN = () => {
                                 label="Vehicle No."
                                 placeholder="Enter Vehicle No."
                                 value={formData.VehicleNumber ?? ""}
-                                onChange={(e) => setFormData(prev => ({ ...prev, VehicleNumber: e.target.value }))}
+                                onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
                                 maxLength={10}
                                 error={errors.VehicleNumber}
                                 required
@@ -659,7 +795,7 @@ export const AddUpdateGRN = () => {
                                 label="Challan No."
                                 placeholder="Challan No."
                                 value={formData.ChallanNumber}
-                                onChange={(e) => setFormData(prev => ({ ...prev, ChallanNumber: filterChallanNumber(e.target.value) }))}
+                                onChange={(e) => handleFieldChange("ChallanNumber", filterChallanNumber(e.target.value))}
                                 maxLength={15}
                                 error={errors.ChallanNumber}
                                 required
@@ -686,7 +822,7 @@ export const AddUpdateGRN = () => {
 
                         <div className="flex items-center justify-between pb-3">
                             <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
-                                onChange={(e) => setFormData(prev => ({ ...prev, Remarks: e.target.value }))}
+                                onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                                 placeholder="Enter Remark"
                                 error={errors.Remarks}
                                 required
@@ -728,159 +864,480 @@ export const AddUpdateGRN = () => {
                     setAddMaterialPopUp(false);
                     setMaterialData(initialFormState());
                 }}
-                size="small-half"
+                size="small50"
             >
-                <div className="space-y-4">
-                    <SingleSelectDropdownWithPagination
-                        required
-                        label="Material"
-                        key={dropdownMaterialResetKey}
-                        disabled={editIndex !== null}
-                        initialValue={createDropdownInitialValue(
-                            materialData.MaterialMasterId,
-                            materialData.MaterialName,
-                        )}
-                        title="Select Material"
-                        size="lg"
-                        dataFetchCallBack={async () => ({
-                            itemList: materialOptions,
-                            totalNumberOfRecord: materialOptions.length
-                        })}
-                        onSelected={(item) => {
-                            const id = item ? Number(item.value) : 0;
+                <div className="space-y-10 p-6 bg-blue-100">
 
-                            const selected = detailData.find(
-                                x => x.MaterialMasterId === id
-                            );
+                    {materialData.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT" ? (
 
-                            if (!selected) return;
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            const selectedUOM = materialSubMaterialList.find(
-                                x => x.MaterialMasterId === selected.MaterialMasterId &&
-                                    x.SubMaterialMasterId === selected.SubMaterialMasterId
-                            );
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Category"
+                                    title="Select Category"
+                                    size="lg"
+                                    disabled={false}
+                                    initialValue={
+                                        materialData.LevelId1
+                                            ? {
+                                                label: materialData.Level1Name ?? "",
+                                                value: String(materialData.LevelId1),
+                                            } : null
+                                    }
+                                    dataFetchCallBack={async () => {
 
-                            setMaterialData(prev => ({
-                                ...prev,
-                                MaterialMasterId: selected.MaterialMasterId,
-                                MaterialName: selected.MaterialName,
-                                SubMaterialMasterId: selected.SubMaterialMasterId,
-                                SubMaterialName: selected.SubMaterialName,
-                                UomCode: selected.UomCode,
-                                UomMasterId: selected.UomMasterId,
-                                MaterialQuantity: selected.MaterialQuantity,
-                                RequiredDate: selected.RequiredDate,
-                                MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId,
-                                TotalReceivedQuantityByRequisition: selected.MaterialReceivedQuantityTillDate ?? 0,
-                                IsTolerant: selected.IsTolerant ?? selectedUOM?.IsTolerant ?? false,
-                                TolerancePercentage: selected.TolerancePercentage ?? selected.Tolerance ?? selectedUOM?.MaterialTolerant ?? 0,
-                            }));
-                            setDropdownSubMaterialResetKey(p => p + 1);
-                        }}
-                        error={errors.MaterialMasterId}
-                    />
+                                        const categories = [
+                                            ...new Map((detailData || [])
+                                                .filter(item =>
+                                                    item.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
+                                                )
+                                                .filter(item => item.LevelId1)
+                                                .map(item => [item.LevelId1, item])
+                                            ).values(),
+                                        ];
 
-                    <SingleSelectDropdownWithPagination
-                        required
-                        label="Sub Material"
-                        disabled={editIndex !== null}
-                        key={dropdownSubMaterialResetKey}
-                        initialValue={createDropdownInitialValue(
-                            materialData.SubMaterialMasterId,
-                            materialData.SubMaterialName
-                        )}
-                        title="Select SubMaterial"
-                        size="lg"
-                        dataFetchCallBack={async () => ({
-                            itemList: subMaterialOptions,
-                            totalNumberOfRecord: subMaterialOptions.length
-                        })}
-                        onSelected={(item) => {
-                            const id = item ? Number(item.value) : 0;
+                                        return {
+                                            itemList: categories.map(item => ({
+                                                label: item.Level1Name ?? "",
+                                                value: String(item.LevelId1),
+                                            })),
+                                            totalNumberOfRecord: categories.length,
+                                        };
+                                    }}
+                                    onSelected={item => {
+                                        const categoryId = item ? Number(item.value) : 0;
 
-                            const selected = detailData.find(
-                                x => x.SubMaterialMasterId === id
-                            );
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            MaterialRequisitionType: "DIRECT",
+                                            LevelId1: categoryId,
+                                            Level1Name: item?.label ?? "",
+                                            LevelId2: 0,
+                                            Level2Name: "",
+                                            LevelId3: 0,
+                                            Level3Name: "",
+                                            LevelId4: 0,
+                                            Level4Name: "",
+                                            MaterialMasterId: 0,
+                                            MaterialName: "",
+                                            SubMaterialMasterId: 0,
+                                            SubMaterialName: "",
+                                            UomMasterId: 0,
+                                            UomCode: "",
+                                            Level4SubMaterialUomCode: "",
+                                            Level4SubMaterialUom: "",
+                                            MaterialRequisitionDetailId: 0,
+                                            MaterialQuantity: 0,
+                                            TotalReceivedQuantityByRequisition: 0,
+                                            TotalReceivedMaterialQuantity: 0,
+                                            IsTolerant: false,
+                                            TolerancePercentage: 0,
+                                        }));
+                                        setErrors({});
+                                    }}
+                                    error={errors.LevelId1}
+                                />
 
-                            const selectedUOM = materialSubMaterialList.find(
-                                x => x.MaterialMasterId === materialData.MaterialMasterId &&
-                                    x.SubMaterialMasterId === id
-                            );
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Sub Category"
+                                    title="Select Sub Category"
+                                    size="lg"
+                                    disabled={!materialData.LevelId1 || editIndex !== null}
+                                    initialValue={
+                                        materialData.LevelId2
+                                            ? {
+                                                label: materialData.Level2Name ?? "",
+                                                value: String(materialData.LevelId2),
+                                            } : null
+                                    }
+                                    dataFetchCallBack={async () => {
+                                        const subCategories = [
+                                            ...new Map(
+                                                (detailData || []).filter(item =>
+                                                    item.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
+                                                )
+                                                    .filter(item =>
+                                                        Number(item.LevelId1) ===
+                                                        Number(materialData.LevelId1)
+                                                    )
+                                                    .filter(item => item.LevelId2)
+                                                    .map(item => [item.LevelId2, item])
+                                            ).values(),
+                                        ];
 
-                            setMaterialData(prev => ({
-                                ...prev,
-                                SubMaterialMasterId: id,
-                                SubMaterialName: selected?.SubMaterialName ?? "",
-                                UomCode: selected?.UomCode ?? "",
-                                UomMasterId: selected?.UomMasterId ?? 0,
-                                MaterialRequisitionDetailId: selected?.MaterialRequisitionDetailId ?? 0,
-                                TotalReceivedQuantityByRequisition: selected?.MaterialReceivedQuantityTillDate ?? prev.TotalReceivedQuantityByRequisition ?? 0,
-                                IsTolerant: selected?.IsTolerant ?? selectedUOM?.IsTolerant ?? prev.IsTolerant ?? false,
-                                TolerancePercentage: selected?.TolerancePercentage ?? selected?.Tolerance ?? selectedUOM?.TolerancePercentage ?? selectedUOM?.Tolerance ?? prev.TolerancePercentage ?? 0,
-                            }));
-                        }}
-                        error={errors.SubMaterialMasterId}
-                    />
+                                        return {
+                                            itemList: subCategories.map(item => ({
+                                                label: item.Level2Name ?? "",
+                                                value: String(item.LevelId2),
+                                            })),
+                                            totalNumberOfRecord: subCategories.length,
+                                        };
+                                    }}
+                                    onSelected={item => {
+                                        const level2Id = item ? Number(item.value) : 0;
 
-                    <Input type="text" disabled label="UOM"
-                        value={materialData.UomCode}
-                        placeholder="UOM"
-                        maxLength={250}
-                        error={errors.UomMasterId}
-                    />
+                                        const selected = detailData.find(
+                                            data =>
+                                                Number(data.LevelId1) === Number(materialData.LevelId1) &&
+                                                Number(data.LevelId2) === level2Id &&
+                                                data.MaterialRequisitionType?.trim().toUpperCase() ===
+                                                "DIRECT"
+                                        );
 
-                    <Input
-                        type="text"
-                        label="Pending Quantity"
-                        required
-                        disabled
-                        value={`${pendingQuantity}`}
-                        onChange={(e) => {
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            LevelId2: level2Id,
+                                            Level2Name: item?.label ?? "",
+                                            LevelId3: 0,
+                                            Level3Name: "",
+                                            LevelId4: 0,
+                                            Level4Name: "",
+                                            MaterialMasterId: 0,
+                                            MaterialName: "",
+                                            SubMaterialMasterId: 0,
+                                            SubMaterialName: "",
+                                            UomMasterId: 0,
+                                            UomCode: "",
+                                            Level4SubMaterialUomCode: "",
+                                            Level4SubMaterialUom: "",
+                                            MaterialRequisitionDetailId: selected?.MaterialRequisitionDetailId ?? 0,
+                                        }));
+                                        setErrors({});
+                                    }}
+                                    error={errors.LevelId2}
+                                />
 
-                            const value = e.target.value;
-                            setMaterialData(prev => ({
-                                ...prev,
-                                MaterialQuantity: value === "" ? 0 : Number(value)
-                            }));
-                        }}
-                        placeholder="Pending Quantity"
-                        min={0}
-                        error={errors.MaterialQuantity}
-                    />
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Description"
+                                    title="Select Description"
+                                    size="lg"
+                                    disabled={!materialData.LevelId2 || editIndex !== null}
+                                    initialValue={
+                                        materialData.LevelId3
+                                            ? {
+                                                label: materialData.Level3Name ?? "",
+                                                value: String(materialData.LevelId3),
+                                            }
+                                            : null
+                                    }
+                                    dataFetchCallBack={async () => {
+                                        const descriptions = [
+                                            ...new Map(
+                                                (detailData || [])
+                                                    .filter(
+                                                        item =>
+                                                            item.MaterialRequisitionType?.trim().toUpperCase() ===
+                                                            "DIRECT"
+                                                    )
+                                                    .filter(
+                                                        item =>
+                                                            Number(item.LevelId1) ===
+                                                            Number(materialData.LevelId1) &&
+                                                            Number(item.LevelId2) ===
+                                                            Number(materialData.LevelId2)
+                                                    )
+                                                    .filter(item => item.LevelId3)
+                                                    .map(item => [item.LevelId3, item])
+                                            ).values(),
+                                        ];
 
-                    <Input
-                        type="number"
-                        label="Received Quantity"
-                        required
-                        value={materialData.TotalReceivedMaterialQuantity}
-                        onChange={(e) => {
+                                        return {
+                                            itemList: descriptions.map(item => ({
+                                                label: item.Level3Name ?? "",
+                                                value: String(item.LevelId3),
+                                            })),
+                                            totalNumberOfRecord: descriptions.length,
+                                        };
+                                    }}
+                                    onSelected={item => {
+                                        const level3Id = item ? Number(item.value) : 0;
 
-                            const value = e.target.value;
-                            setMaterialData(prev => ({
-                                ...prev,
-                                TotalReceivedMaterialQuantity: value === "" ? 0 : Number(value)
-                            }));
-                        }}
-                        placeholder="Quantity"
-                        min={0}
-                        step="0.01"
-                        error={errors.TotalReceivedMaterialQuantity}
-                    />
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            LevelId3: level3Id,
+                                            Level3Name: item?.label ?? "",
+                                            LevelId4: 0,
+                                            Level4Name: "",
+                                            MaterialMasterId: 0,
+                                            MaterialName: "",
+                                            SubMaterialMasterId: 0,
+                                            SubMaterialName: "",
+                                            UomMasterId: 0,
+                                            UomCode: "",
+                                            Level4SubMaterialUomCode: "",
+                                            Level4SubMaterialUom: "",
+                                            MaterialRequisitionDetailId: 0,
+                                        }));
+                                        setErrors({});
+                                    }}
+                                    error={errors.LevelId3}
+                                />
 
-                    <TextArea
-                        label="Quality Analyst Remark"
-                        value={materialData.QualityAnalystRemark}
-                        onChange={(e) =>
-                            setMaterialData(prev => ({
-                                ...prev,
-                                QualityAnalystRemark: e.target.value
-                            }))
-                        }
-                        required
-                        error={errors.QualityAnalystRemark}
-                    />
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Sub Material"
+                                    title="Select Sub Material"
+                                    size="lg"
+                                    disabled={!materialData.LevelId3 || editIndex !== null}
+                                    initialValue={
+                                        materialData.LevelId4
+                                            ? {
+                                                label: materialData.Level4Name ?? "",
+                                                value: String(materialData.LevelId4),
+                                            } : null
+                                    }
+                                    dataFetchCallBack={async () => {
+                                        const subMaterials = [
+                                            ...new Map((detailData || []).filter(item =>
+                                                item.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
+                                            )
+                                                .filter(
+                                                    item =>
+                                                        Number(item.LevelId1) ===
+                                                        Number(materialData.LevelId1) &&
+                                                        Number(item.LevelId2) ===
+                                                        Number(materialData.LevelId2) &&
+                                                        Number(item.LevelId3) ===
+                                                        Number(materialData.LevelId3)
+                                                )
+                                                .filter(item => item.LevelId4)
+                                                .map(item => [item.LevelId4, item])
+                                            ).values(),
+                                        ];
+
+                                        return {
+                                            itemList: subMaterials.map(item => ({
+                                                label: item.Level4Name ?? "",
+                                                value: String(item.LevelId4),
+                                            })),
+                                            totalNumberOfRecord: subMaterials.length,
+                                        };
+                                    }}
+                                    onSelected={item => {
+                                        const level4Id = item ? Number(item.value) : 0;
+
+                                        const selected = detailData.find(data =>
+                                            Number(data.LevelId1) === Number(materialData.LevelId1) &&
+                                            Number(data.LevelId2) === Number(materialData.LevelId2) &&
+                                            Number(data.LevelId3) === Number(materialData.LevelId3) &&
+                                            Number(data.LevelId4) === level4Id &&
+                                            data.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
+                                        );
+
+                                        if (!selected) return;
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            LevelId4: level4Id,
+                                            Level4Name: item?.label ?? "",
+                                            MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId ?? 0,
+                                            MaterialMasterId: selected.MaterialMasterId ?? 0,
+                                            MaterialName: selected.MaterialName ?? "",
+                                            SubMaterialMasterId: selected.SubMaterialMasterId ?? 0,
+                                            SubMaterialName: selected.SubMaterialName ?? "",
+                                            UomMasterId: selected.UomMasterId ?? 0,
+                                            UomCode: selected.UomCode ?? selected.Level4SubMaterialUomCode ?? "",
+                                            Level4SubMaterialUomCode: selected.Level4SubMaterialUomCode ?? "",
+                                            Level4SubMaterialUom: selected.Level4SubMaterialUom ?? "",
+                                            MaterialQuantity: selected.MaterialQuantity ?? 0,
+                                            TotalReceivedQuantityByRequisition: selected.MaterialReceivedQuantityTillDate ?? 0,
+                                            TotalReceivedMaterialQuantity: 0,
+                                            IsTolerant: selected.IsTolerant ?? false,
+                                            TolerancePercentage: selected.TolerancePercentage ?? selected.Tolerance ?? 0,
+                                        }));
+                                        setErrors({});
+                                    }}
+                                    error={errors.LevelId4}
+                                />
+
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label="UOM"
+                                    value={materialData.LevelId1
+                                        ? materialData.Level4SubMaterialUomCode
+                                            ? `${materialData.Level4SubMaterialUom ?? ""} (${materialData.Level4SubMaterialUomCode})`
+                                            : materialData.Level4SubMaterialUom ?? ""
+                                        : ""
+                                    }
+                                    placeholder="UOM"
+                                />
+
+                                <Input
+                                    type="text"
+                                    label="Pending Quantity"
+                                    required
+                                    disabled
+                                    value={materialData.LevelId1 ? `${pendingQuantity}` : ""}
+                                    placeholder="Pending Quantity"
+                                />
+
+                                <Input
+                                    label="Received Quantity"
+                                    required
+                                    value={materialData.LevelId1 ? materialData.TotalReceivedMaterialQuantity : ""}
+                                    onChange={e => handleMaterialFieldChange("TotalReceivedMaterialQuantity", filterNumbers(e.target.value))}
+                                    placeholder="Quantity"
+                                    error={errors.TotalReceivedMaterialQuantity}
+                                    disabled={!materialData.LevelId1}
+                                />
+                            </div>
+
+                            <TextArea
+                                label="Quality Analyst Remark"
+                                value={materialData.LevelId1 ? materialData.QualityAnalystRemark : ""}
+                                onChange={e => handleMaterialFieldChange("QualityAnalystRemark", e.target.value)}
+                                required
+                                error={errors.QualityAnalystRemark}
+                                disabled={!materialData.LevelId1}
+                            />
+                        </div>
+
+                    ) : materialData.MaterialRequisitionType?.trim().toUpperCase() === "IN - DIRECT" && (
+
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Material"
+                                    key={dropdownMaterialResetKey}
+                                    disabled={editIndex !== null}
+                                    initialValue={createDropdownInitialValue(
+                                        materialData.MaterialMasterId,
+                                        materialData.MaterialName
+                                    )}
+                                    title="Select Material"
+                                    size="lg"
+                                    dataFetchCallBack={async () => ({
+                                        itemList: materialOptions,
+                                        totalNumberOfRecord: materialOptions.length,
+                                    })}
+                                    onSelected={(item) => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        const selected = detailData.find(data =>
+                                            data.MaterialMasterId === id &&
+                                            data.MaterialRequisitionType?.trim().toUpperCase() === "IN - DIRECT"
+                                        );
+
+                                        if (!selected) return;
+
+                                        const selectedUOM = materialSubMaterialList.find(data =>
+                                            data.MaterialMasterId === selected.MaterialMasterId &&
+                                            data.SubMaterialMasterId === selected.SubMaterialMasterId
+                                        );
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            MaterialRequisitionType: selected.MaterialRequisitionType ?? "In - Direct",
+                                            MaterialMasterId: selected.MaterialMasterId,
+                                            MaterialName: selected.MaterialName,
+                                            SubMaterialMasterId: selected.SubMaterialMasterId,
+                                            SubMaterialName: selected.SubMaterialName,
+                                            UomCode: selected.UomCode,
+                                            UomMasterId: selected.UomMasterId,
+                                            MaterialQuantity: selected.MaterialQuantity,
+                                            MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId,
+                                            TotalReceivedQuantityByRequisition: selected.MaterialReceivedQuantityTillDate ?? 0,
+                                            IsTolerant: selected.IsTolerant ?? selectedUOM?.IsTolerant ?? false,
+                                            TolerancePercentage: selected.TolerancePercentage ?? selected.Tolerance  ?? 0,
+                                        }));
+                                        setDropdownSubMaterialResetKey(p => p + 1);
+                                    }}
+                                    error={errors.MaterialMasterId}
+                                />
+
+                                <SingleSelectDropdownWithPagination
+                                    required
+                                    label="Sub Material"
+                                    disabled={editIndex !== null}
+                                    key={dropdownSubMaterialResetKey}
+                                    initialValue={createDropdownInitialValue(
+                                        materialData.SubMaterialMasterId,
+                                        materialData.SubMaterialName
+                                    )}
+                                    title="Select SubMaterial"
+                                    size="lg"
+                                    dataFetchCallBack={async () => ({
+                                        itemList: subMaterialOptions,
+                                        totalNumberOfRecord: subMaterialOptions.length,
+                                    })}
+                                    onSelected={item => {
+                                        const id = item ? Number(item.value) : 0;
+
+                                        const selected = detailData.find(data =>
+                                            data.SubMaterialMasterId === id &&
+                                            data.MaterialMasterId ===
+                                            materialData.MaterialMasterId &&
+                                            data.MaterialRequisitionType?.trim().toUpperCase() === "IN - DIRECT"
+                                        );
+
+                                        const selectedUOM = materialSubMaterialList.find(data =>
+                                            data.MaterialMasterId ===
+                                            materialData.MaterialMasterId &&
+                                            data.SubMaterialMasterId === id
+                                        );
+
+                                        setMaterialData(prev => ({
+                                            ...prev,
+                                            SubMaterialMasterId: id,
+                                            SubMaterialName: selected?.SubMaterialName ?? "",
+                                            UomCode: selected?.UomCode ?? "",
+                                            UomMasterId: selected?.UomMasterId ?? 0,
+                                            MaterialRequisitionDetailId: selected?.MaterialRequisitionDetailId ?? 0,
+                                            MaterialQuantity: selected?.MaterialQuantity ?? prev.MaterialQuantity,
+                                            TotalReceivedQuantityByRequisition: selected?.MaterialReceivedQuantityTillDate ?? 0,
+                                            IsTolerant: selected?.IsTolerant ?? selectedUOM?.IsTolerant ?? false,
+                                            TolerancePercentage: selected?.TolerancePercentage ?? selected?.Tolerance ,
+                                        }));
+                                    }}
+                                    error={errors.SubMaterialMasterId}
+                                />
+
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label="UOM"
+                                    value={materialData.UomCode}
+                                    placeholder="UOM"
+                                    error={errors.UomMasterId}
+                                />
+
+                                <Input
+                                    type="text"
+                                    label="Pending Quantity"
+                                    required
+                                    disabled
+                                    value={`${pendingQuantity}`}
+                                    placeholder="Pending Quantity"
+                                />
+
+                                <Input
+                                    label="Received Quantity"
+                                    required
+                                    value={materialData.TotalReceivedMaterialQuantity}
+                                    onChange={e => handleMaterialFieldChange("TotalReceivedMaterialQuantity", filterNumbers(e.target.value))}
+                                    placeholder="Quantity"
+                                    error={errors.TotalReceivedMaterialQuantity}
+                                />
+                            </div>
+
+                            <TextArea
+                                label="Quality Analyst Remark"
+                                value={materialData.QualityAnalystRemark}
+                                onChange={e => handleMaterialFieldChange("QualityAnalystRemark", e.target.value)}
+                                required
+                                error={errors.QualityAnalystRemark}
+                            />
+                        </div>
+                    )}
                 </div>
-            </Modal >
+
+            </Modal>
         </>
     )
 }

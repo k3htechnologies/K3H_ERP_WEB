@@ -28,36 +28,36 @@ export default function OverviewCards({ }) {
     {
       title: "Upcoming Deadlines",
       value: `08`,
-      subtitle: `Requires Immediate Attention`,
+      subtitle: `Within next 30 days`,
       backgroundColor: "white",
       color: "black",
     },
     {
       title: "Reply Pending",
       value: `08`,
-      subtitle: `Requires Immediate Attention`,
+      subtitle: `3 due within 7 days`,
       backgroundColor: "white",
       color: "black",
     },
     {
       title: "Appeal Pending",
       value: `08`,
-      subtitle: `Requires Immediate Attention`,
+      subtitle: `2 appeal deadlines approaching`,
       backgroundColor: "white",
       color: "black",
     },
     {
       title: "Closed Notice",
       value: `08`,
-      subtitle: `Requires Immediate Attention`,
+      subtitle: `Successfully resolved`,
       backgroundColor: "white",
       color: "black",
       outlineColor: "green"
     },
     {
       title: "Total Disputed Amount",
-      value: `(₹) 121.32 CR`,
-      subtitle: `Requires Immediate Attention`,
+      value: `₹121.32 Cr`,
+      subtitle: `Across 18 active notices`,
       backgroundColor: "white",
       color: "black",
     },
@@ -72,30 +72,35 @@ export default function OverviewCards({ }) {
             return (
               <div
                 key={i}
-                className="bg-white rounded-2xl p-4 relative border border-gray-100 shadow-sm overflow-hidden "
+                className="bg-white rounded-2xl p-3 relative border border-gray-100 shadow-sm overflow-hidden "
                 style={{ borderColor: c.outlineColor || '#2563EB' }}
               >
                 <div
                   className="absolute inset-y-0 left-0 w-1 border border-g-200"
                   style={{ backgroundColor: c.outlineColor || '#2563EB', borderColor: c.outlineColor || '#2563EB', borderWidth: '1px' }}
                 />
-                <div className="flex items-start gap-3 pl-2">
-                  <div className="mt-2">
+                <div className="flex items-start gap-3 pl-2 -mt-2">
+                  <div className="mt-2 font-semibold">
                     <p className="text-sm text-gray-500">{c.title}</p>
                     <p className="text-2xl font-bold mt-2" style={{ color: c.color }}>{c.value}</p>
-                    <p className="text-xs text-gray-500 mt-2">{c.subtitle}</p>
+                    <div className="font-medium">
+                      <p className="text-xs text-gray-500 mt-2">{c.subtitle}</p>
+                    </div>
                   </div>
                 </div>
               </div>
             )
           }
           return (
-            <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-              <div className="flex items-start gap-3">
-                <div className="mt-2">
+            <div key={i} className="bg-white rounded-2xl p-3 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+              <div className="flex items-start gap-3 -mt-2">
+                <div className="mt-2 font-semibold">
                   <p className="text-sm text-gray-500">{c.title}</p>
                   <p className="text-2xl font-bold mt-2" style={{ color: c.color }}>{c.value}</p>
-                  <p className="text-xs text-gray-500 mt-2">{c.subtitle}</p>
+                  <div className="font-medium">
+                    <p className="text-xs text-gray-500 mt-2">{c.subtitle}</p>
+                  </div>
+
                 </div>
               </div>
             </div>

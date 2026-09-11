@@ -36,12 +36,12 @@ const AccountDashboard: React.FC = () => {
                     <NoticesByAuthority />
                     <NoticeStatusOverview />
                 </div>
-                 <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <div >
-                        <RecentActivityTimeline/>
+                        <RecentActivityTimeline />
                     </div>
-                    <div className="col-span-2">
-                        <UpcomingDeadlines      />
+                    <div className="col-span-2 flex-1 min-h-0">
+                        <UpcomingDeadlines />
                     </div>
                 </div>
             </>

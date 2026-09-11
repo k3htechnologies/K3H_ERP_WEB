@@ -8,25 +8,24 @@ export default function TopCompaniesActiveNotices() {
         { name: "Rishabraj Infra", notices: 8 },
     ];
 
-    const maxNotices = Math.max(...companies.map(c => c.notices));
+    const maxNotices = Math.max(...companies.map((c) => c.notices));
 
     return (
         <div className="space-y-3 pt-5">
-            <div className="bg-white rounded-xl p-4 h-[300px] border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex flex-col">
-
-                {/* Heading */}
-                <h2 className="text-[14px] font-semibold text-gray-500 tracking-wide pb-3 pl-1">
+            {/* Outer container: fixed height aur overflow-hidden */}
+            <div className="bg-white rounded-xl p-4 h-[300px] border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex flex-col overflow-hidden">
+                {/* Fixed Heading */}
+                <h2 className="text-[14px] font-semibold text-gray-500 tracking-wide pb-3 pl-1 shrink-0">
                     TOP COMPANIES BY ACTIVE NOTICES
                 </h2>
 
-                {/* Companies */}
-                <div className="flex flex-col gap-3 overflow-hidden">
+                {/* Scrollable Companies List */}
+                <div className="flex flex-col gap-3 overflow-y-auto thin-scroll flex-1 pr-1">
                     {companies.map((company, index) => (
                         <div key={index}>
-
                             {/* Company name + count */}
                             <div className="flex items-center justify-between mb-1">
-                                <span className="text-[13px] text-gray-700">
+                                <span className="text-[14px] text-gray-700">
                                     {company.name}
                                 </span>
 
@@ -44,11 +43,9 @@ export default function TopCompaniesActiveNotices() {
                                     }}
                                 />
                             </div>
-
                         </div>
                     ))}
                 </div>
-
             </div>
         </div>
     );

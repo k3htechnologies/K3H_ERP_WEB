@@ -61,7 +61,7 @@ export default function NoticesByAuthority({ }) {
         <div className="space-y-3 pt-5">
             <div className="bg-white rounded-xl p-4 h-[300px] border border-gray-100 shadow-[0px_1px_2px_rgba(0,0,0,0.05)] flex flex-col">
 
-                <div className="w-full bg-white rounded-2xl p-2 flex flex-col flex-1 min-h-0">
+                <div className="w-full bg-white rounded-2xl  flex flex-col flex-1 min-h-0">
 
                     {/* Header */}
                     <div className="flex items-center justify-between mb-4">

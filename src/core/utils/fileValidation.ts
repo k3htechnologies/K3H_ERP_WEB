@@ -7,9 +7,6 @@ import { countryList } from "@/ui/components/forms/MobileNumberInput";
 export const filterNumbers = (value: string): string =>
   value.replace(/[^0-9]/g, "");
 
-export const filterNumbersWithHyphen = (value: string): string =>
-  value.replace(/[^0-9-]/g, "");
-
 // ----------------------------------
 // 🔹 FILTER ONLY LETTERS (A–Z + space)
 // ----------------------------------

@@ -16,7 +16,7 @@ export default function NoticeStatusOverview() {
 
     return (
         <div className="space-y-3 pt-5">
-             <div className=" bg-white rounded-xl p-4" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+             <div className=" bg-white rounded-xl p-4 h-[300px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
             {/* Heading */}
             <h2 className="text-sm font-semibold uppercase text-slate-500 mb-4">
                 Notice Status Overview
@@ -56,15 +56,15 @@ export default function NoticeStatusOverview() {
                 {/* RIGHT LEGEND */}
                 <div className="space-y-2">
                     {statusData.map((item) => (
-                        <div key={item.name} className="flex items-center justify-between text-xs">
-                            <div className="flex items-center gap-2.5 -ml-15 mt-2">
+                        <div key={item.name} className="flex items-center justify-between  text-xs">
+                            <div className="flex items-center gap-2.5 -ml-15 mt-1">
                                 <span
                                     className="w-2.5 h-2.5 rounded-full shrink-0"
                                     style={{ backgroundColor: item.color }}
                                 />
                                 <span className="text-slate-600 font-medium text-sm">{item.name}</span>
                             </div>
-                            <span className="text-slate-800 font-bold text-xs">
+                            <span className="text-slate-800 font-bold text-sm">
                                 {item.value}
                             </span>
                         </div>

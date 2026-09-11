@@ -6,7 +6,7 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import * as E from 'fp-ts/Either';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import {useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import usePagination from "@/core/hooks/usePagination";
@@ -86,6 +86,7 @@ export const ApprovedBankFile: React.FC = () => {
 
     const { ApprovedBankFolderId } = useParams<{ ApprovedBankFolderId?: string }>();
     const { listState } = useApprovedBankListState();
+    const { BankName } = listState;
     const approvedBankFolderId = ApprovedBankFolderId ? Number(ApprovedBankFolderId) : listState.ApprovedBankFolderId;
     //#endregion
 
@@ -266,7 +267,6 @@ export const ApprovedBankFile: React.FC = () => {
             key: 'CreatedBy',
             label: 'Last Modified By',
             width: '33',
-            sortable: true,
             align: 'center',
             render: (value) => value || '-'
         },
@@ -274,7 +274,6 @@ export const ApprovedBankFile: React.FC = () => {
             key: 'CreatedDate',
             label: 'Last Modified Date',
             width: '33',
-            sortable: true,
             align: 'center',
             render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
@@ -546,7 +545,8 @@ export const ApprovedBankFile: React.FC = () => {
             <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
                 <HeaderActionBar
-                    titleText={"Approved Bank Document"}
+                    titleText={"Approved Bank Document: "}
+                    subTitleText={BankName}
                     cancelText="Cancel"
                     onCancel={() => handleBackToListApprovedBankFolder()}
                     canAction={false}
@@ -590,7 +590,7 @@ export const ApprovedBankFile: React.FC = () => {
                     setApprovedBankFileURL('');
                     setRemoveApprovedBankFileUrls([])
                 }}
-                title={editingApprovedBankFileData ? 'Update' : 'Add'}
+                title={editingApprovedBankFileData ? 'Update Bank Documents' : 'Add Bank Documents'}
                 onSubmit={handleAddUpdateApprovedBankFile}
                 saveText='Save'
                 loading={isLoading}
@@ -640,7 +640,7 @@ export const ApprovedBankFile: React.FC = () => {
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteApprovedBankFile}
                 loading={isLoading}
-                pageName='Approved Bank File'
+                pageName='Approved Bank Document'
             />
         </div>
     )

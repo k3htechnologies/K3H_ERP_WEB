@@ -7,14 +7,14 @@ export interface FilterWithPaginationApprovedBankFolderRequest {
     ApprovedBankFolderId?: number
     BankName?: string
     SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
+    ExportType?: 'Excel' | 'PDF' | 'Zip'
 }
 
 export interface ApprovedBankFolderData {
     ProjectId: number | null
     Uniquekey: string | null
     ApprovedBankFolderId: number
-    BankListMasterId: string | null 
+    BankListMasterId: string | null
     BankName: string | null
     CreatedById: number | 0
     CreatedBy: string | ''

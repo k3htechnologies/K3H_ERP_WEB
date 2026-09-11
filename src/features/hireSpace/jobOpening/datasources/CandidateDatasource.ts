@@ -1,18 +1,15 @@
-import baseClient from "@/core/config/baseClient"
-import { TokenExpiredException } from "@/core/config/baseClientexceptions"
-import { CandidateApi } from "@/features/hireSpace/jobOpening/api/CandidateApi"
-import { CandidateInterviewApi } from "../api/CandidateInterviewApi"
+import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
+import { CandidateApi } from '@/features/hireSpace/jobOpening/api/CandidateApi'
 import type {
     FilterWithPaginationCandidateRequest,
     AddUpdateCandidateRemarkRequest,
     FilterWithPaginationCandidateRemarkRequest,
     AddUpdateCandidateStageRequest,
-    FilterWithPaginationCandidateApplicationTimelineRequest,
     CandidateListResponse,
     CandidateRemarkSaveResponse,
     CandidateRemarkListResponse,
     CandidateStageSaveResponse,
-    CandidateApplicationTimelineListResponse
 } from '@/features/hireSpace/jobOpening/models/CandidateModel'
 
 export abstract class CandidateDatasource {
@@ -21,7 +18,6 @@ export abstract class CandidateDatasource {
     abstract addUpdateCandidateRemark(data: AddUpdateCandidateRemarkRequest): Promise<CandidateRemarkSaveResponse>
     abstract pullCandidateRemark(params: FilterWithPaginationCandidateRemarkRequest, signal?: AbortSignal): Promise<CandidateRemarkListResponse>
     abstract addUpdateCandidateStage(data: AddUpdateCandidateStageRequest): Promise<CandidateStageSaveResponse>
-    abstract pullCandidateApplicationTimeline(params: FilterWithPaginationCandidateApplicationTimelineRequest, signal?: AbortSignal): Promise<CandidateApplicationTimelineListResponse>
 }
 
 export class CandidateDatasourceImpl implements CandidateDatasource {
@@ -36,14 +32,13 @@ export class CandidateDatasourceImpl implements CandidateDatasource {
             if (params.DepartmentId) queryParams.append('DepartmentId', params.DepartmentId.toString())
             if (params.JobRoleMasterId) queryParams.append('JobRoleMasterId', params.JobRoleMasterId.toString())
             if (params.CareerId) queryParams.append('CareerId', params.CareerId.toString())
-            if (params.ApplicationStatus) queryParams.append('ApplicationStatus', params.ApplicationStatus.toString())
+            if (params.CandidateId !== undefined) queryParams.append('CandidateId', params.CandidateId.toString())
+            if (params.JobOpeningId !== undefined) queryParams.append('JobOpeningId', params.JobOpeningId.toString())
+            if (params.ApplicationStatus?.trim()) queryParams.append('ApplicationStatus', params.ApplicationStatus.trim())
             if (params.FullName?.trim()) queryParams.append('FullName', params.FullName.trim())
 
-            const queryString = queryParams.toString()
-            const url = queryString ? `${CandidateApi.PULL}?${queryString}` : CandidateApi.PULL
-
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                url,
+                `${CandidateApi.PULL}?${queryParams.toString()}`,
                 { signal }
             )
 
@@ -112,28 +107,6 @@ export class CandidateDatasourceImpl implements CandidateDatasource {
 
             if (error instanceof TokenExpiredException) {
                 return await this.addUpdateCandidateStage(params)
-            }
-            throw error
-        }
-    }
-
-    async pullCandidateApplicationTimeline(params: FilterWithPaginationCandidateApplicationTimelineRequest, signal?: AbortSignal): Promise<CandidateApplicationTimelineListResponse> {
-        try {
-            const queryParams = new URLSearchParams({
-                CandidateId: (params.CandidateId ?? 0).toString(),
-            })
-
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${CandidateInterviewApi.PULL_TIMELINE}?${queryParams.toString()}`,
-                { signal }
-            )
-
-            return response;
-        } catch (error: any) {
-            console.error('ERROR: PULL CANDIDATE APPLICATION TIMELINE :', error)
-
-            if (error instanceof TokenExpiredException) {
-                return await this.pullCandidateApplicationTimeline(params)
             }
             throw error
         }

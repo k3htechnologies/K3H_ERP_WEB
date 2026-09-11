@@ -1,6 +1,6 @@
-import baseClient from "@/core/config/baseClient"
-import { TokenExpiredException } from "@/core/config/baseClientexceptions"
-import { JobRoleMasterApi } from "@/features/hireSpace/JobRoleMaster/api/JobRoleMasterApi"
+import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
+import { JobRoleMasterApi } from '@/features/hireSpace/JobRoleMaster/api/JobRoleMasterApi'
 import type {
     FilterWithPaginationJobRoleMasterRequest,
     AddUpdateJobRoleMasterRequest,
@@ -46,20 +46,16 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
             const queryParams = new URLSearchParams({
                 pageSize: (params.PageSize ?? 10).toString(),
                 pageNumber: (params.PageNumber ?? 1).toString(),
-                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.JobRoleId) queryParams.append('JobRoleId', params.JobRoleId.toString())
             if (params.DepartmentId) queryParams.append('DepartmentId', params.DepartmentId.toString())
-            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim())
-            if (params.RoleName?.trim()) queryParams.append('RoleName', params.RoleName.trim())
-            if (params.RoleSkills?.trim()) queryParams.append('RoleSkills', params.RoleSkills.trim())
-            if (params.IsActive !== undefined) queryParams.append('IsActive', params.IsActive.toString())
+            if (params.JobRoleName?.trim()) queryParams.append('JobRoleName', params.JobRoleName.trim())
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
-            const response =  await this.k3hHttpClient.getRequestWithAuthentication(
-                `${JobRoleMasterApi.PULL}?${queryParams.toString()}`,{ signal }
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${JobRoleMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
 
             return response;
@@ -68,7 +64,7 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
             console.error('ERROR: PULL JOB ROLE MASTER :', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.pullJobRoleMaster(params)
+                return await this.pullJobRoleMaster(params, signal)
             }
             throw error
         }

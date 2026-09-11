@@ -124,6 +124,7 @@ import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster
 import Parking from '@/features/parking/pages/Parking';
 import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
 import InventoryDashboard from '@/features/inventoryDashboard/pages/InventoryDashboard';
+import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
 import { LitigationListStateProvider } from '@/features/litigation/context/LitigationListStateContext';
 import Litigation from '@/features/litigation/pages/Litigation';
 import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
@@ -212,7 +213,6 @@ import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSect
 import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
 import JobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/JobRoleMaster';
 import AddUpdateJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/AddUpdateJobRoleMaster';
-import ViewJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/ViewJobRoleMaster';
 import { JobRoleMasterListStateProvider } from '@/features/hireSpace/JobRoleMaster/context/JobRoleMasterListStateContext';
 import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
 import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
@@ -266,7 +266,7 @@ function App() {
 
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}>
+          <Route path="/" element={<ProtectedRoute><Layout /></ProtectedRoute>}>
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
@@ -536,13 +536,14 @@ function App() {
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
 
             {/* HireSpace & Job Opening */}
+            <Route path="hireSpaceDashboard" element={<JobOpeningListStateProvider><HireSpaceDashboard /></JobOpeningListStateProvider>} />
             <Route path="jobRoleMaster" element={<JobRoleMasterListStateProvider><JobRoleMaster /></JobRoleMasterListStateProvider>} />
-            <Route path="jobRoleMaster/add/:departmentId/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
-            <Route path="jobRoleMaster/view" element={<JobRoleMasterListStateProvider><ViewJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/add/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
             <Route path="jobOpenings" element={<JobOpeningListStateProvider><JobOpening /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />
-            <Route path="jobOpenings/:departmentId/JobApplicationDetails/:jobOpeningMasterId" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/JobApplicationDetails" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
+            <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -336,24 +336,24 @@ export const getPageInfo = (path: string) => {
             if (second === 'add') {
                 return {
                     title: 'Add Job Role',
-                    description: 'Create a job role for the selected department',
+                    description: 'Manage and organize company departments with complete CRUD operations',
                 }
             }
             if (second === 'edit') {
                 return {
                     title: 'Edit Job Role',
-                    description: 'Update job role details',
+                    description: 'Manage and organize company departments with complete CRUD operations',
                 }
             }
             if (second === 'view') {
                 return {
                     title: 'Job Role Details',
-                    description: 'View complete job role information',
+                    description: 'Manage and organize company departments with complete CRUD operations',
                 }
             }
             return {
                 title: 'Job Role Master',
-                description: 'Manage department-wise job roles',
+                description: 'Manage and organize company departments with complete CRUD operations',
             }
 
         // case 'conference':
@@ -396,18 +396,24 @@ export const getPageInfo = (path: string) => {
             if (second === 'add') {
                 return {
                     title: 'Add Job Opening',
-                    description: 'Create a new job opening for the selected department',
+                    description: 'Manage and organize company departments with complete CRUD operations',
                 }
             }
             if (second === 'interviews') {
                 return {
                     title: 'Schedule Interview',
-                    description: 'Schedule and manage candidate interviews',
+                    description: 'Manage and organize company departments with complete CRUD operations',
                 }
             }
             return {
                 title: 'Job Openings',
-                description: 'Manage department-wise job openings and applications',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+
+        case 'scheduleinterview':
+            return {
+                title: 'Schedule Interview',
+                description: 'Manage and organize company departments with complete CRUD operations',
             }
 
         case 'inwardOutward':
@@ -441,6 +447,11 @@ export const getPageInfo = (path: string) => {
             return {
                 title: 'Inventory Dashboard',
                 description: 'Inventory Insights, Instantly',
+            }
+        case 'hireSpaceDashboard':
+            return {
+                title: 'Hire Space Dashboard',
+                description: 'Hire Space Insights, Instantly',
             }
         case 'inventory':
             return {

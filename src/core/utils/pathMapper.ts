@@ -126,8 +126,10 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/noticesection': '/noticeSection',
 
         // HIRE SPACE / JOB OPENING
+        '/hirespacedashboard': '/hireSpaceDashboard',
         '/jobrolemaster': '/jobRoleMaster',
         '/jobopenings': '/jobOpenings',
+        '/scheduleinterview': '/scheduleinterview',
     }
 
 

@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { getMonthMatrix } from "@/ui/components/Calender/CalendarUtils";
 import type { CalendarEvent } from "./CalendarEvent";
+import { convert_yy_mm_dd_To_dd_mm_yyyy, formatDate_yyyy_mm_dd } from "@/core/utils/dateFormat";
 
 interface MonthViewProps {
     currentDate: Date;
@@ -28,11 +29,11 @@ export default function MonthView({
             )}
 
             {days.map(day => {
-                const dateStr = day.toISOString().slice(0, 10);
-
+                const dateStr = formatDate_yyyy_mm_dd(day);
                 const dayEvents = events.filter(e =>
                     e.start.slice(0, 10) === dateStr
                 );
+                console.log("After date 2:", dayEvents);
 
                 return (
                     <div

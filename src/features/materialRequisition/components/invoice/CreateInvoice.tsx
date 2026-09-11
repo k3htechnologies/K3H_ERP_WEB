@@ -115,38 +115,108 @@ const CreateInvoice: React.FC = () => {
         );
     };
 
-    const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: 'MaterialName',
-            label: 'Material Name',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (value) => value || '-'
-        },
-        {
-            key: 'SubMaterialName',
-            label: 'Sub-Material',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="180px"
-                    tooltipThreshold={18}
-                />
-            )
-        },
-        {
-            key: 'MaterialQuantity',
-            label: 'Quantity',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (value) => value || '-'
-        },
-    ], []);
+    const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
+
+        const isDirect = matrialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const columns: TableColumn[] = [];
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        }
+        columns.push(
+            {
+                key: "MaterialQuantity",
+                label: "Quantity",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
+            },
+            {
+                key: "RequiredDate",
+                label: "Required Date",
+                align: "left",
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
+            },
+        );
+
+        return columns;
+    }, [matrialRequisitionDetailGRNData]);
 
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionInvoice, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -156,7 +226,7 @@ const CreateInvoice: React.FC = () => {
     };
 
     const validateAddInvoiceForm = (): {
-        
+
         isValid: boolean
         errors: { [key: string]: string }
     } => {
@@ -204,7 +274,7 @@ const CreateInvoice: React.FC = () => {
     const PushAddUpdateInvoiceData = (): FormData => {
 
         const fd = new FormData();
-        
+
         fd.append("MaterialRequisitionInvoiceId", formData.MaterialRequisitionInvoiceId.toString());
         fd.append("MaterialRequisitionId", Number(currentMaterialRequisitionId).toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");
@@ -311,7 +381,7 @@ const CreateInvoice: React.FC = () => {
                 </div>
 
                 <DataTableWithHeadColor
-                    columns={MaterialRequisitionDetailColumns}
+                    columns={MatrialRequisitionDetailColumns}
                     data={matrialRequisitionDetailGRNData}
                     emptyMessage="No Material Requisition Details Found"
                     fixedHeight={true}

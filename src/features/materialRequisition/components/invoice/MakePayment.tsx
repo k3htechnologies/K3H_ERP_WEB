@@ -20,6 +20,7 @@ import { useMaterialRequisitionListState } from "@/features/materialRequisition/
 import { Loader } from "@/core/utils/loader";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 
 const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ totalAmount = 0, editData }) => {
 
@@ -31,6 +32,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
     const { canAction: canMakePayments } = useMenuPermissions('Make Payments');
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
+    const systemGeneratedCode = listState.SystemGeneratedCode;
 
     const initialFormState = () => ({
         PaymentMode: "",
@@ -217,7 +219,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
+
                     navigate(-1);
+
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -314,10 +318,19 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6">
             <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
+            <div className="pb-5">
+                <HeaderActionBar
+                    titleText={'Make Payment :'}
+                    subTitleText={systemGeneratedCode ?? "-"}
+                    cancelText="Cancel"
+                    onCancel={() =>
+                        navigate("/materialRequisition/view", {
+                            state: { activeTab: "Invoice" }
+                        })}
+                />
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"  >
-                <div className="col-span-full text-lg font-semibold text-gray-900">
-                    Make Payment
-                </div>
 
                 <SinglePageSelection
                     label="Payment Mode"

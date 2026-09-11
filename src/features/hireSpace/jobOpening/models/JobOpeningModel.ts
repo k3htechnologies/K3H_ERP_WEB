@@ -1,16 +1,17 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface FilterWithPaginationJobOpeningRequest {
-    PageNumber: number
     PageSize: number
-    IsCheckPermission?: boolean
+    PageNumber: number
     JobOpeningMasterId?: number
     DepartmentMasterId?: number
-    DepartmentName?: string
     JobRoleMasterId?: number
+    WorkMode?: string
+    EmploymentType?: string
+    ExperienceYears?: number
     RoleName?: string
     JobRoleStatus?: boolean
-    ExportType?: "Excel" | "PDF"
+    ExportType?: 'Excel' | 'PDF'
 }
 
 export interface JobOpeningData {
@@ -19,7 +20,6 @@ export interface JobOpeningData {
     DepartmentMasterId: number
     DepartmentName?: string
     JobRoleMasterId: number
-    RoleName?: string
     JobRoleName?: string
     JobDescription?: string
     JobResponsibilities?: string
@@ -34,8 +34,8 @@ export interface JobOpeningData {
     EmploymentType?: string
     JobRoleStatus?: boolean
     ApplicationCount?: number
-    ApplicationsCount?: number
     CreatedAt?: string
+    TotalApplications: number
 }
 
 export interface AddUpdateJobOpeningRequest {
@@ -60,14 +60,6 @@ export interface AddUpdateJobOpeningRequest {
 export interface DeleteJobOpeningRequest {
     JobOpeningMasterId: number
     UniqueKey: string
-}
-
-export type JobOpeningStatusFilter = "active" | "inactive" | ""
-
-export interface JobOpeningFilters {
-    RoleName?: string
-    Department?: string
-    Status?: JobOpeningStatusFilter
 }
 
 export type JobOpeningListResponse = ApiResponse<JobOpeningData[]>

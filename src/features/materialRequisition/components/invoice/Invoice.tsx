@@ -54,7 +54,7 @@ export const Invoice: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
-
+                    
                     setInvoiceList(response.right.Data);
                     setPagination({
                         currentPage: page,

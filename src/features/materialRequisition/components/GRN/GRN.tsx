@@ -22,8 +22,14 @@ import { Edit } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
-export const GRN: React.FC = () => {
+interface GRNProps {
+    matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+}
+
+export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -48,8 +54,12 @@ export const GRN: React.FC = () => {
     }, [projectId, currentMaterialRequisitionId])
 
     const handleAddGRN = useCallback(() => {
-        navigate('/grn/add');
-    }, [navigate]);
+        navigate('/grn/add', {
+            state: {
+                matrialRequisitionDetailData,
+            },
+        });
+    }, [navigate, matrialRequisitionDetailData,]);
 
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
@@ -64,7 +74,14 @@ export const GRN: React.FC = () => {
     };
 
     const handleGRNEdit = useCallback((row: MaterialRequisitionGRNData) => {
-        navigate(`/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`);
+        navigate(
+            `/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`,
+            {
+                state: {
+                    matrialRequisitionDetailData: row.MaterialRequisitionDetailGRNData ?? [],
+                },
+            }
+        );
     }, [navigate]);
 
     const loadGRNData = async () => {
@@ -101,45 +118,103 @@ export const GRN: React.FC = () => {
         );
     };
 
-    const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() =>
-        [
+    const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() => {
+
+        const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const columns: TableColumn[] = [];
+
+        if (isDirect) {
+            columns.push(
+                {
+                    key: "Level1Name",
+                    label: "Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level2Name",
+                    label: "Sub Category",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },
+                {
+                    key: "Level3Name",
+                    label: "Description",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "Level4Name",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+            );
+        } else {
+            columns.push(
+                {
+                    key: "MaterialName",
+                    label: "Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+                {
+                    key: "SubMaterialName",
+                    label: "Sub Material",
+                    align: "left",
+                    width: "30",
+                    render: (value) => (
+                        <TooltipText
+                            text={value || "-"}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                        />
+                    )
+                },
+
+            );
+        }
+        columns.push(
             {
-                key: 'MaterialName',
-                label: 'Material Name',
-                width: '20',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => value || '-'
+                key: "MaterialQuantity",
+                label: "Quantity",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
             },
             {
-                key: 'SubMaterialName',
-                label: 'Sub Material',
-                width: '20',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
-                )
-            },
-            {
-                key: 'Uom',
-                label: 'UOM',
-                width: '20',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => value || '-'
-            },
-            {
-                key: 'MaterialQuantity',
-                label: 'Quantity',
-                width: '10',
-                sortable: false,
-                align: 'left',
-                render: (value?: string) => value || '-'
+                key: "RequiredDate",
+                label: "Required Date",
+                align: "left",
+                width: "30",
+                render: (value) =>
+                    value ? formatDate_dd_MonthName_yy(value) : "-"
             },
             {
                 key: 'TotalReceivedMaterialQuantity',
@@ -149,17 +224,15 @@ export const GRN: React.FC = () => {
                 align: 'left',
                 render: (value?: string) => value || '-'
             },
-            {
-                key: 'PendingQuantity',
-                label: 'Pending Quantity',
-                width: '10',
-                sortable: false,
-                align: 'left',
-                render: (_: any, row: MaterialRequisitionDetailGRNData) =>
-                    (row.MaterialQuantity || 0) -
-                    (row.TotalReceivedMaterialQuantity || 0)
-            },
-        ], [])
+        );
+
+        return columns;
+    }, [GRN]);
+
+    const firstGRNId = useMemo(() => {
+        const id = GRN[0]?.MaterialRequisitionGRNId;
+        return id != null ? String(id) : undefined;
+    }, [GRN]);
 
     const GRNColumns = useMemo<TableColumn[]>(() => [
         {
@@ -185,70 +258,29 @@ export const GRN: React.FC = () => {
             label: 'Actions',
             width: '10',
             align: 'center',
-            render: (_: any, row: any) => {
+            render: (_: any, row: MaterialRequisitionGRNData) => {
+                const isFirstRow = String(row.MaterialRequisitionGRNId) === firstGRNId;
+
                 return (
                     <div className="flex items-center justify-center gap-1">
-                        {canAction && (
-                            <>
-                                <Button
-                                    type="button"
-                                    color="transparent"
-                                    size="sm"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        handleGRNEdit(row);
-                                    }}
-                                    leftIcon={<Edit className="h-4 w-4" />}
-                                />
-                            </>
+                        {canAction && !materialRequisitionStatus && isFirstRow && (
+                            <Button
+                                type="button"
+                                color="transparent"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleGRNEdit(row);
+                                }}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                            />
                         )}
                     </div>
                 );
             }
         }
-    ], [canAction]);
-
-    const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: 'MaterialName',
-            label: 'Material Name',
-            width: '20',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => value || '-'
-        },
-        {
-            key: 'SubMaterialName',
-            label: 'Sub Material',
-            width: '20',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="180px"
-                    tooltipThreshold={18}
-                />
-            )
-        },
-        {
-            key: 'MaterialQuantity',
-            label: 'Quantity',
-            width: '10',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => value || '-'
-        },
-        {
-            key: 'TotalReceivedMaterialQuantity',
-            label: 'Received Quantity',
-            width: '10',
-            sortable: false,
-            align: 'left',
-            render: (value?: string) => value || '-'
-        },
-    ], []);
+    ], [canAction, materialRequisitionStatus, firstGRNId]);
 
     return (
         <div className="pt-5">
@@ -271,7 +303,7 @@ export const GRN: React.FC = () => {
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
-                
+
             />
 
             <DataTableExpandable
@@ -313,20 +345,17 @@ export const GRN: React.FC = () => {
                 title={'GRN Summary'}
                 loading={isLoading}
                 cancelText="cancel"
-                size="xl"
+                size="xxl"
             >
                 <div className="space-y-4">
                     {GRN.length === 0 ? (
                         <div className="flex flex-col justify-center items-center h-full">
-                            <NoDataView
-                                message="No Data Available"
-                            />
+                            <NoDataView message="No Data Available"/>
                         </div>
                     ) : (
                         <div>
                             {GRN?.map((item, index) => (
-                                <div key={index} className="bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4"
-                                >
+                                <div key={index} className="bg-[#EFF6FF] rounded-lg border border-gray-300 p-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-3">
                                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(item?.CreatedDate ?? '')} />
                                         <FieldItem label="Challan No." value={item?.ChallanNumber || '-'} />
@@ -343,9 +372,9 @@ export const GRN: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300 h-[220px]">
-                                        <DataTableWithOutBorder
-                                            columns={MaterialRequisitionDetailColumns}
+                                    <div className="bg-white space-y-4 border border-gray-300">
+                                        <DataTableWithHeaderRowDivider
+                                            columns={MaterialRequisitionGRNColumns}
                                             data={item?.MaterialRequisitionDetailGRNData ?? []}
                                             emptyMessage="No Material Requisition Found"
                                             fixedHeight={true}
@@ -354,6 +383,7 @@ export const GRN: React.FC = () => {
                                         />
                                     </div>
                                 </div>
+                               
                             ))}
                         </div>
                     )}

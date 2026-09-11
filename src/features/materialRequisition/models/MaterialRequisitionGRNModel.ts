@@ -49,6 +49,7 @@ export interface MaterialRequisitionDetailGRNData {
     Uom: string | null,
     RequiredDate: string | null,
     TotalReceivedMaterialQuantity: number | 0,
+    QualityAnalystRemark: string | null;
     CreatedById: number | 0,
     CreatedBy: string | null,
     CreatedDate: string | null,

@@ -229,7 +229,7 @@ export const MaterialRequisition: React.FC = () => {
             key: 'FinalVendor',
             label: 'Vendor Name',
             width: '15',
-            sortable: false,
+            sortable: true,
             align: 'left',
             render: (value: string, row: any) => {
                 return (

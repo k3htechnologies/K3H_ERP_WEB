@@ -224,6 +224,7 @@ import InvoicePayment from '@/features/materialRequisition/components/invoice/In
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
+import MaterialRequisitionReport from '@/features/materialRequisitionReport/pages/MaterialRequisitionReport';
 
 
 // Loading component for Suspense fallback 
@@ -557,8 +558,8 @@ function App() {
             <Route path="jobOpenings/JobApplicationDetails" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
             <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
-         
-          {/* MATERIAL REQUISITION */}
+
+            {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
@@ -567,6 +568,8 @@ function App() {
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+
+            <Route path="materialRequisitionReports" element={<MaterialRequisitionReport />} />
 
           </Route>
 

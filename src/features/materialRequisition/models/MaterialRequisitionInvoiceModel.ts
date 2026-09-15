@@ -12,7 +12,6 @@ export interface FilterWithPaginationMaterialRequisitionInvoice {
     ExportType?: "PDF" | "Excel"
 }
 
-
 export interface MaterialRequisitionInvoiceData {
     MaterialRequisitionInvoiceId: number | 0;
     Uniquekey: string | null;

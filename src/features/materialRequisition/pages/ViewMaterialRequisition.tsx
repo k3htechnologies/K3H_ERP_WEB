@@ -56,7 +56,6 @@ export const ViewMaterialRequisition: React.FC = () => {
     const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
-
     const currentUniquekey = listState.Uniquekey
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
@@ -388,7 +387,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                         }}
                         canActionExtraExtraButton={canMaterialRequisitionView && activeTab === 'Details' && listState.MaterialRequisitionStatus.toUpperCase()!=="COMPLETED"}
                     />
-
                 </div>
             </div>
 
@@ -408,8 +406,6 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
             {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} />)}
             {activeTab === 'Invoice' && <Invoice />}
-
-
 
             <Modal
                 isOpen={isEditModalOpen}

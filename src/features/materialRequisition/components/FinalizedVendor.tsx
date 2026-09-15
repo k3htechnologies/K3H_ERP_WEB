@@ -468,7 +468,7 @@ export const FinalizedVendor: React.FC = () => {
 
             {materialRequisitionVendorSelectedList.length === 0
                 ? <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                    <NoDataView />
+                            <NoDataView message='No Finalize Vendor data found' />
                 </section>
 
                 : materialRequisitionVendorSelectedList.map((vendor: any) => {

@@ -228,10 +228,10 @@ export const AddUpdateMaterialRequisition = () => {
     }, [projectId]);
 
     useEffect(() => {
-    if (!MaterialRequisitionTab.some(tab => tab.id === active)) {
-        setActive(MaterialRequisitionTab[0]?.id ?? "Direct");
-    }
-}, [hasDirect, hasInDirect, active]);
+        if (!MaterialRequisitionTab.some(tab => tab.id === active)) {
+            setActive(MaterialRequisitionTab[0]?.id ?? "Direct");
+        }
+    }, [hasDirect, hasInDirect, active]);
 
     const handleAddMaterial = async () => {
         setErrors({});
@@ -475,21 +475,21 @@ export const AddUpdateMaterialRequisition = () => {
                 align: "left",
                 width: "30",
                 render: (value) => {
-                return (
-                    <div className="flex items-center gap-2">
+                    return (
+                        <div className="flex items-center gap-2">
 
-                        <TooltipText
-                            text={value || '-'}
-                            maxWidth="180px"
-                            tooltipThreshold={30}
-                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                            
-                        />
+                            <TooltipText
+                                text={value || '-'}
+                                maxWidth="180px"
+                                tooltipThreshold={30}
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
 
-                        
-                    </div>
-                );
-            }
+                            />
+
+
+                        </div>
+                    );
+                }
             }
         ];
 
@@ -670,6 +670,9 @@ export const AddUpdateMaterialRequisition = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
+        if (!formData.Remarks) {
+            newErrors.Remarks = "Remark is required";
+        }
         if (!hasAnyDocumentFile(documentFiles, documentURL, removeddocumentFilesURLs)) {
             newErrors.AttachmentsURL = "File is required.";
         }
@@ -707,7 +710,7 @@ export const AddUpdateMaterialRequisition = () => {
         }
 
         setErrors({});
-        
+
         const validation = validateMaterialRequisitionForm();
 
         if (!validation.isValid) {
@@ -736,7 +739,7 @@ export const AddUpdateMaterialRequisition = () => {
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message})
+                addToast({ type: 'error', title: error.message })
             },
             undefined,
             formData.MaterialRequisitionId ? "Updating Material Requisition" : "Add Material Requisition"
@@ -811,6 +814,7 @@ export const AddUpdateMaterialRequisition = () => {
                                 label="Remark"
                                 className="thin-scroll"
                                 value={formData.Remarks}
+                                required
                                 onChange={(e) =>
                                     setFormData(prev => ({
                                         ...prev,
@@ -818,7 +822,10 @@ export const AddUpdateMaterialRequisition = () => {
                                     }))
                                 }
                                 placeholder="Enter Remark"
-                                error={errors.Remarks} />
+                                error={errors.Remarks}
+                                maxLength={250}
+                            />
+
                         </div>
 
                     </div>
@@ -1153,7 +1160,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 return;
                                             }
 
-                                            const maxQuantity = Number(subMaterialDetails?.Quantity ?? 0)-Number(subMaterialDetails?.ReceivedQuantity ?? 0);
+                                            const maxQuantity = Number(subMaterialDetails?.Quantity ?? 0) - Number(subMaterialDetails?.ReceivedQuantity ?? 0);
 
                                             if (quantity > maxQuantity) {
                                                 setErrors(prev => ({
@@ -1174,7 +1181,7 @@ export const AddUpdateMaterialRequisition = () => {
                                             }));
                                         }}
                                         placeholder="Enter Quantity"
-                                        max={-Number(subMaterialDetails?.Quantity) -Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
+                                        max={-Number(subMaterialDetails?.Quantity) - Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
                                         error={errors.MaterialQuantity}
                                         rightIcon={subMaterialDetails?.UomCode}
                                     />
@@ -1234,6 +1241,7 @@ export const AddUpdateMaterialRequisition = () => {
                                         }
                                         placeholder="Enter Remark"
                                         error={errors.Remark}
+                                        maxLength={250}
                                     />
                                 </div>
                             </div>
@@ -1342,13 +1350,15 @@ export const AddUpdateMaterialRequisition = () => {
                                     <Input
                                         label="Quantity"
                                         required
-                                        value={materialData.MaterialQuantity}
+                                        value={materialData.MaterialQuantity || ""}
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
                                         }}
                                         placeholder="Enter Quantity"
                                         error={errors.MaterialQuantity}
+                                        rightIcon={materialData?.UomCode}
+
                                     />
 
                                     <div>

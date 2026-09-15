@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import type { MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import type { MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
@@ -211,7 +211,7 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
 
                         <div className="p-4">
                             {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
-                                <p className="text-gray-900 text-md px-2 py-1.5">-</p>
+                                <p className="text-gray-900 text-md px-2 py-1.5">No Purchase Order data found</p>
                             ) : (
                                 <div className="inline-flex items-end gap-1 px-2 py-1.5 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                     <p>Document</p>
@@ -340,9 +340,9 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
                             <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
-                            <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
+                            <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(matrialRequisitionData?.CreatedDate ?? '')} />
                             <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
-                            <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
+                            <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(matrialRequisitionData?.ModifiedDate ?? '')} />
                         </div>
                     </section>
                 </div>

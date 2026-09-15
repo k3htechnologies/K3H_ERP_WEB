@@ -255,7 +255,13 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                 }
             },
-
+            {
+                key: "MaterialReceivedQuantityTillDate",
+                label: "Material Received Quantity",
+                align: "left",
+                width: "30",
+                render: (value) => value || "-"
+            },
             {
                 key: "RequiredDate",
                 label: "Required Date",
@@ -324,7 +330,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     </h4>
 
                     <div className="flex items-center gap-2">
-                        
+
                         {ShowSplitButton && !isSplit && (
 
                             <button
@@ -340,12 +346,9 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
                         )}
 
-
-
                     </div>
 
                 </div>
-
 
                 <div className="overflow-y-auto thin-scroll">
                     <DataTableWithHeaderRowDivider
@@ -356,7 +359,6 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                         className="flex-1"
                     />
                 </div>
-
 
                 {isSplit && (
                     <div className="flex justify-end items-center gap-2 px-3 py-2 border-t border-[#D0D7DE] bg-white">
@@ -423,8 +425,6 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </div>
             </section>
 
-
-
             <Modal
                 isOpen={isAddUpdateModalOpen}
                 onClose={() => {
@@ -450,7 +450,6 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     </div>
                 </div>
             </Modal>
-
 
         </div>
     )

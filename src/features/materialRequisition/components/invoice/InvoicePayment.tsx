@@ -183,7 +183,6 @@ const InvoicePayment: React.FC = () => {
                     if (invoice?.MaterialRequisitionInvoiceId) {
                         await loadPaymentData(invoice.MaterialRequisitionInvoiceId);
                     }
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -469,8 +468,27 @@ const InvoicePayment: React.FC = () => {
                 </div>
 
                 {paymentData.map((item, index) => (
-                    <div className="gap-x-4 rounded-lg border border-gray-200 p-4 mb-4 bg-gray-50">
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 mb-3 ">
+                    <div key={index} className="mb-4 rounded-lg border border-gray-200 bg-gray-50 p-4"  >
+
+                        <div className="mb-4">
+                            <h3 className="mb-3 font-semibold">
+                                Developer Bank Details
+                            </h3>
+
+                            <div className="grid grid-cols-1 gap-4 border-b border-[#135bec2e] pb-4 md:grid-cols-2 lg:grid-cols-3">
+                                <FieldItem label="Bank Name" value={item.ProjectBankName || "-"} isRow={false} />
+                                <FieldItem label="Account Number" value={item.ProjectAccountNumber || "-"} isRow={false} />
+                                <FieldItem label="IFSC Code" value={item.ProjectIFSCCode || "-"} isRow={false} />
+                                <FieldItem label="Nature Of Account" value={item.ProjectNatureOfAccount || "-"} isRow={false} />
+                                <FieldItem label="Account Type" value={item.ProjectAcType || "-"} isRow={false} />
+                            </div>
+                        </div>
+
+                        <h3 className="mb-3 font-semibold">
+                            Customer Bank Details
+                        </h3>
+
+                        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <FieldItem label="CreatedBy / Date" value={`${item.CreatedBy} ${formatDate_dd_MonthName_yy(item.CreatedDate ?? '')}`} />
                             <FieldItem label="Account Number" value={item.AccountNumber} />
                             <FieldItem label="Bank Name" value={<TooltipText text={item.BankName ?? ''} />} />

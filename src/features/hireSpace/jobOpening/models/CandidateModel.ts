@@ -1,11 +1,13 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export type CandidateStatus = "NEW" | "SCREENING" | "SHORTLISTED" | "INTERVIEW" | "SELECTED" | "REJECTED"
+export interface CandidateApplicationStageData {
+    Stage?: string | null
+    TotalApplications?: number | null
+}
 
-export interface Stage {
-    id: string
-    name: string
-    status?: CandidateStatus
+export interface FilterWithPaginationCandidateApplicationStageRequest {
+    DepartmentId?: number
+    JobOpeningId?: number
 }
 
 export interface CandidateData {
@@ -50,38 +52,31 @@ export interface CandidateRemarkData {
     IsActive: boolean
     IsDeleted: boolean | null
     CreatedById: number
-    CreatedByName?: string
-    EmployeeName?: string
-    AuthorName?: string
-    CreatedBy?: string
-    CreatedByDesignation?: string
-    DesignationName?: string
-    RoleName?: string
+    CreatedBy?: string | null
     CreatedDate: string
     ModifiedById: number
     ModifiedDate: string | null
+    CreatedByDesignationName: string | null
 }
 
 export interface CandidateApplicationTimelineData {
-    Event?: string | null
-    Description?: string | null
-    ApplicantStatus?: string | null
+    Stage?: string | null
+    CandidateId?: number
     CreatedDate?: string | null
-    ActivityDate?: string | null
+    CreatedById?: number | null
+    CreatedBy?: string | null
+    ApplicantStatus?: string | null
     ModifiedDate?: string | null
-    CreatedByName?: string | null
-    ModifiedByName?: string | null
-    EmployeeName?: string | null
 }
 
-export type CandidateDetailsTab = "Overview" | "Remark" | "Timeline"
-
 export interface FilterWithPaginationCandidateRequest {
-    DepartmentId?: number
+    ApplicationStatus?: string
+    CandidateId?: number
     FullName?: string
+    DepartmentId?: number
     JobRoleMasterId?: number
     CareerId?: number
-    ApplicationStatus?: number | string
+    JobOpeningId?: number
 }
 
 export interface AddUpdateCandidateRemarkRequest {
@@ -101,8 +96,6 @@ export interface AddUpdateCandidateStageRequest {
     CandidateId: number
     UniqueKey: string
     ApplicantStatus: string
-    ModifiedById: number
-    ModifiedDate: string
 }
 
 export interface FilterWithPaginationCandidateApplicationTimelineRequest {
@@ -114,3 +107,4 @@ export type CandidateRemarkSaveResponse = ApiResponse<number>
 export type CandidateRemarkListResponse = ApiResponse<CandidateRemarkData[]>
 export type CandidateStageSaveResponse = ApiResponse<number>
 export type CandidateApplicationTimelineListResponse = ApiResponse<CandidateApplicationTimelineData[]>
+export type CandidateApplicationStageListResponse = ApiResponse<CandidateApplicationStageData[]>

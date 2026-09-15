@@ -163,10 +163,34 @@ export const ViewBrokerageInvoice: React.FC = () => {
         await loadBrokerageInvoice(1, "");
     }
 
-    const handleAddBrokerageInvoice = (BrokerageInvoiceId: number) => {
-        navigate(`/brokerage/brokerageInvoice/add/${BrokerageInvoiceId}`);
+    const calculateInvoice = () => {
+        const invoiceAmount = brokerageInvoiceList.reduce(
+            (total, item) => total + Number(item.InvoiceAmount || 0),
+            0
+        );
+
+        const paymentAmount = brokerageInvoiceList.reduce(
+            (total, item) => total + Number(item.PaymentAmount || 0),
+            0
+        );
+
+        return {
+            invoiceAmount,
+            paymentAmount,
+        };
     };
 
+    const handleAddBrokerageInvoice = (BrokerageInvoiceId: number) => {
+        const { invoiceAmount, paymentAmount } = calculateInvoice();
+
+        navigate(`/brokerage/brokerageInvoice/add/${BrokerageInvoiceId}`, {
+            state: {
+                InvoiceAmount: invoiceAmount,
+                PaymentAmount: paymentAmount,
+            },
+        });
+    };
+    
     const handleAddPaidBrokerageBooking = (row: BrokerageInvoiceData) => {
         navigate(`/brokerage/PaidBrokerageBooking/add/${row.BrokerageInvoiceId}`, {
             state: {
@@ -340,23 +364,23 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
             {
                 key: "InvoiceAmount",
-                label: "Invoice (₹)",
+                label: "Invoice Amount",
                 width: "14",
                 sortable: false,
                 align: "right",
-                render: value => formatCurrency(value) || '0'
+                render: value => value || '0'
             },
             {
                 key: "PaymentAmount",
-                label: "Paid (₹)",
+                label: "Paid Invoice Amount",
                 width: "14",
                 sortable: false,
                 align: "right",
-                render: value => formatCurrency(value) || '0'
+                render: value => value || '0'
             },
             {
                 key: "PendingAmount",
-                label: "Pending (₹)",
+                label: "Pending Amount",
                 width: "14",
                 sortable: false,
                 align: "right",
@@ -365,7 +389,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     const paid = Number(row.PaymentAmount || 0);
                     const pending = invoice - paid;
 
-                    return pending >= 0 ? formatCurrency(pending) : '0';
+                    return pending >= 0 ? pending : 0;
                 }
             },
 
@@ -727,22 +751,23 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
                                             <div className="flex items-center gap-2">
                                                 {canMakePaymentAction && row.ApprovalStatus.toUpperCase() === "APPROVED" && (
-                                                    <div className="ml-4 mt-2 whitespace-nowrap">
+                                                    <div className="ml-4 whitespace-nowrap">
 
                                                         {pending > 0 ? (
                                                             <Button
-                                                                color="blue"
-                                                                variant="solid"
-                                                                size="md"
-                                                                style={{ width: '140px', height: '37px' }}
-                                                                onClick={() => handleAddPaidBrokerageBooking(row)}>
+                                                                size="sm"
+                                                                style={{
+                                                                    color: '#FFFFFF',
+                                                                    padding: '4px 8px',
+                                                                    backgroundColor: '#135BEC'
+                                                                }}
+                                                                onClick={() => handleAddPaidBrokerageBooking(row)}
+                                                            >
                                                                 Make Payment
                                                             </Button>
                                                         ) : (
                                                             <div>
-                                                                 <span className="px-4 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
-                                                                                        Fully Paid
-                                                                                      </span>
+                                                                <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-1 rounded-md inline-block">Fully Paid</span>
                                                             </div>
                                                         )}
 

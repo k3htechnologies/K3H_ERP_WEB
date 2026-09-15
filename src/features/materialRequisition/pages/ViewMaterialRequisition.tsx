@@ -9,13 +9,12 @@ import Overview from "@/features/materialRequisition/components/Overview";
 import PurchaseOrder from "@/features/materialRequisition/components/PurchaseOrder";
 import GRN from "@/features/materialRequisition/components/GRN/GRN";
 import type { DeleteMaterialRequisitionRequest, FilterMaterialRequisitionOverview, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
-import { Button, Input } from "@/ui/components/forms";
+import { Input } from "@/ui/components/forms";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
-import { CircleX, Copy } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { FinalizedVendor } from "@/features/materialRequisition/components/FinalizedVendor";
@@ -52,9 +51,12 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
 
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
+
+    const { canAction: canMaterialRequisitionView} = useMenuPermissions('/materialRequisition');
     const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
+
     const currentUniquekey = listState.Uniquekey
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
@@ -365,53 +367,28 @@ export const ViewMaterialRequisition: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="flex justify-between">
-                <HeaderActionBar
-                    subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={materialRequisitionStatus ?? ''}
-                    cancelText="Cancel"
-                    onCancel={() => handleBackToListMaterialRequisition()}
-                />
+                <div className="flex-1">
+                    <HeaderActionBar
+                        subTitleText={systemGeneratedCode ?? "-"}
+                        subSubTitleText={materialRequisitionStatus ?? ''}
+                        subSubSubTitleText={listState.VendorName ?? ''}
+                        cancelText="Cancel"
+                        onCancel={() => handleBackToListMaterialRequisition()}
 
-                <div className="flex justify-end gap-4">
-                    {matrialRequisitionData?.IsCopy && activeTab === 'Details' && (
-                        <Button
-                            size="mxs"
-                            color="transparent"
-                            style={{
-                                color: '#135BEC',
-                                padding: '4px 8px',
-                                backgroundColor: '#DBEAFE'
-                            }}
-                            onClick={() => {
-                                handleOpenRequisitionModal();
-                            }}
-                        >
-                            <Copy className="h-4 w-4" color="blue" />
-                            Copy Entry
-                        </Button>
-                    )}
 
-                    {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && matrialRequisitionData?.FinalVendor && activeTab === 'Details' && (
-                        <div className="flex justify-end pb-2">
-                            <Button
-                                size="mxs"
-                                color="transparent"
-                                style={{
-                                    color: '#E92C2C',
-                                    padding: '4px 8px',
-                                    backgroundColor: '#FFF2F2'
-                                }}
+                        ExtraButtontitleText="Action"
+                        ExtraButtonText="Copy"
+                        onExtraButton={() => handleOpenRequisitionModal()}
+                        canActionExtraButtonText={canMaterialRequisitionView && matrialRequisitionData?.IsCopy && activeTab === 'Details' && listState.MaterialRequisitionStatus.toUpperCase()!=="COMPLETED"}
 
-                                onClick={() => {
-                                    setSelectedMaterialRequisitionItem(matrialRequisitionData);
-                                    setIsCloseRequisitionDialogOpen(true);
-                                }}
-                            >
-                                <CircleX className="h-5 w-5 text-red-600 fill-red-100" />
-                                Close
-                            </Button>
-                        </div>
-                    )}
+                        ExtraExtraButtonText="Close"
+                        onExtraExtraButton={() => {
+                            setSelectedMaterialRequisitionItem(matrialRequisitionData);
+                            setIsCloseRequisitionDialogOpen(true);
+                        }}
+                        canActionExtraExtraButton={canMaterialRequisitionView && activeTab === 'Details' && listState.MaterialRequisitionStatus.toUpperCase()!=="COMPLETED"}
+                    />
+
                 </div>
             </div>
 
@@ -420,6 +397,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
                     islarge={true}
+                    tabWidth={16}
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
@@ -431,14 +409,16 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} />)}
             {activeTab === 'Invoice' && <Invoice />}
 
+
+
             <Modal
                 isOpen={isEditModalOpen}
                 title={" Material Requisition Details"}
                 onClose={handleEditRequisitionModal}
                 onSubmit={handleCopyMaterialRequisition}
-                saveText={"save"}
+                saveText={"Add"}
                 loading={isLoading}
-                size="large-half"
+                size="large75"
             >
                 <div className="space-y-4 bg-white rounded-xll shadow-sm border border-gray-200">
                     <DataTableEditable
@@ -456,8 +436,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                     setSelectedMaterialRequisitionItem(null);
                 }}
                 onConfirm={handleCloseRequisition}
-                title="Close Material Requisition"
-                message={`Are you sure you want to Close this Material Requisition?`}
+                title="Confirm Material Requisition Closure?"
+                message={`Are you sure you want to close this Material Requisition? Once closed, no further changes can be made.?`}
                 confirmText="Close"
                 cancelText="Cancel"
                 loading={isLoading}

@@ -483,7 +483,7 @@ export const AddUpdateGRN = () => {
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
 
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">GRN Details</h3>
 
                         {materialList.length > 0 ? (
                             <div className="border border-[#33333321] rounded-xl overflow-hidden mb-4 overflow-y-auto thin-scroll">

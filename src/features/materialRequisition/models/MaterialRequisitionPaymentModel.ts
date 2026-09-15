@@ -29,6 +29,14 @@ export interface MaterialRequisitionPaymentData {
     TransactionReceiptURL: string | null
     RemoveTransactionReceiptURL: string | ''
     IsAdvance: boolean | false
+
+    ProjectBankListMasterId: number;
+    ProjectBankName: string;
+    ProjectAccountNumber: string;
+    ProjectIFSCCode: string;
+    ProjectNatureOfAccount: string;
+    ProjectAcType: string;
+
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -58,6 +66,9 @@ export interface AddUpdateMaterialRequisitionPayment {
     TransactionReceiptURL: string | null
     RemoveTransactionReceiptURL: string | ''
     IsAdvance: boolean | false
+    ProjectBankListMasterId: number | 0
+    ProjectBankName: string | null
+
 }
 
 export interface DeleteMaterialRequisitionPayment {

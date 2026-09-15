@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterWithPaginationMaterialRequisition } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterMaterialRequisitionDetails } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -127,6 +127,7 @@ export const AddUpdateMaterialRequisition = () => {
         IsTolerant: boolean;
         RequiredDate: string;
         Quantity: number;
+        ReceivedQuantity: number;
     } | null>(null);
 
     const [inDirectSubMaterialDetails, setInDirectSubMaterialDetails] = useState<SubMaterialMasterData | null>(null);
@@ -225,6 +226,12 @@ export const AddUpdateMaterialRequisition = () => {
 
         loadProjectBudget();
     }, [projectId]);
+
+    useEffect(() => {
+    if (!MaterialRequisitionTab.some(tab => tab.id === active)) {
+        setActive(MaterialRequisitionTab[0]?.id ?? "Direct");
+    }
+}, [hasDirect, hasInDirect, active]);
 
     const handleAddMaterial = async () => {
         setErrors({});
@@ -361,6 +368,7 @@ export const AddUpdateMaterialRequisition = () => {
                     MaterialRate: Number(selected.MaterialCost ?? 0),
                     LeadTimeInDays: Number(selected.Level4LeadTimeInDays ?? 0),
                     Quantity: Number(selected.Quantity ?? 0),
+                    ReceivedQuantity: Number(selected.ReceivedQuantity ?? 0),
                     IsTolerant: selected.Level4IsTolerant ?? false,
                     RequiredDate: formatDate_dd_mm_yyyy(row.RequiredDate) || ""
                 });
@@ -466,7 +474,22 @@ export const AddUpdateMaterialRequisition = () => {
                 label: "Type",
                 align: "left",
                 width: "30",
-                render: (value) => value || "-"
+                render: (value) => {
+                return (
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="180px"
+                            tooltipThreshold={30}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            
+                        />
+
+                        
+                    </div>
+                );
+            }
             }
         ];
 
@@ -511,6 +534,7 @@ export const AddUpdateMaterialRequisition = () => {
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full font-medium text-red-900 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -541,6 +565,7 @@ export const AddUpdateMaterialRequisition = () => {
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full font-medium text-red-900 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -1076,6 +1101,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 MaterialRate: Number(selected.MaterialCost ?? 0),
                                                 LeadTimeInDays: leadTime,
                                                 Quantity: Number(selected.Quantity ?? 0),
+                                                ReceivedQuantity: Number(selected.ReceivedQuantity ?? 0),
                                                 IsTolerant: selected.Level4IsTolerant ?? false,
                                                 RequiredDate: requiredDate,
                                             });
@@ -1127,7 +1153,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 return;
                                             }
 
-                                            const maxQuantity = Number(subMaterialDetails?.Quantity ?? 0);
+                                            const maxQuantity = Number(subMaterialDetails?.Quantity ?? 0)-Number(subMaterialDetails?.ReceivedQuantity ?? 0);
 
                                             if (quantity > maxQuantity) {
                                                 setErrors(prev => ({
@@ -1148,7 +1174,7 @@ export const AddUpdateMaterialRequisition = () => {
                                             }));
                                         }}
                                         placeholder="Enter Quantity"
-                                        max={subMaterialDetails?.Quantity}
+                                        max={-Number(subMaterialDetails?.Quantity) -Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
                                         error={errors.MaterialQuantity}
                                         rightIcon={subMaterialDetails?.UomCode}
                                     />
@@ -1184,6 +1210,8 @@ export const AddUpdateMaterialRequisition = () => {
                                             <FieldItem label="Material Rate" value={formatCurrency(subMaterialDetails.MaterialRate)} />
 
                                             <FieldItem label="Required Quantity" value={subMaterialDetails.Quantity} />
+
+                                            <FieldItem label="Received Quantity" value={subMaterialDetails.ReceivedQuantity} />
 
                                             <FieldItem label="Lead Time (Days)" value={subMaterialDetails.LeadTimeInDays ?? 0} />
 

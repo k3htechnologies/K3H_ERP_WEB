@@ -16,6 +16,7 @@ interface TabsProps {
   isChips?: boolean;
   isvertical?: boolean;
   istoggleTab?: boolean;
+  tabWidth?: number;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -26,6 +27,7 @@ export const Tabs: React.FC<TabsProps> = ({
   isChips = false,
   isvertical = false,
   istoggleTab = false,
+  tabWidth=20
 }) => {
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
@@ -38,7 +40,6 @@ export const Tabs: React.FC<TabsProps> = ({
     }
   }, [defaultActive]);
 
-  // 🔹 Auto-select first tab when tabs change
   useEffect(() => {
     if (tabs.length > 0 && !defaultActive) {
       setActive(tabs[0].id);
@@ -155,7 +156,7 @@ export const Tabs: React.FC<TabsProps> = ({
               onMouseEnter={() => setHoveredTab(tab.id)}
               onMouseLeave={() => setHoveredTab(null)}
               style={{
-                flex: islarge ? "0 0 calc(20% - 10px)" : "unset",
+                flex: islarge ? `0 0 calc(${tabWidth}% - 10px)` : "unset",
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -166,7 +167,7 @@ export const Tabs: React.FC<TabsProps> = ({
                 border: islarge ? `0.5px solid #135bec63` : isActive ? `1px solid ${COLORS.primary1}` : "2px solid transparent",
                 color: islarge && isActive ? '#135BEC' : isActive ? COLORS.black : isHovered ? COLORS.primary1 : "#4B5563",
                 fontWeight: isActive || isHovered ? 600 : 400,
-                backgroundColor: isActive ? "#135bec29" : ""
+                backgroundColor: isActive ? "#135bec29" : "",
               }}
             >
               {tab.label}

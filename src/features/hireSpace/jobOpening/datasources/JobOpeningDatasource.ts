@@ -25,15 +25,16 @@ export class JobOpeningDatasourceImpl implements JobOpeningDatasource {
     async pullJobOpening(params: FilterWithPaginationJobOpeningRequest, signal?: AbortSignal): Promise<JobOpeningListResponse> {
         try {
             const queryParams = new URLSearchParams({
-                pageSize: (params.PageSize ?? 10).toString(),
-                pageNumber: (params.PageNumber ?? 1).toString(),
-                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
+                pageSize: params.PageSize.toString(),
+                pageNumber: params.PageNumber.toString(),
             })
 
             if (params.JobOpeningMasterId) queryParams.append('JobOpeningMasterId', params.JobOpeningMasterId.toString())
             if (params.DepartmentMasterId) queryParams.append('DepartmentMasterId', params.DepartmentMasterId.toString())
-            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim())
             if (params.JobRoleMasterId) queryParams.append('JobRoleMasterId', params.JobRoleMasterId.toString())
+            if (params.WorkMode?.trim()) queryParams.append('WorkMode', params.WorkMode.trim())
+            if (params.EmploymentType?.trim()) queryParams.append('EmploymentType', params.EmploymentType.trim())
+            if (params.ExperienceYears) queryParams.append('ExperienceYears', params.ExperienceYears.toString())
             if (params.RoleName?.trim()) queryParams.append('RoleName', params.RoleName.trim())
             if (params.JobRoleStatus !== undefined) queryParams.append('JobRoleStatus', params.JobRoleStatus.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
@@ -75,7 +76,7 @@ export class JobOpeningDatasourceImpl implements JobOpeningDatasource {
     async deleteJobOpening(params: DeleteJobOpeningRequest): Promise<JobOpeningDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
-                JobOpeningId: (params.JobOpeningMasterId ?? 0).toString(),
+                JobOpeningMasterId: (params.JobOpeningMasterId ?? 0).toString(),
                 UniqueKey: params.UniqueKey ?? '',
             })
 

@@ -1,6 +1,6 @@
 export const handleExportFile = (
   response: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other'| 'VENDOR COMPARISON CHART' ,
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'Zip',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string
@@ -21,7 +21,7 @@ export const handleExportFile = (
 
 export const handleBase64Export = (
   fileData: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'VENDOR COMPARISON CHART',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' |  'Zip',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string,
@@ -49,6 +49,8 @@ export const handleBase64Export = (
               ? 'image/png'
               : exportType === 'Word'
                 ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                 : exportType === 'Zip'
+                  ? 'application/zip'
                 : 'application/octet-stream'
       );
 
@@ -84,8 +86,8 @@ export const handleBase64Export = (
             ? 'png'
             : exportType === 'Word'
               ? 'docx'
-              : exportType === 'VENDOR COMPARISON CHART'
-              ? 'xlsx'
+              : exportType === 'Zip'
+                ? 'zip'
               : 'bin');
 
     link.download =

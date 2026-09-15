@@ -11,7 +11,7 @@ import { Loader } from "@/core/utils/loader";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button } from "@/ui/components/forms";
-import {  Maximize2, Minimize2 } from "lucide-react";
+import { Maximize2, Minimize2 } from "lucide-react";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -57,6 +57,7 @@ export const PurchaseOrder: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const [isMaximized, setIsMaximized] = useState(false);
+
     const { canAction: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
 
     const [purchaseOrderFiles, setPurchaseOrderFiles] = useState<(File | string)[]>([]);
@@ -296,7 +297,7 @@ export const PurchaseOrder: React.FC = () => {
 
             <div className="flex justify-end gap-2">
 
-                {!hasPurchaseOrder && canGeneratePurchaseOrder && (
+                {!hasPurchaseOrder && canGeneratePurchaseOrder && listState.MaterialRequisitionStatus.toUpperCase() !== "COMPLETED" && (
                     <>
                         <Button
                             color="red"
@@ -375,21 +376,22 @@ export const PurchaseOrder: React.FC = () => {
                         </span>
                     </div>
 
-
-                    <div className="flex justify-end mt-2 mb-2 mr-2">
-                        <Button
-                            color="red"
-                            variant="solid"
-                            onClick={() =>
-                                handleConfirmationDialogBoxOpen(
-                                    materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData
-                                )
-                            }
-                            className="px-4 py-2 rounded-md"
-                        >
-                            Delete
-                        </Button>
-                    </div>
+                    {canGeneratePurchaseOrder && listState.MaterialRequisitionStatus.toUpperCase() !== "COMPLETED" && (
+                        <div className="flex justify-end mt-2 mb-2 mr-2">
+                            <Button
+                                color="red"
+                                variant="solid"
+                                onClick={() =>
+                                    handleConfirmationDialogBoxOpen(
+                                        materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData
+                                    )
+                                }
+                                className="px-4 py-2 rounded-md"
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    )}
 
                 </div>
             ) :

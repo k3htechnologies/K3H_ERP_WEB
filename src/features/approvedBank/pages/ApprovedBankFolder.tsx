@@ -22,6 +22,7 @@ import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { useApprovedBankListState } from '@/features/approvedBank/context/ApprovedBankListStateContext';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import { handleExportFile } from '@/core/utils/exportFile';
 
 const initialFormState = (): AddUpdateApprovedBankFolderRequest => ({
     ApprovedBankFolderId: 0,
@@ -67,6 +68,72 @@ export const ApprovedBankFolder: React.FC = () => {
     >([]);
 
     const [selectedApprovedBankId, setSelectedApprovedBankId] = useState<string[]>([]);
+
+    const { pagination: bankPagination, setPagination: setBankPagination } = usePagination(20);
+    const [isFetchingMoreBank, setIsFetchingMoreBank] = useState(false);
+
+    const visibleBankIds = bankListOptions.map(b => b.value).filter(Boolean) as string[];
+    const isAllBankVisibleSelected = visibleBankIds.length > 0 && visibleBankIds.every(id => selectedApprovedBankId.includes(id));
+
+    const toggleBankSelectAllVisible = () => {
+        setSelectedApprovedBankId(prev => {
+            let updated: string[];
+            if (isAllBankVisibleSelected) {
+                updated = prev.filter(id => !visibleBankIds.includes(id));
+            } else {
+                updated = Array.from(new Set([...prev, ...visibleBankIds]));
+            }
+
+            setFormData(f => ({
+                ...f,
+                ProjectId: Number(projectId),
+                BankListMasterId: updated.join(',')
+            }));
+
+            return updated;
+        });
+
+        if (errors.BankListMasterId) {
+            setErrors(e => ({ ...e, BankListMasterId: '' }));
+        }
+    };
+
+    const searchBank = async (searchValue: string) => {
+        setSearchBankNameTerm(searchValue);
+        await loadBankList(1, searchValue);
+    };
+
+    const debouncedBankSearch = useDebouncedCallback((value: string) => {
+        searchBank(value);
+    }, 350);
+
+    const loadBankList = async (page: number, searchValue: string = "") => {
+        const response = await fetchBankListMasterDropdown(page, { value: searchValue.trim() });
+
+        setBankListOptions(prev =>
+            page === 1
+                ? response.itemList
+                : [...prev, ...(Array.isArray(response.itemList) ? response.itemList : [])]
+        );
+
+        setBankPagination({
+            currentPage: page,
+            totalRecords: response.totalNumberOfRecord,
+            totalPages: Math.ceil(response.totalNumberOfRecord / bankPagination.pageSize),
+        });
+    };
+
+    const handleBankListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const el = e.currentTarget;
+        const threshold = 60;
+        if (el.scrollHeight - el.scrollTop <= el.clientHeight + threshold) {
+            if (bankPagination.currentPage < (bankPagination.totalPages || 0) && !isFetchingMoreBank) {
+                const nextPage = bankPagination.currentPage + 1;
+                setIsFetchingMoreBank(true);
+                loadBankList(nextPage, searchBankNameTerm).finally(() => setIsFetchingMoreBank(false));
+            }
+        }
+    };
 
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions();
@@ -151,6 +218,38 @@ export const ApprovedBankFolder: React.FC = () => {
     }, [projectId, pagination.pageSize, addToast])
     //#endregion
 
+    // #region Download
+    const handleDownloadFolder = async (row: ApprovedBankFolderData, exportType: 'Zip' = 'Zip') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationApprovedBankFolderRequest = {
+
+                    PageNumber: 1,
+                    PageSize: pagination.totalRecords,
+                    ProjectId: Number(projectId) || 0,
+                    ApprovedBankFolderId: row.ApprovedBankFolderId,
+                    BankName: row.BankName ?? undefined,
+                    ExportType: exportType,
+                    SortBy: getSortByParam(sortInfo ?? null, ApprovedBankFolderColumns),
+                };
+
+                const response = await approvedBankFolderService.apiCallPullApprovedBankFolder(params);
+
+                handleExportFile(response, exportType, row.BankName ?? 'Approved Bank', addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Download'
+        );
+    };
+
+
     //#region INIT
     useEffect(() => {
 
@@ -161,12 +260,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
     useEffect(() => {
         if (!isAddUpdateModalOpen) return;
-        const loadBankList = async () => {
-
-            const response = await fetchBankListMasterDropdown(1);
-            setBankListOptions(response.itemList);
-        };
-        loadBankList();
+        loadBankList(1, searchBankNameTerm);
     }, [isAddUpdateModalOpen]);
 
     // HANDLE ADD APPROVED BANK MODAL
@@ -263,7 +357,7 @@ export const ApprovedBankFolder: React.FC = () => {
             render: (value, row) => (
                 <TooltipText
                     text={value || '-'}
-                    maxWidth="250px"
+                    maxWidth="500px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
                 />
@@ -311,6 +405,7 @@ export const ApprovedBankFolder: React.FC = () => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
+                                    handleDownloadFolder(row);
                                 }}
                                 color='transparent'
                                 isborderRadius
@@ -327,16 +422,28 @@ export const ApprovedBankFolder: React.FC = () => {
                 );
             }
         }
-    ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
+    ], [handleNavigateToView, handleConfirmationDialogBoxOpen, canAction]);
     //#endregion
 
     const handleAddApprovedBankFolder = () => {
         setDeleteApprovedBankFolderData(null);
         setSelectedApprovedBankId([]);
-        setFormData(initialFormState());
+        setFormData(() => {
+            return {
+                ...initialFormState(),
+                ProjectId: Number(projectId),
+            }
+        });
+        setBankListOptions([]);
 
         setSearchBankNameTerm('');
         setErrors({});
+        setBankPagination({
+            currentPage: 1,
+            pageSize: bankPagination.pageSize,
+            totalRecords: 0,
+            totalPages: 0,
+        });
         setIsAddUpdateModalOpen(true);
     }
 
@@ -369,29 +476,45 @@ export const ApprovedBankFolder: React.FC = () => {
                     const isAdd = formData.ApprovedBankFolderId === 0;
 
                     if (isAdd) {
+                        const newRecords = response.right.Data as ApprovedBankFolderData[];
 
-                        const newRecord = response.right.Data[0] as ApprovedBankFolderData
-                        setApprovedBankFolderList(prevData => [newRecord, ...prevData]);
+                        if (newRecords && newRecords.length > 0) {
+                            setApprovedBankFolderList(prevData => [
+                                ...newRecords,
+                                ...prevData
+                            ]);
 
-                        fetchApprovedBankFolderList();
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+                            setPagination({
+                                ...pagination,
+                                totalRecords: pagination.totalRecords + newRecords.length,
+                                totalPages: Math.ceil(
+                                    (pagination.totalRecords + newRecords.length) / pagination.pageSize
+                                )
+                            });
+                        }
+
+                        addToast({
+                            type: 'success',
+                            title: response.right.SuccessMessage[0]
                         });
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     } else {
+                        const updatedRecord =
+                            response.right.Data[0] as ApprovedBankFolderData;
 
-                        const updatedRecord = response.right.Data[0] as ApprovedBankFolderData;
+                        if (updatedRecord) {
+                            setApprovedBankFolderList(prevData =>
+                                prevData.map(item =>
+                                    item.ApprovedBankFolderId === formData.ApprovedBankFolderId
+                                        ? updatedRecord
+                                        : item
+                                )
+                            );
+                        }
 
-                        setApprovedBankFolderList(prevData =>
-                            prevData.map(item =>
-                                item.ApprovedBankFolderId === formData.ApprovedBankFolderId
-                                    ? updatedRecord
-                                    : item
-                            )
-                        )
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                        addToast({
+                            type: 'success',
+                            title: response.right.SuccessMessage[0]
+                        });
                     }
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -486,7 +609,7 @@ export const ApprovedBankFolder: React.FC = () => {
                 onClearSearch={clearSearchApprovedBankFolder}
 
                 // ADD
-                isShowAddButton={canAction}
+                isShowAddButton={canAction && (projectId ?? 0) > 0}
                 addTitle="Add"
                 onAdd={handleAddApprovedBankFolder}
             />
@@ -513,12 +636,15 @@ export const ApprovedBankFolder: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setSelectedApprovedBankId([]);
+                    setBankListOptions([]);
                     setErrors({});
                     setSearchBankNameTerm('');
                 }}
                 onCancel={() => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
+                    setSelectedApprovedBankId([]);
+                    setBankListOptions([]);
                     setErrors({});
                     setSearchBankNameTerm("");
                 }}
@@ -526,53 +652,79 @@ export const ApprovedBankFolder: React.FC = () => {
                 onSubmit={handleAddUpdateApprovedBankFolder}
                 saveText='Add'
                 loading={isLoading}
-                size="small-half"
+                size="large-half"
             >
-                <div className=" space-y-4 ">
+                <div className="space-y-4">
 
-                    <Input
-                        type="text"
-                        placeholder="Search by Bank Name"
-                        value={searchBankNameTerm}
-                        onChange={e => {
-                            setSearchBankNameTerm(e.target.value);
-                        }}
-                        leftIcon={<Search className="h-8 w-8 pb-1 text-gray-400" />}
-                        className="w-full p-12 border border-gray-300 rounded mb-1"
-                    />
+                    <div className="px-2 py-2">
 
-                    <div className="overflow-x-auto thin-scroll">
-                        {bankListOptions
-                            .filter(bank =>
-                                bank.label.toLowerCase().includes(searchBankNameTerm.toLowerCase())
-                            ).length === 0 ? (
-                            <div className="flex items-center justify-center h-100 text-gray-500 text-sm">
-                                <NoDataView />
+                        <div className="flex items-center gap-3 w-full">
+
+                            <Checkbox id="select-all-banks"
+                                checked={isAllBankVisibleSelected}
+                                onChange={() => toggleBankSelectAllVisible()}
+                            />
+
+                            <div className="relative min-w-0 flex-1">
+                                <Input
+                                    type="text"
+                                    value={searchBankNameTerm}
+                                    onChange={(e) => {
+                                        const v = e.target.value;
+                                        setSearchBankNameTerm(v);
+                                        debouncedBankSearch(v);
+                                    }}
+                                    placeholder="Search By Bank Name"
+                                    leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                                />
                             </div>
 
-                        ) : (
-                            bankListOptions
-                                .filter(bank =>
-                                    bank.label.toLowerCase().includes(searchBankNameTerm.toLowerCase())
-                                )
-                                .map(bank => {
-                                    const checked = selectedApprovedBankId.includes(bank.value);
+                            <span className="text-sm text-gray-600 whitespace-nowrap ml-auto">
+                                {selectedApprovedBankId.length} selected
+                            </span>
+
+                        </div>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200" onScroll={handleBankListScroll} style={{ maxHeight: '55vh' }}>
+                            {bankListOptions.length > 0 ? (
+                                bankListOptions.map((bank, _i) => {
+                                    const id = bank.value;
+                                    const checked = selectedApprovedBankId.includes(id);
+
                                     return (
-                                        <label
-                                            key={bank.value}
-                                            className="flex items-center justify-between gap-2 px-6 py-3 border-b border-blue-200 cursor-pointer last:border-b-0"
-                                        >
-                                            <span className="text-sm text-gray-800">{bank.label}</span>
-                                            <Checkbox
-                                                type="checkbox"
-                                                checked={checked}
-                                                onChange={() => handleAddBankModal(bank.value)}
-                                                className="w-4 h-4 cursor-pointer"
-                                            />
-                                        </label>
+                                        <div key={id} className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
+                                            onClick={(ev) => {
+                                                if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
+                                                handleAddBankModal(id);
+                                            }}>
+                                            <div className="flex items-center">
+                                                <Checkbox
+                                                    checked={checked}
+                                                    onChange={() => handleAddBankModal(id)}
+                                                    onClick={(ev) => ev.stopPropagation()}
+                                                    aria-label={`Select ${bank.label}`}
+                                                />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-3">
+                                                    <p className="text-sm text-gray-800 whitespace-normal break-words">
+                                                        {bank.label}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     );
                                 })
-                        )}
+                            ) : (
+                                <NoDataView message="No bank found" />
+                            )}
+
+                            {isFetchingMoreBank && (
+                                <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -585,7 +737,7 @@ export const ApprovedBankFolder: React.FC = () => {
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteApprovedBankFolder}
                 loading={isLoading}
-                pageName='Approved Bank Folder'
+                pageName='Approved Bank'
             />
         </div>
     );

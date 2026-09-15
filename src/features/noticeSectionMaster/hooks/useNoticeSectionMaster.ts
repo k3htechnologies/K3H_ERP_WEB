@@ -261,7 +261,6 @@ export const useNoticeSectionMaster = () => {
         setTempFilters({})
         setFilters({})
         loadNoticeSections(1, {})
-        setShowFilterPopup(false)
     }
 
     const handleFilterChange = (key: string, value: string) => {
@@ -275,7 +274,7 @@ export const useNoticeSectionMaster = () => {
         const newErrors: { [key: string]: string } = {}
 
         if (formData.NoticeSection.trim() === "") {
-            newErrors.NoticeSection = "Notice Section is required";
+            newErrors.NoticeSection = "Notice U/S is required";
         }
 
         if (formData.GovernmentCompliance.trim() === "") {

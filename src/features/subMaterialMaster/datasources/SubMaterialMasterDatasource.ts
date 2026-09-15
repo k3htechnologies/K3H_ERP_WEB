@@ -23,6 +23,7 @@ export class SubMaterialMasterDatasourceImpl implements SubMaterialMasterDatasou
                 IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
+             if (params.MaterialMasterId) queryParams.append('MaterialMasterId', params.MaterialMasterId.toString());
             if (params.MaterialName?.trim()) queryParams.append('MaterialName', params.MaterialName.trim());
             if (params.SubMaterialMasterId) queryParams.append('SubMaterialMasterId', params.SubMaterialMasterId.toString());
             if (params.SubMaterialName?.trim()) queryParams.append('SubMaterialName', params.SubMaterialName.trim());

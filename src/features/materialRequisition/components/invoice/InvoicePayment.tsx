@@ -15,7 +15,6 @@ import { materialRequisitionInvoiceService } from "@/features/materialRequisitio
 import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
-import { Button } from "@/ui/components/forms";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
@@ -401,17 +400,11 @@ const InvoicePayment: React.FC = () => {
                                 <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-2 rounded-md inline-block">Paid</span>
                             </div>
                         ) : (
-                            <Button
-                                size="mxs"
-                                color="transparent"
+                            <button
                                 onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
-                                style={{
-                                    color: '#FFFFFF',
-                                    padding: '4px 8px',
-                                    backgroundColor: '#135BEC'
-                                }}                    >
-                                Make Payment
-                            </Button>
+                                className="flex px-3 py-0.3 mr-2 border border-[#135BEC] text-[#135BEC] bg-white hover:bg-black-50 rounded-md gap-2">
+                                <span> Make Payment</span>
+                            </button>
                         )}
                     </div>
                 </div>

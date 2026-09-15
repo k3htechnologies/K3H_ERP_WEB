@@ -52,10 +52,11 @@ export const MaterialRequisition: React.FC = () => {
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
     const navigate = useNavigate();
-    const { canAction, canExport } = useMenuPermissions();
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const [vendorName, setVendorName] = useState<string | null>("");
+    const { canAction, canExport } = useMenuPermissions();
+
 
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
@@ -134,7 +135,8 @@ export const MaterialRequisition: React.FC = () => {
             MaterialRequisitionStage: row.MaterialRequisitionStage ?? "",
             MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "",
             SystemGeneratedCode: row.SystemGeneratedCode ?? "",
-            VendorFinalizationApprovalStatus:row.VendorFinalizationApprovalStatus,
+            VendorFinalizationApprovalStatus: row.VendorFinalizationApprovalStatus,
+            VendorName: row.FinalVendor,
             Uniquekey: row.Uniquekey ?? ""
         });
         navigate('/materialRequisition/view');
@@ -274,7 +276,31 @@ export const MaterialRequisition: React.FC = () => {
                     approvalStatus={value || "-"}
                     showApproval={row.IsApproval}
                     isIcons={true}
-                    onHistory={() => handleApprovalLog(row)}
+                    onHistory={  ["GET QUOTATION", "FINALIZED VENDOR","GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
+                            ? undefined
+                            : () => handleApprovalLog(row)
+                    }
+
+                />
+
+            )
+        },
+         {
+            key: "InvoiceApprovalStatus",
+            label: "Invoice Status",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApprovalInvoice}
+                    isIcons={true}
+                    onHistory={  ["GET QUOTATION", "FINALIZED VENDOR","GET COMPARE","ADD INVOICE","GENERATE PURCHASE ORDER"].includes(row?.MaterialRequisitionStage?.toUpperCase())
+                            ? undefined
+                            : () => handleApprovalLog(row)
+                    }
 
                 />
 
@@ -320,7 +346,10 @@ export const MaterialRequisition: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const canActionStage = row.MaterialRequisitionStage === 'Get Quotation';
+                const canActionStage =
+                    canAction &&
+                    row.VendorFinalizationApprovalStatus?.toUpperCase() !== 'APPROVED' &&
+                    row.MaterialRequisitionStage?.toUpperCase() !== 'COMPLETED';
 
                 return (
                     <div className="flex items-center justify-center gap-1">

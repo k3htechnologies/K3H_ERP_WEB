@@ -3,13 +3,9 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationJobRoleMasterRequest {
     PageSize: number
     PageNumber: number
-    IsCheckPermission?: boolean
     JobRoleId?: number
     DepartmentId?: number
-    DepartmentName?: string
-    RoleName?: string
-    RoleSkills?: string
-    IsActive?: boolean
+    JobRoleName?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -21,22 +17,17 @@ export interface JobDepartmentData {
     TotalRoles: number
 }
 
-export interface JobRoleSkillOption {
-    name?: string
-    label?: string
-}
-
 export interface JobRoleMasterData {
     JobRoleId: number
     UniqueKey: string
     DepartmentId: number
-    DepartmentName: string
+    DepartmentName?: string
     RoleName: string
     RoleDescription: string
     RoleQualification: string
     RoleResponsibility: string
     JobRequirement: string
-    RoleSkills: string | JobRoleSkillOption[] | null
+    RoleSkills: string
     IsCopy?: string
     IsActive?: boolean
     Status?: string
@@ -66,9 +57,6 @@ export interface DeleteJobRoleMasterRequest {
     JobRoleId: number
     UniqueKey: string
 }
-
-export type JobRoleStatusFilter = "active" | "inactive" | ""
-
 export type JobDepartmentListResponse = ApiResponse<JobDepartmentData[]>
 export type JobRoleMasterListResponse = ApiResponse<JobRoleMasterData[]>
 export type JobRoleMasterSaveResponse = ApiResponse<JobRoleMasterData[]>

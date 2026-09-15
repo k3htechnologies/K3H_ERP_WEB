@@ -5,15 +5,12 @@ import type {
     AddUpdateCandidateRemarkRequest,
     FilterWithPaginationCandidateRemarkRequest,
     AddUpdateCandidateStageRequest,
-    FilterWithPaginationCandidateApplicationTimelineRequest,
     CandidateListResponse,
     CandidateRemarkSaveResponse,
     CandidateRemarkListResponse,
     CandidateStageSaveResponse,
-    CandidateApplicationTimelineListResponse
 } from '@/features/hireSpace/jobOpening/models/CandidateModel'
 import * as E from 'fp-ts/Either'
-
 
 const candidateDatasource = new CandidateDatasourceImpl()
 
@@ -59,18 +56,6 @@ export const CandidateService = {
         try {
 
             return E.right(await candidateDatasource.addUpdateCandidateStage(params))
-
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code })
-
-        }
-    },
-
-    apiCallPullCandidateApplicationTimeline: async (params: FilterWithPaginationCandidateApplicationTimelineRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CandidateApplicationTimelineListResponse>> => {
-        try {
-
-            return E.right(await candidateDatasource.pullCandidateApplicationTimeline(params, options?.signal))
 
         } catch (error: any) {
 

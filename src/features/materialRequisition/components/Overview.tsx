@@ -1,6 +1,6 @@
 
-import {  useMemo } from "react";
-import type {  MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import { useMemo } from "react";
+import type { MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import type { MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -17,7 +17,7 @@ interface OverviewProps {
     materialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
 }
 
-export const Overview: React.FC<OverviewProps> = ({matrialRequisitionData, matrialRequisitionDetailData,  materialRequisitionInvoiceData }) => {
+export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData, materialRequisitionInvoiceData }) => {
 
     const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
 
@@ -62,9 +62,10 @@ export const Overview: React.FC<OverviewProps> = ({matrialRequisitionData, matri
                     render: (value) => (
                         <TooltipText
                             text={value || "-"}
-                            
+
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -95,6 +96,7 @@ export const Overview: React.FC<OverviewProps> = ({matrialRequisitionData, matri
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -171,7 +173,7 @@ export const Overview: React.FC<OverviewProps> = ({matrialRequisitionData, matri
 
     return (
         <div className="bg-white p-1 pt-5">
-           
+
             <div className="grid grid-cols-12 gap-3 pt-1">
 
                 <div className="col-span-5">
@@ -241,7 +243,7 @@ export const Overview: React.FC<OverviewProps> = ({matrialRequisitionData, matri
                             <FieldItem label="Base Amount" value={formatCurrency(matrialRequisitionData?.TotalPoAmount)} />
                             <FieldItem label="Total Tax" value={formatCurrency(matrialRequisitionData?.TotalTaxAmount)} />
                             <FieldItem label="Grand Total" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0) + Number(matrialRequisitionData?.TotalTaxAmount ?? 0))} />
-                           
+
                             <FieldItem label="Paid Amount (₹)" value={formatCurrency(matrialRequisitionData?.PaidAmount)} />
                             <FieldItem
                                 label="Pending Amount (₹)"
@@ -264,21 +266,21 @@ export const Overview: React.FC<OverviewProps> = ({matrialRequisitionData, matri
 
                 <div className="col-span-12">
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+                        <div className="bg-[#FCF1FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
 
                             <h4 className="text-sm font-semibold text-[#7E22CE] flex items-center gap-2">
                                 Material Details :
-                                <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#7E22CE] text-white text-xs font-bold">
+
+                                <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
                                     {matrialRequisitionDetailData.length}
                                 </span>
-                            </h4>
-                            <div className="flex items-center gap-2">
+                                :
 
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#7E22CE] text-[#ffffff] text-xs font-medium">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
                                     {matrialRequisitionDetailData?.[0]?.MaterialRequisitionType || "-"}
                                 </span>
+                            </h4>
 
-                            </div>
 
                         </div>
 

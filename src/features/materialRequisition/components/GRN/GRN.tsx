@@ -23,6 +23,7 @@ import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
@@ -344,20 +345,17 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                 title={'GRN Summary'}
                 loading={isLoading}
                 cancelText="cancel"
-                size="xl"
+                size="xxl"
             >
                 <div className="space-y-4">
                     {GRN.length === 0 ? (
                         <div className="flex flex-col justify-center items-center h-full">
-                            <NoDataView
-                                message="No Data Available"
-                            />
+                            <NoDataView message="No Data Available"/>
                         </div>
                     ) : (
                         <div>
                             {GRN?.map((item, index) => (
-                                <div key={index} className="bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4"
-                                >
+                                <div key={index} className="bg-[#EFF6FF] rounded-lg border border-gray-300 p-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-3">
                                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(item?.CreatedDate ?? '')} />
                                         <FieldItem label="Challan No." value={item?.ChallanNumber || '-'} />
@@ -374,8 +372,8 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                                         </div>
                                     </div>
 
-                                    <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300 h-[220px]">
-                                        <DataTableWithOutBorder
+                                    <div className="bg-white space-y-4 border border-gray-300">
+                                        <DataTableWithHeaderRowDivider
                                             columns={MaterialRequisitionGRNColumns}
                                             data={item?.MaterialRequisitionDetailGRNData ?? []}
                                             emptyMessage="No Material Requisition Found"
@@ -385,6 +383,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                                         />
                                     </div>
                                 </div>
+                               
                             ))}
                         </div>
                     )}

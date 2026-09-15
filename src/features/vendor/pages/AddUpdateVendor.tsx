@@ -671,9 +671,7 @@ export const AddUpdateVendor: React.FC = () => {
               allowedTypes={[
                 "image/jpeg",
                 "image/png",
-                "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/pdf"
               ]}
               maxFiles={5}
               onRemoveExisting={(url) => {
@@ -701,9 +699,7 @@ export const AddUpdateVendor: React.FC = () => {
               allowedTypes={[
                 "image/jpeg",
                 "image/png",
-                "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/pdf"
               ]}
               maxFiles={5}
               onRemoveExisting={(url) => {
@@ -731,9 +727,7 @@ export const AddUpdateVendor: React.FC = () => {
               allowedTypes={[
                 "image/jpeg",
                 "image/png",
-                "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "application/pdf"
               ]}
               maxFiles={5}
               onRemoveExisting={(url) => {

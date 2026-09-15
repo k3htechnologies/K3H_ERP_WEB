@@ -15,12 +15,14 @@ import * as E from "fp-ts/Either";
 import { materialRequisitionPaymentService } from "@/features/materialRequisition/services/MaterialRequisitionPaymentService";
 import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
 import type { FilterWithPaginationMaterialRequisitionInvoice } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { Loader } from "@/core/utils/loader";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import type { ProjectWithBankDetails } from "@/features/projectMaster/models/ProjectMasterModel";
+import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
 
 const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ totalAmount = 0, editData }) => {
 
@@ -33,6 +35,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
     const systemGeneratedCode = listState.SystemGeneratedCode;
+    const [projectWithBankData, setProjectWithBankData] = useState<ProjectWithBankDetails | null>(null);
 
     const initialFormState = () => ({
         PaymentMode: "",
@@ -45,18 +48,27 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
         PendingAmount: totalAmount,
         TDSAmount: 0,
         TransactionNumber: "",
-        IsAdvance: false
+        IsAdvance: false,
+        ProjectBankListMasterId: 0,
+        ProjectBankName: ""
     });
 
     const [formData, setFormData] = useState(initialFormState());
     const [errors, setErrors] = useState<any>({});
-    const [dropdownLabels, setDropdownLabels] = useState<{ bankName?: string; }>({});
+    const [dropdownLabels, setDropdownLabels] = useState<{ bankName?: string; projectBankName?: string; }>({});
     const [transactionFiles, setTransactionFiles] = useState<(File | string)[]>([]);
     const [removedFiles, setRemovedFiles] = useState<string[]>([]);
     const [existingURL, setExistingURL] = useState<string>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const toNumber = (value: any) => Number(value) || 0;
+
+    const fetchProjectBankList = useCallback(async (pageNumber: number, params?: { value?: string }) => {
+        return fetchProjectBankDropdown(pageNumber, {
+            projectId: projectId || 0,
+            bankName: params?.value || ""
+        });
+    }, [projectId]);
 
     const sanitizeAmount = (value: string) =>
         value.replace(/[^0-9.]/g, "");
@@ -330,115 +342,177 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                 />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"  >
+            <div className="space-y-4 pb-3">
 
-                <SinglePageSelection
-                    label="Payment Mode"
-                    required
-                    value={formData.PaymentMode}
-                    onChange={(e) => handleFieldChange("PaymentMode", String(e))}
-                    options={PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
-                    error={errors.PaymentMode}
-                />
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Developer Bank Details</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <SingleSelectDropdownWithPagination
+                            label="Project Bank Name"
+                            title="Select Project Bank Name"
+                            size="lg"
+                            required
+                            dataFetchCallBack={fetchProjectBankList}
+                            onSelected={(item) => {
+                                if (!item) {
+                                    handleFieldChange("ProjectBankListMasterId", null);
+                                    setProjectWithBankData(null);
+                                    setDropdownLabels((prev) => ({
+                                        ...prev,
+                                        projectBankName: "",
+                                    }));
+                                    return;
+                                }
+                                handleFieldChange("ProjectBankListMasterId", Number(item.value));
 
-                {["IMPS", "NEFT", "RTGS", "Online Transfer", "Cheque", "Demand Draft"].includes(formData.PaymentMode) && (
+                                setProjectWithBankData(item as unknown as ProjectWithBankDetails);
+                            }}
+                            initialValue={createDropdownInitialValue(formData.ProjectBankListMasterId, dropdownLabels.projectBankName)}
+                            error={errors.ProjectBankListMasterId}
+                        />
+                    </div>
 
-                    <SingleSelectDropdownWithPagination
-                        label="Bank Name"
-                        title="Select Bank"
-                        dataFetchCallBack={fetchBankListMasterDropdown}
-                        initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
-                        onSelected={(item) => {
-                            handleFieldChange("BankListMasterId", Number(item?.value || 0));
-                            handleFieldChange("BankName", item?.label || "");
-                            setDropdownLabels({ bankName: item?.label || "" });
-                        }}
-                        error={errors.BankListMasterId}
+                    {projectWithBankData && Number(formData.ProjectBankListMasterId) > 0 && (
+                        <>
+                            <div>
+                                <Input
+                                    label="Account Number"
+                                    placeholder="Enter Account Number"
+                                    value={projectWithBankData?.AccountNumber || ""}
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <Input label="IFSC Code" placeholder="Enter IFSC Code" value={projectWithBankData?.IFSCCode || ""} disabled />
+                            </div>
+
+                            <div>
+                                <Input label="Branch" placeholder="Enter Branch" value={projectWithBankData?.Branch || ""} disabled />
+                            </div>
+
+                            <div>
+                                <Input label="Account Type" placeholder="Enter Account Type" value={projectWithBankData?.AcType || ""} disabled />
+                            </div>
+
+                            <div>
+                                <Input label="Nature Of Account" placeholder="Enter Nature Of Account" value={projectWithBankData?.NatureOfAccount || ""} disabled />
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Payment Details</h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"  >
+                    <SinglePageSelection
+                        label="Payment Mode"
+                        required
+                        value={formData.PaymentMode}
+                        onChange={(e) => handleFieldChange("PaymentMode", String(e))}
+                        options={PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
+                        error={errors.PaymentMode}
                     />
-                )}
 
-                {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer", "Cheque", "Demand Draft"].includes(formData.PaymentMode) && (
+
+                        <SingleSelectDropdownWithPagination
+                            label="Bank Name"
+                            title="Select Bank"
+                            dataFetchCallBack={fetchBankListMasterDropdown}
+                            initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+                            onSelected={(item) => {
+                                handleFieldChange("BankListMasterId", Number(item?.value || 0));
+                                handleFieldChange("BankName", item?.label || "");
+                                setDropdownLabels({ bankName: item?.label || "" });
+                            }}
+                            error={errors.BankListMasterId}
+                        />
+                    )}
+
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
+
+                        <Input
+                            label="Account Number"
+                            value={formData.AccountNumber}
+                            onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
+                            error={errors.AccountNumber}
+                            placeholder="Enter Account Number"
+                            maxLength={18}
+                        />
+                    )}
+
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
+
+                        <Input
+                            label="IFSC Code"
+                            value={formData.IFSCCode}
+                            placeholder="Enter IFSC Code"
+                            onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
+                            error={errors.IFSCCode}
+                        />
+                    )}
+
+                    <SinglePageSelection
+                        label="Payment Type" required
+                        value={formData.PaymentType}
+                        onChange={(e) => handleFieldChange("PaymentType", String(e))}
+                        options={INVOICE_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
+                        error={errors.PaymentType}
+                    />
 
                     <Input
-                        label="Account Number"
-                        value={formData.AccountNumber}
-                        onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
-                        error={errors.AccountNumber}
-                        placeholder="Enter Account Number"
-                        maxLength={18}
+                        label="Amount Paid"
+                        value={String(formData.AmountPaid)}
+                        disabled={formData.PaymentType === "Full"}
+                        onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))}
+                        error={errors.AmountPaid}
                     />
-                )}
-
-                {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
 
                     <Input
-                        label="IFSC Code"
-                        value={formData.IFSCCode}
-                        placeholder="Enter IFSC Code"
-                        onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
-                        error={errors.IFSCCode}
+                        label="Pending Amount"
+                        value={String(formData.PendingAmount)}
+                        disabled
                     />
-                )}
 
-                <SinglePageSelection
-                    label="Payment Type" required
-                    value={formData.PaymentType}
-                    onChange={(e) => handleFieldChange("PaymentType", String(e))}
-                    options={INVOICE_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
-                    error={errors.PaymentType}
-                />
-
-                <Input
-                    label="Amount Paid"
-                    value={String(formData.AmountPaid)}
-                    disabled={formData.PaymentType === "Full"}
-                    onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))}
-                    error={errors.AmountPaid}
-                />
-
-                <Input
-                    label="Pending Amount"
-                    value={String(formData.PendingAmount)}
-                    disabled
-                />
-
-                <Input
-                    label="TDS Amount"
-                    value={String(formData.TDSAmount)}
-                    onChange={(e) => handleFieldChange("TDSAmount", sanitizeAmount(e.target.value))}
-                    error={errors.TDSAmount}
-                />
-
-                <Input
-                    label={getTransactionLabel()}
-                    className="sm:col-span-2 lg:col-span-2 xl:col-span-2"
-                    value={formData.TransactionNumber}
-                    onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
-                    error={errors.TransactionNumber}
-                    required
-                    maxLength={25}
-                />
-
-                <MultiFilePicker
-                    label="Transaction Receipt"
-                    value={transactionFiles}
-                    onChange={setTransactionFiles}
-                    availableFilesURL={existingURL ?? ""}
-                    allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                    maxFiles={1}
-                    maxSizeMB={5}
-                    onRemoveExisting={(url) => setRemovedFiles(prev => [...prev, url])}
-                    error={errors.TransactionReceiptURL}
-                    required
-                />
-
-                <div className="flex items-end h-full">
-                    <Checkbox
-                        label="Advance"
-                        checked={formData.IsAdvance}
-                        onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)
-                        }
+                    <Input
+                        label="TDS Amount"
+                        value={String(formData.TDSAmount)}
+                        onChange={(e) => handleFieldChange("TDSAmount", sanitizeAmount(e.target.value))}
+                        error={errors.TDSAmount}
                     />
+
+                    <Input
+                        label={getTransactionLabel()}
+                        className="sm:col-span-2 lg:col-span-2 xl:col-span-2"
+                        value={formData.TransactionNumber}
+                        onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
+                        error={errors.TransactionNumber}
+                        required
+                        maxLength={25}
+                    />
+
+                    <MultiFilePicker
+                        label="Transaction Receipt"
+                        value={transactionFiles}
+                        onChange={setTransactionFiles}
+                        availableFilesURL={existingURL ?? ""}
+                        allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                        maxFiles={1}
+                        maxSizeMB={5}
+                        onRemoveExisting={(url) => setRemovedFiles(prev => [...prev, url])}
+                        error={errors.TransactionReceiptURL}
+                        required
+                    />
+
+                    <div className="flex items-end h-full">
+                        <Checkbox
+                            label="Advance"
+                            checked={formData.IsAdvance}
+                            onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)
+                            }
+                        />
+                    </div>
                 </div>
             </div>
 

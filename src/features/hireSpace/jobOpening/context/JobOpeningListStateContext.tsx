@@ -3,8 +3,6 @@ import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from '@/core/constants';
 
 export type JobOpeningListState = {
-  page: number;
-  pageSize: number;
   searchTerm: string;
   filters: FilterInfo;
   departmentId: number;
@@ -12,6 +10,9 @@ export type JobOpeningListState = {
   jobOpeningMasterId: number;
   jobRoleMasterId: number;
   jobRoleName: string;
+  candidateId: number;
+  candidateName: string;
+  candidateCurrentRole: string;
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING;
@@ -23,12 +24,16 @@ const getInitialState = (): JobOpeningListState => {
     if (stored) {
       const parsed = JSON.parse(stored) as JobOpeningListState;
       return {
-        ...parsed,
+        searchTerm: parsed.searchTerm || '',
+        filters: parsed.filters || {},
         departmentId: parsed.departmentId || 0,
         departmentName: parsed.departmentName || '',
         jobOpeningMasterId: parsed.jobOpeningMasterId || 0,
         jobRoleMasterId: parsed.jobRoleMasterId || 0,
         jobRoleName: parsed.jobRoleName || '',
+        candidateId: parsed.candidateId || 0,
+        candidateName: parsed.candidateName || '',
+        candidateCurrentRole: parsed.candidateCurrentRole || '',
       };
     }
   } catch (error) {
@@ -36,8 +41,6 @@ const getInitialState = (): JobOpeningListState => {
   }
 
   return {
-    page: 1,
-    pageSize: 20,
     searchTerm: '',
     filters: {},
     departmentId: 0,
@@ -45,16 +48,15 @@ const getInitialState = (): JobOpeningListState => {
     jobOpeningMasterId: 0,
     jobRoleMasterId: 0,
     jobRoleName: '',
+    candidateId: 0,
+    candidateName: '',
+    candidateCurrentRole: '',
   };
 };
 
 type JobOpeningListStateContextType = {
   listState: JobOpeningListState;
   updateListState: (updates: Partial<JobOpeningListState>) => void;
-  resetFilters: () => void;
-  resetToDefault: () => void;
-  setJobOpeningContext: (jobOpeningMasterId: number, jobRoleMasterId: number, jobRoleName: string) => void;
-  clearJobOpeningContext: () => void;
 };
 
 const JobOpeningListStateContext = createContext<JobOpeningListStateContextType | null>(null);
@@ -71,61 +73,23 @@ export const JobOpeningListStateProvider = ({ children }: { children: ReactNode 
   }, [listState]);
 
   const updateListState = useCallback((updates: Partial<JobOpeningListState>) => {
-    setListState((prev) => ({ ...prev, ...updates }));
-  }, []);
-
-  const resetFilters = useCallback(() => {
-    setListState((prev) => ({
-      ...prev,
-      filters: {},
-      searchTerm: '',
-      page: 1,
-    }));
-  }, []);
-
-  const resetToDefault = useCallback(() => {
-    const defaultState: JobOpeningListState = {
-      page: 1,
-      pageSize: 20,
-      searchTerm: '',
-      filters: {},
-      departmentId: 0,
-      departmentName: '',
-      jobOpeningMasterId: 0,
-      jobRoleMasterId: 0,
-      jobRoleName: '',
-    };
-    setListState(defaultState);
-  }, []);
-
-  const setJobOpeningContext = useCallback((jobOpeningMasterId: number, jobRoleMasterId: number, jobRoleName: string) => {
-    setListState((prev) => ({
-      ...prev,
-      jobOpeningMasterId,
-      jobRoleMasterId,
-      jobRoleName,
-    }));
-  }, []);
-
-  const clearJobOpeningContext = useCallback(() => {
-    setListState((prev) => ({
-      ...prev,
-      jobOpeningMasterId: 0,
-      jobRoleMasterId: 0,
-      jobRoleName: '',
-    }));
+    setListState((prev) => {
+      const next = { ...prev, ...updates };
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      } catch (error) {
+        console.error('Error saving job opening list state:', error);
+      }
+      return next;
+    });
   }, []);
 
   const contextValue = useMemo<JobOpeningListStateContextType>(
     () => ({
       listState,
       updateListState,
-      resetFilters,
-      resetToDefault,
-      setJobOpeningContext,
-      clearJobOpeningContext,
     }),
-    [listState, updateListState, resetFilters, resetToDefault, setJobOpeningContext, clearJobOpeningContext]
+    [listState, updateListState],
   );
 
   return (

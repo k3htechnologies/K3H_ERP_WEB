@@ -54,7 +54,7 @@ export const Invoice: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
-                    
+
                     setInvoiceList(response.right.Data);
                     setPagination({
                         currentPage: page,
@@ -104,9 +104,15 @@ export const Invoice: React.FC = () => {
         );
     };
 
-    const handleCreateInvoice = useCallback((row: MaterialRequisitionGRNData) => {
-        navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}`);
-    }, [navigate]);
+    const handleCreateInvoice = useCallback(
+        (row: MaterialRequisitionGRNData) => {
+            navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}`, {
+                state: {
+                    invoiceSummaryData,
+                },
+            });
+        },
+        [navigate, invoiceSummaryData]);
 
     const handleMakePayment = useCallback((row: MaterialRequisitionGRNData) => {
         navigate(`/invoicePayment/${row.MaterialRequisitionGRNId}`);

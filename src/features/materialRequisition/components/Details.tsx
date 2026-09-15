@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
-import {  useMemo, useState } from "react";
-import type {  MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import { useMemo, useState } from "react";
+import type { MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
@@ -24,14 +24,14 @@ interface OverviewProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
 }
 
-export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matrialRequisitionDetailData }) => {
+export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
-    const [active, setActive] = useState(false);
+    const [isSplit, setIsSplit] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
@@ -53,12 +53,29 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
         fd.append("MaterialRequisitionDetailJSON", JSON.stringify(matrialRequisitionDetailData
             .filter(item => selectedIds.includes(item.MaterialRequisitionDetailId))
             .map(item => ({
+
+
                 MaterialRequisitionDetailId: item.MaterialRequisitionDetailId,
                 MaterialMasterId: item.MaterialMasterId,
-                MaterialQuantity: item.MaterialQuantity,
-                UomMasterId: item.UomMasterId,
-                RequiredDate: item.RequiredDate,
+                MaterialName: item.MaterialName,
                 SubMaterialMasterId: item.SubMaterialMasterId,
+                SubMaterialName: item.SubMaterialName,
+                UomCode: item.UomCode,
+                UomMasterId: item.UomMasterId,
+                LevelId1: item.LevelId1,
+                Level1Name: item.Level1Name,
+                LevelId2: item.LevelId2,
+                Level2Name: item.Level2Name,
+                LevelId3: item.LevelId3,
+                Level3Name: item.Level3Name,
+                LevelId4: item.LevelId4,
+                Level4Name: item.Level4Name,
+                Level4SubMaterialUomCode: item.Level4SubMaterialUomCode,
+                Level4SubMaterialUom: item.Level4SubMaterialUom,
+                MaterialQuantity: item.MaterialQuantity,
+                RequiredDate: item.RequiredDate,
+                MaterialRequisitionType: item.MaterialRequisitionType,
+                Remark: item.Remark
             }))
         ));
         return fd;
@@ -84,7 +101,7 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
 
                     setSelectedIds([]);
 
-                    setActive(false);
+                    setIsSplit(false);
 
                     setMaterialRequisitionList(prev => [newRecord, ...prev]);
 
@@ -107,15 +124,48 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
         );
     };
 
-    const selectedMaterials = matrialRequisitionDetailData.filter(item =>selectedIds.includes(item.MaterialRequisitionDetailId) );
+    const selectedMaterials = matrialRequisitionDetailData.filter(item => selectedIds.includes(item.MaterialRequisitionDetailId));
 
-    const ShowSplitButton = matrialRequisitionData?.IsSplit && active !== true
+    const ShowSplitButton = matrialRequisitionData?.IsSplit && isSplit !== true
 
     const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
 
         const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
         const columns: TableColumn[] = [];
+
+        if (isSplit) {
+            columns.push({
+                key: "select",
+                label: "",
+                align: "center",
+                width: "5",
+                render: (_value, row) => (
+                    <Checkbox
+                        size="sm"
+                        checked={selectedIds.includes(row.MaterialRequisitionDetailId)}
+                        onChange={() => {
+                            const id = row.MaterialRequisitionDetailId;
+
+                            setSelectedIds(prev =>
+                                prev.includes(id)
+                                    ? prev.filter(x => x !== id)
+                                    : [...prev, id]
+                            );
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    />
+                ),
+            },
+                {
+                    key: "MaterialRequisitionType",
+                    label: "Type",
+                    align: "left",
+                    width: "30",
+                    render: (value) => value || "-"
+                },);
+        }
+
 
         if (isDirect) {
             columns.push(
@@ -156,6 +206,7 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -186,6 +237,7 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -225,7 +277,7 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
         );
 
         return columns;
-    }, [matrialRequisitionDetailData]);
+    }, [matrialRequisitionDetailData, isSplit, selectedIds]);
 
     return (
         <div className="justify-center pt-5">
@@ -257,29 +309,38 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
             </div>
 
             <section className="border border-[#33333321] rounded-xl overflow-hidden mb-4">
-                 <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+                <div className="bg-[#FCF1FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
 
                     <h4 className="text-sm font-semibold text-[#7E22CE] flex items-center gap-2">
-                        Material Details :
-                        <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#7E22CE] text-white text-xs font-bold">
+                        Material Details
+                        <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
                             {matrialRequisitionDetailData.length}
+                        </span>
+                        :
+
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
+                            {matrialRequisitionDetailData?.[0]?.MaterialRequisitionType || "-"}
                         </span>
                     </h4>
 
                     <div className="flex items-center gap-2">
-                        {ShowSplitButton && !active && (
-                            <Button
-                                color="blue"
-                                size="sm"
-                                onClick={() => setActive(true)}
-                            >
-                                Split
-                            </Button>
+                        
+                        {ShowSplitButton && !isSplit && (
+
+                            <button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setIsSplit(true)
+                                }}
+                                className="flex px-3 py-0.3 mr-2 border border-[#135BEC] text-[#135BEC] bg-white hover:bg-black-50 rounded-md gap-2">
+
+                                <span>Split</span>
+                            </button>
+
                         )}
 
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#7E22CE] text-[#ffffff] text-xs font-medium">
-                            {matrialRequisitionDetailData?.[0]?.MaterialRequisitionType || "-"}
-                        </span>
+
 
                     </div>
 
@@ -297,22 +358,22 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
                 </div>
 
 
-                {active && (
+                {isSplit && (
                     <div className="flex justify-end items-center gap-2 px-3 py-2 border-t border-[#D0D7DE] bg-white">
                         <Button
                             color="transparent"
                             variant="transparent_border"
-                            size="md"
+                            size="sm"
                             onClick={() => {
-                                setActive(false);
+                                setIsSplit(false);
                                 setSelectedIds([]);
                             }}
                         >
-                            Cancel Split
+                            Cancel
                         </Button>
 
                         <Button
-                            size="md"
+                            size="sm"
                             color="blue"
                             style={{
                                 padding: "4px 12px",
@@ -322,10 +383,14 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
                                     addToast({ type: "error", title: "Please select at least one material", });
                                     return;
                                 }
+                                if (selectedIds.length === matrialRequisitionDetailData.length) {
+                                    addToast({ type: "error", title: "At least one material must remain in the current requisition." });
+                                    return;
+                                }
+
                                 setIsAddUpdateModalOpen(true);
-                            }}
-                        >
-                            Save Split
+                            }} >
+                            Split
                         </Button>
                     </div>
                 )}
@@ -365,24 +430,24 @@ export const Details: React.FC<OverviewProps> = ({matrialRequisitionData, matria
                 onClose={() => {
                     setIsAddUpdateModalOpen(false);
                 }}
-                onCancel={() => {
-                    setIsAddUpdateModalOpen(false);
-                }}
-                title={'Split Material Entry'}
+
+                title={'Split Material Requisition'}
                 onSubmit={handleSplitMaterialRequisition}
-                saveText={'Move To New Entry'}
+                saveText={'Move To New Requisition'}
                 loading={isLoading}
                 cancelText="cancel"
                 size="xl"
             >
-                <div className="max-h-[400px] overflow-y-auto">
-                    {selectedMaterials.map((item) => (
-                        <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
-                            <Checkbox checked={selectedIds.includes(item.MaterialRequisitionDetailId)} />
-                            <p className="font-semibold">{item.SubMaterialName}</p>
-                        </div>
-                    ))}
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div className="space-y-4" >
+                        {selectedMaterials.map((item) => (
+                            <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
+                                <Checkbox checked={selectedIds.includes(item.MaterialRequisitionDetailId)} />
+                                <p className="font-semibold">{item.SubMaterialName || item.Level4Name}</p>
+                            </div>
+                        ))}
 
+                    </div>
                 </div>
             </Modal>
 

@@ -1,5 +1,6 @@
 import { getWeekDays, getHours } from "@/ui/components/Calender/CalendarUtils";
 import type { CalendarEvent } from "./CalendarEvent";
+import { formatDate_yyyy_mm_dd } from "@/core/utils/dateFormat";
 
 interface WeekViewProps {
     currentDate: Date;
@@ -41,7 +42,7 @@ export default function WeekView({
 
                     {/* CELLS FOR EACH DAY */}
                     {days.map(day => {
-                        const dateStr = day.toISOString().slice(0, 10);
+                        const dateStr = formatDate_yyyy_mm_dd(day);
                         const hourStr = h.slice(0, 2);
 
                         const slotEvents = events.filter(e =>

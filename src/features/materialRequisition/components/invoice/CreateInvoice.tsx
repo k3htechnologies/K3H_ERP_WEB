@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { AddUpdateMaterialRequisitionInvoice } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { runApiWithLoader } from "@/core/utils";
 import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
@@ -71,6 +71,9 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
     const { canAction: canAddInvoice } = useMenuPermissions('Add Invoice');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+    const location = useLocation();
+    const { invoiceSummaryData } = location.state ?? {};
 
     useEffect(() => {
         if (!projectId) return;
@@ -236,9 +239,15 @@ const CreateInvoice: React.FC = () => {
             newErrors.Remarks = ' Remarks is required.';
         }
         if (!formData.InvoiceAmount) {
-            newErrors.InvoiceAmount = ' Invoice Amount is required.';
+            newErrors.InvoiceAmount = "Invoice Amount is required.";
+
         } else if (Number(formData.InvoiceAmount) === 0) {
-            newErrors.InvoiceAmount = ' Invoice Amount must be greater than zero.';
+            newErrors.InvoiceAmount = "Invoice Amount must be greater than zero.";
+
+        } else if (invoiceSummaryData?.PendingRequisitionAmount !== undefined &&
+            Number(formData.InvoiceAmount) > Number(invoiceSummaryData.PendingRequisitionAmount)
+        ) {
+            newErrors.InvoiceAmount = `Invoice Amount cannot be greater than ₹${Number(invoiceSummaryData.PendingRequisitionAmount).toFixed(2)}`;
         }
         if (!formData.InvoiceDate) {
             newErrors.InvoiceDate = ' Invoice Date is required.';

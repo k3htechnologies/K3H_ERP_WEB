@@ -78,8 +78,9 @@ export const FinalizedVendor: React.FC = () => {
     useEffect(() => {
         if (!projectId) return
 
-        loadSelectedVendor()
-        loadFinalizedVendor()
+        loadSelectedVendor();
+        pullVendorsForEnquiry();
+
     }, [projectId])
 
     useEffect(() => {
@@ -90,7 +91,7 @@ export const FinalizedVendor: React.FC = () => {
         }
     }, [materialRequisitionVendorSelectedList])
 
-    const loadFinalizedVendor = async () => {
+    const pullVendorsForEnquiry = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -111,7 +112,7 @@ export const FinalizedVendor: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: "error", title: error.message }),
             undefined,
-            "Loading Finalized Vendors"
+            "Loading Vendor"
         );
     };
 
@@ -303,10 +304,6 @@ export const FinalizedVendor: React.FC = () => {
 
     const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
 
-        if (materialRequisitionVendorSelectedList.length !== 2) {
-            addToast({ type: "error", title: "Please select atleast two vendors to compare." })
-            return;
-        }
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -404,6 +401,7 @@ export const FinalizedVendor: React.FC = () => {
 
                 {!isAnyFinalized && cangetCompare && materialRequisitionVendorSelectedList.length > 1 && (
                     <Button
+                        type="button"
                         size="md"
                         style={{
                             color: '#135BEC',
@@ -411,7 +409,11 @@ export const FinalizedVendor: React.FC = () => {
                             padding: '4px 8px',
                         }}
                         leftIcon={<Scale size={20} />}
-                        onClick={() => handleExportCompareVendorExcel()}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleExportCompareVendorExcel();
+                        }}
                     >
                         Compare
                     </Button>
@@ -419,6 +421,7 @@ export const FinalizedVendor: React.FC = () => {
 
                 {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
                     <Button
+                         type="button"
                         size="md"
                         style={{
                             color: '#00A800',
@@ -427,7 +430,11 @@ export const FinalizedVendor: React.FC = () => {
                         }}
 
                         leftIcon={<CheckLine size={20} />}
-                        onClick={finalizeVendor}
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            finalizeVendor();
+                        }}
                     >
                         Finalize Vendor
                     </Button>
@@ -478,105 +485,108 @@ export const FinalizedVendor: React.FC = () => {
                         <ExpandableCard
                             key={vendor.VendorId}
                             showline
-                            height={120}
+                            height={150}
                             expandedheight={900}
                             bgColor="bg-white"
                             isShadow={false}
+                            titleClassName="flex-1 min-w-0"
                             title={
-                                <div className="flex flex-col">
+                                <div className="flex flex-col w-full">
 
-                                    <div className="relative w-full pr-12">
+                                    <div className="flex items-center justify-between w-full pb-4 px-1 border-b border-gray-200">
 
-                                        <div className="flex gap-3">
+                                        <div className="flex items-center gap-3">
 
                                             <Checkbox
                                                 checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
                                                 disabled={!canAction || (isAnyFinalized && !vendor.IsFinalized)}
-                                                onChange={() =>
-                                                    canAction &&
-                                                    setCheckedFinalVendor(
-                                                        checkedFinalVendor === vendor.VendorId
-                                                            ? null
-                                                            : vendor.VendorId
-                                                    )
+                                                onChange={() => canAction && setCheckedFinalVendor(
+                                                    checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
                                                 }
                                                 onClick={(e) => e.stopPropagation()}
                                                 size="md"
                                             />
 
-                                            <div className="flex flex-col">
+                                            <div className="font-medium text-gray-900 text-base">
+                                                {vendor.VendorName || "-"}
+                                            </div>
 
-                                                <div className="font-medium text-gray-900 leading-none">
-                                                    {vendor.VendorName}
-                                                </div>
+                                            <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium">
+                                                {vendor.CompanyName || "-"}
+                                            </div>
 
-                                                <div className="text-sm text-gray-500 mt-2">
-                                                    {vendor.CompanyName || "-"}
-                                                </div>
-
+                                            <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium">
+                                                {vendor.GSTNumber || "-"}
                                             </div>
 
                                         </div>
 
-
                                         {isAnyFinalized && canfinalizeVendor && checkedFinalVendor === vendor.VendorId && (
-                                                <div className="absolute right-12 top-1/2 -translate-y-1/2 flex items-center">
-                                                    <ApprovalActions
-                                                        approvalStatus={finalizedVendor?.VendorFinalizationApproval}
-                                                        onApprove={() => handleApproveRejectVendor("approve")}
-                                                        onReject={() => handleApproveRejectVendor("reject")}
-                                                        showApproval={isApprovalAvailable}
-                                                        isIcons={false}
-                                                        onHistory={handleApprovalLog}
-                                                    />
-                                                </div>
-                                            )}
+
+                                            <div className="flex items-center">
+                                                <ApprovalActions
+                                                    approvalStatus={finalizedVendor?.VendorFinalizationApproval}
+                                                    onApprove={() => handleApproveRejectVendor("approve")}
+                                                    onReject={() => handleApproveRejectVendor("reject")}
+                                                    showApproval={isApprovalAvailable}
+                                                    isIcons={false}
+                                                    onHistory={handleApprovalLog}
+                                                />
+                                            </div>
+                                        )}
 
                                     </div>
 
 
-                                    <div className="ml-[33px] mt-4 grid grid-cols-[180px_180px_180px_200px] gap-x-20">
+                                    <div className="grid grid-cols-4 mt-4 px-1">
 
-                                        <div className="flex flex-col">
-                                            <span className="text-sm text-gray-500">
-                                                Base Amount (₹)
-                                            </span>
+                                        <div className="px-5 first:pl-0 border-r border-gray-200">
+                                            <div className="text-sm uppercase tracking-wide text-gray-400">
+                                                Base Amount
+                                            </div>
 
-                                            <span className="text-sm font-semibold text-gray-900 mt-1">
-                                                {formatCurrency(computeBaseTotal(headerLines))}
-                                            </span>
+                                            <div className="text-lg font-semibold text-gray-900 mt-3">
+                                                {formatCurrency(
+                                                    computeBaseTotal(headerLines)
+                                                )}
+                                            </div>
                                         </div>
 
 
-                                        <div className="flex flex-col">
-                                            <span className="text-sm text-gray-500">
-                                                Total Tax (₹)
-                                            </span>
+                                        <div className="px-5 border-r border-gray-200">
+                                            <div className="text-sm uppercase tracking-wide text-gray-400">
+                                                Total Tax
+                                            </div>
 
-                                            <span className="text-sm font-semibold text-gray-900 mt-1">
-                                                {formatCurrency(computeTaxTotal(headerLines))}
-                                            </span>
-                                        </div>
-
-                                        <div className="flex flex-col">
-                                            <span className="text-sm text-gray-500">
-                                                Grand Total (₹)
-                                            </span>
-
-                                            <span className="text-sm font-semibold text-gray-900 mt-1">
-                                                {formatCurrency(computeLinesTotal(headerLines))}
-                                            </span>
+                                            <div className="text-lg font-semibold text-orange-600 mt-3">
+                                                {formatCurrency(
+                                                    computeTaxTotal(headerLines)
+                                                )}
+                                            </div>
                                         </div>
 
 
-                                        <div className="flex flex-col">
-                                            <span className="text-sm text-gray-500">
-                                                Expected Delivery (Days)
-                                            </span>
+                                        <div className="px-5 border-r border-gray-200">
+                                            <div className="text-sm uppercase tracking-wide text-gray-400">
+                                                Grand Total
+                                            </div>
 
-                                            <span className="text-sm font-semibold text-gray-900 mt-1">
+                                            <div className="text-lg font-semibold text-blue-700 mt-3">
+                                                {formatCurrency(
+                                                    computeLinesTotal(headerLines)
+                                                )}
+                                            </div>
+                                        </div>
+
+
+                                        <div className="px-5 pr-0">
+                                            <div className="text-sm uppercase tracking-wide text-gray-400">
+                                                Est. Delivery
+                                            </div>
+
+                                            <div className="text-lg font-semibold text-emerald-600 mt-3">
                                                 {firstTerm?.ExpectedDeliveryInDays || 0} Days
-                                            </span>
+                                            </div>
                                         </div>
 
                                     </div>
@@ -791,8 +801,7 @@ export const FinalizedVendor: React.FC = () => {
                 variant="generate"
                 confirmText="Final"
                 title="Finalize Vendor"
-                message={`Are you sure you want to finalize ${materialRequisitionVendorSelectedList.find(v => v.VendorId === checkedFinalVendor)?.VendorName ?? "this vendor"
-                    }?`}
+                message={`Are you sure you want to finalize '${materialRequisitionVendorSelectedList.find(v => v.VendorId === checkedFinalVendor)?.VendorName ?? "this vendor"}'?`}
             />
 
         </div>

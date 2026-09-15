@@ -525,7 +525,7 @@ const ViewInwardOutward: React.FC = () => {
                                                             value={formatDate_dd_MonthName_yy(item.RevertDate || "-")}
                                                         />
 
-                                                        {isLatest && canAction && isDateWithinPastDays(item.RevertDate, 2) && (
+                                                        {isLatest && (canActionAdministrativeAccess || canActionAcknowledgement) && isDateWithinPastDays(item.RevertDate, 2) && (
                                                             <div className="flex items-center gap-1">
                                                                 <Button
                                                                     color="transparent"

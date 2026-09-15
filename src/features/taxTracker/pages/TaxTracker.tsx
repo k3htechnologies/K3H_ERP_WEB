@@ -617,7 +617,7 @@ export const TaxTracker: React.FC = () => {
                 AmountUnderDisputeDate: null,
             } : {}),
         }));
-        setErrors({})
+        setErrors({});
 
     };
 
@@ -655,7 +655,7 @@ export const TaxTracker: React.FC = () => {
 
             case "Reply":
                 if (!requestFormData.AmountUnderDisputeDate)
-                    newErrors.AmountUnderDisputeDate = "Reply Date is required.";
+                    newErrors.AmountUnderDisputeDate = "Date is required.";
 
                 if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
                     newErrors.NoticeDocumentURL = "Document is required.";
@@ -664,7 +664,7 @@ export const TaxTracker: React.FC = () => {
 
             case "Order":
                 if (!requestFormData.OrderStatus)
-                    newErrors.OrderStatus = "Status is required.";
+                    newErrors.OrderStatus = "Order Status is required.";
 
                 if (
                     requestFormData.OrderStatus === "Non-Favourable" &&
@@ -679,8 +679,10 @@ export const TaxTracker: React.FC = () => {
                             ? "Date is required."
                             : "Date is required.";
 
-                if (requestFormData.OrderStatus === "Non-Favourable" && (!requestFormData.AmountUnderDispute || Number(requestFormData.AmountUnderDispute) <= 0)) {
+                if (requestFormData.OrderStatus === "Non-Favourable" && (!requestFormData.AmountUnderDispute || Number(requestFormData.AmountUnderDispute) < 0)) {
                     newErrors.AmountUnderDispute = "Amount Under Dispute is required.";
+                } else if (Number(requestFormData.AmountUnderDispute) === 0) {
+                    newErrors.AmountUnderDispute = "Amount Under Dispute cannot be zero.";
                 }
 
                 if (
@@ -814,18 +816,28 @@ export const TaxTracker: React.FC = () => {
                 const response = await taxTrackerDocumentService.apiCallAddUpdateTaxTrackerDocument(payload);
 
 
+
                 if (E.isRight(response)) {
 
                     setTaxTrackerList((prev) =>
-                        prev.map((row) =>
-                            row.TaxTrackerId === requestFormData.TaxTrackerId
+                        prev.map((row) => {
+
+                            return row.TaxTrackerId === requestFormData.TaxTrackerId
                                 ? {
                                     ...row,
                                     NoticeStatus: requestFormData.NoticeStatus,
+                                    TaxTrackerDocumentDetailsData: [
+                                        ...row.TaxTrackerDocumentDetailsData,
+                                        { RequestType: requestFormData.RequestType } as any
+                                    ]
                                 }
                                 : row
+                        }
                         )
+
                     );
+
+
 
                     setIsAddUpdateRequestAppealModalOpen(false);
                     setNoticeDocumentURL('');
@@ -1007,14 +1019,16 @@ export const TaxTracker: React.FC = () => {
                             placeholder='Select Request Type'
                             required
                             value={requestFormData.RequestType || ''}
-                            onChange={(e) =>
-                                handleRequestFieldChange('RequestType', String(e))}
+                            onChange={(e) => {
+                                handleRequestFieldChange('RequestType', String(e))
+                                setNoticeDocumentURL("");
+                                setNoticeDocumentURLFiles([]);
+                                setRemovedNoticeDocumentURLs([]);
+                            }}
                             options={REQUEST_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                             error={errors.RequestType}
                         />
                     </div>
-
-
 
                     {requestFormData.RequestType === 'Notice' && (
                         <>
@@ -1164,7 +1178,7 @@ export const TaxTracker: React.FC = () => {
 
                                             {lastOrderRecord.NoticeDocumentURL && (
                                                 <div className="mt-4">
-                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px', fontWeight: 500, letterSpacing: '0.05em' }}>Order Document</p>
+                                                    <p style={{ fontSize: '14px', color: '#6b7280', marginBottom: '6px' }}>Order Document</p>
                                                     <div className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 rounded-md text-xs font-medium cursor-pointer transition-all bg-blue-50 text-blue-600 hover:bg-blue-100 hover:border-blue-300">
                                                         <MultiImageViewer
                                                             images={parseDocumentUrls(lastOrderRecord.NoticeDocumentURL ?? "")}
@@ -1271,8 +1285,6 @@ export const TaxTracker: React.FC = () => {
 
                     </div>
 
-
-
                     <div >
                         {requestFormData.RequestType === 'Order' && (
                             <>
@@ -1280,8 +1292,8 @@ export const TaxTracker: React.FC = () => {
                                     <div className="grid grid-cols-2 gap-4 -mt-2">
                                         <div className="-mt-2">
                                             <SinglePageSelection
-                                                label="Status"
-                                                placeholder="Select Status"
+                                                label="Order Status"
+                                                placeholder="Select Order Status"
                                                 required
                                                 value={requestFormData.OrderStatus || ""}
                                                 onChange={(e) => handleRequestFieldChange("OrderStatus", String(e))}

@@ -17,6 +17,7 @@ export interface BudgetDropdownItem {
     Level4IsTolerant?: boolean,
     MaterialCost: number | 0,
     Quantity: number | 0
+    ReceivedQuantity: number | 0
 }
 
 export const fetchProjectBudget = async (projectId: number): Promise<BudgetData[]> => {
@@ -84,8 +85,9 @@ export const getBudgetL1Dropdown = (budgetList: BudgetData[]): BudgetDropdownIte
                     Level4SubMaterialUom: null,
                     Level4LeadTimeInDays: 0,
                     Level4IsTolerant: false,
-                    MaterialCost: 0,
-                    Quantity: 0
+                    MaterialCost:0,
+                    Quantity:0,
+                    ReceivedQuantity:0
                 });
             }
         });
@@ -129,8 +131,9 @@ export const getBudgetL2Dropdown = (budgetList: BudgetData[], levelId1: number):
                     Level4SubMaterialUom: null,
                     Level4LeadTimeInDays: 0,
                     Level4IsTolerant: false,
-                    MaterialCost: 0,
-                    Quantity: 0
+                    MaterialCost:0,
+                    Quantity:0,
+                    ReceivedQuantity:0
                 });
             }
         });
@@ -175,8 +178,9 @@ export const getBudgetL3Dropdown = (budgetList: BudgetData[], levelId1: number, 
                     Level4SubMaterialUom: null,
                     Level4LeadTimeInDays: 0,
                     Level4IsTolerant: false,
-                    MaterialCost: 0,
-                    Quantity: 0
+                    MaterialCost:0,
+                    Quantity:0,
+                    ReceivedQuantity:0
                 });
             }
         });
@@ -235,8 +239,9 @@ export const getBudgetL4Dropdown = (budgetList: BudgetData[], levelId1: number, 
                     Level4SubMaterialUom: item.Level4SubMaterialUom,
                     Level4LeadTimeInDays: item.Level4LeadTimeInDays,
                     Level4IsTolerant: item.Level4IsTolerant,
-                    MaterialCost: item.MaterialCost,
-                    Quantity: item.Quantity
+                    MaterialCost:item.MaterialCost,
+                    Quantity:item.Quantity,
+                    ReceivedQuantity:item.ReceivedQuantity
 
                 });
             }

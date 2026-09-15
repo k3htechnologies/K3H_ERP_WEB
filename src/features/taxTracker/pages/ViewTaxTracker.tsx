@@ -502,13 +502,12 @@ export const ViewTaxTracker: React.FC = () => {
                                                             }
                                                         />
 
-
                                                         {/* Amount Under Dispute */}
                                                         {latestOrderDoc?.OrderStatus !== "Favourable" && (
                                                             <div className="">
                                                                 <FieldItem
                                                                     label="Amount Under Dispute (₹)"
-                                                                    value={formatCurrency(latestOrderDoc.AmountUnderDispute)}
+                                                                    value={formatCurrency(Number(latestOrderDoc.AmountUnderDispute?.toFixed(2)) ?? 0)}
                                                                 />
                                                             </div>
                                                         )}
@@ -897,6 +896,7 @@ export const ViewTaxTracker: React.FC = () => {
                                 <MultiFilePicker
                                     label="Document"
                                     placeholder="Select Document"
+                                    required
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
@@ -926,6 +926,7 @@ export const ViewTaxTracker: React.FC = () => {
                             <Checkbox
                                 label="Are you sure you want to reopen this case?"
                                 checked={confirmReopen}
+                                required
                                 onChange={(e) => {
                                     setConfirmReopen(e.target.checked)
                                     setErrors({});

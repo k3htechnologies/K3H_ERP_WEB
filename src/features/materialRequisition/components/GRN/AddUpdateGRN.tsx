@@ -76,7 +76,7 @@ export const AddUpdateGRN = () => {
             loadGRNData();
         }
     }, [currentMaterialRequisitionId]);
-    
+
     const loadGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -414,7 +414,7 @@ export const AddUpdateGRN = () => {
                     return (
                         <Input
                             label=""
-                            value={value ?? 0}
+                            value={value ?? ""}
                             onChange={(e) => {
                                 const raw = e.target.value;
                                 const receivedQuantity = Number(raw);
@@ -437,6 +437,7 @@ export const AddUpdateGRN = () => {
                                     )
                                 );
                             }}
+                            placeholder="Enter Received Quantity"
                             max={pendingQuantity}
                         />
                     );
@@ -525,8 +526,8 @@ export const AddUpdateGRN = () => {
                             />
 
                             <MultiFilePicker
-                                label="Upload Document"
-                                placeholder="Upload Document"
+                                label="Upload Chalan Document"
+                                placeholder="Upload Chalan Document"
                                 value={uploadChallanFiles}
                                 onChange={setUploadChallanFiles}
                                 availableFilesURL={uploadChallanURL ?? ""}

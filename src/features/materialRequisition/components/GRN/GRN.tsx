@@ -24,6 +24,7 @@ import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
@@ -224,6 +225,15 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                 align: 'left',
                 render: (value?: string) => value || '-'
             },
+            {
+                key: "QualityAnalystRemark",
+                label: "Remark",
+                align: "left",
+                width: "30",
+                render: (value) => (
+                    <FieldInfoTooltip value={value} />
+                )
+            },
         );
 
         return columns;
@@ -242,16 +252,41 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
             render: (value?: string) => formatDate_dd_MonthName_yy(value || '')
         },
         {
+            key: 'VehicleNumber',
+            label: 'Vehicle No.',
+            width: '35',
+            render: (value?: string) => value || '-'
+        },
+        {
             key: 'ChallanNumber',
             label: 'Challan No.',
             width: '25',
             render: (value?: string) => value || '-'
         },
+        // {
+        //     key: 'ChallanNumber',
+        //     label: 'Challan No.',
+        //     width: '30',
+        //     sortable: false,
+        //     fixed: 'left',
+        //     align: 'left',
+        //     render: (value, row) => (
+        //         <MultiImageViewer
+        //             images={parseDocumentUrls(row.UploadChallanURL)}
+        //             title="Upload Challan Document"
+        //             triggerLabel={value || '-'}
+        //             isWrap={false}
+        //         />
+        //     )
+        // },
         {
-            key: 'VehicleNumber',
-            label: 'Vehicle No.',
-            width: '35',
-            render: (value?: string) => value || '-'
+            key: "Remarks",
+            label: "Remark",
+            align: "left",
+            width: "30",
+            render: (value) => (
+                <FieldInfoTooltip value={value} />
+            )
         },
         {
             key: 'actions',
@@ -282,6 +317,17 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
         }
     ], [canAction, materialRequisitionStatus, firstGRNId]);
 
+    const isAllQuantityReceived = useMemo(() => {
+        if (!matrialRequisitionDetailData?.length) return false;
+
+        return matrialRequisitionDetailData.every((item) => {
+            const requiredQuantity = Number(item.MaterialQuantity ?? 0);
+            const receivedQuantity = Number(item.MaterialReceivedQuantityTillDate ?? 0);
+
+            return receivedQuantity >= requiredQuantity;
+        });
+    }, [matrialRequisitionDetailData]);
+
     return (
         <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
@@ -294,7 +340,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction && !materialRequisitionStatus}
+                isShowAddButton={canAction && !materialRequisitionStatus && !isAllQuantityReceived}
                 addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}
@@ -303,12 +349,12 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
-
             />
 
             <DataTableExpandable
                 data={filteredGRN}
                 columns={GRNColumns}
+                emptyMessage="No Grn Data found"
                 expandable={{
                     keyField: "MaterialRequisitionGRNId",
                     fetchRow: async (row: MaterialRequisitionGRNData) => {
@@ -350,7 +396,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                 <div className="space-y-4">
                     {GRN.length === 0 ? (
                         <div className="flex flex-col justify-center items-center h-full">
-                            <NoDataView message="No Data Available"/>
+                            <NoDataView message="No Grn Data found " />
                         </div>
                     ) : (
                         <div>
@@ -362,7 +408,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                                         <FieldItem label="Vehicle No." value={item?.VehicleNumber || '-'} />
 
                                         <div>
-                                            <p className="text-gray-500">Document</p>
+                                            <p className="text-gray-500">Uploaded Challan Document</p>
                                             <MultiImageViewer
                                                 images={parseDocumentUrls(item?.UploadChallanURL)}
                                                 title="Attachment"
@@ -383,7 +429,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                                         />
                                     </div>
                                 </div>
-                               
+
                             ))}
                         </div>
                     )}

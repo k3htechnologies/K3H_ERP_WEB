@@ -41,6 +41,7 @@ const InvoicePayment: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const systemGeneratedCode = listState.SystemGeneratedCode;
+    const materialRequisitionStatus = listState.MaterialRequisitionStatus;
     const navigate = useNavigate();
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
@@ -346,6 +347,8 @@ const InvoicePayment: React.FC = () => {
                 <HeaderActionBar
                     titleText={'Make Payment :'}
                     subTitleText={systemGeneratedCode ?? "-"}
+                    subSubTitleText={materialRequisitionStatus ?? ''}
+                    subSubSubTitleText={listState.VendorName ?? ''}
                     cancelText="Cancel"
                     onCancel={() =>
                         navigate("/materialRequisition/view", {

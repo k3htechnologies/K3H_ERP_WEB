@@ -308,7 +308,7 @@ export const MaterialRequisition: React.FC = () => {
         },
         {
             key: 'TotalPoAmount',
-            label: 'Total PO Amount (₹)',
+            label: 'Purchase Order Amount (₹)',
             width: '15',
             sortable: false,
             align: 'left',

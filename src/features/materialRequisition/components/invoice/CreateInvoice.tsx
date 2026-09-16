@@ -58,6 +58,7 @@ const CreateInvoice: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
+    const materialRequisitionStatus = listState.MaterialRequisitionStatus;
     const systemGeneratedCode = listState.SystemGeneratedCode;
     const navigate = useNavigate();
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
@@ -268,12 +269,6 @@ const CreateInvoice: React.FC = () => {
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceUrls)) {
             newErrors.UploadInvoiceURL = "File is required.";
         }
-        if (!hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
-            newErrors.PerformaInvoiceURL = "File is required.";
-        }
-        if (!hasAnyDocumentFile(measurementReportURLFiles, measurementReportURL, removeMeasurementReportUrls)) {
-            newErrors.MeasurementReportURL = "File is required.";
-        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -371,6 +366,8 @@ const CreateInvoice: React.FC = () => {
                 <HeaderActionBar
                     titleText={'Create Invoice :'}
                     subTitleText={systemGeneratedCode ?? "-"}
+                    subSubTitleText={materialRequisitionStatus ?? ''}
+                    subSubSubTitleText={listState.VendorName ?? ''}
                     cancelText="Cancel"
                     EditText="Edit"
                     onCancel={() =>
@@ -429,7 +426,6 @@ const CreateInvoice: React.FC = () => {
 
                         <div>
                             <Input
-                                type="text"
                                 required
                                 label='Invoice Amount'
                                 value={formData.InvoiceAmount ?? ""}
@@ -472,8 +468,6 @@ const CreateInvoice: React.FC = () => {
                             <MultiFilePicker
                                 label="Performance Report"
                                 placeholder="Select Files"
-                                required
-                                error={errors.PerformaInvoiceURL}
                                 value={performaInvoiceURLFiles}
                                 onChange={setPerformaInvoiceURLFiles}
                                 availableFilesURL={performaInvoiceURL ?? ""}
@@ -490,8 +484,6 @@ const CreateInvoice: React.FC = () => {
                             <MultiFilePicker
                                 label="Measurement Report"
                                 placeholder="Select Files"
-                                required
-                                error={errors.MeasurementReportURL}
                                 value={measurementReportURLFiles}
                                 onChange={setMeasurementReportURLFiles}
                                 availableFilesURL={measurementReportURL ?? ""}

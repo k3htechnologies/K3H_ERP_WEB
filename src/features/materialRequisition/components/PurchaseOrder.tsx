@@ -140,7 +140,7 @@ export const PurchaseOrder: React.FC = () => {
         const newErrors: { [key: string]: string } = {}
 
         if (!formData.Remarks?.trim()) {
-            newErrors.Remarks = "Remarks is required.";
+            newErrors.Remarks = "Remark is required.";
         }
         if (!formData.TermsCondition?.trim()) {
             newErrors.TermsCondition = "Terms & Condition is required.";
@@ -476,11 +476,11 @@ export const PurchaseOrder: React.FC = () => {
 
                             <div>
                                 <TextArea
-                                    label='Remarks'
+                                    label='Remark'
                                     required
                                     value={formData.Remarks ?? ""}
                                     onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-                                    placeholder="Enter Remarks"
+                                    placeholder="Enter Remark"
                                     error={errors.Remarks} />
 
                             </div>

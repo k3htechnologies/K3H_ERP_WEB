@@ -35,6 +35,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
     const systemGeneratedCode = listState.SystemGeneratedCode;
+    const materialRequisitionStatus = listState.MaterialRequisitionStatus;
     const [projectWithBankData, setProjectWithBankData] = useState<ProjectWithBankDetails | null>(null);
 
     const initialFormState = () => ({
@@ -334,6 +335,8 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                 <HeaderActionBar
                     titleText={'Make Payment :'}
                     subTitleText={systemGeneratedCode ?? "-"}
+                    subSubTitleText={materialRequisitionStatus ?? ''}
+                    subSubSubTitleText={listState.VendorName ?? ''}
                     cancelText="Cancel"
                     onCancel={() =>
                         navigate("/materialRequisition/view", {

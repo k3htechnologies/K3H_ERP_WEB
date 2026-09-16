@@ -224,7 +224,7 @@ import InvoicePayment from '@/features/materialRequisition/components/invoice/In
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
-import MaterialRequisitionReport from '@/features/materialRequisitionReport/pages/MaterialRequisitionReport';
+import MaterialReport from '@/features/materialRequisitionReport/pages/MaterialReport';
 
 
 // Loading component for Suspense fallback 
@@ -569,7 +569,7 @@ function App() {
             <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
 
-            <Route path="materialRequisitionReports" element={<MaterialRequisitionReport />} />
+            <Route path="materialRequisitionReports" element={<MaterialReport />} />
 
           </Route>
 

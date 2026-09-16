@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationMaterialRequisitionReport, MaterialRequisitionReportData } from "@/features/materialRequisitionReport/models/MaterialRequisitionReportModel";
 import usePagination from "@/core/hooks/usePagination";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { runApiWithLoader } from "@/core/utils";
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { materialRequisitionReportservice } from "@/features/materialRequisitionReport/services/MaterialRequisitionReportService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import * as E from 'fp-ts/Either';
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -16,10 +14,15 @@ import { updateFilter } from "@/core/utils/filterHelper";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Input } from "@/ui/components/forms";
 import { handleExportFile } from "@/core/utils/exportFile";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import type { FilterWithPaginationVendorWiseMaterialCountReport, VendorWiseMaterialCountReportData } from "../models/MaterialRequisitionReportModel";
+import { materialRequisitionReportservice } from "../services/MaterialRequisitionReportService";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
 
-export const MaterialRequisitionReport: React.FC = () => {
+export const VendorWiseMaterialCountReport: React.FC = () => {
 
-    const [materialRequisitionReportList, setMaterialRequisitionReportList] = useState<MaterialRequisitionReportData[]>([]);
+    const [vendorWiseMaterialCountReportList, setVendorWiseMaterialCountReportList] = useState<VendorWiseMaterialCountReportData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { pagination, setPagination } = usePagination(20);
@@ -30,18 +33,21 @@ export const MaterialRequisitionReport: React.FC = () => {
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [filters, setFilters] = useState<FilterInfo>({});
     const { canExport } = useMenuPermissions();
+    const { projectId } = useProject();
 
     useEffect(() => {
-        loadMaterialRequisitionReport(1, filters, sortInfo, searchTerm);
-    }, []);
+        if (!projectId) return
 
-    const searchMaterialRequisitionReport = async (searchValue: string) => {
+        loadVendorWiseMaterialCountReport(1, filters, sortInfo, searchTerm);
+    }, [projectId]);
+
+    const searchVendorWiseMaterialCountReport = async (searchValue: string) => {
         setSearchTerm(searchValue);
-        await loadMaterialRequisitionReport(1, filters, sortInfo, searchValue);
+        await loadVendorWiseMaterialCountReport(1, filters, sortInfo, searchValue);
     }
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
-        searchMaterialRequisitionReport(value)
+        searchVendorWiseMaterialCountReport(value)
     }, 350);
 
     useEffect(() => {
@@ -50,23 +56,26 @@ export const MaterialRequisitionReport: React.FC = () => {
         }
     }, [debouncedSearch]);
 
-    const loadMaterialRequisitionReport = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+    const loadVendorWiseMaterialCountReport = useCallback(async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const params: FilterWithPaginationMaterialRequisitionReport = {
+                const params: FilterWithPaginationVendorWiseMaterialCountReport = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
+                    ProjectId: Number(projectId),
                     VendorName: searchtext || filterParams.VendorName?.trim() || undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionReportColumns)
+                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, VendorWiseMaterialCountReportColumns)
                 }
 
-                const response = await materialRequisitionReportservice.apiCallPullMaterialRequisitionReport(params);
+                const response = await materialRequisitionReportservice.apiCallPullVendorWiseMaterialCountReport(params);
 
                 if (E.isRight(response)) {
 
-                    setMaterialRequisitionReportList(response.right.Data);
+                    setVendorWiseMaterialCountReportList(response.right.Data);
 
                     setPagination({
                         currentPage: page,
@@ -81,46 +90,54 @@ export const MaterialRequisitionReport: React.FC = () => {
             undefined,
             (error: any) => addToast({ type: "error", title: error.message }),
             undefined,
-            "Loading Material Requisition Report"
+            "Loading Vendor Wise Material Count Report"
         )
-    }
+    }, [projectId])
 
-    const MaterialRequisitionReportColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "VendorCode",
-            label: "Vendor Code",
-            width: '15',
-            align: "left",
-            sortable: true,
-            render: value => value || "-"
-        },
+    const VendorWiseMaterialCountReportColumns = useMemo<TableColumn[]>(() => [
         {
             key: "VendorName",
             label: "Vendor Name",
             width: "15",
-            align: "right",
+            align: "left",
             sortable: true,
             render: value => value || ""
-        }
+        },
+        {
+            key: "FromDate",
+            label: "From Date",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "ToDate",
+            label: "To Date",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
     ], []);
 
     const ClearSearchTerm = () => {
         setSearchTerm(""),
             debouncedSearch.cancel?.();
-        loadMaterialRequisitionReport(1, filters, sortInfo, "");
+        loadVendorWiseMaterialCountReport(1, filters, sortInfo, "");
     }
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort)
-        loadMaterialRequisitionReport(1, filters, sort, searchTerm);
+        loadVendorWiseMaterialCountReport(1, filters, sort, searchTerm);
     }, [filters, searchTerm]);
 
     const handlePageChange = useCallback((page: number) => {
 
-        loadMaterialRequisitionReport(page, filters, sortInfo, searchTerm);
+        loadVendorWiseMaterialCountReport(page, filters, sortInfo, searchTerm);
     }, [sortInfo, filters, searchTerm]);
 
-    const MaterialRequisitionReportPaginationInfo: PaginationInfo = useMemo(
+    const VendorWiseMaterialCountReportPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
             totalPages: pagination.totalPages,
@@ -131,12 +148,12 @@ export const MaterialRequisitionReport: React.FC = () => {
         [pagination, handlePageChange]
     );
 
-    const MaterialRequisitionReportForTable = useMemo(() => materialRequisitionReportList, [materialRequisitionReportList]);
+    const VendorWiseMaterialCountReportForTable = useMemo(() => vendorWiseMaterialCountReportList, [vendorWiseMaterialCountReportList]);
 
     const applyFilters = () => {
         setFilters(tempFilters);
         setPagination({ currentPage: 1 });
-        loadMaterialRequisitionReport(1, tempFilters, sortInfo, searchTerm);
+        loadVendorWiseMaterialCountReport(1, tempFilters, sortInfo, searchTerm);
         setShowFilterPopup(false);
     }
 
@@ -144,28 +161,31 @@ export const MaterialRequisitionReport: React.FC = () => {
         setFilters({})
         setTempFilters({})
         setPagination({ currentPage: 1 });
-        loadMaterialRequisitionReport(1, filters, sortInfo, searchTerm)
+        loadVendorWiseMaterialCountReport(1, filters, sortInfo, searchTerm)
     }
 
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value))
     }
 
-    const handleExportMaterialRequisitionReport = async (exportType: 'Excel' | 'PDF') => {
+    const handleExportVendorWiseMaterialCountReport = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const params: FilterWithPaginationMaterialRequisitionReport = {
+                const params: FilterWithPaginationVendorWiseMaterialCountReport = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
-                    SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionReportColumns),
+                    VendorName: filters.VendorName?.trim() || undefined,
+                    FromDate: filters.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
+                    ToDate: filters.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, VendorWiseMaterialCountReportColumns),
                     ExportType: exportType
                 };
 
-                const response = await materialRequisitionReportservice.apiCallPullMaterialRequisitionReport(params);
+                const response = await materialRequisitionReportservice.apiCallPullVendorWiseMaterialCountReport(params);
 
-                handleExportFile(response, exportType, "Material Requisition Report", addToast);
+                handleExportFile(response, exportType, "Vendor Wise Material Count Report", addToast);
 
                 return response;
             },
@@ -176,11 +196,11 @@ export const MaterialRequisitionReport: React.FC = () => {
         )
     }
 
-    const handleExportMaterialRequisitionReportExcel = () => handleExportMaterialRequisitionReport("Excel");
-    const handleExportMaterialRequisitionReportPdf = () => handleExportMaterialRequisitionReport("PDF");
+    const handleExportVendorWiseMaterialCountReportExcel = () => handleExportVendorWiseMaterialCountReport("Excel");
+    const handleExportVendorWiseMaterialCountReportPdf = () => handleExportVendorWiseMaterialCountReport("PDF");
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div>
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
 
             <TableActionToolbar
@@ -200,18 +220,18 @@ export const MaterialRequisitionReport: React.FC = () => {
                     setShowFilterPopup(true);
                 }}
 
-                isShowExportButton={canExport && MaterialRequisitionReportForTable.length > 0}
-                onExportExcel={handleExportMaterialRequisitionReportExcel}
-                onExportPdf={handleExportMaterialRequisitionReportPdf}
+                isShowExportButton={canExport && VendorWiseMaterialCountReportForTable.length > 0}
+                onExportExcel={handleExportVendorWiseMaterialCountReportExcel}
+                onExportPdf={handleExportVendorWiseMaterialCountReportPdf}
                 exportLoading={isLoading}
             />
 
             <DataTable
-                columns={MaterialRequisitionReportColumns}
-                data={MaterialRequisitionReportForTable}
-                pagination={MaterialRequisitionReportPaginationInfo}
+                columns={VendorWiseMaterialCountReportColumns}
+                data={VendorWiseMaterialCountReportForTable}
+                pagination={VendorWiseMaterialCountReportPaginationInfo}
                 recordsPerPage={20}
-                emptyMessage="No Material Requisition Report Found"
+                emptyMessage="No Vendor Wise Material Count Report Found"
                 fixedHeight={true}
                 className="flex-1"
                 sortInfo={sortInfo}
@@ -222,7 +242,7 @@ export const MaterialRequisitionReport: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Material Requisition Report"
+                title="Filter - Vendor Wise Material Count Report"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -246,10 +266,26 @@ export const MaterialRequisitionReport: React.FC = () => {
                         />
                     </div>
 
+                    <div>
+                        <DatePickerInput
+                            label='From Date'
+                            value={tempFilters.FromDate || ''}
+                            onChange={(value) => handleFilterChange('FromDate', value || '')}
+                        />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label='To Date'
+                            value={tempFilters.ToDate || ''}
+                            onChange={(value) => handleFilterChange('ToDate', value || '')}
+                        />
+                    </div>
+
                 </div>
             </Modal>
 
         </div>
     )
 }
-export default MaterialRequisitionReport;
+export default VendorWiseMaterialCountReport;

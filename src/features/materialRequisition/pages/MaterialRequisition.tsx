@@ -36,6 +36,7 @@ import { Input } from "@/ui/components/forms";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -248,19 +249,24 @@ export const MaterialRequisition: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => {
+            render: (value,row) => {
                 const { bg, text } = getMaterialRequisitionStatusColor(value);
 
                 return (
-                    <span
-                        className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                        style={{
-                            backgroundColor: bg,
-                            color: text,
-                        }}
-                    >
-                        {value || "-"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                            style={{
+                                backgroundColor: bg,
+                                color: text,
+                            }}
+                        >
+                            {value || "-"}
+                        </span>
+                        {["COMPLETED", "CLOSED"].includes(value?.toUpperCase()) && (
+                            <FieldInfoTooltip value={row.CloseCompletionRemark} />
+                        )}
+                    </div>
                 );
             },
         },
@@ -276,16 +282,16 @@ export const MaterialRequisition: React.FC = () => {
                     approvalStatus={value || "-"}
                     showApproval={row.IsApproval}
                     isIcons={true}
-                    onHistory={  ["GET QUOTATION", "FINALIZED VENDOR","GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
-                            ? undefined
-                            : () => handleApprovalLog(row)
+                    onHistory={["GET QUOTATION", "FINALIZED VENDOR", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
+                        ? undefined
+                        : () => handleApprovalLog(row)
                     }
 
                 />
 
             )
         },
-         {
+        {
             key: "InvoiceApprovalStatus",
             label: "Invoice Status",
             width: "18",
@@ -297,10 +303,7 @@ export const MaterialRequisition: React.FC = () => {
                     approvalStatus={value || "-"}
                     showApproval={row.IsApprovalInvoice}
                     isIcons={true}
-                    onHistory={  ["GET QUOTATION", "FINALIZED VENDOR","GET COMPARE","ADD INVOICE","GENERATE PURCHASE ORDER"].includes(row?.MaterialRequisitionStage?.toUpperCase())
-                            ? undefined
-                            : () => handleApprovalLog(row)
-                    }
+
 
                 />
 
@@ -349,7 +352,7 @@ export const MaterialRequisition: React.FC = () => {
                 const canActionStage =
                     canAction &&
                     row.VendorFinalizationApprovalStatus?.toUpperCase() !== 'APPROVED' &&
-                    row.MaterialRequisitionStage?.toUpperCase() !== 'COMPLETED';
+                    !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase());
 
                 return (
                     <div className="flex items-center justify-center gap-1">

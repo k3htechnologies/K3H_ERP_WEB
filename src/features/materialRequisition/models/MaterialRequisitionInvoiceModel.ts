@@ -33,6 +33,12 @@ export interface MaterialRequisitionInvoiceData {
     InvoiceStatus: string;
     MaterialRequisitionGRNId: number | 0;
     IsApproval: boolean
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: string;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: string;
 }
 
 export interface AddUpdateMaterialRequisitionInvoice {
@@ -73,6 +79,11 @@ export interface MaterialRequisitionInvoiceSummaryData {
     TotalRequisitionAmount: number | 0,
     PaidRequisitionAmount: number | 0,
     PendingRequisitionAmount: number | 0
+    FinalVendor: string;
+    FinalVendorCompanyName: string;
+    FinalVendorMobileNumber: string;
+    FinalVendorMobileNumberCountryCode: string;
+    FinalVendorGSTNumber: string;
 }
 
 export type MaterialRequisitionInvoiceListResponse = ApiResponse<MaterialRequisitionInvoiceData[]>;

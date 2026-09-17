@@ -141,32 +141,60 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
     const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
         () => [
             {
-                key: "InvoiceNumber",
+                  key: "InvoiceNumber",
                 label: "Invoice Number",
                 align: "left",
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
+                  render: (value: string, row: any) => {
+                    return (
+                      <MultiImageViewer
+                        images={parseDocumentUrls(row.UploadInvoiceURL)}
+                        title="Invoice Document"
+                        triggerLabel={value || '-'}
+                        isWrap={false}
+                      />
+                    );
+                  }
+                },
+            {
+                key: "InvoiceAmount",
+                label: "Amount",
+                align: "left",
+                render: (value: number) => (
+                    <span className="font-medium text-black">
+                        {(formatCurrency(value) || '')}
+                    </span>
                 )
             },
             {
-                key: "InvoiceAmount",
-                label: "Invoice Amount",
+                key: "InvoiceAmountPaidTillDate",
+                label: "Paid",
                 align: "left",
-                render: (value: string) => (
+                render: (value: number) => (
                     <span className="font-medium text-black">
-                        {(value || '')}
+                        {(formatCurrency(value) || '')}
                     </span>
                 )
+            },
+            {
+                key: "InvoiceDate",
+                label: "Invoice Date",
+                align: "left",
+                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
             },
             {
                 key: "InvoiceDueDate",
                 label: "Invoice Due Date",
                 align: "left",
                 render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            },
+            {
+                key: "Remarks",
+                label: "Remark",
+                align: "left",
+                width: "30",
+                render: (value?: string) => (
+                    <FieldInfoTooltip value={value} />
+                )
             },
         ], []
     );
@@ -229,10 +257,14 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
 
                 <div className="col-span-7">
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE]">
+                        <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+
                             <h4 className="text-sm font-semibold text-[#C2410C]">
                                 Vendor & Amount Details
                             </h4>
+                            <span className="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-semibold bg-[#FFEDD5] text-[#C2410C]">
+                                {matrialRequisitionData?.VendorFinalizationApprovalStatus || "-"}
+                            </span>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border-b border-[#135bec2e]">
@@ -240,9 +272,9 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                             <FieldItem label="Vendor Company" value={matrialRequisitionData?.FinalVendorCompanyName} />
                             <FieldItem label="Mobile Number" value={matrialRequisitionData?.FinalVendorMobileNumber} />
                             <FieldItem label="GST Number" value={matrialRequisitionData?.FinalVendorGSTNumber} />
-                            <FieldItem label="Base Amount" value={formatCurrency(matrialRequisitionData?.TotalPoAmount)} />
-                            <FieldItem label="Total Tax" value={formatCurrency(matrialRequisitionData?.TotalTaxAmount)} />
-                            <FieldItem label="Grand Total" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0) + Number(matrialRequisitionData?.TotalTaxAmount ?? 0))} />
+                            <FieldItem label="Base Amount (₹)" value={formatCurrency(matrialRequisitionData?.TotalPoAmount)} />
+                            <FieldItem label="Total Tax (₹)" value={formatCurrency(matrialRequisitionData?.TotalTaxAmount)} />
+                            <FieldItem label="Grand Total (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0) + Number(matrialRequisitionData?.TotalTaxAmount ?? 0))} />
 
                             <FieldItem label="Paid Amount (₹)" value={formatCurrency(matrialRequisitionData?.PaidAmount)} />
                             <FieldItem
@@ -257,8 +289,8 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                                         Number(matrialRequisitionData?.PaidAmount ?? 0)
                                     )
                                 )} />
-                            <FieldItem label="Expected Delivery" value={`${matrialRequisitionData?.ExpectedDeliveryInDays ?? 0} days`} />
-                            <FieldItem label="Expected Payment" value={`${matrialRequisitionData?.ExpectedPaymentInDays ?? 0} days`} />
+                            <FieldItem label="Expected Delivery (Days)" value={`${matrialRequisitionData?.ExpectedDeliveryInDays ?? 0} days`} />
+                            <FieldItem label="Expected Payment (Days)" value={`${matrialRequisitionData?.ExpectedPaymentInDays ?? 0} days`} />
                         </div>
                     </section>
 
@@ -269,7 +301,7 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                         <div className="bg-[#FCF1FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
 
                             <h4 className="text-sm font-semibold text-[#7E22CE] flex items-center gap-2">
-                                Material Details :
+                                Material Details
 
                                 <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
                                     {matrialRequisitionDetailData.length}
@@ -299,8 +331,12 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                 <div className="col-span-12">
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
                         <div className="bg-[#FCE7F3] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#BE185D]">
+                            <h4 className="text-sm font-semibold text-[#BE185D] flex items-center gap-2">
                                 Invoice Details
+
+                                <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F9CFE2] text-[#BE185D] text-xs font-semibold">
+                                    {materialRequisitionInvoiceData.length}
+                                </span>
                             </h4>
                         </div>
 
@@ -329,6 +365,21 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                         </div>
                     </section>
                 </div>
+                {matrialRequisitionData?.CloseCompletionRemark && (
+                    <div className="col-span-12">
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#FBF9F9] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                    {matrialRequisitionData?.MaterialRequisitionStatus} Remark
+                                </h4>
+                            </div>
+
+                            <div className="p-4">
+                                <span>{matrialRequisitionData?.CloseCompletionRemark || "-"}</span>
+                            </div>
+                        </section>
+                    </div>
+                )}
 
                 <div className="col-span-12">
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">

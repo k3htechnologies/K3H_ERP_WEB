@@ -45,6 +45,7 @@ export const PurchaseOrder: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
     const [materialRequisitionPurchaseOrder, setMaterialRequisitionPurchaseOrder] = useState<MaterialRequisitionPurchaseOrderData | null>(null);
+    const [isPurchaseOrderLoaded, setIsPurchaseOrderLoaded] = useState(false);
     const [formData, setFormData] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData>(() => initialFormState());
     const [uploadData,] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
     const { projectId } = useProject();
@@ -70,10 +71,11 @@ export const PurchaseOrder: React.FC = () => {
     const pdfHeight = useViewportHeight(180, 300, 1200);
 
     useEffect(() => {
-        if (!projectId) return
+        if (!projectId) return;
 
+        setIsPurchaseOrderLoaded(false);
         loadPurchaseOrder();
-    }, [projectId, currentMaterialRequisitionId])
+    }, [projectId, currentMaterialRequisitionId]);
 
     const loadPurchaseOrder = async () => {
         await runApiWithLoader(
@@ -95,13 +97,20 @@ export const PurchaseOrder: React.FC = () => {
                     const data = response.right.Data;
 
                     setMaterialRequisitionPurchaseOrder(Array.isArray(data) ? (data[0] ?? null) : data);
+
+                    setIsPurchaseOrderLoaded(true);
+
                 } else {
+                    setIsPurchaseOrderLoaded(true);
                     addToast({ type: "error", title: response.left.message });
                 }
                 return response;
             },
             undefined,
             (error: any) => {
+
+                setIsPurchaseOrderLoaded(true);
+
                 addToast({ type: "error", title: error.message });
             },
             undefined,
@@ -297,7 +306,7 @@ export const PurchaseOrder: React.FC = () => {
 
             <div className="flex justify-end gap-2">
 
-                {!hasPurchaseOrder && canGeneratePurchaseOrder && listState.MaterialRequisitionStatus.toUpperCase() !== "COMPLETED" && (
+                {isPurchaseOrderLoaded && !hasPurchaseOrder && canGeneratePurchaseOrder && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
                     <>
                         <Button
                             color="red"
@@ -364,34 +373,31 @@ export const PurchaseOrder: React.FC = () => {
                         )}
                     </div>
 
-                    {/* Created By */}
-                    <div className="text-sm text-gray-600 mt-2">
-                        <span className="font-medium">
-                            Created By {materialRequisitionPurchaseOrder?.CreatedBy || "-"} on{" "}
-                            {materialRequisitionPurchaseOrder?.CreatedDate
-                                ? formatDate_dd_MonthName_yy(
-                                    materialRequisitionPurchaseOrder.CreatedDate
-                                )
-                                : "-"}
-                        </span>
-                    </div>
+                    <div className="flex justify-between items-center mt-2 mb-2 mr-2">
+                        <div className="text-sm text-gray-600">
+                            <span className="font-medium">
+                                Created By {materialRequisitionPurchaseOrder?.CreatedBy || "-"} on{" "}
+                                {materialRequisitionPurchaseOrder?.CreatedDate
+                                    ? formatDate_dd_MonthName_yy(
+                                        materialRequisitionPurchaseOrder.CreatedDate
+                                    )
+                                    : "-"}
+                            </span>
+                        </div>
 
-                    {canGeneratePurchaseOrder && listState.MaterialRequisitionStatus.toUpperCase() !== "COMPLETED" && (
-                        <div className="flex justify-end mt-2 mb-2 mr-2">
+                        {isPurchaseOrderLoaded && canGeneratePurchaseOrder && materialRequisitionPurchaseOrder?.NumberOfGRN === 0  && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
                             <Button
                                 color="red"
                                 variant="solid"
                                 onClick={() =>
-                                    handleConfirmationDialogBoxOpen(
-                                        materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData
-                                    )
+                                    handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData)
                                 }
                                 className="px-4 py-2 rounded-md"
                             >
                                 Delete
                             </Button>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                 </div>
             ) :

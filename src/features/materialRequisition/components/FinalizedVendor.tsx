@@ -42,7 +42,11 @@ const resolveLines = (term: any, detailData: any[]): any[] => {
     return hasLogistics ? source : [...source, ...DEFAULT_LOGISTICS]
 }
 
-export const FinalizedVendor: React.FC = () => {
+interface FinalizedVendorProps {
+    onApprovalSuccess?: () => Promise<void>;
+}
+
+export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSuccess }) => {
 
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>()
     const { listState } = useMaterialRequisitionListState()
@@ -272,6 +276,8 @@ export const FinalizedVendor: React.FC = () => {
                     setIsApprovalActionModalOpen(false);
 
                     await loadSelectedVendor();
+
+                    await onApprovalSuccess?.();
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -378,7 +384,7 @@ export const FinalizedVendor: React.FC = () => {
     }
 
 
-    const finalizedVendor = materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
+    const finalizedVendor = materialRequisitionVendorSelectedList.find(v => v.IsFinalized);
     const isAnyFinalized = !!finalizedVendor
     const isApprovalAvailable = finalizedVendor?.IsApproval === true
 
@@ -703,9 +709,11 @@ export const FinalizedVendor: React.FC = () => {
                 loading={isLoading}
                 size='half-screen'
             >
-                <div className="space-y-4">
 
-                    <div className="px-2 py-2">
+                
+                <div className="flex flex-col h-[calc(100vh-180px)]">
+
+                   <div className="px-2 py-2 shrink-0">
                         <div className="flex items-center gap-3 w-full">
                             <Checkbox
                                 checked={selectedVendorIds.length === materialRequisitionVendorFinalizedList.length}
@@ -714,7 +722,7 @@ export const FinalizedVendor: React.FC = () => {
 
                             <Input
                                 type="text"
-                                placeholder="Search Vendor Name"
+                                placeholder="Search By Vendor Name"
                                 value={searchVendor}
                                 onChange={(e) => setSearchVendor(e.target.value)}
                             />
@@ -727,7 +735,7 @@ export const FinalizedVendor: React.FC = () => {
                     </div>
 
 
-                    <div className="max-h-[55vh] overflow-auto divide-y">
+                    <div className="flex-1 min-h-0 overflow-y-auto divide-y thin-scroll">
 
                         {materialRequisitionVendorFinalizedList.filter(v =>
                             v.VendorName?.toLowerCase().includes(searchVendor.toLowerCase())
@@ -788,6 +796,7 @@ export const FinalizedVendor: React.FC = () => {
                         )}
 
                     </div>
+                
                 </div>
             </Modal>
 

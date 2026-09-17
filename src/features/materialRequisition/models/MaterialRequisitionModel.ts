@@ -53,6 +53,7 @@ export interface MaterialRequisitionData {
     ClientRegistrationId: number;
     MaterialRequisitionStage: string;
     MaterialRequisitionStatus: string;
+    CloseCompletionRemark: string;
     FinalVendor: string;
     FinalVendorCompanyName: string;
     FinalVendorMobileNumber: string;
@@ -160,8 +161,17 @@ export interface DeleteMaterialRequisitionRequest {
     ProjectId: number | 0,
 }
 
+export interface CloseMaterialRequisitionRequest {
+    MaterialRequisitionId: number,
+    Uniquekey: string | null,
+    ProjectId: number | 0,
+    Type: string | null,
+    CloseCompletionRemark: string | null,
+}
+
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionOverviewResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionDetailsResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionSaveReponse = ApiResponse<MaterialRequisitionData>;
 export type MaterialRequisitionDeleteResponse = ApiResponse<number>;
+export type MaterialRequisitionCloseResponse = ApiResponse<number>;

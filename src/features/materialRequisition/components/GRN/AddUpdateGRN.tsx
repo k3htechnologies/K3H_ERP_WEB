@@ -13,11 +13,11 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import { filterChallanNumber, filterNumbers, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -76,7 +76,7 @@ export const AddUpdateGRN = () => {
             loadGRNData();
         }
     }, [currentMaterialRequisitionId]);
-    
+
     const loadGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -169,21 +169,17 @@ export const AddUpdateGRN = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!formData.Remarks) {
-            newErrors.Remarks = ' Remarks is required.';
-        }
         if (!formData.VehicleNumber?.trim()) {
             newErrors.VehicleNumber = 'Vehicle Number is required.';
         } else if (!isValidVehicleNumber(formData.VehicleNumber)) {
-            newErrors.VehicleNumber = 'Invalid vehicle number format. Examples: MH12AB1234, 21 BH 0001 AA, 628, 1';
+            newErrors.VehicleNumber = 'Invalid vehicle number format. Examples: MH12AB1234, 21 BH 0001 AA';
         }
         if (!formData.ChallanNumber) {
             newErrors.ChallanNumber = ' Challan Number is required.';
-        } else if (formData.ChallanNumber.length !== 15) {
-            newErrors.ChallanNumber = ' Challan Number must be 15 characters long.';
-        }
+        } 
+
         if (!hasAnyDocumentFile(uploadChallanFiles, uploadChallanURL, removedUploadChallanUrls)) {
-            newErrors.UploadChallanFiles = "File is required.";
+            newErrors.UploadChallanFiles = "Challan is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -226,9 +222,16 @@ export const AddUpdateGRN = () => {
 
     const handleSave = async () => {
 
-        const receivedMaterials = materialList.filter(
-            item => Number(item.TotalReceivedMaterialQuantity) > 0
-        );
+        
+        setErrors({});
+        const validation = validateMaterialRequisitionGRNForm();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return;
+        }
+
+        const receivedMaterials = materialList.filter(item => Number(item.TotalReceivedMaterialQuantity) > 0);
 
         if (receivedMaterials.length === 0) {
             addToast({
@@ -237,13 +240,6 @@ export const AddUpdateGRN = () => {
             return;
         }
 
-        setErrors({});
-        const validation = validateMaterialRequisitionGRNForm();
-
-        if (!validation.isValid) {
-            setErrors(validation.errors);
-            return;
-        }
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -325,6 +321,7 @@ export const AddUpdateGRN = () => {
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -354,6 +351,7 @@ export const AddUpdateGRN = () => {
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -361,15 +359,7 @@ export const AddUpdateGRN = () => {
             );
         }
         columns.push(
-            {
-                key: "MaterialQuantity",
-                label: "Quantity",
-                align: "left",
-                width: "30",
-                render: (value, row) => {
-                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
-                }
-            },
+
             {
                 key: "RequiredDate",
                 label: "Required Date",
@@ -378,70 +368,90 @@ export const AddUpdateGRN = () => {
                 render: (value) =>
                     value ? formatDate_dd_MonthName_yy(value) : "-"
             },
+
             {
-                key: "MaterialReceivedQuantityTillDate",
-                label: "Received Quantity Till Date",
-                align: "left",
-                width: "30",
-                render: (value) => value || "-"
+                key: "QuantityGroup",
+                label: "Quantity",
+                align: "center",
+                children: [
+                    {
+                        key: "MaterialQuantity",
+                        label: "Total",
+                        align: "right",
+                        width: "30",
+                        render: (value, row) => {
+                            return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                        }
+                    },
+                    {
+                        key: "MaterialReceivedQuantityTillDate",
+                        label: "Received",
+                        align: "right",
+                        width: "30",
+                        render: (value) => value || 0
+                    },
+                    {
+                        key: 'PendingQuantity',
+                        label: 'Pending',
+                        width: '10',
+                        sortable: false,
+                        align: 'right',
+                        render: (_value, row) => {
+
+                            const materialQuantity = row.MaterialQuantity
+                            const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
+                            const pending = materialQuantity - materialReceivedQuantityTillDate
+
+                            return pending
+                        }
+                    },
+                    {
+                        key: "TotalReceivedMaterialQuantity",
+                        label: "Received",
+                        align: "left",
+                        width: "30",
+                        render: (value: any, row) => {
+
+                            const materialQuantity = row.MaterialQuantity
+                            const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
+                            const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
+
+                            return (
+                                <Input
+                                    label=""
+                                    value={value ?? 0}
+                                    maxLength={9}
+                                    onChange={(e) => {
+                                        const raw = filterNumbers(e.target.value);
+                                        const receivedQuantity = Number(raw);
+
+                                        if (receivedQuantity > pendingQuantity) {
+                                            addToast({
+                                                type: "error", title: `Received Quantity cannot exceed Pending Quantity (${pendingQuantity})`,
+                                            });
+                                            return;
+                                        }
+
+                                        if (receivedQuantity < 0) return;
+
+                                        setMaterialList(prev =>
+                                            prev.map(item =>
+                                                item.MaterialRequisitionDetailId ===
+                                                    row.MaterialRequisitionDetailId
+                                                    ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
+                                                    : item
+                                            )
+                                        );
+                                    }}
+                                    max={pendingQuantity}
+                                />
+                            );
+                        },
+                    },
+                ]
             },
-            {
-                key: 'PendingQuantity',
-                label: 'Pending Quantity',
-                width: '10',
-                sortable: false,
-                align: 'left',
-                render: (_value, row) => {
 
-                    const materialQuantity = row.MaterialQuantity
-                    const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
-                    const pending = materialQuantity - materialReceivedQuantityTillDate
 
-                    return pending
-                }
-            },
-            {
-                key: "TotalReceivedMaterialQuantity",
-                label: "Received Quantity",
-                align: "left",
-                width: "30",
-                render: (value: any, row) => {
-
-                    const materialQuantity = row.MaterialQuantity
-                    const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
-                    const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-
-                    return (
-                        <Input
-                            label=""
-                            value={value ?? 0}
-                            onChange={(e) => {
-                                const raw = e.target.value;
-                                const receivedQuantity = Number(raw);
-
-                                if (receivedQuantity > pendingQuantity) {
-                                    addToast({
-                                        type: "error", title: `Received Quantity cannot exceed Pending Quantity (${pendingQuantity})`,
-                                    });
-                                    return;
-                                }
-
-                                if (receivedQuantity < 0) return;
-
-                                setMaterialList(prev =>
-                                    prev.map(item =>
-                                        item.MaterialRequisitionDetailId ===
-                                            row.MaterialRequisitionDetailId
-                                            ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
-                                            : item
-                                    )
-                                );
-                            }}
-                            max={pendingQuantity}
-                        />
-                    );
-                },
-            },
             // {
             //     key: "QualityAnalystRemark",
             //     label: "Quality Analyst Remark",
@@ -483,56 +493,48 @@ export const AddUpdateGRN = () => {
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
 
                     <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Good Received Notes (GRN) Details</h3>
 
-                        {materialList.length > 0 ? (
-                            <div className="border border-[#33333321] rounded-xl overflow-hidden mb-4 overflow-y-auto thin-scroll">
-                                <DataTableWithHeaderRowDivider
-                                    columns={MatrialRequisitionDetailColumns}
-                                    data={materialList}
-                                    emptyMessage="No Material Requisition Details Found"
-                                    fixedHeight={true}
-                                    className="flex-1"
-                                />
-                            </div>
-                        ) : (
-                            <div className="flex items-center justify-center">
-                                <span className="text-gray-500 text-sm font-medium">No materials found</span>
-                            </div>
-                        )}
+
+                        <CustomTable
+                            columns={MatrialRequisitionDetailColumns}
+                            data={materialList}
+                            emptyMessage="No Material Requisition Details Found"
+                            fixedHeight={true}
+                            className="flex-1"
+                        />
 
                         <div className="flex grid grid-cols-3 gap-4">
                             <Input
                                 type="text"
-                                label="Vehicle No."
-                                placeholder="Enter Vehicle No."
+                                label="Vehicle Number"
+                                placeholder="Enter Vehicle Number"
                                 value={formData.VehicleNumber ?? ""}
                                 onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
-                                maxLength={10}
+                                maxLength={13}
                                 error={errors.VehicleNumber}
                                 required
                             />
 
                             <Input
                                 type="text"
-                                label="Challan No."
-                                placeholder="Challan No."
+                                label="Challan Number"
+                                placeholder="Challan Number"
                                 value={formData.ChallanNumber}
                                 onChange={(e) => handleFieldChange("ChallanNumber", filterChallanNumber(e.target.value))}
-                                maxLength={15}
+                                maxLength={30}
                                 error={errors.ChallanNumber}
                                 required
                             />
 
                             <MultiFilePicker
-                                label="Upload Document"
-                                placeholder="Upload Document"
+                                label="Upload Challan"
+                                placeholder="Upload Challan"
                                 value={uploadChallanFiles}
                                 onChange={setUploadChallanFiles}
                                 availableFilesURL={uploadChallanURL ?? ""}
-                                allowedTypes={["image/jpeg", "image/png"]}
+                               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                 maxFiles={1}
-                                maxSizeMB={5}
                                 onRemoveExisting={(url) =>
                                     setRemovedUploadChallanUrls(prev => [...prev, url])
                                 }
@@ -543,12 +545,15 @@ export const AddUpdateGRN = () => {
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
 
-                        <div className="flex items-center justify-between pb-3">
-                            <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
+                        <div className="flex items-center justify-between">
+                            <TextArea 
+                                label=""
+                                className="thin-scroll" 
+                                value={formData.Remarks}
                                 onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                                 placeholder="Enter Remark"
                                 error={errors.Remarks}
-                                required
+                                
                             />
                         </div>
 

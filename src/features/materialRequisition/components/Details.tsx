@@ -408,6 +408,20 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </div>
             </section>
 
+             {matrialRequisitionData?.CloseCompletionRemark && (
+                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                        <div className="bg-[#FBF9F9] px-4 py-2 border-b border-[#D0D7DE]">
+                            <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                {matrialRequisitionData?.MaterialRequisitionStatus} Remark
+                            </h4>
+                        </div>
+
+                        <div className="p-4">
+                            <span>{matrialRequisitionData?.CloseCompletionRemark || "-"}</span>
+                        </div>
+                    </section>
+                )}
+
             <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
                 <div className="bg-[#E1E2E4] px-4 py-2 border-b border-[#D0D7DE]">
                     <h4 className="text-sm font-semibold text-[#333333]">

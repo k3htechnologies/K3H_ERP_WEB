@@ -169,11 +169,10 @@ export const AddUpdateGRN = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!formData.VehicleNumber?.trim()) {
-            newErrors.VehicleNumber = 'Vehicle Number is required.';
-        } else if (!isValidVehicleNumber(formData.VehicleNumber)) {
+        if (formData.VehicleNumber?.trim() && !isValidVehicleNumber(formData.VehicleNumber)) {
             newErrors.VehicleNumber = 'Invalid vehicle number format. Examples: MH12AB1234, 21 BH 0001 AA';
         }
+
         if (!formData.ChallanNumber) {
             newErrors.ChallanNumber = ' Challan Number is required.';
         } 
@@ -505,16 +504,7 @@ export const AddUpdateGRN = () => {
                         />
 
                         <div className="flex grid grid-cols-3 gap-4">
-                            <Input
-                                type="text"
-                                label="Vehicle Number"
-                                placeholder="Enter Vehicle Number"
-                                value={formData.VehicleNumber ?? ""}
-                                onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
-                                maxLength={13}
-                                error={errors.VehicleNumber}
-                                required
-                            />
+                           
 
                             <Input
                                 type="text"
@@ -540,6 +530,16 @@ export const AddUpdateGRN = () => {
                                 }
                                 error={errors.UploadChallanFiles}
                                 required
+                            />
+                             <Input
+                                type="text"
+                                label="Vehicle Number"
+                                placeholder="Enter Vehicle Number"
+                                value={formData.VehicleNumber ?? ""}
+                                onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
+                                maxLength={13}
+                                error={errors.VehicleNumber}
+                                
                             />
                         </div>
 

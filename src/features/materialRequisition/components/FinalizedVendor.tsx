@@ -709,8 +709,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                 loading={isLoading}
                 size='half-screen'
             >
-
-                
                 <div className="flex flex-col h-[calc(100vh-180px)]">
 
                    <div className="px-2 py-2 shrink-0">

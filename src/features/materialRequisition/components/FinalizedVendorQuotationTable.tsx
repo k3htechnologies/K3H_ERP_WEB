@@ -433,7 +433,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                     Quotation
                 </div>
                     {
-                    VendorFinalizationApprovalStatus?.toUpperCase() !== "APPROVED" && (
+                    !VendorFinalizationApprovalStatus?.toUpperCase().includes("APPROVED") && (
                         !isEditing ? (
 
                         <button

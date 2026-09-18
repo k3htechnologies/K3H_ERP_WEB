@@ -40,6 +40,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
+    const isVendorFinalizationApproved =listState.VendorFinalizationApprovalStatus?.trim().toUpperCase() === "APPROVED";
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())
@@ -444,6 +445,8 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
         });
     }, [matrialRequisitionDetailData]);
 
+
+    
     return (
         <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
@@ -456,7 +459,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction && !materialRequisitionStatus && !isAllQuantityReceived}
+                isShowAddButton={canAction  && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived }
                 addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}

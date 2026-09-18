@@ -306,7 +306,8 @@ export const PurchaseOrder: React.FC = () => {
 
             <div className="flex justify-end gap-2">
 
-                {isPurchaseOrderLoaded && !hasPurchaseOrder && canGeneratePurchaseOrder && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
+                {isPurchaseOrderLoaded && !hasPurchaseOrder && canGeneratePurchaseOrder && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) &&
+                listState.VendorFinalizationApprovalStatus.toUpperCase()==="APPROVED" && (
                     <>
                         <Button
                             color="red"

@@ -652,7 +652,7 @@ export const ApprovedBankFolder: React.FC = () => {
                 onSubmit={handleAddUpdateApprovedBankFolder}
                 saveText='Add'
                 loading={isLoading}
-                size="large-half"
+                size="small-half"
             >
                 <div className="space-y-4">
 

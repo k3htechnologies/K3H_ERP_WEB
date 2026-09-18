@@ -23,13 +23,7 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd,
 import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { BudgetData } from "@/features/budget/models/BudgetModel";
-import {
-    fetchProjectBudget,
-    getBudgetL1Dropdown,
-    getBudgetL2Dropdown,
-    getBudgetL3Dropdown,
-    getBudgetL4Dropdown,
-} from "@/features/budget/budgetDropdown";
+import { fetchProjectBudget, getBudgetL1Dropdown, getBudgetL2Dropdown, getBudgetL3Dropdown, getBudgetL4Dropdown, } from "@/features/budget/budgetDropdown";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatCurrency } from "@/core/utils/comman";
@@ -75,7 +69,6 @@ const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
     Remark: ""
 })
 
-
 export const AddUpdateMaterialRequisition = () => {
 
     const [isLoading, setIsLoading] = useState(false);
@@ -114,7 +107,6 @@ export const AddUpdateMaterialRequisition = () => {
                 ])
     ];
 
-
     const [active, setActive] = useState<string>(MaterialRequisitionTab[0].id);
 
     const [subMaterialDetails, setSubMaterialDetails] = useState<{
@@ -132,10 +124,8 @@ export const AddUpdateMaterialRequisition = () => {
     } | null>(null);
 
     const [inDirectSubMaterialDetails, setInDirectSubMaterialDetails] = useState<SubMaterialMasterData | null>(null);
-
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteMaterialDetailsData, setDeleteMaterialDetailsData] = useState<{ row: AddUpdateMaterialRequisitionDetailRequest; index: number } | null>(null);
-
 
     useEffect(() => {
         if (!MaterialRequisitionId) return;
@@ -279,7 +269,6 @@ export const AddUpdateMaterialRequisition = () => {
         } else if (materialData.MaterialQuantity <= 0) {
             newErrors.MaterialQuantity = "Quantity must be greater than 0";
         }
-
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -748,7 +737,6 @@ export const AddUpdateMaterialRequisition = () => {
         );
     };
 
-
     return (
         <div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -889,8 +877,6 @@ export const AddUpdateMaterialRequisition = () => {
                         {active === "Direct" && (
                             <div className="space-y-4">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-
                                     <SingleSelectDropdownWithPagination
                                         label="Category"
                                         title="Select Category"
@@ -899,7 +885,6 @@ export const AddUpdateMaterialRequisition = () => {
                                             materialData.LevelId1,
                                             dropdownLabels.level1Name || materialData.Level1Name!
                                         )}
-
 
                                         dataFetchCallBack={async () => {
                                             const itemList = getBudgetL1Dropdown(
@@ -1092,7 +1077,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                     ...prev,
                                                     LevelId4: 0,
                                                     Level4Name: '',
-                                                    MaterialQuantity:0,
+                                                    MaterialQuantity: 0,
                                                     RequiredDate: "",
                                                 }));
                                                 return;
@@ -1165,7 +1150,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 return;
                                             }
 
-                                            const maxQuantity = (Number(subMaterialDetails?.Quantity ?? 0) * Number(subMaterialDetails?.L3Quantity ?? 0))-Number(subMaterialDetails?.ReceivedQuantity ?? 0);
+                                            const maxQuantity = (Number(subMaterialDetails?.Quantity ?? 0) * Number(subMaterialDetails?.L3Quantity ?? 0)) - Number(subMaterialDetails?.ReceivedQuantity ?? 0);
 
                                             if (quantity > maxQuantity) {
                                                 setErrors(prev => ({
@@ -1186,7 +1171,7 @@ export const AddUpdateMaterialRequisition = () => {
                                             }));
                                         }}
                                         placeholder="Enter Quantity"
-                                        max={(Number(subMaterialDetails?.Quantity) *Number(subMaterialDetails?.L3Quantity))  -Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
+                                        max={(Number(subMaterialDetails?.Quantity) * Number(subMaterialDetails?.L3Quantity)) - Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
                                         error={errors.MaterialQuantity}
                                         rightIcon={subMaterialDetails?.UomCode}
                                     />
@@ -1221,7 +1206,7 @@ export const AddUpdateMaterialRequisition = () => {
 
                                             <FieldItem label="Material Rate" value={formatCurrency(subMaterialDetails.MaterialRate)} />
 
-                                            <FieldItem label="Required Quantity" value={Number(subMaterialDetails.Quantity) * Number(subMaterialDetails.L3Quantity)}  />
+                                            <FieldItem label="Required Quantity" value={Number(subMaterialDetails.Quantity) * Number(subMaterialDetails.L3Quantity)} />
 
                                             <FieldItem label="Received Quantity" value={subMaterialDetails.ReceivedQuantity} />
 

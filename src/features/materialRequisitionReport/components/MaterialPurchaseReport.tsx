@@ -293,7 +293,6 @@ export const MaterialPurchaseReport: React.FC = () => {
                 resetText=""
                 size="small-half"
             >
-
                 <div className="space-y-6">
 
                     <div>

@@ -33,7 +33,6 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [materialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([]);
-
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
@@ -453,7 +452,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor onApprovalSuccess={loadMaterialRequisitionOverview} />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
-            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} />)}
+            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onAddGRN={loadMaterialRequisitionOverview} />)}
             {activeTab === 'Invoice' && <Invoice />}
 
             <Modal
@@ -473,8 +472,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                     />
                 </div>
             </Modal>
-
-
 
             <Modal
                 isOpen={isCloseRequisitionDialogOpen}
@@ -544,8 +541,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                         }
                     />
 
-
-
                     {selectedMaterialRequisitionItem?.Type === "Completed" ? (
                         <div className="text-sm text-[#00000080] pt-2">
                             <p>
@@ -572,7 +567,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                             marked as <b>Closed</b> and cannot be changed later.
                         </p>
                     )}
-
 
                 </div>
 

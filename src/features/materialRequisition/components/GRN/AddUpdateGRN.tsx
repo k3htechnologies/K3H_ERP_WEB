@@ -60,7 +60,6 @@ export const AddUpdateGRN = () => {
     const isAddMode = materialRequisitionGRNId === 0;
 
     const location = useLocation();
-
     const { matrialRequisitionDetailData = [], } = location.state ?? {};
 
     useEffect(() => {
@@ -122,7 +121,7 @@ export const AddUpdateGRN = () => {
                                     UomMasterId: Detail?.UomMasterId ?? 0,
                                     UomCode: item.UomCode ?? Detail?.UomCode ?? "",
                                     RequiredDate: item.RequiredDate ?? Detail?.RequiredDate ?? "",
-                                    MaterialReceivedQuantityTillDate: item.TotalReceivedMaterialQuantity ?? Detail?.MaterialReceivedQuantityTillDate ?? "",
+                                    MaterialReceivedQuantityTillDate: Number(Detail?.TotalReceivedQuantityByRequisition ?? 0) - Number(Detail?.TotalReceivedMaterialQuantity ?? 0),
                                     LevelId1: Detail?.LevelId1 ?? 0,
                                     Level1Name: Detail?.Level1Name ?? "",
                                     LevelId2: Detail?.LevelId2 ?? 0,
@@ -140,6 +139,7 @@ export const AddUpdateGRN = () => {
                                     MaterialRequisitionDetailId: item.MaterialRequisitionDetailId ?? 0,
                                     IsTolerant: Detail?.IsTolerant ?? false,
                                     TolerancePercentage: Detail?.TolerancePercentage ?? 0,
+                                    TotalReceivedQuantityByRequisition: Detail.TotalReceivedQuantityByRequisition ?? 0
                                 };
                             }));
 
@@ -169,11 +169,10 @@ export const AddUpdateGRN = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!formData.VehicleNumber?.trim()) {
-            newErrors.VehicleNumber = 'Vehicle Number is required.';
-        } else if (!isValidVehicleNumber(formData.VehicleNumber)) {
+        if (formData.VehicleNumber?.trim() && !isValidVehicleNumber(formData.VehicleNumber)) {
             newErrors.VehicleNumber = 'Invalid vehicle number format. Examples: MH12AB1234, 21 BH 0001 AA';
         }
+
         if (!formData.ChallanNumber) {
             newErrors.ChallanNumber = ' Challan Number is required.';
         }
@@ -221,7 +220,6 @@ export const AddUpdateGRN = () => {
     };
 
     const handleSave = async () => {
-
 
         setErrors({});
         const validation = validateMaterialRequisitionGRNForm();
@@ -385,10 +383,12 @@ export const AddUpdateGRN = () => {
                     },
                     {
                         key: "MaterialReceivedQuantityTillDate",
-                        label: "Received",
+                        label: "Received Till Date",
                         align: "right",
                         width: "30",
-                        render: (value) => value || 0
+                        render: (value, row) => {
+                            return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                        }
                     },
                     {
                         key: 'PendingQuantity',
@@ -402,12 +402,12 @@ export const AddUpdateGRN = () => {
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pending = materialQuantity - materialReceivedQuantityTillDate
 
-                            return pending
+                            return isDirect ? `${pending ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${pending ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                         }
                     },
                     {
                         key: "TotalReceivedMaterialQuantity",
-                        label: "Received",
+                        label: "Now Received",
                         align: "left",
                         width: "30",
                         render: (value: any, row) => {
@@ -423,6 +423,7 @@ export const AddUpdateGRN = () => {
                                     maxLength={9}
                                     onChange={(e) => {
                                         const raw = filterNumbers(e.target.value);
+
                                         const receivedQuantity = Number(raw);
 
                                         if (receivedQuantity > pendingQuantity) {
@@ -436,8 +437,7 @@ export const AddUpdateGRN = () => {
 
                                         setMaterialList(prev =>
                                             prev.map(item =>
-                                                item.MaterialRequisitionDetailId ===
-                                                    row.MaterialRequisitionDetailId
+                                                item.MaterialRequisitionDetailId === row.MaterialRequisitionDetailId
                                                     ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
                                                     : item
                                             )
@@ -450,8 +450,6 @@ export const AddUpdateGRN = () => {
                     },
                 ]
             },
-
-
             // {
             //     key: "QualityAnalystRemark",
             //     label: "Quality Analyst Remark",
@@ -503,16 +501,7 @@ export const AddUpdateGRN = () => {
                         />
 
                         <div className="flex grid grid-cols-3 gap-4">
-                            <Input
-                                type="text"
-                                label="Vehicle Number"
-                                placeholder="Enter Vehicle Number"
-                                value={formData.VehicleNumber ?? ""}
-                                onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
-                                maxLength={13}
-                                error={errors.VehicleNumber}
-                                required
-                            />
+
 
                             <Input
                                 type="text"
@@ -538,6 +527,17 @@ export const AddUpdateGRN = () => {
                                 }
                                 error={errors.UploadChallanFiles}
                                 required
+                            />
+
+                            <Input
+                                type="text"
+                                label="Vehicle Number"
+                                placeholder="Enter Vehicle Number"
+                                value={formData.VehicleNumber ?? ""}
+                                onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
+                                maxLength={13}
+                                error={errors.VehicleNumber}
+
                             />
                         </div>
 

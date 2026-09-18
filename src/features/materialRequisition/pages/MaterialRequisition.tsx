@@ -58,7 +58,6 @@ export const MaterialRequisition: React.FC = () => {
     const [vendorName, setVendorName] = useState<string | null>("");
     const { canAction, canExport } = useMenuPermissions();
 
-
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
 
@@ -243,13 +242,55 @@ export const MaterialRequisition: React.FC = () => {
                 );
             }
         },
+
+        {
+            key: "VendorFinalizationApprovalStatus",
+            label: "Vendor Finalization Status",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApproval}
+                    isIcons={true}
+
+                    onHistory={
+                        ["PARTIAL APPROVED", "APPROVED"].includes(value?.toUpperCase())
+                            ? () => handleApprovalLog(row)
+                            : value?.toUpperCase() === "PENDING" &&
+                                !["GET QUOTATION", "FINALIZED VENDOR", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
+                                ? () => handleApprovalLog(row)
+                                : undefined
+                    }
+
+                />
+
+            )
+        },
+        {
+            key: "InvoiceApprovalStatus",
+            label: "Invoice Status",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApprovalInvoice}
+                    isIcons={true}
+                />
+            )
+        },
         {
             key: 'MaterialRequisitionStatus',
             label: 'Status',
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value,row) => {
+            render: (value, row) => {
                 const { bg, text } = getMaterialRequisitionStatusColor(value);
 
                 return (
@@ -269,45 +310,6 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
                 );
             },
-        },
-        {
-            key: "VendorFinalizationApprovalStatus",
-            label: "Vendor Finalization Status",
-            width: "18",
-            sortable: false,
-            align: "center",
-            render: (value, row) => (
-
-                <ApprovalActions
-                    approvalStatus={value || "-"}
-                    showApproval={row.IsApproval}
-                    isIcons={true}
-                    onHistory={["GET QUOTATION", "FINALIZED VENDOR", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
-                        ? undefined
-                        : () => handleApprovalLog(row)
-                    }
-
-                />
-
-            )
-        },
-        {
-            key: "InvoiceApprovalStatus",
-            label: "Invoice Status",
-            width: "18",
-            sortable: false,
-            align: "center",
-            render: (value, row) => (
-
-                <ApprovalActions
-                    approvalStatus={value || "-"}
-                    showApproval={row.IsApprovalInvoice}
-                    isIcons={true}
-
-
-                />
-
-            )
         },
         {
             key: 'TotalPoAmount',
@@ -579,8 +581,6 @@ export const MaterialRequisition: React.FC = () => {
     const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
     const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
 
-
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
@@ -679,6 +679,7 @@ export const MaterialRequisition: React.FC = () => {
                             onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
                             placeholder="Enter MR Code" />
                     </div>
+
                     <div>
                         <Input type="text"
                             label='Vendor Name'
@@ -686,6 +687,7 @@ export const MaterialRequisition: React.FC = () => {
                             onChange={e => handleFilterChange('VendorName', e.target.value)}
                             placeholder="Enter Vendor Name" />
                     </div>
+
                     <div>
                         <SinglePageSelection
                             label="Requisition Stage"
@@ -723,9 +725,7 @@ export const MaterialRequisition: React.FC = () => {
                             placeholder="Select To Date"
                         />
                     </div>
-
-
-
+                    
                 </div>
             </Modal>
 

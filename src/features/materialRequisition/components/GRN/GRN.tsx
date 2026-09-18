@@ -29,9 +29,10 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+    onAddGRN?: () => Promise<void>;
 }
 
-export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
+export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -56,15 +57,17 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
     useEffect(() => {
         if (!projectId) return;
         loadGRNData()
-    }, [projectId, currentMaterialRequisitionId])
+    }, [projectId, currentMaterialRequisitionId]);
 
-    const handleAddGRN = useCallback(() => {
+    const handleAddGRN = useCallback(async () => {
+        await onAddGRN?.();
+
         navigate('/materialRequisition/grn/add', {
             state: {
                 matrialRequisitionDetailData,
             },
         });
-    }, [navigate, matrialRequisitionDetailData,]);
+    }, [navigate, matrialRequisitionDetailData, onAddGRN]);
 
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
@@ -290,7 +293,6 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                 );
             }
         },
-
         {
             key: 'VehicleNumber',
             label: 'Vehicle Number',
@@ -331,11 +333,14 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
             align: 'center',
             render: (_: any, row: MaterialRequisitionGRNData) => {
 
+
                 const isFirstRow = String(row.MaterialRequisitionGRNId) === firstGRNId;
 
                 const approvalStatus = row.InvoiceStatus?.trim().toUpperCase();
 
-                const canEditDelete = canAction && !materialRequisitionStatus && isFirstRow && approvalStatus !== "APPROVED";
+                const canEditDelete =
+                    canAction && !materialRequisitionStatus &&
+                    isFirstRow && approvalStatus !== "APPROVED";
 
                 return (
                     <div className="flex items-center justify-center gap-1">
@@ -349,9 +354,12 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
                                     style={{
                                         color: '#2563eb'
                                     }}
-                                    onClick={(e) => {
+                                    onClick={async (e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
+
+                                        await onAddGRN?.();
+
                                         handleGRNEdit(row);
                                     }}
                                     leftIcon={<Edit className="h-4 w-4" />}
@@ -425,6 +433,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData }) => {
     };
 
     const isAllQuantityReceived = useMemo(() => {
+
         if (!matrialRequisitionDetailData?.length) return false;
 
         return matrialRequisitionDetailData.every((item) => {

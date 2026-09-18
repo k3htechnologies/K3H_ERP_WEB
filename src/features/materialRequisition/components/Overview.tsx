@@ -103,7 +103,6 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
 
             );
         }
-
         columns.push(
             {
                 key: "MaterialQuantity",
@@ -138,40 +137,71 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
         return columns;
     }, [matrialRequisitionDetailData]);
 
+    const materialRequisitionInvoiceDataWithTotal = useMemo(() => {
+        const data = materialRequisitionInvoiceData || [];
+
+        const totalInvoiceAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmount ?? 0),
+            0
+        );
+
+        const totalPaidAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmountPaidTillDate ?? 0),
+            0
+        );
+
+        return [
+            ...data,
+            {
+                InvoiceNumber: "TOTAL",
+                InvoiceAmount: totalInvoiceAmount,
+                InvoiceAmountPaidTillDate: totalPaidAmount,
+                isTotal: true,
+            },
+        ];
+    }, [materialRequisitionInvoiceData]);
+
     const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
         () => [
             {
-                  key: "InvoiceNumber",
+                key: "InvoiceNumber",
                 label: "Invoice Number",
                 align: "left",
-                  render: (value: string, row: any) => {
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return (
+                            <span className="font-bold text-gray-500">
+                                TOTAL
+                            </span>
+                        );
+                    }
                     return (
-                      <MultiImageViewer
-                        images={parseDocumentUrls(row.UploadInvoiceURL)}
-                        title="Invoice Document"
-                        triggerLabel={value || '-'}
-                        isWrap={false}
-                      />
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.UploadInvoiceURL)}
+                            title="Invoice Document"
+                            triggerLabel={value || '-'}
+                            isWrap={false}
+                        />
                     );
-                  }
-                },
+                }
+            },
             {
                 key: "InvoiceAmount",
                 label: "Amount",
-                align: "left",
-                render: (value: number) => (
-                    <span className="font-medium text-black">
-                        {(formatCurrency(value) || '')}
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
                     </span>
                 )
             },
             {
                 key: "InvoiceAmountPaidTillDate",
                 label: "Paid",
-                align: "left",
-                render: (value: number) => (
-                    <span className="font-medium text-black">
-                        {(formatCurrency(value) || '')}
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
                     </span>
                 )
             },
@@ -179,21 +209,33 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                 key: "InvoiceDate",
                 label: "Invoice Date",
                 align: "left",
-                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
             },
             {
                 key: "InvoiceDueDate",
                 label: "Invoice Due Date",
                 align: "left",
-                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
             },
             {
                 key: "Remarks",
                 label: "Remark",
                 align: "left",
                 width: "30",
-                render: (value?: string) => (
-                    <FieldInfoTooltip value={value} />
+                render: (value?: string, row?: any) => (
+                    row.isTotal
+                        ? ""
+                        : <FieldInfoTooltip value={value} />
                 )
             },
         ], []
@@ -203,7 +245,6 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
         <div className="bg-white p-1 pt-5">
 
             <div className="grid grid-cols-12 gap-3 pt-1">
-
                 <div className="col-span-5">
 
                     <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
@@ -275,7 +316,6 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                             <FieldItem label="Base Amount (₹)" value={formatCurrency(matrialRequisitionData?.TotalPoAmount)} />
                             <FieldItem label="Total Tax (₹)" value={formatCurrency(matrialRequisitionData?.TotalTaxAmount)} />
                             <FieldItem label="Grand Total (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0) + Number(matrialRequisitionData?.TotalTaxAmount ?? 0))} />
-
                             <FieldItem label="Paid Amount (₹)" value={formatCurrency(matrialRequisitionData?.PaidAmount)} />
                             <FieldItem
                                 label="Pending Amount (₹)"
@@ -312,8 +352,6 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                                     {matrialRequisitionDetailData?.[0]?.MaterialRequisitionType || "-"}
                                 </span>
                             </h4>
-
-
                         </div>
 
                         <div className="overflow-y-auto thin-scroll">
@@ -343,7 +381,7 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                         <div className="overflow-y-auto thin-scroll">
                             <DataTableWithHeaderRowDivider
                                 columns={MaterialRequisitionInvoiceColumns}
-                                data={materialRequisitionInvoiceData}
+                                data={materialRequisitionInvoiceDataWithTotal}
                                 emptyMessage="No Invoice Details Found"
                                 fixedHeight={true}
                                 className="flex-1"
@@ -365,6 +403,7 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                         </div>
                     </section>
                 </div>
+
                 {matrialRequisitionData?.CloseCompletionRemark && (
                     <div className="col-span-12">
                         <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">

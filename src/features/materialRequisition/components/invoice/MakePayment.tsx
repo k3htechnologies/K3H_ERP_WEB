@@ -140,10 +140,13 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
             newErrors.AmountPaid = `Amount cannot exceed ₹${remainingInvoiceAmount}`;
         }
         if (!formData.TDSAmount) {
-            newErrors.TDSAmount = " TDS Amount is Required";
+            newErrors.TDSAmount = "TDS Amount is Required";
 
         } else if (toNumber(formData.TDSAmount) < 0) {
             newErrors.TDSAmount = "Invalid";
+
+        } else if (toNumber(formData.TDSAmount) > toNumber(formData.AmountPaid)) {
+            newErrors.TDSAmount = "TDS Amount can't be greater than Amount Paid";
         }
 
         if (!formData.TransactionNumber) {
@@ -359,6 +362,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                         })}
                 />
             </div>
+
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Customer Bank Details</h3>
 
@@ -431,9 +435,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                         onChange={(e) => {
                             const value = filterNumbersWithDecimal(e.target.value);
 
-                            if (
-                                value === "" ||
-                                Number(value) <= Number(remainingInvoiceAmount ?? 0)
+                            if (value === "" || Number(value) <= Number(remainingInvoiceAmount ?? 0)
                             ) {
                                 handleFieldChange("AmountPaid", value);
                             }
@@ -552,14 +554,16 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                 </div>
             </div>
 
-            <BottomActionBar
-                cancelText="Cancel"
-                saveText="Add"
-                onCancel={() => navigate(-1)}
-                onSave={handleAddPayment}
-                isLoading={isLoading}
-                canAction={canMakePayments}
-            />
+            <div className="pt-5">
+                <BottomActionBar
+                    cancelText="Cancel"
+                    saveText="Add"
+                    onCancel={() => navigate(-1)}
+                    onSave={handleAddPayment}
+                    isLoading={isLoading}
+                    canAction={canMakePayments}
+                />
+            </div>
 
         </div>
     );

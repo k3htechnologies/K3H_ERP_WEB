@@ -223,9 +223,8 @@ import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdat
 import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
-import { ViewMaterialRequisitionReport } from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
+import ViewMaterialRequisitionReport from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
-
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -566,9 +565,10 @@ function App() {
             <Route path="materialRequisition/grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="/materialRequisition/addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider> <CreateInvoice /> </MaterialRequisitionListStateProvider>} />
+            <Route path="/materialRequisition/addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="/materialRequisition/makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
+
 
           </Route>
 

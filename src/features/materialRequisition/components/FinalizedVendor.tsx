@@ -307,7 +307,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
         setIsApprovalActionModalOpen(true);
     };
 
-
     const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
 
         await runApiWithLoader(
@@ -344,7 +343,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
             addToast({ type: "warning", title: "Select vendor to finalize" })
             return
         }
-
         setIsFinalizeConfirmationOpen(true)
     }
 
@@ -383,11 +381,9 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
         )
     }
 
-
     const finalizedVendor = materialRequisitionVendorSelectedList.find(v => v.IsFinalized);
     const isAnyFinalized = !!finalizedVendor
     const isApprovalAvailable = finalizedVendor?.IsApproval === true
-
 
     return (
         <div className="space-y-4">
@@ -543,7 +539,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                                     </div>
 
-
                                     <div className="grid grid-cols-4 mt-4 px-1">
 
                                         <div className="px-5 first:pl-0 border-r border-gray-200">
@@ -558,7 +553,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                                             </div>
                                         </div>
 
-
                                         <div className="px-5 border-r border-gray-200">
                                             <div className="text-sm uppercase tracking-wide text-gray-400">
                                                 Total Tax
@@ -571,7 +565,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                                             </div>
                                         </div>
 
-
                                         <div className="px-5 border-r border-gray-200">
                                             <div className="text-sm uppercase tracking-wide text-gray-400">
                                                 Grand Total
@@ -583,7 +576,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                                                 )}
                                             </div>
                                         </div>
-
 
                                         <div className="px-5 pr-0">
                                             <div className="text-sm uppercase tracking-wide text-gray-400">
@@ -694,7 +686,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                                 </div>
                             }
                         />
-
                     )
                 })
             }
@@ -709,8 +700,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                 loading={isLoading}
                 size='half-screen'
             >
-
-                
                 <div className="flex flex-col h-[calc(100vh-180px)]">
 
                    <div className="px-2 py-2 shrink-0">

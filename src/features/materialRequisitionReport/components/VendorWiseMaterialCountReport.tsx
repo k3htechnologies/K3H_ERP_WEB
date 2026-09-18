@@ -269,7 +269,6 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                     debouncedSearch(v);
                 }}
                 onClearSearch={ClearSearchTerm}
-
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
@@ -297,6 +296,7 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                 expandable={{
                     keyField: "VendorId",
                     alwaysFetchOnOpen: true,
+
                     fetchRow: async (row) => {
 
                         const params: FilterWithPaginationMaterialAndVendorReport = {
@@ -333,19 +333,6 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                     expandButton: { openText: "Hide", closeText: "Show" },
                 }}
             />
-
-            {/* <DataTable
-                columns={VendorWiseMaterialCountReportColumns}
-                data={VendorWiseMaterialCountReportForTable}
-                pagination={VendorWiseMaterialCountReportPaginationInfo}
-                recordsPerPage={20}
-                emptyMessage="No Vendor Wise Material Count Report Found"
-                fixedHeight={true}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-                loading={isLoading}
-            /> */}
 
             <Modal
                 isOpen={showFilterPopup}

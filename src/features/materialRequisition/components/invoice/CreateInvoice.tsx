@@ -59,7 +59,7 @@ const CreateInvoice: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
+    const { MaterialRequisitionGRNId, MaterialRequisitionInvoiceId } = useParams<{ MaterialRequisitionGRNId?: string, MaterialRequisitionInvoiceId?: string }>();
     const systemGeneratedCode = listState.SystemGeneratedCode;
     const navigate = useNavigate();
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
@@ -73,8 +73,6 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
     const { canAction: canAddInvoice } = useMenuPermissions('Add Invoice');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-    const { MaterialRequisitionInvoiceId } = useParams<{ MaterialRequisitionInvoiceId?: string }>();
     const materialRequisitionInvoiceId = MaterialRequisitionInvoiceId ? Number(MaterialRequisitionInvoiceId) : 0;
     const isAddMode = materialRequisitionInvoiceId === 0;
 
@@ -355,12 +353,19 @@ const CreateInvoice: React.FC = () => {
             newErrors.InvoiceAmount = `Invoice Amount cannot be greater than Pending Invoice Amount (${invoiceSummaryData?.PendingRequisitionAmount ?? 0}).`;
         }
 
+        const invoiceDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDate ? new Date(formData.InvoiceDate) : undefined);
+        const invoiceDueDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDueDate ? new Date(formData.InvoiceDueDate) : undefined);
+
         if (!formData.InvoiceDate) {
             newErrors.InvoiceDate = ' Invoice Date is required.';
         }
         if (!formData.InvoiceDueDate) {
             newErrors.InvoiceDueDate = ' Invoice Due Date is required.';
+
+        } else if (formData?.InvoiceDate && formData.InvoiceDueDate && !isToDateGreaterOrEqualFromDate(invoiceDate, invoiceDueDate)) {
+            newErrors.InvoiceDueDate = "Invoice Due Date must be greater than or equal to Invoice Date";
         }
+
         if (!formData.InvoiceNumber?.trim()) {
             newErrors.InvoiceNumber = "Invoice Number is required.";
         } else if (Number(formData.InvoiceNumber) === 0) {
@@ -371,9 +376,6 @@ const CreateInvoice: React.FC = () => {
             newErrors.UploadInvoiceURL = "Either Invoice or Performa Invoice is required.";
             newErrors.PerformaInvoiceURL = "Either Invoice or Performa Invoice is required.";
         }
-
-        const invoiceDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDate ? new Date(formData.InvoiceDate) : undefined);
-        const invoiceDueDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDueDate ? new Date(formData.InvoiceDueDate) : undefined);
 
         if (formData?.InvoiceDate && formData.InvoiceDueDate && !isToDateGreaterOrEqualFromDate(invoiceDate, invoiceDueDate)) {
             newErrors.InvoiceDueDate = "Invoice Due Date must be greater than or equal to Invoice Date";
@@ -523,7 +525,6 @@ const CreateInvoice: React.FC = () => {
                 </div>
 
                 <div className="pt-5">
-
                     <DataTableWithHeadColor
                         columns={MatrialRequisitionDetailColumns}
                         data={matrialRequisitionDetailGRNData}
@@ -533,6 +534,7 @@ const CreateInvoice: React.FC = () => {
                         className="flex-1"
                     />
                 </div>
+                
             </div>
 
             <div className="gap-x-4 bg-white p-4">

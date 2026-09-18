@@ -343,11 +343,9 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
                                 <span>Split</span>
                             </button>
-
                         )}
 
                     </div>
-
                 </div>
 
                 <div className="overflow-y-auto thin-scroll">

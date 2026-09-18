@@ -102,7 +102,7 @@ export const MaterialRequisitionReport: React.FC = () => {
             width: "15",
             align: "left",
             sortable: true,
-            fixed:"left",
+            fixed: "left",
             render: value => value || ""
         },
         {
@@ -179,8 +179,7 @@ export const MaterialRequisitionReport: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-        [pagination, handlePageChange]
-    );
+        [pagination, handlePageChange]);
 
     const MaterialRequisitionReportForTable = useMemo(() => materialRequisitionReportList, [materialRequisitionReportList]);
 
@@ -289,7 +288,6 @@ export const MaterialRequisitionReport: React.FC = () => {
                 resetText=""
                 size="small-half"
             >
-
                 <div className="space-y-6">
 
                     <div>

@@ -1,15 +1,13 @@
 import Tabs from "@/ui/components/Tab/Tab";
 import { useState } from "react";
-import MaterialAndVendorReport from "../components/MaterialAndVendorReport";
 import VendorWiseMaterialCountReport from "../components/VendorWiseMaterialCountReport";
 import MaterialRequisitionReport from "../components/MaterialRequisitionReport";
 import MaterialPurchaseReport from "../components/MaterialPurchaseReport";
 
-export const MaterialReport: React.FC = () => {
+export const ViewMaterialRequisitionReport: React.FC = () => {
 
     const MaterialReportList = [
         { id: "VendorWiseMaterialCountReport", label: "Vendor Wise Material Count Report", },
-        { id: "MaterialAndVendorReport", label: "Material And Vendor Report", },
         { id: "MaterialRequisitionReport", label: "Material Requisition Report", },
         { id: "MaterialPurchaseReport", label: "Material Purchase Report", },
     ];
@@ -18,7 +16,7 @@ export const MaterialReport: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            
+
             <div className="pt-3 pb-5">
                 <Tabs
                     tabs={MaterialReportList}
@@ -32,8 +30,6 @@ export const MaterialReport: React.FC = () => {
 
             {activeTab === "VendorWiseMaterialCountReport" && (<VendorWiseMaterialCountReport />)}
 
-            {activeTab === "MaterialAndVendorReport" && (<MaterialAndVendorReport />)}
-
             {activeTab === "MaterialRequisitionReport" && (<MaterialRequisitionReport />)}
 
             {activeTab === "MaterialPurchaseReport" && (<MaterialPurchaseReport />)}
@@ -42,4 +38,4 @@ export const MaterialReport: React.FC = () => {
     );
 };
 
-export default MaterialReport;
+export default ViewMaterialRequisitionReport;

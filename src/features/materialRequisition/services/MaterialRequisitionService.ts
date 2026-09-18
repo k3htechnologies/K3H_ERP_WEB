@@ -1,6 +1,6 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import type { DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterWithPaginationMaterialRequisition, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { CloseMaterialRequisitionRequest, DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterWithPaginationMaterialRequisition, MaterialRequisitionCloseResponse, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { MaterialRequisitionDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionDataSource";
 
 const materialRequisitionDatasource = new MaterialRequisitionDatasourceImpl
@@ -68,7 +68,7 @@ export const materialRequisitionService = {
         
     },
         
-    apiCallCloseMaterialRequisition: async (payload: DeleteMaterialRequisitionRequest): Promise<E.Either<Failure, MaterialRequisitionDeleteResponse>> => {
+    apiCallCloseMaterialRequisition: async (payload: CloseMaterialRequisitionRequest): Promise<E.Either<Failure, MaterialRequisitionCloseResponse>> => {
         try {
     
             return E.right(await materialRequisitionDatasource.closeMaterialRequisition(payload));

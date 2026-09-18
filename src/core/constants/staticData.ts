@@ -775,7 +775,7 @@ export const MASTER_DATA = {
 
    materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
 
-  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Ongoing'],
+  materialRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
 
 
 } as const;

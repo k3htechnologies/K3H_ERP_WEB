@@ -19,6 +19,8 @@ import type { FilterWithPaginationMaterialPurchaseReport, MaterialPurchaseReport
 import { materialRequisitionReportservice } from "../services/MaterialRequisitionReportService";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
 
 export const MaterialPurchaseReport: React.FC = () => {
 
@@ -101,19 +103,56 @@ export const MaterialPurchaseReport: React.FC = () => {
             width: "15",
             align: "left",
             sortable: true,
+            fixed: "left",
             render: value => value || ""
         },
         {
-            key: "FromDate",
-            label: "From Date",
+            key: "PaidAmount",
+            label: "Paid Amount",
             width: '15',
             align: "left",
             sortable: false,
             render: value => value || "-"
         },
         {
-            key: "ToDate",
-            label: "To Date",
+            key: "TotalPoAmount",
+            label: "Total Po Amount",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "TotalInvoiceAmount",
+            label: "Total Invoice Amount",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: 'PurchaseOrderURL',
+            label: 'Purchase Order',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value: string, row: any) => {
+                return (
+                    <div className="flex items-center justify-between w-full">
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.PurchaseOrderURL)}
+                            title="Purchase Order"
+                            isIcon={false}
+                            triggerLabel={value === '' || 'Purchase Order'}
+                        />
+
+                    </div>
+                );
+            }
+        },
+        {
+            key: "FinalVendor",
+            label: "Final Vendor",
             width: '15',
             align: "left",
             sortable: false,
@@ -161,7 +200,7 @@ export const MaterialPurchaseReport: React.FC = () => {
         setFilters({})
         setTempFilters({})
         setPagination({ currentPage: 1 });
-        loadMaterialPurchaseReport(1, filters, sortInfo, searchTerm)
+        loadMaterialPurchaseReport(1, {}, sortInfo, searchTerm)
     }
 
     const handleFilterChange = (key: string, value: string) => {
@@ -176,6 +215,7 @@ export const MaterialPurchaseReport: React.FC = () => {
                 const params: FilterWithPaginationMaterialPurchaseReport = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
+                    ProjectId: Number(projectId),
                     SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
                     FromDate: filters.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
                     ToDate: filters.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
@@ -216,7 +256,7 @@ export const MaterialPurchaseReport: React.FC = () => {
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
-                    setFilters(filters);
+                    setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
 

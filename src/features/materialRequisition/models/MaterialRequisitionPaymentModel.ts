@@ -14,6 +14,13 @@ export interface MaterialRequisitionPaymentData {
     MaterialRequisitionPaymentId: number | 0;
     Uniquekey: string | null;
     ProjectId: number | 0;
+    ProjectBankListMasterId: number;
+    ProjectBankName: string;
+    ProjectAccountNumber: string;
+    ProjectIFSCCode: string;
+    ProjectNatureOfAccount: string;
+    ProjectAcType: string;
+
     MaterialRequisitionInvoiceId: number | 0;
     MaterialRequisitionId: number | 0;
     PaymentMode: string | null
@@ -29,13 +36,6 @@ export interface MaterialRequisitionPaymentData {
     TransactionReceiptURL: string | null
     RemoveTransactionReceiptURL: string | ''
     IsAdvance: boolean | false
-
-    ProjectBankListMasterId: number;
-    ProjectBankName: string;
-    ProjectAccountNumber: string;
-    ProjectIFSCCode: string;
-    ProjectNatureOfAccount: string;
-    ProjectAcType: string;
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -51,6 +51,7 @@ export interface AddUpdateMaterialRequisitionPayment {
     MaterialRequisitionPaymentId: number | 0;
     Uniquekey: string | null;
     ProjectId: number | 0;
+    ProjectBankListMasterId: number;
     MaterialRequisitionInvoiceId: number | 0;
     MaterialRequisitionId: number | 0;
     PaymentMode: string | null
@@ -66,7 +67,6 @@ export interface AddUpdateMaterialRequisitionPayment {
     TransactionReceiptURL: string | null
     RemoveTransactionReceiptURL: string | ''
     IsAdvance: boolean | false
-    ProjectBankListMasterId: number | 0
     ProjectBankName: string | null
 
 }

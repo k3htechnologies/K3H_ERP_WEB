@@ -16,6 +16,9 @@ export interface MaterialRequisitionGRNData {
     UploadChallanURL: string | null
     RemoveUploadChallanURL: string | ''
     Remarks: string | null
+    IsInvoiceCreated :boolean
+    IsInvoicePaymentCompleted:boolean
+    InvoiceStatus: string | null
     ProjectId: number | 0
     CreatedById: number;
     CreatedBy: string;

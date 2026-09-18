@@ -102,6 +102,7 @@ export const MaterialRequisitionReport: React.FC = () => {
             width: "15",
             align: "left",
             sortable: true,
+            fixed:"left",
             render: value => value || ""
         },
         {
@@ -113,16 +114,40 @@ export const MaterialRequisitionReport: React.FC = () => {
             render: value => value || "-"
         },
         {
-            key: "FromDate",
-            label: "From Date",
+            key: "MaterialCode",
+            label: "Material Code",
             width: '15',
             align: "left",
             sortable: false,
             render: value => value || "-"
         },
         {
-            key: "ToDate",
-            label: "To Date",
+            key: "UomCode",
+            label: "Uom",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "MaterialQuantityReceived",
+            label: "Material Quantity Received",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "MaterialQuantityRequested",
+            label: "Material Quantity Requested",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "TotalInvoiceAmount",
+            label: "Total Invoice Amount",
             width: '15',
             align: "left",
             sortable: false,
@@ -170,7 +195,7 @@ export const MaterialRequisitionReport: React.FC = () => {
         setFilters({})
         setTempFilters({})
         setPagination({ currentPage: 1 });
-        loadMaterialRequisitionReport(1, filters, sortInfo, searchTerm)
+        loadMaterialRequisitionReport(1, {}, sortInfo, searchTerm)
     }
 
     const handleFilterChange = (key: string, value: string) => {
@@ -185,6 +210,7 @@ export const MaterialRequisitionReport: React.FC = () => {
                 const params: FilterWithPaginationMaterialRequisitionReport = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
+                    ProjectId: Number(projectId),
                     MaterialName: filters.MaterialName?.trim() || undefined,
                     SubMaterialName: filters.SubMaterialName?.trim() || undefined,
                     FromDate: filters.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
@@ -226,7 +252,7 @@ export const MaterialRequisitionReport: React.FC = () => {
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
-                    setFilters(filters);
+                    setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
 

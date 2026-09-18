@@ -221,10 +221,10 @@ import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pag
 import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
 import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
-import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
-import MaterialReport from '@/features/materialRequisitionReport/pages/MaterialReport';
+import { ViewMaterialRequisitionReport } from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
+import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 
 
 // Loading component for Suspense fallback 
@@ -563,13 +563,12 @@ function App() {
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
-            <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
-
-            <Route path="materialRequisitionReports" element={<MaterialReport />} />
+            <Route path="/materialRequisition/addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider> <CreateInvoice /> </MaterialRequisitionListStateProvider>} />
+            <Route path="/materialRequisition/makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
 
           </Route>
 

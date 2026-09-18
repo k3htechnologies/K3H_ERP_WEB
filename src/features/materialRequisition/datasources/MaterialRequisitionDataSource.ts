@@ -1,6 +1,6 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterWithPaginationMaterialRequisition, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { CloseMaterialRequisitionRequest, DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterWithPaginationMaterialRequisition, MaterialRequisitionCloseResponse, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { MaterialRequisitionApi } from "@/features/materialRequisition/api/MaterialRequisitionApi";
 
 export abstract class MaterialRequisitionDatasource {
@@ -9,7 +9,7 @@ export abstract class MaterialRequisitionDatasource {
     abstract pullMaterialRequisitionDetails(params: FilterMaterialRequisitionDetails, signal?: AbortSignal): Promise<MaterialRequisitionDetailsResponse>;
     abstract addUpdateMaterialRequisition(data: FormData): Promise<MaterialRequisitionSaveReponse>;
     abstract deleteMaterialRequisition(params: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse>;
-    abstract closeMaterialRequisition(payload: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse>;
+    abstract closeMaterialRequisition(payload: CloseMaterialRequisitionRequest): Promise<MaterialRequisitionCloseResponse>;
 }
 
 export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDatasource {
@@ -88,9 +88,7 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
 
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${MaterialRequisitionApi.PULL_MATERIAL_REQUISITION_DETAILS}?${queryParams.toString()}`, { signal }
-            )
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionApi.PULL_MATERIAL_REQUISITION_DETAILS}?${queryParams.toString()}`, { signal })
             
         } catch (error: any) {
 
@@ -109,10 +107,7 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
     async addUpdateMaterialRequisition(formData: FormData): Promise<MaterialRequisitionSaveReponse> {
         try {
             
-            return await this.k3hHttpClient.multipartRequestWithAuthentication(
-                MaterialRequisitionApi.ADD_UPDATE,
-                formData
-            )
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(MaterialRequisitionApi.ADD_UPDATE, formData)
 
         } catch (error) {
 
@@ -136,9 +131,7 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
 
             })
 
-           return await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${MaterialRequisitionApi.DELETE}?${queryParams.toString()}`
-            )
+           return await this.k3hHttpClient.deleteRequestWithAuthentication(`${MaterialRequisitionApi.DELETE}?${queryParams.toString()}`)
 
 
         } catch (error) {
@@ -152,13 +145,11 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
         }
     }
 
-    async closeMaterialRequisition(payload: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse> {
+    async closeMaterialRequisition(payload: CloseMaterialRequisitionRequest): Promise<MaterialRequisitionCloseResponse> {
         try {
         
-            return await this.k3hHttpClient.postRequestWithAuthentication(
-                `${MaterialRequisitionApi.CLOSE_REQUISITION}?${payload.toString()}`,payload
-            )
-
+            return await this.k3hHttpClient.postRequestWithAuthentication(MaterialRequisitionApi.CLOSE_REQUISITION,payload)
+            
         
         } catch (error) {
 

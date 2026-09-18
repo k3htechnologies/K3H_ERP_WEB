@@ -20,7 +20,7 @@ import { materialRequisitionService } from "@/features/materialRequisition/servi
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { BudgetData } from "@/features/budget/models/BudgetModel";
 import {
@@ -127,6 +127,7 @@ export const AddUpdateMaterialRequisition = () => {
         IsTolerant: boolean;
         RequiredDate: string;
         Quantity: number;
+        L3Quantity: number;
         ReceivedQuantity: number;
     } | null>(null);
 
@@ -368,6 +369,7 @@ export const AddUpdateMaterialRequisition = () => {
                     MaterialRate: Number(selected.MaterialCost ?? 0),
                     LeadTimeInDays: Number(selected.Level4LeadTimeInDays ?? 0),
                     Quantity: Number(selected.Quantity ?? 0),
+                    L3Quantity: Number(selected.L3Quantity ?? 0),
                     ReceivedQuantity: Number(selected.ReceivedQuantity ?? 0),
                     IsTolerant: selected.Level4IsTolerant ?? false,
                     RequiredDate: formatDate_dd_mm_yyyy(row.RequiredDate) || ""
@@ -674,7 +676,7 @@ export const AddUpdateMaterialRequisition = () => {
             newErrors.Remarks = "Remark is required";
         }
         if (!hasAnyDocumentFile(documentFiles, documentURL, removeddocumentFilesURLs)) {
-            newErrors.AttachmentsURL = "File is required.";
+            newErrors.AttachmentsURL = "Attachment is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -793,8 +795,8 @@ export const AddUpdateMaterialRequisition = () => {
 
                         <div className="flex items-center justify-between">
                             <MultiFilePicker
-                                label="File"
-                                placeholder="Upload File"
+                                label="Attachment"
+                                placeholder="Upload Attachment"
                                 value={documentFiles}
                                 onChange={setdocumentFiles}
                                 availableFilesURL={documentURL}
@@ -1090,6 +1092,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                     ...prev,
                                                     LevelId4: 0,
                                                     Level4Name: '',
+                                                    MaterialQuantity:0,
                                                     RequiredDate: "",
                                                 }));
                                                 return;
@@ -1108,6 +1111,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 MaterialRate: Number(selected.MaterialCost ?? 0),
                                                 LeadTimeInDays: leadTime,
                                                 Quantity: Number(selected.Quantity ?? 0),
+                                                L3Quantity: Number(selected.L3Quantity ?? 0),
                                                 ReceivedQuantity: Number(selected.ReceivedQuantity ?? 0),
                                                 IsTolerant: selected.Level4IsTolerant ?? false,
                                                 RequiredDate: requiredDate,
@@ -1137,8 +1141,9 @@ export const AddUpdateMaterialRequisition = () => {
                                         label="Quantity"
                                         required
                                         value={materialData.MaterialQuantity || ""}
+                                        maxLength={9}
                                         onChange={(e) => {
-                                            const value = e.target.value;
+                                            const value = filterNumbers(e.target.value);
 
                                             if (value === "") {
                                                 setMaterialData(prev => ({
@@ -1160,7 +1165,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 return;
                                             }
 
-                                            const maxQuantity = Number(subMaterialDetails?.Quantity ?? 0) - Number(subMaterialDetails?.ReceivedQuantity ?? 0);
+                                            const maxQuantity = (Number(subMaterialDetails?.Quantity ?? 0) * Number(subMaterialDetails?.L3Quantity ?? 0))-Number(subMaterialDetails?.ReceivedQuantity ?? 0);
 
                                             if (quantity > maxQuantity) {
                                                 setErrors(prev => ({
@@ -1181,7 +1186,7 @@ export const AddUpdateMaterialRequisition = () => {
                                             }));
                                         }}
                                         placeholder="Enter Quantity"
-                                        max={-Number(subMaterialDetails?.Quantity) - Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
+                                        max={(Number(subMaterialDetails?.Quantity) *Number(subMaterialDetails?.L3Quantity))  -Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
                                         error={errors.MaterialQuantity}
                                         rightIcon={subMaterialDetails?.UomCode}
                                     />
@@ -1216,13 +1221,13 @@ export const AddUpdateMaterialRequisition = () => {
 
                                             <FieldItem label="Material Rate" value={formatCurrency(subMaterialDetails.MaterialRate)} />
 
-                                            <FieldItem label="Required Quantity" value={subMaterialDetails.Quantity} />
+                                            <FieldItem label="Required Quantity" value={Number(subMaterialDetails.Quantity) * Number(subMaterialDetails.L3Quantity)}  />
 
                                             <FieldItem label="Received Quantity" value={subMaterialDetails.ReceivedQuantity} />
 
                                             <FieldItem label="Lead Time (Days)" value={subMaterialDetails.LeadTimeInDays ?? 0} />
 
-                                            <FieldItem label="Is Tolerant" value={subMaterialDetails.IsTolerant ? "YES" : "NO"} />
+                                            <FieldItem label="Is Tolerant" value={subMaterialDetails.IsTolerant ? "Yes" : "No"} />
 
                                         </div>
                                     </div>
@@ -1337,10 +1342,10 @@ export const AddUpdateMaterialRequisition = () => {
 
                                 {inDirectSubMaterialDetails && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-3  gap-3">
                                             <FieldItem label="UOM" value={`${inDirectSubMaterialDetails.UomCode || "-"}`} />
                                             <FieldItem label="Lead Time (Days)" value={inDirectSubMaterialDetails.LeadTimeInDays} />
-                                            <FieldItem label="Is Tolerant" value={inDirectSubMaterialDetails.IsTolerant ? "YES" : "NO"} />
+                                            <FieldItem label="Is Tolerant" value={inDirectSubMaterialDetails.IsTolerant ? "Yes" : "No"} />
 
                                         </div>
                                     </div>
@@ -1352,13 +1357,13 @@ export const AddUpdateMaterialRequisition = () => {
                                         required
                                         value={materialData.MaterialQuantity || ""}
                                         onChange={(e) => {
-                                            const value = e.target.value;
+                                            const value = filterNumbers(e.target.value);
                                             setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
                                         }}
                                         placeholder="Enter Quantity"
+                                        maxLength={9}
                                         error={errors.MaterialQuantity}
-                                        rightIcon={materialData?.UomCode}
-
+                                        rightIcon={inDirectSubMaterialDetails?.UomCode}
                                     />
 
                                     <div>

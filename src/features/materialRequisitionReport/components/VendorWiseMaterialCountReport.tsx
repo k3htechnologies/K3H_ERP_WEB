@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import usePagination from "@/core/hooks/usePagination";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { runApiWithLoader } from "@/core/utils";
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import type { TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import { DataTableWithOutBorder, type TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import * as E from 'fp-ts/Either';
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
@@ -15,10 +15,12 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { Input } from "@/ui/components/forms";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import type { FilterWithPaginationVendorWiseMaterialCountReport, VendorWiseMaterialCountReportData } from "../models/MaterialRequisitionReportModel";
+import type { FilterWithPaginationMaterialAndVendorReport, FilterWithPaginationVendorWiseMaterialCountReport, MaterialAndVendorReportData, VendorWiseMaterialCountReportData } from "../models/MaterialRequisitionReportModel";
 import { materialRequisitionReportservice } from "../services/MaterialRequisitionReportService";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { DataTableExpandable, type DataTableExpandableRef } from "@/ui/components/DataTable/DataTableExpandable";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 export const VendorWiseMaterialCountReport: React.FC = () => {
 
@@ -34,6 +36,8 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
     const [filters, setFilters] = useState<FilterInfo>({});
     const { canExport } = useMenuPermissions();
     const { projectId } = useProject();
+
+    const dtRef = useRef<DataTableExpandableRef | null>(null);
 
     useEffect(() => {
         if (!projectId) return
@@ -104,16 +108,16 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
             render: value => value || ""
         },
         {
-            key: "FromDate",
-            label: "From Date",
+            key: "MobileNumber",
+            label: "Mobile Number",
             width: '15',
             align: "left",
             sortable: false,
-            render: value => value || "-"
+            render: value => value || ""
         },
         {
-            key: "ToDate",
-            label: "To Date",
+            key: "NoOfMaterial",
+            label: "No Of Material",
             width: '15',
             align: "left",
             sortable: false,
@@ -161,7 +165,7 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
         setFilters({})
         setTempFilters({})
         setPagination({ currentPage: 1 });
-        loadVendorWiseMaterialCountReport(1, filters, sortInfo, searchTerm)
+        loadVendorWiseMaterialCountReport(1, {}, sortInfo, searchTerm)
     }
 
     const handleFilterChange = (key: string, value: string) => {
@@ -176,6 +180,7 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                 const params: FilterWithPaginationVendorWiseMaterialCountReport = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
+                    ProjectId: Number(projectId),
                     VendorName: filters.VendorName?.trim() || undefined,
                     FromDate: filters.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
                     ToDate: filters.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
@@ -199,6 +204,58 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
     const handleExportVendorWiseMaterialCountReportExcel = () => handleExportVendorWiseMaterialCountReport("Excel");
     const handleExportVendorWiseMaterialCountReportPdf = () => handleExportVendorWiseMaterialCountReport("PDF");
 
+    const MaterialAndVendorReportColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: "MaterialName",
+            label: "Material Name",
+            width: "15",
+            align: "left",
+            sortable: false,
+            fixed: "left",
+            render: value => value || ""
+        },
+        {
+            key: "SubMaterialName",
+            label: "Sub Material Name",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "MaterialCode",
+            label: "Material Code",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "UomCode",
+            label: "Uom",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "MaterialQuantityReceived",
+            label: "Material Quantity Received",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+        {
+            key: "MaterialQuantityRequested",
+            label: "Material Quantity Requested",
+            width: '15',
+            align: "left",
+            sortable: false,
+            render: value => value || "-"
+        },
+    ], []);
+
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
@@ -216,7 +273,7 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
-                    setFilters(filters);
+                    setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
 
@@ -226,7 +283,58 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                 exportLoading={isLoading}
             />
 
-            <DataTable
+            <DataTableExpandable
+                ref={dtRef}
+                columns={VendorWiseMaterialCountReportColumns}
+                data={VendorWiseMaterialCountReportForTable}
+                emptyMessage="No Vendor Wise Material Count Report Found"
+                pagination={VendorWiseMaterialCountReportPaginationInfo}
+                recordsPerPage={20}
+                fixedHeight={true}
+                sortInfo={sortInfo}
+                onSort={handleSortColumn}
+                loading={isLoading}
+                expandable={{
+                    keyField: "VendorId",
+                    alwaysFetchOnOpen: true,
+                    fetchRow: async (row) => {
+
+                        const params: FilterWithPaginationMaterialAndVendorReport = {
+                            PageNumber: 1,
+                            PageSize: 1000,
+                            ProjectId: Number(projectId),
+                            VendorId: row.VendorId,
+                        };
+
+                        const response = await materialRequisitionReportservice.apiCallPullMaterialAndVendorReport(params);
+
+                        if (E.isRight(response)) {
+                            return response.right.Data ?? [];
+                        }
+                        return [];
+                    },
+
+                    renderRow: (fetchedData) => {
+                        const details: MaterialAndVendorReportData[] = Array.isArray(fetchedData) ? fetchedData : fetchedData ? [fetchedData] : [];
+                        if (!details || details.length === 0) {
+                            return <div className="p-1 text-xs text-gray-600 text-center"><NoDataView /></div>;
+                        }
+                        return (
+                            <DataTableWithOutBorder
+                                data={details}
+                                columns={MaterialAndVendorReportColumns}
+                                emptyMessage="No Material And Vendor Report Data Found"
+                                fixedHeight={true}
+                                className="flex-1"
+                                loading={isLoading}
+                            />
+                        );
+                    },
+                    expandButton: { openText: "Hide", closeText: "Show" },
+                }}
+            />
+
+            {/* <DataTable
                 columns={VendorWiseMaterialCountReportColumns}
                 data={VendorWiseMaterialCountReportForTable}
                 pagination={VendorWiseMaterialCountReportPaginationInfo}
@@ -237,7 +345,7 @@ export const VendorWiseMaterialCountReport: React.FC = () => {
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
                 loading={isLoading}
-            />
+            /> */}
 
             <Modal
                 isOpen={showFilterPopup}

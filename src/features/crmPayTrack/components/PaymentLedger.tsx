@@ -919,7 +919,6 @@ export const PaymentLedger: React.FC = () => {
                             <Edit className="h-4 w-4" />
                           </Button>
 
-
                           <Button
                             onClick={(e) => {
                               e.preventDefault();

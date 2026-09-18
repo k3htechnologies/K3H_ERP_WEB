@@ -675,6 +675,14 @@ export const getPageInfo = (path: string) => {
         title: "Material Requisition",
         description: "Streamlined material requests for efficient project execution",
       };
+      
+      case "materialRequisitionReports":
+      return {
+        title: "Material Requisition Report",
+        description: "Streamlined material requests for efficient project execution",
+      };
+
+      
 
     default:
       return {

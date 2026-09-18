@@ -138,40 +138,71 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
         return columns;
     }, [matrialRequisitionDetailData]);
 
+    const materialRequisitionInvoiceDataWithTotal = useMemo(() => {
+        const data = materialRequisitionInvoiceData || [];
+
+        const totalInvoiceAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmount ?? 0),
+            0
+        );
+
+        const totalPaidAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmountPaidTillDate ?? 0),
+            0
+        );
+
+        return [
+            ...data,
+            {
+                InvoiceNumber: "TOTAL",
+                InvoiceAmount: totalInvoiceAmount,
+                InvoiceAmountPaidTillDate: totalPaidAmount,
+                isTotal: true,
+            },
+        ];
+    }, [materialRequisitionInvoiceData]);
+
     const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
         () => [
             {
-                  key: "InvoiceNumber",
+                key: "InvoiceNumber",
                 label: "Invoice Number",
                 align: "left",
-                  render: (value: string, row: any) => {
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return (
+                            <span className="font-bold text-gray-500">
+                                TOTAL
+                            </span>
+                        );
+                    }
                     return (
-                      <MultiImageViewer
-                        images={parseDocumentUrls(row.UploadInvoiceURL)}
-                        title="Invoice Document"
-                        triggerLabel={value || '-'}
-                        isWrap={false}
-                      />
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.UploadInvoiceURL)}
+                            title="Invoice Document"
+                            triggerLabel={value || '-'}
+                            isWrap={false}
+                        />
                     );
-                  }
-                },
+                }
+            },
             {
                 key: "InvoiceAmount",
                 label: "Amount",
-                align: "left",
-                render: (value: number) => (
-                    <span className="font-medium text-black">
-                        {(formatCurrency(value) || '')}
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
                     </span>
                 )
             },
             {
                 key: "InvoiceAmountPaidTillDate",
                 label: "Paid",
-                align: "left",
-                render: (value: number) => (
-                    <span className="font-medium text-black">
-                        {(formatCurrency(value) || '')}
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
                     </span>
                 )
             },
@@ -179,21 +210,33 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                 key: "InvoiceDate",
                 label: "Invoice Date",
                 align: "left",
-                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+                render: (value?: string, row?: any) =>
+                     row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
             },
             {
                 key: "InvoiceDueDate",
                 label: "Invoice Due Date",
                 align: "left",
-                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
             },
             {
                 key: "Remarks",
                 label: "Remark",
                 align: "left",
                 width: "30",
-                render: (value?: string) => (
-                    <FieldInfoTooltip value={value} />
+                render: (value?: string, row?: any) => (
+                    row.isTotal
+                        ? ""
+                        : <FieldInfoTooltip value={value} />
                 )
             },
         ], []
@@ -343,7 +386,7 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                         <div className="overflow-y-auto thin-scroll">
                             <DataTableWithHeaderRowDivider
                                 columns={MaterialRequisitionInvoiceColumns}
-                                data={materialRequisitionInvoiceData}
+                                data={materialRequisitionInvoiceDataWithTotal}
                                 emptyMessage="No Invoice Details Found"
                                 fixedHeight={true}
                                 className="flex-1"

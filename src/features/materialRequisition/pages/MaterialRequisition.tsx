@@ -243,33 +243,7 @@ export const MaterialRequisition: React.FC = () => {
                 );
             }
         },
-        {
-            key: 'MaterialRequisitionStatus',
-            label: 'Status',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (value,row) => {
-                const { bg, text } = getMaterialRequisitionStatusColor(value);
 
-                return (
-                    <div className="flex items-center gap-2">
-                        <span
-                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                            style={{
-                                backgroundColor: bg,
-                                color: text,
-                            }}
-                        >
-                            {value || "-"}
-                        </span>
-                        {["COMPLETED", "CLOSED"].includes(value?.toUpperCase()) && (
-                            <FieldInfoTooltip value={row.CloseCompletionRemark} />
-                        )}
-                    </div>
-                );
-            },
-        },
         {
             key: "VendorFinalizationApprovalStatus",
             label: "Vendor Finalization Status",
@@ -282,9 +256,14 @@ export const MaterialRequisition: React.FC = () => {
                     approvalStatus={value || "-"}
                     showApproval={row.IsApproval}
                     isIcons={true}
-                    onHistory={["GET QUOTATION", "FINALIZED VENDOR", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
-                        ? undefined
-                        : () => handleApprovalLog(row)
+
+                    onHistory={
+                        ["PARTIAL APPROVED", "APPROVED"].includes(value?.toUpperCase())
+                            ? () => handleApprovalLog(row)
+                            : value?.toUpperCase() === "PENDING" &&
+                                !["GET QUOTATION", "FINALIZED VENDOR", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
+                                ? () => handleApprovalLog(row)
+                                : undefined
                     }
 
                 />
@@ -308,6 +287,33 @@ export const MaterialRequisition: React.FC = () => {
                 />
 
             )
+        },
+        {
+            key: 'MaterialRequisitionStatus',
+            label: 'Status',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => {
+                const { bg, text } = getMaterialRequisitionStatusColor(value);
+
+                return (
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                            style={{
+                                backgroundColor: bg,
+                                color: text,
+                            }}
+                        >
+                            {value || "-"}
+                        </span>
+                        {["COMPLETED", "CLOSED"].includes(value?.toUpperCase()) && (
+                            <FieldInfoTooltip value={row.CloseCompletionRemark} />
+                        )}
+                    </div>
+                );
+            },
         },
         {
             key: 'TotalPoAmount',

@@ -457,7 +457,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor onApprovalSuccess={loadMaterialRequisitionOverview} />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
-            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} />)}
+            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onAddGRN={loadMaterialRequisitionOverview} />)}
             {activeTab === 'Invoice' && <Invoice />}
 
 

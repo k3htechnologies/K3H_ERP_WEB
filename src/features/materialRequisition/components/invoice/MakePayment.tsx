@@ -551,15 +551,17 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                     )}
                 </div>
             </div>
-
-            <BottomActionBar
-                cancelText="Cancel"
-                saveText="Add"
-                onCancel={() => navigate(-1)}
-                onSave={handleAddPayment}
-                isLoading={isLoading}
-                canAction={canMakePayments}
-            />
+            
+            <div className="pt-5">
+                <BottomActionBar
+                    cancelText="Cancel"
+                    saveText="Add"
+                    onCancel={() => navigate(-1)}
+                    onSave={handleAddPayment}
+                    isLoading={isLoading}
+                    canAction={canMakePayments}
+                />
+            </div>
 
         </div>
     );

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { AddUpdateMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
+import type { AddUpdateMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,7 +12,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Input } from "@/ui/components/forms";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -59,7 +59,7 @@ const CreateInvoice: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
+    const { MaterialRequisitionGRNId, MaterialRequisitionInvoiceId } = useParams<{ MaterialRequisitionGRNId?: string, MaterialRequisitionInvoiceId?: string }>();
     const systemGeneratedCode = listState.SystemGeneratedCode;
     const navigate = useNavigate();
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
@@ -73,11 +73,18 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
     const { canAction: canAddInvoice } = useMenuPermissions('Add Invoice');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+    const materialRequisitionInvoiceId = MaterialRequisitionInvoiceId ? Number(MaterialRequisitionInvoiceId) : 0;
+    const isAddMode = materialRequisitionInvoiceId === 0;
 
     useEffect(() => {
         if (!projectId) return;
         loadMaterialRequisitionGRNData();
         loadmaterialRequisitionInvoiceSummary();
+
+        if (!isAddMode) {
+            fetchInvoiceDetails();
+        }
+
     }, [projectId, currentMaterialRequisitionId, MaterialRequisitionGRNId])
 
     const loadMaterialRequisitionGRNData = async () => {
@@ -143,6 +150,71 @@ const CreateInvoice: React.FC = () => {
             },
             undefined,
             "Loading Invoice Summary",
+        );
+    };
+
+    const fetchInvoiceDetails = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisitionInvoice = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    ProjectId: Number(projectId),
+                    Uniquekey: currentUniquekey,
+                    MaterialRequisitionGRNId: Number(MaterialRequisitionGRNId),
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                    MaterialRequisitionInvoiceId: Number(MaterialRequisitionInvoiceId)
+                };
+
+                const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
+
+                if (E.isRight(response)) {
+
+                    const e = response.right.Data?.[0];
+
+                    if (e) {
+                        setFormData(prev => ({
+                            ...prev,
+                            MaterialRequisitionInvoiceId: e.MaterialRequisitionInvoiceId ?? prev.MaterialRequisitionInvoiceId,
+                            Uniquekey: e.Uniquekey ?? prev.Uniquekey,
+                            ProjectId: e.ProjectId ?? prev.ProjectId,
+                            MaterialRequisitionGRNId: e.MaterialRequisitionGRNId ?? prev.MaterialRequisitionGRNId,
+                            MaterialRequisitionId: e.MaterialRequisitionId ?? prev.MaterialRequisitionId,
+                            InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
+                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
+                            InvoiceDueDate: e.InvoiceDueDate ?? prev.InvoiceDueDate,
+                            InvoiceAmount: e.InvoiceAmount ?? prev.InvoiceAmount,
+                            Remarks: e.Remarks ?? prev.Remarks,
+                        }));
+
+                        setUploadInvoiceURL(e.UploadInvoiceURL ?? "");
+                        setPerformaInvoiceURLL(e.PerformaInvoiceURL ?? "");
+                        setMeasurementReportURL(e.MeasurementReportURL ?? "");
+
+                        setUploadInvoiceURLFiles([]);
+                        setPerformaInvoiceURLFiles([]);
+                        setMeasurementReportURLFiles([]);
+
+                        SetRemoveUploadInvoiceUrls([]);
+                        SetRemovePerformaInvoiceUrls([]);
+                        SetRemoveMeasurementReportUrls([]);
+                    }
+                } else {
+                    setUploadInvoiceURL('')
+                    setUploadInvoiceURLFiles([])
+                    SetRemoveUploadInvoiceUrls([]);
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Invoice'
         );
     };
 
@@ -281,15 +353,20 @@ const CreateInvoice: React.FC = () => {
             newErrors.InvoiceAmount = `Invoice Amount cannot be greater than Pending Invoice Amount (${invoiceSummaryData?.PendingRequisitionAmount ?? 0}).`;
         }
 
+        const invoiceDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDate ? new Date(formData.InvoiceDate) : undefined);
+        const invoiceDueDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDueDate ? new Date(formData.InvoiceDueDate) : undefined);
+
+
         if (!formData.InvoiceDate) {
             newErrors.InvoiceDate = ' Invoice Date is required.';
         }
         if (!formData.InvoiceDueDate) {
             newErrors.InvoiceDueDate = ' Invoice Due Date is required.';
 
-        } else if (formData.InvoiceDate != null && formData.InvoiceDate !== "" && !isToDateGreaterOrEqualFromDate(formData.InvoiceDate, formData.InvoiceDueDate)) {
-            newErrors.InvoiceDueDate = "Due Date must be greater than Invoice Date";
+        } else if (formData?.InvoiceDate && formData.InvoiceDueDate && !isToDateGreaterOrEqualFromDate(invoiceDate, invoiceDueDate)) {
+            newErrors.InvoiceDueDate = "Invoice Due Date must be greater than or equal to Invoice Date";
         }
+
         if (!formData.InvoiceNumber?.trim()) {
             newErrors.InvoiceNumber = "Invoice Number is required.";
         } else if (Number(formData.InvoiceNumber) === 0) {

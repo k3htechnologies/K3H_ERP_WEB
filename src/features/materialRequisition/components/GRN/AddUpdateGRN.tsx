@@ -122,7 +122,7 @@ export const AddUpdateGRN = () => {
                                     UomMasterId: Detail?.UomMasterId ?? 0,
                                     UomCode: item.UomCode ?? Detail?.UomCode ?? "",
                                     RequiredDate: item.RequiredDate ?? Detail?.RequiredDate ?? "",
-                                    MaterialReceivedQuantityTillDate: item.TotalReceivedMaterialQuantity ?? Detail?.MaterialReceivedQuantityTillDate ?? "",
+                                    MaterialReceivedQuantityTillDate: Number(Detail?.TotalReceivedQuantityByRequisition ?? 0) - Number(Detail?.TotalReceivedMaterialQuantity ?? 0),
                                     LevelId1: Detail?.LevelId1 ?? 0,
                                     Level1Name: Detail?.Level1Name ?? "",
                                     LevelId2: Detail?.LevelId2 ?? 0,
@@ -140,6 +140,7 @@ export const AddUpdateGRN = () => {
                                     MaterialRequisitionDetailId: item.MaterialRequisitionDetailId ?? 0,
                                     IsTolerant: Detail?.IsTolerant ?? false,
                                     TolerancePercentage: Detail?.TolerancePercentage ?? 0,
+                                    TotalReceivedQuantityByRequisition:Detail.TotalReceivedQuantityByRequisition ??0
                                 };
                             }));
 
@@ -384,10 +385,12 @@ export const AddUpdateGRN = () => {
                     },
                     {
                         key: "MaterialReceivedQuantityTillDate",
-                        label: "Received",
+                        label: "Received Till Date",
                         align: "right",
                         width: "30",
-                        render: (value) => value || 0
+                       render: (value, row) => {
+                            return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                        }
                     },
                     {
                         key: 'PendingQuantity',
@@ -401,12 +404,12 @@ export const AddUpdateGRN = () => {
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pending = materialQuantity - materialReceivedQuantityTillDate
 
-                            return pending
+                             return isDirect ? `${pending ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${pending ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                         }
                     },
                     {
                         key: "TotalReceivedMaterialQuantity",
-                        label: "Received",
+                        label: "Now Received",
                         align: "left",
                         width: "30",
                         render: (value: any, row) => {
@@ -422,6 +425,7 @@ export const AddUpdateGRN = () => {
                                     maxLength={9}
                                     onChange={(e) => {
                                         const raw = filterNumbers(e.target.value);
+
                                         const receivedQuantity = Number(raw);
 
                                         if (receivedQuantity > pendingQuantity) {
@@ -435,8 +439,7 @@ export const AddUpdateGRN = () => {
 
                                         setMaterialList(prev =>
                                             prev.map(item =>
-                                                item.MaterialRequisitionDetailId ===
-                                                    row.MaterialRequisitionDetailId
+                                                item.MaterialRequisitionDetailId ===  row.MaterialRequisitionDetailId
                                                     ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
                                                     : item
                                             )

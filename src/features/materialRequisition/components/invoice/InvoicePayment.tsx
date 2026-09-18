@@ -18,13 +18,15 @@ import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
-import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
-import type { FilterWithPaginationMaterialRequisitionPayment, MaterialRequisitionPaymentData } from "@/features/materialRequisition/models/MaterialRequisitionPaymentModel";
+import type { DeleteMaterialRequisitionPayment, FilterWithPaginationMaterialRequisitionPayment, MaterialRequisitionPaymentData } from "@/features/materialRequisition/models/MaterialRequisitionPaymentModel";
 import { materialRequisitionPaymentService } from "@/features/materialRequisition/services/MaterialRequisitionPaymentService";
-import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
-import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import { formatCurrency } from "@/core/utils/comman";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { Trash2 } from "lucide-react";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const InvoicePayment: React.FC = () => {
 
@@ -38,17 +40,21 @@ const InvoicePayment: React.FC = () => {
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string; }>();
     const { listState } = useMaterialRequisitionListState();
-     const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())
+    const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const systemGeneratedCode = listState.SystemGeneratedCode;
     const navigate = useNavigate();
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
-    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [paymentData, setPaymentData] = useState<MaterialRequisitionPaymentData[]>([]);
     const [invoiceNumber, setInvoiceNumber] = useState<string | null>("");
+    const [invoiceAmount, setInvoiceAmount] = useState<number | null>(0);
+
+    const [deletePaymentData, setDeletePaymentData] = useState<MaterialRequisitionPaymentData | null>(null);
+    const [isConfirmationDialogBoxOpenForPayment, setIsConfirmationDialogBoxOpenForPayment] = useState(false)
+    const { canAction } = useMenuPermissions('Make Payments');
+
 
     useEffect(() => {
         if (!projectId) return;
@@ -61,12 +67,6 @@ const InvoicePayment: React.FC = () => {
         navigate(`/materialRequisition/makePayment/add/${row.MaterialRequisitionInvoiceId}`);
     }, [navigate]);
 
-    const handleApproveRejectInvoice = (row: MaterialRequisitionInvoiceData, approvalType: "approve" | "reject") => {
-        setInvoiceNumber(row.InvoiceNumber);
-        setApprovalActionType(approvalType);
-        setIsApprovalActionModalOpen(true);
-    };
-
     const handleApprovalLog = (row: MaterialRequisitionInvoiceData) => {
         const request: ModulesApprovalStatusRequest = {
             ModuleName: "ADD INVOICE",
@@ -75,6 +75,7 @@ const InvoicePayment: React.FC = () => {
             ProjectId: projectId ?? 0,
         };
         setInvoiceNumber(row.InvoiceNumber);
+        setInvoiceAmount(row.InvoiceAmount);
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
     };
@@ -113,47 +114,6 @@ const InvoicePayment: React.FC = () => {
             },
             undefined,
             "Loading GRN Data",
-        );
-    };
-
-    const handleApprovalSubmit = async (remark: string) => {
-
-        if (!invoiceData) return;
-
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "MATERIAL REQUISITION",
-            Id: currentMaterialRequisitionId ?? 0,
-            SubId: invoiceData.MaterialRequisitionInvoiceId ?? 0,
-            ProjectId: Number(projectId),
-            IsApproved: approvalActionType === "approve",
-            Remarks: remark ?? null,
-        };
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsApprovalActionModalOpen(false);
-
-                    await loadInvoiceData();
-
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalActionType === "approve" ? "Approving Invoice" : "Rejecting Invoice"
         );
     };
 
@@ -350,6 +310,54 @@ const InvoicePayment: React.FC = () => {
 
     const PendingAmount = Math.max(InvoiceAmount - amountPaid);
 
+    const handleConfirmationDialogBoxOpenForPayment = useCallback((row: MaterialRequisitionPaymentData) => {
+        setDeletePaymentData(row)
+        setIsConfirmationDialogBoxOpenForPayment(true)
+    }, [])
+
+    const handleDeleteInvoicePayment = async () => {
+
+        setIsConfirmationDialogBoxOpenForPayment(false);
+
+        if (!deletePaymentData) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: DeleteMaterialRequisitionPayment = {
+                    MaterialRequisitionPaymentId: deletePaymentData.MaterialRequisitionPaymentId || 0,
+                    MaterialRequisitionId: deletePaymentData.MaterialRequisitionId || 0,
+                    Uniquekey: deletePaymentData.Uniquekey || "",
+                    ProjectId: Number(projectId),
+                };
+
+                const response = await materialRequisitionPaymentService.apiCallDeleteMaterialRequisitionPayment(params);
+
+                if (E.isRight(response)) {
+
+                    await loadPaymentData(deletePaymentData.MaterialRequisitionInvoiceId);
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+                    await loadInvoiceData();
+
+                    setIsConfirmationDialogBoxOpenForPayment(false);
+                    setDeletePaymentData(null);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                    setIsConfirmationDialogBoxOpenForPayment(false);
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Deleting Invoice Payment"
+        );
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
@@ -369,12 +377,19 @@ const InvoicePayment: React.FC = () => {
             </div>
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
-                <div className="lg:col-span-5 pb-3">
+                <div className="lg:col-span-5 pb-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
-                        <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
-                        <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
 
+                        <FieldItem label="Challan Number" value={materialRequisitionGRNData?.ChallanNumber || '-'} />
+                        <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
+                        <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
+                        <FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks || '-'} />
+                        <FieldItem label="Created By / Date" value={materialRequisitionGRNData?.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(materialRequisitionGRNData?.CreatedDate || '-')} />
+
+                        {materialRequisitionGRNData?.ModifiedBy !== '' ?
+                            <FieldItem label="Modified By / Date" value={materialRequisitionGRNData?.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(materialRequisitionGRNData?.ModifiedDate || '-')} />
+                            :
+                            ''}
                     </div>
                 </div>
 
@@ -389,41 +404,43 @@ const InvoicePayment: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                <div className="relative bg-gray-50 border border-gray-200 rounded-xl p-4">
                     <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-700">
 
                             <FieldItem label="Invoice Number" value={invoiceData?.InvoiceNumber || "-"} isRow />
-                            {PendingAmount === 0 && (
-                            <div>
-                                <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-2 rounded-md inline-block">Fully Paid</span>
-                            </div>
-                            ) }
-                        </div>
+                            <FieldItem label="Invoice Amount" value={formatCurrency(invoiceData?.InvoiceAmount)} isRow />
 
-                        
-                        {PendingAmount !== 0 &&   !materialRequisitionStatus && (
-                            <Button
-                                color="blue"
-                                onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
-                                size="sm"
-                                style={{
-                                    color: '#FFFFFF',
-                                    padding: '4px 8px',
-                                    backgroundColor: '#135BEC'
-                                }}
-                            >
-                                Make Payment
-                            </Button>
-                            
-                        )}
+                            {PendingAmount !== 0 && (
+                                <FieldItem
+                                    label="Amount Paid Till Date"
+                                    isRow
+                                    value={
+                                        <span className="text-green-600 font-semibold">
+                                            {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
+                                        </span>
+                                    }
+                                />
+                            )}
+
+                            <FieldItem label=" Amount to be Paid"
+                                isRow
+                                value={
+                                    <span className="text-red-600 font-semibold">
+                                        {formatCurrency(PendingAmount)}
+                                    </span>
+                                } />
+
+                            {PendingAmount === 0 && (
+                                <div>
+                                    <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-2 rounded-md inline-block">Fully Paid</span>
+                                </div>
+                            )}
+                        </div>
 
                         <div className="flex items-center gap-2">
                             <ApprovalActions
                                 approvalStatus={invoiceData?.InvoiceStatus}
-                                onApprove={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "approve")}
-                                onReject={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "reject")}
-                                showApproval={invoiceData?.IsApproval}
                                 isIcons={true}
                                 onHistory={() => handleApprovalLog(invoiceData as MaterialRequisitionInvoiceData)}
                             />
@@ -434,9 +451,9 @@ const InvoicePayment: React.FC = () => {
 
                     <div className="grid grid-cols-3 gap-6 text-sm pt-5">
                         <div className="space-y-3">
-                            <h3 className="font-semibold mb-2">Invoice Details Details</h3>
+                            <h3 className="font-semibold mb-2">Invoice Details</h3>
 
-                            <FieldItem label="Invoice Amount" value={formatCurrency(invoiceData?.InvoiceAmount)} />
+
                             <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDate ?? '')} />
                             <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
 
@@ -444,24 +461,9 @@ const InvoicePayment: React.FC = () => {
                         </div>
 
                         <div className="space-y-3">
-                            <h3 className="font-semibold mb-2">Amount Details</h3>
+                            <h3 className="font-semibold mb-2">Document's Details</h3>
 
-                            {PendingAmount !== 0 && (
-                                <FieldItem
-                                    label="Amount Paid Till Date"
-                                    value={
-                                        <span className="text-green-600 font-semibold">
-                                            {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
-                                        </span>
-                                    }
-                                />
-                            )}
 
-                            <FieldItem label=" Amount to be Paid" value={
-                                <span className="text-red-600 font-semibold">
-                                    {formatCurrency(PendingAmount)}
-                                </span>
-                            } />
 
                             <FieldItem label="Invoice" urls={invoiceData?.UploadInvoiceURL} isSetValue={false} isIcon />
 
@@ -480,6 +482,27 @@ const InvoicePayment: React.FC = () => {
                             <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(invoiceData?.ModifiedDate ?? "-")} />
                         </div>
                     </div>
+
+                    {PendingAmount !== 0 && !materialRequisitionStatus && (
+                        <div className="absolute bottom-4 right-4">
+                            <Button
+                                color="blue"
+                                onClick={() =>
+                                    handleMakePayment(
+                                        invoiceData as MaterialRequisitionInvoiceData
+                                    )
+                                }
+                                size="sm"
+                                style={{
+                                    color: '#FFFFFF',
+                                    padding: '4px 8px',
+                                    backgroundColor: '#135BEC'
+                                }}
+                            >
+                                Make Payment
+                            </Button>
+                        </div>
+                    )}
                 </div>
 
                 {paymentData.map((item, index) => (
@@ -492,6 +515,29 @@ const InvoicePayment: React.FC = () => {
                                 <FieldItem label="TDS Amount (₹)" value={formatCurrency(item.TDSAmount)} isRow isIcon={true} />
                                 <FieldItem label="Payment Mode" value={item.PaymentMode || "-"} isRow />
 
+                            </div>
+
+                            <div className="flex items-center gap-2 pb-8">
+                                {index === 0 && (
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleConfirmationDialogBoxOpenForPayment(item);
+                                        }}
+                                        color="transparent"
+                                        isborderRadius
+                                        size="sm"
+                                        style={{
+                                            color: canAction ? "red" : "#9CA3AF",
+                                            cursor: canAction ? "pointer" : "not-allowed",
+                                            opacity: canAction ? 1 : 0.5,
+                                        }}
+                                        title="Delete"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                )}
                             </div>
 
                         </div>
@@ -544,20 +590,23 @@ const InvoicePayment: React.FC = () => {
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 titleText={invoiceNumber ?? ""}
-                title='Invoice'
+                subTitleText={String(invoiceAmount ?? 0)}
+                title='Invoice Approval'
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest}
             />
 
-            <ApprovalActionModal
-                title='Invoice'
-                titleText={invoiceNumber ?? ""}
-                isOpen={isApprovalActionModalOpen}
-                onClose={() => setIsApprovalActionModalOpen(false)}
-                actionType={approvalActionType}
-                onSubmit={handleApprovalSubmit}
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpenForPayment}
+                onClose={() => {
+                    setDeletePaymentData(null);
+                    setIsConfirmationDialogBoxOpenForPayment(false);
+                }}
+                onConfirm={handleDeleteInvoicePayment}
                 loading={isLoading}
+                pageName="Invoice Payment"
             />
+
 
         </div>
     )

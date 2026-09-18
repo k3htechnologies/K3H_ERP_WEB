@@ -408,7 +408,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                         EditText="Edit"
                         canAction={activeTab === "Overview" &&
                             canMaterialRequisitionView &&
-                            listState.VendorFinalizationApprovalStatus?.toUpperCase() !== "APPROVED" &&
+                            !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
                             !["COMPLETED", "CLOSED"].includes(
                                 listState?.MaterialRequisitionStage?.toUpperCase() ?? ""
                             )}

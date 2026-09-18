@@ -597,7 +597,7 @@ const CreateInvoice: React.FC = () => {
                             <MultiFilePicker
                                 label="Upload Invoice"
                                 placeholder="Select Invoice"
-                                required
+                                required={!hasAnyDocumentFile(performaInvoiceURLFiles,performaInvoiceURL, removePerformaInvoiceUrls)}
                                 error={errors.UploadInvoiceURL}
                                 value={uploadInvoiceURLFiles}
                                 onChange={setUploadInvoiceURLFiles}
@@ -613,7 +613,7 @@ const CreateInvoice: React.FC = () => {
                             <MultiFilePicker
                                 label="Performance Report"
                                 placeholder="Select Performance Report"
-                                required
+                                required={!hasAnyDocumentFile( uploadInvoiceURLFiles,  uploadInvoiceURL, removeUploadInvoiceUrls)}
                                 error={errors.PerformaInvoiceURL}
                                 value={performaInvoiceURLFiles}
                                 onChange={setPerformaInvoiceURLFiles}

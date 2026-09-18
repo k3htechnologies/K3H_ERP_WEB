@@ -20,7 +20,7 @@ import { materialRequisitionService } from "@/features/materialRequisition/servi
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbers } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { BudgetData } from "@/features/budget/models/BudgetModel";
 import {
@@ -129,6 +129,7 @@ export const AddUpdateMaterialRequisition = () => {
         Quantity: number;
         L3Quantity: number;
         ReceivedQuantity: number;
+        OrderQuantity: number;
     } | null>(null);
 
     const [inDirectSubMaterialDetails, setInDirectSubMaterialDetails] = useState<SubMaterialMasterData | null>(null);
@@ -136,6 +137,7 @@ export const AddUpdateMaterialRequisition = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteMaterialDetailsData, setDeleteMaterialDetailsData] = useState<{ row: AddUpdateMaterialRequisitionDetailRequest; index: number } | null>(null);
 
+    const [originalMaterialQuantity, setOriginalMaterialQuantity] = useState(0);
 
     useEffect(() => {
         if (!MaterialRequisitionId) return;
@@ -229,10 +231,10 @@ export const AddUpdateMaterialRequisition = () => {
     }, [projectId]);
 
     useEffect(() => {
-    if (!MaterialRequisitionTab.some(tab => tab.id === active)) {
-        setActive(MaterialRequisitionTab[0]?.id ?? "Direct");
-    }
-}, [hasDirect, hasInDirect, active]);
+        if (!MaterialRequisitionTab.some(tab => tab.id === active)) {
+            setActive(MaterialRequisitionTab[0]?.id ?? "Direct");
+        }
+    }, [hasDirect, hasInDirect, active]);
 
     const handleAddMaterial = async () => {
         setErrors({});
@@ -241,6 +243,7 @@ export const AddUpdateMaterialRequisition = () => {
         setAddMaterialPopUp(true);
         setEditIndex(null);
         setMaterialData(initialFormState());
+        setOriginalMaterialQuantity(0);
     }
 
     const validateMaterialForm = (): {
@@ -350,6 +353,8 @@ export const AddUpdateMaterialRequisition = () => {
             Remark: row.Remark
         });
 
+        setOriginalMaterialQuantity(Number(row.MaterialQuantity ?? 0));
+
         if (isDirect && row.LevelId4) {
             const selected = projectBudgetList.find(
                 budget =>
@@ -371,6 +376,7 @@ export const AddUpdateMaterialRequisition = () => {
                     Quantity: Number(selected.Quantity ?? 0),
                     L3Quantity: Number(selected.L3Quantity ?? 0),
                     ReceivedQuantity: Number(selected.ReceivedQuantity ?? 0),
+                    OrderQuantity: Number(selected.OrderQuantity ?? 0),
                     IsTolerant: selected.Level4IsTolerant ?? false,
                     RequiredDate: formatDate_dd_mm_yyyy(row.RequiredDate) || ""
                 });
@@ -477,21 +483,21 @@ export const AddUpdateMaterialRequisition = () => {
                 align: "left",
                 width: "30",
                 render: (value) => {
-                return (
-                    <div className="flex items-center gap-2">
+                    return (
+                        <div className="flex items-center gap-2">
 
-                        <TooltipText
-                            text={value || '-'}
-                            maxWidth="180px"
-                            tooltipThreshold={30}
-                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                            
-                        />
+                            <TooltipText
+                                text={value || '-'}
+                                maxWidth="180px"
+                                tooltipThreshold={30}
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
 
-                        
-                    </div>
-                );
-            }
+                            />
+
+
+                        </div>
+                    );
+                }
             }
         ];
 
@@ -666,20 +672,6 @@ export const AddUpdateMaterialRequisition = () => {
         return { label, value: String(id) };
     };
 
-    const validateMaterialRequisitionForm = (): {
-        isValid: boolean
-        errors: { [key: string]: string }
-    } => {
-        const newErrors: { [key: string]: string } = {};
-
-        if (!hasAnyDocumentFile(documentFiles, documentURL, removeddocumentFilesURLs)) {
-            newErrors.AttachmentsURL = "Attachment is required.";
-        }
-        return {
-            isValid: Object.keys(newErrors).length === 0,
-            errors: newErrors
-        };
-    };
 
     const PushMaterialRequisitionFormData = (): FormData => {
 
@@ -709,13 +701,7 @@ export const AddUpdateMaterialRequisition = () => {
         }
 
         setErrors({});
-        
-        const validation = validateMaterialRequisitionForm();
 
-        if (!validation.isValid) {
-            setErrors(validation.errors);
-            return;
-        }
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -738,13 +724,20 @@ export const AddUpdateMaterialRequisition = () => {
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message})
+                addToast({ type: 'error', title: error.message })
             },
             undefined,
             formData.MaterialRequisitionId ? "Updating Material Requisition" : "Add Material Requisition"
         );
     };
 
+    const budgetQuantity =  Number(subMaterialDetails?.Quantity ?? 0) *Number(subMaterialDetails?.L3Quantity ?? 0);
+
+    const orderQuantity = Number(subMaterialDetails?.OrderQuantity ?? 0);
+
+    const existingRequisitionQuantity =  Number(materialData.MaterialRequisitionDetailId ?? 0) > 0 ? originalMaterialQuantity: 0;
+
+    const maxQuantity = budgetQuantity -  orderQuantity + existingRequisitionQuantity;
 
     return (
         <div>
@@ -798,7 +791,6 @@ export const AddUpdateMaterialRequisition = () => {
                                 onChange={setdocumentFiles}
                                 availableFilesURL={documentURL}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", ".dwg"]}
-                                required
                                 error={errors.AttachmentsURL}
                                 onRemoveExisting={(url) =>
                                     setRemoveddocumentFilesURLs((prev) => [...prev, url])
@@ -1085,7 +1077,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                     ...prev,
                                                     LevelId4: 0,
                                                     Level4Name: '',
-                                                    MaterialQuantity:0,
+                                                    MaterialQuantity: 0,
                                                     RequiredDate: "",
                                                 }));
                                                 return;
@@ -1106,6 +1098,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 Quantity: Number(selected.Quantity ?? 0),
                                                 L3Quantity: Number(selected.L3Quantity ?? 0),
                                                 ReceivedQuantity: Number(selected.ReceivedQuantity ?? 0),
+                                                OrderQuantity: Number(selected.OrderQuantity ?? 0),
                                                 IsTolerant: selected.Level4IsTolerant ?? false,
                                                 RequiredDate: requiredDate,
                                             });
@@ -1115,6 +1108,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 LevelId4: levelId4,
                                                 Level4Name: item?.label ?? "",
                                                 RequiredDate: requiredDate,
+                                                MaterialQuantity: 0,
                                                 Level4SubMaterialUomCode: selected.Level4SubMaterialUomCode ?? "",
                                                 Level4SubMaterialUom: selected.Level4SubMaterialUom ?? "",
                                             }));
@@ -1129,6 +1123,7 @@ export const AddUpdateMaterialRequisition = () => {
                                         error={errors.LevelId4}
 
                                     />
+
 
                                     <Input
                                         label="Quantity"
@@ -1158,7 +1153,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 return;
                                             }
 
-                                            const maxQuantity = (Number(subMaterialDetails?.Quantity ?? 0) * Number(subMaterialDetails?.L3Quantity ?? 0))-Number(subMaterialDetails?.ReceivedQuantity ?? 0);
+
 
                                             if (quantity > maxQuantity) {
                                                 setErrors(prev => ({
@@ -1179,7 +1174,7 @@ export const AddUpdateMaterialRequisition = () => {
                                             }));
                                         }}
                                         placeholder="Enter Quantity"
-                                        max={(Number(subMaterialDetails?.Quantity) *Number(subMaterialDetails?.L3Quantity))  -Number(subMaterialDetails?.ReceivedQuantity ?? 0)}
+                                        max={maxQuantity}
                                         error={errors.MaterialQuantity}
                                         rightIcon={subMaterialDetails?.UomCode}
                                     />
@@ -1214,7 +1209,9 @@ export const AddUpdateMaterialRequisition = () => {
 
                                             <FieldItem label="Material Rate" value={formatCurrency(subMaterialDetails.MaterialRate)} />
 
-                                            <FieldItem label="Required Quantity" value={Number(subMaterialDetails.Quantity) * Number(subMaterialDetails.L3Quantity)}  />
+                                            <FieldItem label="Required Quantity" value={Number(subMaterialDetails.Quantity) * Number(subMaterialDetails.L3Quantity)} />
+
+                                            <FieldItem label="Order Quantity" value={subMaterialDetails.OrderQuantity} />
 
                                             <FieldItem label="Received Quantity" value={subMaterialDetails.ReceivedQuantity} />
 

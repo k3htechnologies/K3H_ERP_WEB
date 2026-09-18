@@ -578,8 +578,7 @@ const InvoicePayment: React.FC = () => {
                                 <FieldItem label="Created By" value={item?.CreatedBy ?? "-"} />
 
                                 <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(item?.CreatedDate ?? "-")} />
-                                <FieldItem label="Modified By" value={item?.ModifiedBy ?? "-"} />
-                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(item?.ModifiedDate ?? "-")} />
+                                
                             </div>
                         </div>
                     </div>

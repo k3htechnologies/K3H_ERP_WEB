@@ -336,9 +336,7 @@ export const Invoice: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
                     setIsApprovalActionModalOpen(false);
-
-
-                    // Save currently expanded GRN parent
+                    
                     const parentId = expandedParentId;
                     const parentRow = expandedParentRow;
 
@@ -417,6 +415,7 @@ export const Invoice: React.FC = () => {
                     setIsConfirmationDialogBoxOpenForInVoice(false);
                     setDeleteInvoiceData(null);
 
+                    loadmaterialRequisitionInvoiceSummary();
                 } else {
                     addToast({ type: 'error', title: response.left.message });
 

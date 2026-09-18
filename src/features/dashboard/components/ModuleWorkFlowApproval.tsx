@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { Box, Building2, Car, ClipboardCheck, FileText, Folder, Home, KeyRound, ReceiptIndianRupee, UserCog, Wallet } from "lucide-react";
+import { Box, Building2, Car, ClipboardCheck, Copy, FileText, Folder, Handshake, Home, KeyRound, ReceiptIndianRupee, UserCog, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/ui/components/forms";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { copyToClipboard } from "@/core/utils/comman";
 
 interface Props {
     moduleApproval: any[];
@@ -94,11 +95,51 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
 
                 ];
 
-            // ✅ Budget
+            // ✅ TERM SHEET
             case "Term Sheet":
                 return [
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "NameOfInstitutionBankNBFC", label: "Name Of Institution / Bank / NBFC", render: renderText },
+
+                ];
+
+            // ✅ FINALIZED VENDOR
+            case "Finalized Vendor":
+            case "Invoice Approval":
+                return [
+                    { key: "ProjectName", label: "Project", render: renderText },
+                    {
+                        key: 'SystemGeneratedCode',
+                        label: 'MR Code',
+                        render: (value: any) => {
+                            return (
+                                <div className="flex items-center gap-2">
+                                    {value}
+
+                                    {value && (
+                                        <Button
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                await copyToClipboard(value);
+                                            }}
+                                            color="transparent"
+                                            size="sm"
+                                            style={{
+                                                padding: '2px 6px',
+                                                color: '#6B7280',
+                                                cursor: 'pointer'
+                                            }}
+                                            title="Copy"
+                                        >
+                                            <Copy className="h-3.5 w-3.5" />
+                                        </Button>
+                                    )}
+                                </div>
+                            );
+                        }
+                    },
+                    // { key: "SystemGeneratedCode", label: "MR Code", render: renderText },
 
                 ];
 
@@ -186,6 +227,16 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
         },
         "Term Sheet": {
             icon: ClipboardCheck,
+            bg: "#FEF3C7",
+            color: "#D97706"
+        },
+        "Finalized Vendor": {
+            icon: Handshake,
+            bg: "#DBEAFE",
+            color: "#2563EB"
+        },
+        "Invoice Approval": {
+            icon: ReceiptIndianRupee,
             bg: "#FEF3C7",
             color: "#D97706"
         }

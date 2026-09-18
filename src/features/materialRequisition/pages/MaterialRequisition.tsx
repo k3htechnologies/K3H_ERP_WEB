@@ -261,7 +261,7 @@ export const MaterialRequisition: React.FC = () => {
                         ["PARTIAL APPROVED", "APPROVED"].includes(value?.toUpperCase())
                             ? () => handleApprovalLog(row)
                             : value?.toUpperCase() === "PENDING" &&
-                                !["GET QUOTATION", "FINALIZED VENDOR", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
+                                !["GET QUOTATION", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
                                 ? () => handleApprovalLog(row)
                                 : undefined
                     }
@@ -270,24 +270,7 @@ export const MaterialRequisition: React.FC = () => {
 
             )
         },
-        {
-            key: "InvoiceApprovalStatus",
-            label: "Invoice Status",
-            width: "18",
-            sortable: false,
-            align: "center",
-            render: (value, row) => (
-
-                <ApprovalActions
-                    approvalStatus={value || "-"}
-                    showApproval={row.IsApprovalInvoice}
-                    isIcons={true}
-
-
-                />
-
-            )
-        },
+        
         {
             key: 'MaterialRequisitionStatus',
             label: 'Status',
@@ -357,7 +340,7 @@ export const MaterialRequisition: React.FC = () => {
 
                 const canActionStage =
                     canAction &&
-                    row.VendorFinalizationApprovalStatus?.toUpperCase() !== 'APPROVED' &&
+                    !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
                     !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase());
 
                 return (

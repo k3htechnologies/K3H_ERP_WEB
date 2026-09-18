@@ -491,6 +491,15 @@ export const Budget: React.FC = () => {
                 row.LevelType === 'L4' ? `${(Number(value) || 0) * (Number(row.L3Quantity) || 0)} ${row.Uom || ''}`
                                          : value ? `${value} ${row.Uom || ''}` : '-' 
                                         },
+
+                                        {
+            key: 'OrderQuantity',
+            label: 'Order QTY',
+            width: '15',
+            sortable: false,
+            align: 'right',
+             render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
+        },
         
         {
             key: 'ReceivedQuantity',

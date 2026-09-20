@@ -31,7 +31,11 @@ import { Edit, Trash2 } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
-export const Invoice: React.FC = () => {
+interface FinalizedVendorProps {
+    onApprovalSuccess?: () => Promise<void>;
+}
+
+export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) => {
 
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
     const [invoiceSummaryData, setInvoiceSummaryData] = useState<MaterialRequisitionInvoiceSummaryData | null>(null);
@@ -288,7 +292,7 @@ export const Invoice: React.FC = () => {
                 </div>
             )
         }
-    ], [handleMakePayment,handleMakePayment,handleCreateInvoice]);
+    ], [handleMakePayment, handleMakePayment, handleCreateInvoice]);
 
     const handleApprovalLog = (row: MaterialRequisitionInvoiceData) => {
         const request: ModulesApprovalStatusRequest = {
@@ -336,7 +340,7 @@ export const Invoice: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
                     setIsApprovalActionModalOpen(false);
-                    
+
                     const parentId = expandedParentId;
                     const parentRow = expandedParentRow;
 
@@ -352,6 +356,8 @@ export const Invoice: React.FC = () => {
                             );
                         }, 100);
                     }
+
+                    await onApprovalSuccess?.();
 
 
                 } else {
@@ -436,21 +442,81 @@ export const Invoice: React.FC = () => {
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Vendor Name" value={invoiceSummaryData?.FinalVendor} />
-                        <FieldItem label="Vendor Company" value={invoiceSummaryData?.FinalVendorCompanyName} />
-                        <FieldItem
-                            label="Mobile Number"
-                            value={`${invoiceSummaryData?.FinalVendorMobileNumberCountryCode ?? "+91"} ${invoiceSummaryData?.FinalVendorMobileNumber ?? ""}`}
-                        />
-                        <FieldItem label="GST Number" value={invoiceSummaryData?.FinalVendorGSTNumber} />
-                        <FieldItem label="Total Amount (₹)" value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)} />
-                        <FieldItem label="Paid  Amount (₹)" value={formatCurrency(invoiceSummaryData?.PaidRequisitionAmount)} />
-                        <FieldItem label="Pending Amount (₹)" value={formatCurrency(invoiceSummaryData?.PendingRequisitionAmount)} />
-                        <FieldItem label="Total Invoice Amount (₹)" value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)} />
-                        <FieldItem label="Paid  Invoice Amount (₹)" value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)} />
-                        <FieldItem label="Pending Invoice Amount (₹)" value={formatCurrency(invoiceSummaryData?.RemainingInvoiceAmount)} />
+
+                    <div className="mb-5">
+                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            Vendor Details
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem
+                                label="Vendor Name"
+                                value={invoiceSummaryData?.FinalVendor}
+                            />
+
+                            <FieldItem
+                                label="Vendor Company"
+                                value={invoiceSummaryData?.FinalVendorCompanyName}
+                            />
+
+                            <FieldItem
+                                label="Mobile Number"
+                                value={`${invoiceSummaryData?.FinalVendorMobileNumberCountryCode ?? "+91"} ${invoiceSummaryData?.FinalVendorMobileNumber ?? ""}`}
+                            />
+
+                            <FieldItem
+                                label="GST Number"
+                                value={invoiceSummaryData?.FinalVendorGSTNumber}
+                            />
+                        </div>
                     </div>
+
+                    <div className="mb-5">
+                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            PO Amount Details (₹)
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem
+                                label="Total (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)}
+                            />
+
+                            <FieldItem
+                                label="Paid (₹)"
+                                value={formatCurrency(invoiceSummaryData?.PaidRequisitionAmount)}
+                            />
+
+                            <FieldItem
+                                label="Pending (₹)"
+                                value={formatCurrency(invoiceSummaryData?.PendingRequisitionAmount)}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            Invoice Details  (₹)
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem
+                                label="Total (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)}
+                            />
+
+                            <FieldItem
+                                label="Paid (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)}
+                            />
+
+                            <FieldItem
+                                label="Pending(₹)"
+                                value={formatCurrency(invoiceSummaryData?.RemainingInvoiceAmount)}
+                            />
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -559,7 +625,6 @@ export const Invoice: React.FC = () => {
                                                             e.preventDefault();
                                                             e.stopPropagation();
                                                             if (!showEdit) return;
-                                                            handleEditInvoice(row as MaterialRequisitionInvoiceData);
                                                             handleEditInvoice(row as MaterialRequisitionInvoiceData);
 
                                                         }}

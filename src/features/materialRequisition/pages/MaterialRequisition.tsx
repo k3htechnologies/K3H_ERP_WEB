@@ -341,7 +341,8 @@ export const MaterialRequisition: React.FC = () => {
                 const canActionStage =
                     canAction &&
                     !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
-                    !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase());
+                    !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase()) &&
+                    ["GET QUOTATION"].includes(row?.MaterialRequisitionStage?.toUpperCase());
 
                 return (
                     <div className="flex items-center justify-center gap-1">

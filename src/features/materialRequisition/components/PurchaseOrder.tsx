@@ -54,7 +54,7 @@ export const PurchaseOrder: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null);
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
-    const { listState } = useMaterialRequisitionListState();
+    const { listState, updateListState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const [isMaximized, setIsMaximized] = useState(false);
@@ -193,9 +193,11 @@ export const PurchaseOrder: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    loadPurchaseOrder()
+                    loadPurchaseOrder();
+
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -278,11 +280,14 @@ export const PurchaseOrder: React.FC = () => {
 
                 if (E.isRight(response)) {
 
+                    updateListState({ MaterialRequisitionStage: 'Generate Purchase Order' });
+
                     loadPurchaseOrder();
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
                     setIsConfirmationDialogBoxOpen(false);
+
                     setDeleteGeneratePurchaseOrderData(null);
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -307,42 +312,42 @@ export const PurchaseOrder: React.FC = () => {
             <div className="flex justify-end gap-2">
 
                 {isPurchaseOrderLoaded && !hasPurchaseOrder && canGeneratePurchaseOrder && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) &&
-                listState.VendorFinalizationApprovalStatus.toUpperCase()==="APPROVED" && (
-                    <>
-                        <Button
-                            color="red"
-                            size="mxs"
-                            title="Generate"
-                            onClick={() => {
-                                setIsUploadPO(false);
-                                setPurchaseOrderFiles([]);
-                                setPurchaseOrderURL("")
-                                setRemovedPurchaseOrderUrls([]);
-                                handleGeneratepurchaseorder();
-                            }}
-                            style={{ width: '100px' }} >
-                            Generate PO
-                        </Button>
+                    listState.VendorFinalizationApprovalStatus.toUpperCase() === "APPROVED" && (
+                        <>
+                            <Button
+                                color="red"
+                                size="mxs"
+                                title="Generate"
+                                onClick={() => {
+                                    setIsUploadPO(false);
+                                    setPurchaseOrderFiles([]);
+                                    setPurchaseOrderURL("")
+                                    setRemovedPurchaseOrderUrls([]);
+                                    handleGeneratepurchaseorder();
+                                }}
+                                style={{ width: '100px' }} >
+                                Generate PO
+                            </Button>
 
-                        <Button
-                            onClick={() => {
-                                setIsUploadPO(true);
-                                setPurchaseOrderFiles([]);
-                                setPurchaseOrderURL("")
-                                setRemovedPurchaseOrderUrls([]);
-                                setIsAddUpdateModalOpen(true);
-                            }}
-                            color="blue"
-                            size="mxs"
-                            variant="solid"
-                            colorMode="gradient_dark"
-                            defineWidth
-                            style={{ width: '100px' }}
-                        >
-                            Upload PO
-                        </Button>
-                    </>
-                )}
+                            <Button
+                                onClick={() => {
+                                    setIsUploadPO(true);
+                                    setPurchaseOrderFiles([]);
+                                    setPurchaseOrderURL("")
+                                    setRemovedPurchaseOrderUrls([]);
+                                    setIsAddUpdateModalOpen(true);
+                                }}
+                                color="blue"
+                                size="mxs"
+                                variant="solid"
+                                colorMode="gradient_dark"
+                                defineWidth
+                                style={{ width: '100px' }}
+                            >
+                                Upload PO
+                            </Button>
+                        </>
+                    )}
             </div>
 
             {hasPurchaseOrder ? (
@@ -386,7 +391,7 @@ export const PurchaseOrder: React.FC = () => {
                             </span>
                         </div>
 
-                        {isPurchaseOrderLoaded && canGeneratePurchaseOrder && materialRequisitionPurchaseOrder?.NumberOfGRN === 0  && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
+                        {isPurchaseOrderLoaded && canGeneratePurchaseOrder && materialRequisitionPurchaseOrder?.NumberOfGRN === 0 && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
                             <Button
                                 color="red"
                                 variant="solid"

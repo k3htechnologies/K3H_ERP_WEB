@@ -49,7 +49,7 @@ interface FinalizedVendorProps {
 export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSuccess }) => {
 
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>()
-    const { listState } = useMaterialRequisitionListState()
+    const { listState,updateListState } = useMaterialRequisitionListState()
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId
     const currentUniquekey = listState.Uniquekey
     const { projectId } = useProject()
@@ -198,7 +198,10 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                     setSelectedVendorIds([])
 
+                     updateListState({ MaterialRequisitionStage: 'Get Compare' });
+
                     await loadSelectedVendor()
+
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                 } else {
@@ -243,6 +246,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
             if (E.isRight(response)) {
 
                 await loadSelectedVendor();
+
+                updateListState({ MaterialRequisitionStage: 'Finalized Vendor' });
 
                 addToast({ type: "success", title: response.right.SuccessMessage[0] })
             }
@@ -601,8 +606,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                             }
                             child={
                                 <div className="p-2 space-y-4">
-                                    {(vendor.MaterialRequisitionQuotationTermsData?.length ? vendor.MaterialRequisitionQuotationTermsData : [{}]
-                                    ).map((term: any, idx: number) => {
+                                    {(vendor.MaterialRequisitionQuotationTermsData?.length ? vendor.MaterialRequisitionQuotationTermsData : [{}]).map((term: any, idx: number) => {
 
                                         const lines = resolveLines(term, detailData)
 

@@ -7,9 +7,9 @@ import MaterialPurchaseReport from "../components/MaterialPurchaseReport";
 export const ViewMaterialRequisitionReport: React.FC = () => {
 
     const MaterialReportList = [
-        { id: "VendorWiseMaterialCountReport", label: "Vendor Wise Material Count Report", },
-        { id: "MaterialRequisitionReport", label: "Material Requisition Report", },
-        { id: "MaterialPurchaseReport", label: "Material Purchase Report", },
+        { id: "VendorWiseMaterialCountReport", label: "Vendor", },
+        { id: "MaterialRequisitionReport", label: "Material Requisition", },
+        { id: "MaterialPurchaseReport", label: "Purchase Order", },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(MaterialReportList[0].id);

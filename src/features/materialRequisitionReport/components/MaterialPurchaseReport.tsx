@@ -12,7 +12,7 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { Input } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterWithPaginationMaterialPurchaseReport, MaterialPurchaseReportData } from "../models/MaterialRequisitionReportModel";
@@ -21,6 +21,9 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { Copy } from "lucide-react";
+import { copyToClipboard } from "@/core/utils/comman";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 export const MaterialPurchaseReport: React.FC = () => {
 
@@ -98,66 +101,94 @@ export const MaterialPurchaseReport: React.FC = () => {
 
     const MaterialPurchaseReportColumns = useMemo<TableColumn[]>(() => [
         {
-            key: "SystemGeneratedCode",
-            label: "System Generated Code",
-            width: "15",
-            align: "left",
+            key: 'SystemGeneratedCode',
+            label: 'MR Code',
             sortable: true,
-            fixed: "left",
-            render: value => value || ""
-        },
-        {
-            key: "PaidAmount",
-            label: "Paid Amount",
-            width: '15',
-            align: "left",
-            sortable: false,
-            render: value => value || "-"
-        },
-        {
-            key: "TotalPoAmount",
-            label: "Total Po Amount",
-            width: '15',
-            align: "left",
-            sortable: false,
-            render: value => value || "-"
-        },
-        {
-            key: "TotalInvoiceAmount",
-            label: "Total Invoice Amount",
-            width: '15',
-            align: "left",
-            sortable: false,
-            render: value => value || "-"
-        },
-        {
-            key: 'PurchaseOrderURL',
-            label: 'Purchase Order',
-            width: '15',
-            sortable: false,
+            width: '20',
+            fixed: 'left',
             align: 'left',
-            render: (value: string, row: any) => {
+            render: (value) => {
                 return (
-                    <div className="flex items-center justify-between w-full">
-                        <MultiImageViewer
-                            images={parseDocumentUrls(row.PurchaseOrderURL)}
-                            title="Purchase Order"
-                            isIcon={false}
-                            triggerLabel={value === '' || 'Purchase Order'}
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="180px"
+                            tooltipThreshold={30}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            
                         />
 
+                        {value && (
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const success = await copyToClipboard(value);
+                                    if (success) {
+                                        addToast({ type: 'success', title: `${value} Copied!` });
+                                    }
+                                }}
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    padding: '2px 6px',
+                                    color: '#6B7280',
+                                    cursor: 'pointer'
+                                }}
+                                title="Copy"
+                            >
+                                <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
                     </div>
                 );
             }
         },
         {
-            key: "FinalVendor",
-            label: "Final Vendor",
+            key: 'FinalVendor',
+            label: 'Vendor Name',
             width: '15',
-            align: "left",
+            sortable: false,
+            align: 'left',
+            render: (value: string, row: any) => {
+                return (
+                    <MultiImageViewer
+                        images={parseDocumentUrls(row.PurchaseOrderURL)}
+                        title={`Purchase Order - ${row.FinalVendor ?? ""}`}
+                        triggerLabel={value || '-'}
+                        isWrap={false}
+                    />
+                );
+            }
+        },
+        {
+            key: "TotalPoAmount",
+            label: "Po Amount (₹)",
+            width: '15',
+            align: "right",
             sortable: false,
             render: value => value || "-"
         },
+        {
+            key: "TotalInvoiceAmount",
+            label: "Invoice Amount (₹)",
+            width: '15',
+            align: "right",
+            sortable: false,
+            render: value => value || "-"
+        },
+
+        {
+            key: "PaidAmount",
+            label: "Paid Amount (₹)",
+            width: '15',
+            align: "right",
+            sortable: false,
+            render: value => value || "-"
+        },
+
+
     ], []);
 
     const ClearSearchTerm = () => {
@@ -246,7 +277,7 @@ export const MaterialPurchaseReport: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By System Generated Code"
+                searchPlaceholder="Search By MR Code"
                 onSearchChange={(v) => {
                     setSearchTerm(v);
                     debouncedSearch(v);

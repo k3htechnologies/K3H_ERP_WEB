@@ -70,7 +70,11 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         '/approvedbank': '/approvedBank',
         '/content': '/content',
-
+        '/sourcing': '/sourcing',
+        '/booking': '/booking',
+        '/materialRequisition': '/materialRequisition',
+        '/calltracker': '/callTracker',
+        '/othercharges': '/otherCharges',
         '/settingdashboard': '/settingDashboard',
         '/payrolldashboard': '/payrollDashboard',
 
@@ -96,44 +100,17 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/incentivereport': '/incentiveReport',
         '/paymentschedulereport': '/paymentScheduleReport',
         '/paymentschedule': '/paymentSchedule',
-        '/channelpartnercategory': '/channelPartnerCategory',
-
-
-        // INVENTORY
-        '/inventorydashboard': '/inventoryDashboard',
-        '/inventory': '/inventory',
-        '/parking': '/parking',
-        '/inventoryparkingoverallreport': '/inventoryParkingOverallReport',
-
-        //CHANNEL PARTNER
+        '/litigation': '/litigation',
+        '/target': '/target',
+        '/incentivereport': '/incentiveReport',
+        '/paymentschedulescheme': '/paymentScheduleScheme',
+        '/legaldashboard': '/legalDashboard',
+        '/classificationparameter': '/classificationParameter',
+        '/performance': '/performance',
         '/channelpartnerdashboard': '/channelPartnerDashboard',
-        '/channelpartner': '/channelPartner',
-        '/cpuniverse': '/cpUniverse',
-
-        // CRM
-        '/crmdashboard': '/crmDashboard',
-        '/paytrack': '/payTrack',
-        '/paytrackreport': '/payTrackReport',
-        '/brokerage': '/brokerage',
-        '/collectionreport': '/collectionReport',
-        '/dailycollectionreport': '/dailyCollectionReport',
-
-        //MORE
-        '/inwardoutward': '/inwardOutward',
-        '/ticket': '/ticket',
-        '/otplogs': '/otpLogs',
-        '/taxtracker': '/taxTracker',
-
-
-        //SETTING EXTRA
         '/companypolicy': '/companyPolicy',
-
-        //TAX TRACKER
-        '/noticesection': '/noticeSection',
-
-        //ESTIMATION AND BUDGET
-        '/budget': '/budget',
-        '/specificationmaster': 'specificationMaster',
+        '/paytrack': '/payTrack',
+        '/stock': '/Stock'
     }
 
 

@@ -48,10 +48,11 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   | 'green'
   | 'purple'
   | 'blue'
+  | 'blue_light'
   | 'indigo'
   | 'orange'
   | 'red'
-  | 'red_light'
+  |'red_light'
   | 'pink'
   | 'teal'
   | 'lime'
@@ -69,6 +70,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   centerIcon?: ReactNode
   loadingText?: string
   isborderRadius?: boolean
+  hover?:CSSProperties
 }
 export interface CheckboxProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   label?: React.ReactNode

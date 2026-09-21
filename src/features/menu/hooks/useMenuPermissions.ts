@@ -14,6 +14,14 @@ export interface MenuPermissions {
   permissionSource: 'module' | 'subModule' | 'subSubModule' | null
   path: string
 }
+export class ModuleAction {
+  static getQuotation = 'Get Quotation'
+  static getCompare = 'Get Compare'
+  static finalizeVendor = 'Finalized Vendor'
+  static generatePurchaseOrder = 'Generate Purchase Order'
+  static addInvoice = 'Add Invoice'
+  static makePayments = 'Make Payments'
+}
 
 const normalizePath = (path: string): string => {
   if (!path) return '/'

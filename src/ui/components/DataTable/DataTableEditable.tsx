@@ -189,7 +189,7 @@ export const DataTableEditable: React.FC<Props> = ({
           : (value ?? "")
       const isEditable = col.editable !== false
 
-      if (col.renderEditor && isEditable) {
+       if (col.renderEditor && isEditable) {
         return col.renderEditor(
           safeValue,
           (val: any) => updateCell(rowIndex, col.key, val),
@@ -197,7 +197,7 @@ export const DataTableEditable: React.FC<Props> = ({
           rowIndex
         )
       }
-
+      
       if (col.render) {
         return col.render(value, row, rowIndex)
       }
@@ -320,7 +320,7 @@ export const DataTableEditable: React.FC<Props> = ({
                 <th
                   key={col.key}
                   className={`
-                    py-3 px-4 text-sm
+                    py-3 px-4 text-sm font-semibold
                     ${col.headerClassName || ""}
                   `}
                   style={{

@@ -6,7 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import { BUSINESS_CATEGORY, PROJECT_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA, TENDER_PAYMENT_MODE } from "@/core/constants/staticData";
+import { BUSINESS_CATEGORY, PROJECT_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -813,14 +813,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     </div>
                                     <div>
 
-                                        <SinglePageSelection
-                                            label="Payment Mode"
-                                            placeholder="Select Payment Mode"
-                                            value={formData.TenderAmountPaymentMode}
-                                            onChange={(val) => handleFieldChange('TenderAmountPaymentMode', String(val))}
-                                            options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        />
-                                    </div>
+                                                                          </div>
                                     <div>
                                         <Input
                                             type="text"
@@ -886,13 +879,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     </div>
                                     <div>
 
-                                        <SinglePageSelection
-                                            label="Payment Mode"
-                                            placeholder="Select Payment Mode"
-                                            value={formData.TenderEMDPaymentMode}
-                                            onChange={(val) => handleFieldChange('TenderEMDPaymentMode', String(val))}
-                                            options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
-                                        />
+    
                                     </div>
                                     <div>
                                         <Input

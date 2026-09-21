@@ -96,10 +96,6 @@ export interface BookingData {
     EmployeeReferenceAmount: number | null;
 
     RegistrationDate: string | null;
-    FinalRegistrationDate: string | null;
-    IsFinalRegistrationCompleted:boolean;
-    FinalRegistrationURL: string | null;
-    
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
     AgreementValueGSTPercentage: number | null;
@@ -378,7 +374,6 @@ export interface PaymentScheduleStagesData {
     TotalRecords?: number | null;
 }
 
-
 //=============================================================
 // [ API RESPONSE TYPES ]
 //=============================================================
@@ -386,5 +381,4 @@ export type BookingListResponse = ApiResponse<BookingData[]>;
 export type BookingSaveResponse = ApiResponse<BookingData[]>;
 export type BookingDeleteResponse = ApiResponse<number>;
 export type PaymentScheduleStagesResponse = ApiResponse<PaymentScheduleStagesData[]>;
-export type BookingUpdateegistrationDateParkingResponse = ApiResponse<BookingData[]>;
 

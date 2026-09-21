@@ -24,8 +24,6 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { copyToClipboard } from '@/core/utils/comman';
 import { filterNumbers } from '@/core/utils/fileValidation';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -636,31 +634,8 @@ export const ChannelPartnerSourcing: React.FC = () => {
               placeholder="Enter Village"
             />
           </div>
-          <div>
-            <SinglePageSelection
-              label="No of IBM"
-              placeholder="Select No of IBM"
-              value={tempFilters.NoOfIBM || ''}
-              onChange={e => handleFilterChange('NoOfIBM', String(e))}
-              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
-                label: opt.name,
-                value: opt.id
-              }))}
-            />
-          </div>
+  
 
-          <div>
-            <SinglePageSelection
-              label="No of OBM"
-              placeholder="Select No of OBM"
-              value={tempFilters.NoOfOBM || ''}
-              onChange={e => handleFilterChange('NoOfOBM', String(e))}
-              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
-                label: opt.name,
-                value: opt.id
-              }))}
-            />
-          </div>
         </div>
       </Modal>
 

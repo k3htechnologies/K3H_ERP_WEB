@@ -250,7 +250,6 @@ export const AddUpdateLeave: React.FC = () => {
                 if (E.isRight(respEither)) {
                     const response = respEither.right;
 
-                    // Check backend ErrorMessage first
                     if (response.ErrorMessage && response.ErrorMessage.length > 0) {
                         addToast({ type: 'error', title: response.ErrorMessage[0] });
                     } else if (response.WarningMessage && response.WarningMessage.length > 0) {
@@ -258,7 +257,6 @@ export const AddUpdateLeave: React.FC = () => {
                         resetFilters();
                         navigate('/leave');
                     } else {
-                        // Success - use backend SuccessMessage
                         addToast({ type: 'success', title: response.SuccessMessage?.[0] });
                         resetFilters();
                         navigate('/leave');

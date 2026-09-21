@@ -35,8 +35,6 @@ import { useChannelPartnerListState } from '@/features/ChannelPartner/context/Ch
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { copyToClipboard } from '@/core/utils/comman';
 import { filterNumbers } from '@/core/utils/fileValidation';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { AOP_STATUS, IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -953,43 +951,8 @@ export const ChannelPartner: React.FC = () => {
             />
           </div>
           <div>
-            <SinglePageSelection
-              label="No of IBM"
-              placeholder="Select No of IBM"
-              value={tempFilters.NoOfIBM || ''}
-              onChange={e => handleFilterChange('NoOfIBM', String(e))}
-              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
-                label: opt.name,
-                value: opt.id
-              }))}
-            />
           </div>
 
-          <div>
-            <SinglePageSelection
-              label="No of OBM"
-              placeholder="Select No of OBM"
-              value={tempFilters.NoOfOBM || ''}
-              onChange={e => handleFilterChange('NoOfOBM', String(e))}
-              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
-                label: opt.name,
-                value: opt.id
-              }))}
-            />
-          </div>
-
-          <div>
-            <SinglePageSelection
-              label="AOP Status"
-              placeholder="Select AOP Status"
-              value={tempFilters.AOPStatus || ''}
-              onChange={e => handleFilterChange('AOPStatus', String(e))}
-              options={AOP_STATUS.map(opt => ({
-                label: opt.name,
-                value: opt.id
-              }))}
-            />
-          </div>
         </div>
       </Modal>
 

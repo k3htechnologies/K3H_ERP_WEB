@@ -22,6 +22,7 @@ export const COLORS = {
   primary1: '#135BEC',
   green: '#8d99ba1f',
   red_light: '#FAD1D1',
+
 } as const
 
 export type ColorType = keyof typeof COLORS
@@ -291,8 +292,7 @@ export const COLOR_MAP = {
 
     },
   },
-
-  red_light: {
+ red_light: {
     solid: {
       light: {
         backgroundColor: '#FAD1D1',
@@ -308,7 +308,6 @@ export const COLOR_MAP = {
       },
     },
   },
-
   pink: {
     solid: {
       light: {

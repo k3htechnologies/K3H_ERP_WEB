@@ -45,6 +45,8 @@ export const LOCAL_STORAGE_KEYS = {
     TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
 
+    //PURCHASE 
+    MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
     //LITIGATION
     LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
 
@@ -96,21 +98,9 @@ export const LOCAL_STORAGE_KEYS = {
     PAY_TRACK_BOOKING_SELECTED_COLUMNS: 'payTrackBooking.selectedColumns',
     PAY_TRACK_REPORT_SELECTED_COLUMNS: 'payTrackReport.selectedColumns',
     BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',
-    PAY_TRACK_CALL_LOG_SELECTED_COLUMNS: 'payTrackCallLog.selectedColumns',
-    DAILY_COLLECTION_REPORT_SELECTED_COLUMNS: 'dailyCollectionReport.selectedColumns',
 
-    //MORE
-    INWARD_OUTWARD_SELECTED_COLUMNS: 'inwardOutward.selectedColumns',
-
-
-    //TICKET MASTER
-    TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
-
-    //TAX TRACKER
-    NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
-
-    //ESTIMATION AND BUDGET
-    BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
+    //STOCK MANAGEMENT
+    STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns'
 
 } as const
 
@@ -134,11 +124,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
-    PAY_TRACK_REPORT: 'payTrackReport.listState',
-    INWARD_OUTWARD: 'inwardOutward.listState',
-    BOOKING_Brokerage: 'bookingBrokerage.listState',
-    TICKET: 'ticket.listState',
-    TERM_SHEET: 'termSheet.listState',
-    TAX_TRACKER: 'taxTracker.listState',
-
+    STOCK_MANAGEMENT: 'stock.listState',
+    MATERIAL_REQUISITION: 'materialRequisition.listState'
+    
 } as const

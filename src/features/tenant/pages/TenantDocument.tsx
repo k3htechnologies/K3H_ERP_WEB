@@ -33,8 +33,6 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { TENANT_DOCUMENT_TYPE } from '@/core/constants';
 
 
 const initialFormState = (): AddUpdateTenantDocumentRequest => ({
@@ -807,15 +805,6 @@ export const TenantDocument: React.FC = () => {
         <div className="space-y-10 p-6 bg-blue-100">
           <div className="space-y-4" >
             <div>
-
-              <SinglePageSelection
-                label="Document Name"
-                placeholder="Select Document Name"
-                value={formData.DocumentName ?? ""}
-                required
-                onChange={(val) => handleFieldChange("DocumentName", String(val))}
-                options={TENANT_DOCUMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
-                error={errors.DocumentName} />
 
             </div>
 

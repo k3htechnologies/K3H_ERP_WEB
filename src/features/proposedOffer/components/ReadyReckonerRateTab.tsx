@@ -16,8 +16,6 @@ import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { getInputValue, isEmpty, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
-import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { FINANCIAL_YEAR } from "@/core/constants";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 interface ReadyReckonerRateTabProps {
@@ -552,20 +550,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
 
 
-                        <SinglePageSelection
-                            label="Financial Year"
-                            placeholder="Select Financial Year"
-                            required
-                            error={errorsReadyReckonerRate.FinancialYear}
-                            value={formDataReadyReckonerRate.FinancialYear}
-                            onChange={(e) => {
-                                handleFieldChangeReadyReckonerRate("FinancialYear", String(e));
-                            }}
-                            options={FINANCIAL_YEAR.map((opt) => ({
-                                label: opt.name,
-                                value: opt.id,
-                            }))}
-                        />
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 

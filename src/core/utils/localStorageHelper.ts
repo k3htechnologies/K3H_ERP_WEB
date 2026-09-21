@@ -680,7 +680,30 @@ export const LocalStorageHelper = {
     }
     return null;
   },
+  //#endregion
+  //#region MATERIAL REQUISITION
 
+  storeMaterialRequisitionTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Material Requisition Columns Details:", error);
+    }
+  },
+  getMaterialRequisitionTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Material Requisition Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+  //#endregion
+  //#region STORE SUB MATERIAL MASTER COLUMNS
   storeSubMaterialMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS, columns);
@@ -1378,135 +1401,30 @@ export const LocalStorageHelper = {
     }
     return null
   },
-
-  storePayTrackCallLogTableColumns: (columns: string): void => {
+  //#endregion
+  //#region STORE STOCK MANAGEMENT COLUMNS
+  storeStockManagementTableColumns: (columns: string): void => {
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS, columns);
+      localStorage.setItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS, columns);
     } catch (error) {
-      console.error("Error Pay Track Call Log Columns Details:", error);
+      console.error('Error Stock Management Columns Details:', error)
     }
   },
-
-  getPayTrackCallLogTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
+  //#endregion
+  //#region GET STOCK MANAGEMENT COLUMNS
+  getStockManagementTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS)
     if (stored) {
       try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
       } catch (error) {
-        console.error("Error reading  Pay Track Call Log Columns Details:", error);
-        return null;
-      }
-    }
-    return null;
-  },
-
-  storeDailyCollectionReportTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error('Error Daily Collection Report Columns Details:', error)
-    }
-  },
-
-  getDailyCollectionReportTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS)
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error('Error reading Daily Collection Report Columns Details:', error)
+        console.error('Error reading Stock Management Columns Details:', error)
         return null
       }
     }
     return null
   },
-  //MORE
-
-  storeInwardOutwardTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error('Error Inward Outward Columns Details:', error)
-    }
-  },
-
-  getInwardOutwardTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS)
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error('Error reading Inward Outward Columns Details:', error)
-        return null
-      }
-    }
-    return null
-  },
-
-  getTicketMasterTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error("Error reading  Ticket Master Columns Details:", error);
-        return null;
-      }
-    }
-    return null;
-
-  },
-
-  storeTicketMasterTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error("Error Ticket Master Columns Details:", error);
-    }
-  },
-
-  //TAX TRACKER
-  storeNoticeSectionMasterTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error("Error Notice Section Master Columns Details:", error);
-    }
-  },
-
-  getNoticeSectionMasterTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error("Error reading Notice Section Master Columns Details:", error);
-        return null;
-      }
-    }
-    return null;
-  },
-
-  storeBudgetTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error('Error Budget Columns Details:', error)
-    }
-  },
-
-  getBudgetTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS)
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error('Error reading Budget Columns Details:', error)
-        return null
-      }
-    }
-    return null
-  },
+  //#endregion
 
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
@@ -1555,19 +1473,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAY_TRACK_REPORT_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS);
-
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1588,12 +1495,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LEAVECREDITCONFIGURATION);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
-
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.STOCK_MANAGEMENT);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);

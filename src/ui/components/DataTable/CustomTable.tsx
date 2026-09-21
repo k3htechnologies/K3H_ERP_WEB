@@ -67,7 +67,7 @@ export const CustomTable: React.FC<Props> = ({
   rowStyle
 }) => {
   const scrollRef = useHorizontalScroll();
-
+  
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
     if (!onSort || !column?.sortable) return
@@ -144,34 +144,19 @@ export const CustomTable: React.FC<Props> = ({
             <ChevronLeft className="h-4 w-4" />
           </button>
 
-          <div className="flex items-center space-x-1">
-            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-              let pageNum
-              if (totalPages <= 5) {
-                pageNum = i + 1
-              } else if (currentPage <= 3) {
-                pageNum = i + 1
-              } else if (currentPage >= totalPages - 2) {
-                pageNum = totalPages - 4 + i
-              } else {
-                pageNum = currentPage - 2 + i
-              }
-
-              return (
-                <button
-                  type="button"
-                  key={pageNum}
-                  onClick={() => onPageChange(pageNum)}
-                  className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 ${currentPage === pageNum
-                    ? 'bg-blue-500 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                    }`}
-                >
-                  {pageNum}
-                </button>
-              )
-            })}
-          </div>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => onPageChange(i + 1)}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
 
           <button
             type="button"
@@ -191,8 +176,9 @@ export const CustomTable: React.FC<Props> = ({
     <div className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`} >
 
       <div ref={scrollRef}
-        className={`overflow-x-auto thin-scroll ${fixedHeight ? "flex-1 overflow-y-auto" : ""
-          }`}
+        className={`overflow-x-auto thin-scroll ${
+          fixedHeight ? "flex-1 overflow-y-auto" : ""
+        }`}
         style={
           fixedHeight
             ? { maxHeight: recordsPerPage === 10 ? "calc(10 * 2.5rem + 2.5rem)" : maxHeight }
@@ -214,27 +200,11 @@ export const CustomTable: React.FC<Props> = ({
                     key={cIndex}
                     colSpan={col.colSpan}
                     rowSpan={col.rowSpan}
-                    className={`px-4 py-2 text-gray-800 tracking-wider ${col.wrap ? 'whitespace-normal break-words' : 'whitespace-nowrap'}
-                   
-                    ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
-                    ${col.width ? `w-${col.width}` : ''}
-                    ${col.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
-                    ${col.fixed === 'left' ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : col.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
-               `}
-                    style={{
-                      ...(col.width ? { width: col.width } : {}),
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      lineHeight: '1.4',
-                      backgroundColor: col.theadStyle?.backgroundColor || theadStyle?.backgroundColor || '#E4F0FF',
-                      color: col.theadStyle?.color || theadStyle?.color || '#000',
-                      borderBottom: '1px solid #D1D5DB',
-                      borderRight: '1px solid #D1D5DB',
-
-                    }}
+                    className="border border-gray-300 px-3 py-2 text-center text-sm font-medium"
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
-                    <div className={`flex items-center space-x-1  ${col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'}`}>
+
+                    <div className="flex items-center justify-center gap-1">
 
                       {col.label}
 
@@ -277,35 +247,10 @@ export const CustomTable: React.FC<Props> = ({
                     return (
                       <td
                         key={col.key}
-                        className={`px-4 py-2 text-gray-900 border border-gray-200
-                        ${col.align === 'center'
-                            ? 'text-center'
-                            : col.align === 'right'
-                              ? 'text-right'
-                              : 'text-left'}
-                         ${col.fixed === 'left'
-                            ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100'
-                            : col.fixed === 'right'
-                              ? 'sticky right-0 z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100'
-                              : ''}
-                               `}
-                        style={{
-                          ...(col.width ? { width: col.width } : {}),
-                          fontSize: '14px',
-                          fontWeight: '400',
-                          lineHeight: '1.5',
-                          letterSpacing: '0%',
-                          minHeight: '40px',
-                          verticalAlign: 'middle',
-                          backgroundColor: rowStyle?.(row)?.backgroundColor,
-                          ...col.tdStyle
-                        }}
+                        className="border border-gray-200 px-3 py-2 text-sm text-center"
                       >
-                        <div className={`${col.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`} style={{ maxWidth: col.maxWidth || col.width, lineHeight: '1.5' }}>
-                          {value}
-                        </div>
+                        {value ?? 0}
                       </td>
-
                     )
                   })}
 

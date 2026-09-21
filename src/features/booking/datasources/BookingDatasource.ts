@@ -8,8 +8,7 @@ import type {
     BookingDeleteResponse,
     FilterWithPaginationChannelPartnerBookingRequest,
     FilterPaymentScheduleStagesRequest,
-    PaymentScheduleStagesResponse,
-    BookingUpdateegistrationDateParkingResponse,
+    PaymentScheduleStagesResponse
 } from '@/features/booking/models/BookingModel'
 
 export abstract class BookingDatasource {
@@ -172,26 +171,6 @@ export class BookingDatasourceImpl implements BookingDatasource {
             if (error instanceof TokenExpiredException) {
 
                 return await this.pullPaymentScheduleStages(params);
-            }
-
-            throw error
-        }
-    }
-
-    async updatePayTrackBookingRegistrationDateParking(formData: FormData): Promise<BookingUpdateegistrationDateParkingResponse> {
-        try {
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
-                BookingApi.UPDATE_BOOKING_REGISTRATIONDATE_PARKING,
-                formData
-            )
-
-            return response
-        } catch (error) {
-            console.error('Error: Update BOOKING REGISTRATION DATE AND PARKING:', error)
-
-           if (error instanceof TokenExpiredException) {
-
-                return  await this.updatePayTrackBookingRegistrationDateParking(formData);
             }
 
             throw error

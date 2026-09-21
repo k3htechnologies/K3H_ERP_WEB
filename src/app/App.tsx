@@ -101,7 +101,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -163,62 +162,35 @@ import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
-import Terms from '@/features/Terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
-import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
-import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
-import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
-import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
-import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
-import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
-import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
-import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
-import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
-import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
-import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
-import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
-import AchievementReport from '@/features/achievement/pages/AchievementReport';
-import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
-import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
-import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
-import Ticket from '@/features/ticket/pages/Ticket';
-import ViewTicket from '@/features/ticket/pages/ViewTicket';
-import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
-import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
-import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
-import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
-import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
-import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
-import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
-import Budget from '@/features/budget/pages/Budget';
-import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
-import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
-import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
-import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
+// import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/materialRequisitionListStateContext';
+import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
+import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
+import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
+import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
+import { AddUpdateGRN } from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
+import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
+import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
+import StockManagement from '@/features/stockManagement/pages/StockManagement';
+import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
+import { StockHistory } from '@/features/stockManagement/components/StocksHistory';
 import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
-import { TermSheetListStateProvider } from '@/features/termSheet/context/TermSheetListStateContext';
-import TermSheet from '@/features/termSheet/pages/TermSheet';
-import { TermSheetDocument } from '@/features/termSheet/pages/TermSheetDocument';
-import ViewTermSheet from '@/features/termSheet/pages/ViewTermSheet';
-import CompareTermSheet from '@/features/termSheet/pages/CompareTermSheet';
-import { TaxTrackerListStateProvider } from '@/features/taxTracker/context/TaxTrackerListStateContext';
-import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
-import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker';
-import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
-import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
-import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
 import ProjectDrawing from '@/features/inventory/pages/ProjectDrawing';
+import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
 import TestDocumentCategoryMaster from '@/features/testDocumentCategory/pages/TestDocumentCategoryMaster';
 import TestDocument from '@/features/testDocument/pages/TestDocument';
 import DrawingDocumentCategoryMaster from '@/features/drawingDocumentCategory/pages/DrawingDocumentCategoryMaster';
 import DrawingDocument from '@/features/drawingDocument/pages/DrawingDocument';
-import { AddUpdateInwardOutward } from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
-import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
-import TermSheetReport from '@/features/termSheetReport/pages/TermSheetReport';
-import { GatePass } from '@/features/gatePass/pages/GatePass';
+import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
+import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
+import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
+import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
+import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
+import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 
-// Loading component for Suspense fallback
+// Loading component for Suspense fallback 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
@@ -264,8 +236,15 @@ function App() {
 
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}>
 
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <Layout />
+              </ProtectedRoute>
+            }
+          >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
 
@@ -394,24 +373,6 @@ function App() {
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
-            {/* COMMAN */}
-            <Route path="event" element={<Event />} />
-            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
-
-            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
-            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
-            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
-
-            {/* TAX TRACKER */}
-            <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
-            <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
-            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} />
-
-
-            <Route path='otplogs' element={<OTPLogs />} />
-
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
 
@@ -452,14 +413,6 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
-            <Route path="achievement" element={<AchievementReport />} />
-            <Route path="aopAchievement" element={<AopAchievementReport />} />
-
-            <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
-
-            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 
@@ -511,51 +464,32 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
-            <Route path="crmDashboard" element={<CrmDashboard />} />
-            <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
-            <Route path="collectionReport" element={<CollectionReport />} />
-            <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
 
+            {/* <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} /> */}
 
-            <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
-            <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
-            <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
-            <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage" element={<Brokerage />} />
+            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
+            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
+            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
+            <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
 
-            {/* ESTIMATION AND BUDGET */}
-            <Route path='budget' element={<Budget />} />
+            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
+            <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
 
-            <Route path='summaryMis' element={<SummaryMIS />} />
+            {/* Stock Management */}
+            <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
+            <Route path="stock/view" element={<StockManagementListStateProvider><StockHistory /></StockManagementListStateProvider>} />
 
-            {/* ESTIMATION AND BUDGET MASTER*/}
-            <Route path='specificationMaster' element={<SpecificationMaster />} />
-
-            {/* TAX TRACKER */}
-            <Route path="noticeSection" element={<NoticeSectionMaster />} />
-
-            {/* ESTIMATION AND BUDGET */}
-            <Route path='budget' element={<Budget />} />
-            <Route path='summaryMis' element={<SummaryMIS />} />
-            <Route path='specificationMaster' element={<SpecificationMaster />} />
-
-            {/* FINANCE */}
-            <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />
-            <Route path='termSheet/add/:TermSheetId?' element={<TermSheetListStateProvider><AddUpdateTermSheet /></TermSheetListStateProvider>} />
-            <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
-            <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
-            <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
-            <Route path='termSheetReport' element={<TermSheetReport />} />
-          
-           {/* VISITOR MANAGEMENT */}
-            <Route path='gatePass' element={<GatePass />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
-          <Route path='Terms' element={<Terms />} />
           <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 

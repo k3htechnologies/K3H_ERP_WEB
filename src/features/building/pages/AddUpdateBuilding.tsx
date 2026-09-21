@@ -14,7 +14,7 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { LAND_OWNERSHIP_TYPE, PROJECT_CATEGORY, ROAD_WIDTH, TENDER_PAYMENT_MODE } from "@/core/constants";
+import { LAND_OWNERSHIP_TYPE, PROJECT_CATEGORY, ROAD_WIDTH } from "@/core/constants";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { MapPin } from "lucide-react";
@@ -712,13 +712,6 @@ const AddUpdateBuilding: React.FC = () => {
                   </div>
                   <div>
 
-                    <SinglePageSelection
-                      label="Payment Mode"
-                      placeholder="Select Payment Mode"
-                      value={formData.TenderAmountPaymentMode}
-                      onChange={(val) => handleFieldChange('TenderAmountPaymentMode', String(val))}
-                      options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
-                    />
                   </div>
                   <div>
                     <Input
@@ -785,13 +778,6 @@ const AddUpdateBuilding: React.FC = () => {
                   </div>
                   <div>
 
-                    <SinglePageSelection
-                      label="Payment Mode"
-                      placeholder="Select Payment Mode"
-                      value={formData.TenderEMDPaymentMode}
-                      onChange={(val) => handleFieldChange('TenderEMDPaymentMode', String(val))}
-                      options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
-                    />
                   </div>
                   <div>
                     <Input

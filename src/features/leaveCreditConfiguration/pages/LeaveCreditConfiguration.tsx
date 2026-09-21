@@ -293,7 +293,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
         key: 'LeavePeriodMode',
         label: 'Period Mode',
         width: '16',
-        sortable: true,
+        sortable: false,
         align: 'left',
         render: (value) => value || '-'
       },

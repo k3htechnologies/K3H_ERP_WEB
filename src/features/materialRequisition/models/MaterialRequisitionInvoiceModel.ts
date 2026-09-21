@@ -1,0 +1,82 @@
+import type { ApiResponse } from "@/core/api/ApiResponse"
+
+export interface FilterWithPaginationMaterialRequisitionInvoice {
+    PageSize: number
+    PageNumber: number
+    ProjectId?: number
+    Uniquekey?: string
+    MaterialRequisitionId?: number
+    MaterialRequisitionInvoiceId?: number
+    MaterialRequisitionGRNId?: number
+    SortBy?: string
+    ExportType?: "PDF" | "Excel"
+}
+
+
+export interface MaterialRequisitionInvoiceData {
+    MaterialRequisitionInvoiceId: number | 0;
+    Uniquekey: string | null;
+    ProjectId: number | 0;
+    MaterialRequisitionId: number | 0;
+    InvoiceNumber: string | null;
+    InvoiceDate: string | null;
+    UploadInvoiceURL: string | null;
+    RemoveUploadInvoiceURL: string | null;
+    PerformaInvoiceURL: string | null;
+    RemovePerformaInvoiceURL: string | null;
+    MeasurementReportURL: string | null;
+    RemoveMeasurementReportURL: string | null;
+    InvoiceAmount: number | 0;
+    InvoiceAmountPaidTillDate: number | 0;
+    InvoiceDueDate: string | null;
+    Remarks: string | null;
+    InvoiceStatus: string;
+    MaterialRequisitionGRNId: number | 0;
+    IsApproval: boolean
+}
+
+export interface AddUpdateMaterialRequisitionInvoice {
+    MaterialRequisitionInvoiceId: number | 0;
+    Uniquekey: string | null;
+    ProjectId: number | 0;
+    MaterialRequisitionId: number | 0;
+    InvoiceNumber: string | null;
+    InvoiceDate: string | null;
+    UploadInvoiceURL: string | null;
+    RemoveUploadInvoiceURL: string | null;
+    PerformaInvoiceURL: string | null;
+    RemovePerformaInvoiceURL: string | null;
+    MeasurementReportURL: string | null;
+    RemoveMeasurementReportURL: string | null;
+    InvoiceAmount: number | 0;
+    InvoiceDueDate: string | null;
+    Remarks: string | null;
+    MaterialRequisitionGRNId: number | 0;
+
+}
+
+export interface DeleteMaterialRequisitionInvoice {
+    MaterialRequisitionInvoiceId: number | 0;
+    Uniquekey: string | null;
+    MaterialRequisitionId: number | 0;
+    ProjectId: number | 0;
+}
+
+export interface FilterWithPaginationMaterialRequisitionInvoiceSummary {
+    MaterialRequisitionId?: number
+}
+
+export interface MaterialRequisitionInvoiceSummaryData {
+    MaterialRequisitionId: number | 0;
+    TotalInvoiceAmount: number | 0,
+    TotalAmountPaid: number | 0,
+    RemainingInvoiceAmount: number | 0,
+    TotalRequisitionAmount: number | 0,
+    PaidRequisitionAmount: number | 0,
+    PendingRequisitionAmount: number | 0
+}
+
+export type MaterialRequisitionInvoiceListResponse = ApiResponse<MaterialRequisitionInvoiceData[]>;
+export type MaterialRequisitionInvoiceSaveResponse = ApiResponse<MaterialRequisitionInvoiceData>;
+export type MaterialRequisitionInvoiceDeleteResponse = ApiResponse<number>;
+export type MaterialRequisitionInvoiceSummaryListResponse = ApiResponse<MaterialRequisitionInvoiceSummaryData[]>;

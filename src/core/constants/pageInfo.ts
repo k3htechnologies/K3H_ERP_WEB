@@ -8,6 +8,12 @@ export const getPageInfo = (path: string) => {
                 title: 'Dashboard',
                 description: 'Quick insights, smarter decisions',
             }
+            {/* PURCHASE -MATERIALREQUISITION*/ }
+        case 'materialRequisition':
+            return {
+                title: 'Material Requisition',
+                description: 'Streamlined material requests for efficient project execution',
+            }
 
             {/* SETTING -> COMPANY SETUP */ }
         case 'settingDashboard':
@@ -354,33 +360,7 @@ export const getPageInfo = (path: string) => {
                 title: 'Event',
                 description: 'Profile',
             }
-
-        case 'inwardOutward':
-            return {
-                title: 'Inward Outward',
-                description: 'Inward Outward',
-            }
-
-        case 'ticket':
-            return {
-                title: 'Ticket',
-                description: 'Ticket',
-            }
-
-        case 'otpLogs':
-            return {
-                title: 'OTP Logs',
-                description: 'OTP Logs'
-            }
-
-        case 'taxTracker':
-            return {
-                title: 'Tax Tracker',
-                description: 'Tax Tracker for tracking notices issued by authorities across India',
-            }
-
-
-            {/* INVENTORY AND REPORT */ }
+            {/* INVENTORY */ }
 
         case 'inventoryDashboard':
             return {
@@ -559,79 +539,11 @@ export const getPageInfo = (path: string) => {
                 description: "Secure your unit by completing the booking process",
             }
 
-        case 'payTrackreport':
+        //STOCK MANAGEMENT
+        case 'stock':
             return {
-                title: "Pay Track Report",
-                description: "Secure your unit by completing the booking process",
-            }
-
-        case 'collectionReport':
-            return {
-                title: "Collection Report",
-                description: "Comprehensive report for collection management with real-time insights and actionable data",
-            }
-
-        case 'dailyCollectionReport':
-            return {
-                title: "Daily Collection Report",
-                description: "Comprehensive report for collection management with real-time insights and actionable data",
-            }
-
-
-        case 'brokerage':
-            return {
-                title: "Brokerage",
-                description: "Brokerage",
-            }
-
-        //SPECIFICATION MASTER
-        case 'specificationmaster':
-            return {
-                title: "Specification Master",
-                description: 'Overview of your system and key metrics',
-            }
-        //BUDGET
-        case 'budget':
-            return {
-                title: "Budget",
-                description: 'Overview of your system and key metrics',
-            }
-
-        //FINANCE
-        case 'termSheet':
-            return {
-                title: "Term Sheet",
-                description: "Manage and track term sheets for real estate transactions",
-            }
-            
-        case 'termSheetReport':
-            return {
-                title: "Term Sheet Report",
-                description: "Manage and track term sheets for real estate transactions",
-            }
-
-            //VISITOR MANAGEMENT
-        case 'gatePass':
-            return {
-                title: "Gate Pass",
-                description: "Gate Pass",
-            }
-
-        //ESTIMATION AND BUDGET
-        case 'budgetlevelmaster':
-            return {
-                title: "Budget Level Master",
-                description: "Profile"
-            }
-        case 'budget':
-            return {
-                title: "Budget",
-                description: "Profile"
-            }
-        case 'specificationmaster':
-            return {
-                title: "Specification Master",
-                description: "Profile"
+                title: "Stock Management",
+                description: "Seamless tracking and management of all materials in store",
             }
 
         default:

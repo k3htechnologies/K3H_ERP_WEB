@@ -12,7 +12,7 @@ import { technicalService } from "@/features/technical/services/TechnicalService
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
 import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import { FIRMS_TYPE_OPTIONS, VENDOR_TYPE_OPTIONS } from "@/core/constants/staticData";
+import { FIRMS_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
 import * as E from "fp-ts/Either";
@@ -571,18 +571,6 @@ export const AddUpdateVendor: React.FC = () => {
             Basic Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <SinglePageSelection
-              label="Vendor Type"
-              placeholder="Select Vendor Type"
-              required
-              value={formData.VendorType}
-              onChange={(val) => handleFieldChange("VendorType", String(val))}
-              options={VENDOR_TYPE_OPTIONS.map((opt) => ({
-                label: opt.name,
-                value: opt.id,
-              }))}
-              error={errors.VendorType}
-            />
 
             <Input
               label="Vendor Name"

@@ -86,6 +86,36 @@ export const MaterialIn: React.FC = () => {
                 }
             },
             {
+                key: "VendorName",
+                label: "Vendor Name",
+                width: "20",
+                sortable: false,
+                fixed: "left",
+                align: "left",
+                render: (value) => (
+                    <TooltipText
+                        text={value || "-"}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                ),
+            },
+            {
+                key: "PoNo",
+                label: 'Po No',
+                width: "20",
+                sortable: false,
+                fixed: "left",
+                align: "left",
+                render: (value) => (
+                    <TooltipText
+                        text={value || "-"}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                ),
+            },
+            {
                 key: "Reason",
                 label: 'Remark',
                 width: "20",
@@ -133,6 +163,30 @@ export const MaterialIn: React.FC = () => {
         }),
         [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
     );
+
+    // const StockManagementHistoryForTable = useMemo(() => {
+    //     if (activeTab === 'History') return MaterialInList;
+
+    //     const typeMap: Record<string, string> = {
+    //         'Material In': 'INWARD',
+    //         'Material Out': 'OUTWARD',
+    //     };
+
+    //     return MaterialInList.filter(
+    //         (item) => item.InwardOutwardType === typeMap[activeTab]
+    //     );
+    // }, [MaterialInList, activeTab]);
+
+    // const StockManagementHistoryPaginationInfo: PaginationInfo = useMemo(
+    //     () => ({
+    //         currentPage: pagination.currentPage,
+    //         totalPages: Math.ceil(StockManagementHistoryForTable.length / pagination.pageSize),
+    //         totalRecords: StockManagementHistoryForTable.length,
+    //         pageSize: pagination.pageSize,
+    //         onPageChange: handlePageChange,
+    //     }),
+    //     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
+    // );
 
     const MaterialInForTable = useMemo(() => materialInList, [materialInList]);
 

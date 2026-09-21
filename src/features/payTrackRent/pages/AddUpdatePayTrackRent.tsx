@@ -20,7 +20,6 @@ import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelectio
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import { fetchProjectBankDropdown, fetchProjectBankDropdownById } from '@/features/projectMaster/projectBankDropdown';
-import { useRentListState } from '@/features/rent/context/RentListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import type { ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 
@@ -630,4 +629,8 @@ export const AddUpdatePayTrackRent: React.FC = () => {
 };
 
 export default AddUpdatePayTrackRent;
+
+function useRentListState(): { listState: any; clearPayTrackRentContext: any; updateListState: any; } {
+  throw new Error('Function not implemented.');
+}
 

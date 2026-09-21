@@ -2,7 +2,6 @@ import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { AccountDashboardApi } from '@/features/accountDashboard/api/AccountDashboardApi';
 import type { AccountDashboardDatasetResoponse } from '@/features/accountDashboard/models/AccountDashboardModel';
-import type { RedevelopmentDashboardDatasetResponse } from "@/features/redevelopmentDashboard/models/RedevelopmentDashboardModel";
 
 export abstract class AccountDashboardDatasource {
 
@@ -15,7 +14,7 @@ export class AccountDashboardDatasourceImpl implements AccountDashboardDatasourc
         return baseClient
     }
 
-    async pullAccountDashboard(CompanyId: number, FinancialYear?: string, signal?: AbortSignal): Promise<RedevelopmentDashboardDatasetResponse> {
+    async pullAccountDashboard(CompanyId: number, FinancialYear?: string, signal?: AbortSignal): Promise<AccountDashboardDatasetResoponse> {
         try {
 
             const queryParams = new URLSearchParams({

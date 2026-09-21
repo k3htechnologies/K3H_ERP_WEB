@@ -2,7 +2,7 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchCompanyMasterDropdown } from "@/features/companyMaster/companyMasterDropDown";
 import { Button } from "@/ui/components/forms";
 import { FileText, Plus } from "lucide-react";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
   onCompanyChange: (companyId: number) => void;

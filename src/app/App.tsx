@@ -242,6 +242,8 @@ import InvoicePayment from '@/features/materialRequisition/components/invoice/In
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import AccountDashboard from '@/features/accountDashboard/pages/AccountDashbaord';
+import FinanceDashboard from '@/features/financeDashboard/pages/FinanceDashboard';
+
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -561,6 +563,9 @@ function App() {
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
+
+            {/* FINANCE DASHBOARD */}
+            <Route path='financeDashboard' element={<FinanceDashboard />} />
 
             {/* FINANCE */}
             <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />

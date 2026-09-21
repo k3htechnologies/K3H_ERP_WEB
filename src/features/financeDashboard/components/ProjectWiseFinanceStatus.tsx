@@ -1,55 +1,47 @@
-// import type { Table0 } from "@/features/accountDashboard/models/AccountDashboardModel";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider"
 
-import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
-
-
-export default function NoticesTable({ }) {
+export default function ProjectWiseFinanceStatus({ }) {
 
     const data = [
         {
-            NoticeTitle: "GST Assessment",
-            Company: "Kampa Projects",
-            Compliance: "GST",
-            Authority: "District Court",
-            NoticeDate: "08 July 2026",
+            ProjectName: "Kampa Heights",
+            LoanAccounts: 5,
+            SanctionedAmount: `₹24.25 Cr`,
+            Disbursed: `₹18.75 Cr`,
+            OutstandingBalance: `₹11.70Cr`
         },
         {
-            NoticeTitle: "Tax Return Notice",
-            Company: "Rishabraj",
-            Compliance: "Income Tax",
-            Authority: "Supreme Court",
-            NoticeDate: "12 August 2026",
+            ProjectName: "Ketaki Singh",
+            LoanAccounts: 5,
+            SanctionedAmount: `₹30.25 Cr`,
+            Disbursed: `₹18.75 Cr`,
+            OutstandingBalance: `₹11.70Cr`
         },
         {
-            NoticeTitle: "Society Tax Return",
-            Company: "Balaji Infra",
-            Compliance: "ESIC",
-            Authority: "High Court",
-            NoticeDate: "31 September 2026",
+            ProjectName: "Beverly Park",
+            LoanAccounts: 5,
+            SanctionedAmount: `₹24.25 Cr`,
+            Disbursed: `₹68.75 Cr`,
+            OutstandingBalance: `₹11.70Cr`
         },
-        {
-            NoticeTitle: "GST Assessment",
-            Company: "Hrishabraj A",
-            Compliance: "PF",
-            Authority: "District Court",
-            NoticeDate: "08 July 2026",
-        },
-    ];
+
+    ]
 
     const columns = [
         {
-            key: "NoticeTitle",
-            label: "Notice Title",
+            key: "ProjectName",
+            label: "Project Name",
             align: "left" as any,
             render: (value: string) => (
                 <span className="text-[14px] text-gray-800">
                     {value || ''}
                 </span>
             ),
+
         },
         {
-            key: "Company",
-            label: "Company",
+            key: "LoanAccounts",
+            label: "Loan Accounts",
             align: "left" as any,
             render: (value: string) => (
                 <span className="text-[14px] text-gray-600">
@@ -58,8 +50,8 @@ export default function NoticesTable({ }) {
             ),
         },
         {
-            key: "Compliance",
-            label: "Compliance",
+            key: "SanctionedAmount",
+            label: "Sanction Amount",
             align: "left" as any,
             render: (value: string) => (
                 <span className="text-[14px] text-gray-600">
@@ -68,8 +60,8 @@ export default function NoticesTable({ }) {
             ),
         },
         {
-            key: "Authority",
-            label: "Authority",
+            key: "DisbursedAmount",
+            label: "Disbursed Amount",
             align: "left" as any,
             render: (value: string) => (
                 <span className="text-[14px] text-gray-600">
@@ -78,15 +70,16 @@ export default function NoticesTable({ }) {
             ),
         },
         {
-            key: "NoticeDate",
-            label: "Notice Date",
+            key: "OutstandingBalance",
+            label: "Outstanding Balance",
             align: "right" as any,
             render: (value: string) => (
-                <span className="text-[14px] text-gray-500 whitespace-nowrap">
+                <span className="text-[14px] text-red-600">
                     {value || ''}
                 </span>
             ),
         },
+
     ];
 
     return (
@@ -97,7 +90,6 @@ export default function NoticesTable({ }) {
                     RECENTLY ADDED NOTICES{" "}
                     <span className="text-[12px] font-semibold text-gray-400">( Last 7 Days )</span>
                 </p>
-
                 <div className="min-w-[500px] sm:min-w-full flex-1 flex flex-col mt-3">
                     <DataTableWithHeaderRowDivider
                         data={data}
@@ -108,5 +100,6 @@ export default function NoticesTable({ }) {
                 </div>
             </div>
         </div>
-    );
-} 
+    )
+}
+

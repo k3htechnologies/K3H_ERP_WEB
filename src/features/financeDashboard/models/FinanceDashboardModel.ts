@@ -1,6 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
 
-export interface AccountDashboardDataset {
+export interface FinanceDashboardModelDataset {
     Table0: any[];
     Table1: any[];
     Table2: any[];
@@ -9,8 +9,7 @@ export interface AccountDashboardDataset {
     Table5: any[];
 }
 
-export type AccountDashboardDatasetResoponse = ApiResponse<AccountDashboardDataset>;
-
+export type FinanceDashboardDatasetResponse = ApiResponse<FinanceDashboardModelDataset>;
 
 
 

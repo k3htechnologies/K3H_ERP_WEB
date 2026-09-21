@@ -985,8 +985,6 @@ export const AddUpdateProjectLand: React.FC = () => {
                 </div>
             </div>
 
-
-
             <BottomActionBar
                 cancelText="Cancel"
                 saveText={LandformData.ProjectLandId ? "Update" : "Add"}

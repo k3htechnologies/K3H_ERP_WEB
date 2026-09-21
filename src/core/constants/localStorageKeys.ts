@@ -45,9 +45,6 @@ export const LOCAL_STORAGE_KEYS = {
     TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
 
-    //PURCHASE 
-    MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
-    
     //LITIGATION
     LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
 
@@ -138,10 +135,6 @@ export const LOCAL_STORAGE_KEYS = {
     // PROJECT PROFESSIONAL DETAILS
     PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS: 'projectProfessionalDetails.selectedColumns',
 
-    //LEAD
-    PROJECT_LAND_SELECTED_COLUMNS: 'projectLand.selectedColumns',
-    PROJECT_REDEVELOPMENT_SELECTED_COLUMNS: 'projectLead.selectedColumns',
-
 } as const
 
 export const LOCAL_STORAGE_FOR_STATE_KEYS = {
@@ -170,11 +163,8 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TICKET: 'ticket.listState',
     TERM_SHEET: 'termSheet.listState',
     TAX_TRACKER: 'taxTracker.listState',
-    PROJECT_LAND: 'projectLead.listState',
-    PROJECT_REDEVELOPMENT: 'projectLead.listState',
     JOB_ROLE_MASTER: 'jobRoleMaster.listState',
     JOB_OPENING: 'jobOpening.listState',
-    MATERIAL_REQUISITION: 'materialRequisition.listState',
 
 
     STOCK_MANAGEMENT: 'stock.listState',

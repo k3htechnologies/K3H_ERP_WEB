@@ -1531,7 +1531,7 @@ export const LocalStorageHelper = {
     return null
   },
 
-   // ACCOUNT
+  // ACCOUNT
   getTaxTrackerTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
     if (stored) {
@@ -1576,7 +1576,7 @@ export const LocalStorageHelper = {
     return null;
   },
 
-   //#region PROJECT LAND
+  //#region PROJECT LAND
   storeProjectLandTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS, columns);
@@ -1617,7 +1617,7 @@ export const LocalStorageHelper = {
     return null
   },
 
-   //#region PURCHASE MATERIAL REQUISITION
+  //#region PURCHASE MATERIAL REQUISITION
 
   storeMaterialRequisitionTableColumns: (columns: string): void => {
     try {
@@ -1639,7 +1639,31 @@ export const LocalStorageHelper = {
     return null;
   },
   //#endregion
-
+  //#endregion
+  //#region STORE STOCK MANAGEMENT COLUMNS
+  storeStockManagementTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Stock Management Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET STOCK MANAGEMENT COLUMNS
+  getStockManagementTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Stock Management Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+  
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);

@@ -1,7 +1,7 @@
 import useToast from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationStockManagementHistoryRequest, StockManagementRequestHistoryData } from "@/features/stockManagement/models/StockManagementModel";
+import type { FilterWithPaginationStockManagementHistoryRequest, StockManagementHistoryData, } from "@/features/stockManagement/models/StockManagementModel";
 import { stockManagementService } from "@/features/stockManagement/services/StockManagementService";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from 'fp-ts/Either';
@@ -15,7 +15,8 @@ import usePagination from "@/core/hooks/usePagination";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 
 export const MaterialIn: React.FC = () => {
-    const [materialInList, setMaterialInList] = useState<StockManagementRequestHistoryData[]>([]);
+
+    const [materialInList, setMaterialInList] = useState<StockManagementHistoryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { addToast } = useToast();
@@ -86,34 +87,12 @@ export const MaterialIn: React.FC = () => {
                 }
             },
             {
-                key: "VendorName",
-                label: "Vendor Name",
+                key: "PartyName",
+                label: 'Sender Name',
                 width: "20",
                 sortable: false,
-                fixed: "left",
                 align: "left",
-                render: (value) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                    />
-                ),
-            },
-            {
-                key: "PoNo",
-                label: 'Po No',
-                width: "20",
-                sortable: false,
-                fixed: "left",
-                align: "left",
-                render: (value) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                    />
-                ),
+                render: (value) => value || "-"
             },
             {
                 key: "Reason",
@@ -163,30 +142,6 @@ export const MaterialIn: React.FC = () => {
         }),
         [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
     );
-
-    // const StockManagementHistoryForTable = useMemo(() => {
-    //     if (activeTab === 'History') return MaterialInList;
-
-    //     const typeMap: Record<string, string> = {
-    //         'Material In': 'INWARD',
-    //         'Material Out': 'OUTWARD',
-    //     };
-
-    //     return MaterialInList.filter(
-    //         (item) => item.InwardOutwardType === typeMap[activeTab]
-    //     );
-    // }, [MaterialInList, activeTab]);
-
-    // const StockManagementHistoryPaginationInfo: PaginationInfo = useMemo(
-    //     () => ({
-    //         currentPage: pagination.currentPage,
-    //         totalPages: Math.ceil(StockManagementHistoryForTable.length / pagination.pageSize),
-    //         totalRecords: StockManagementHistoryForTable.length,
-    //         pageSize: pagination.pageSize,
-    //         onPageChange: handlePageChange,
-    //     }),
-    //     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
-    // );
 
     const MaterialInForTable = useMemo(() => materialInList, [materialInList]);
 

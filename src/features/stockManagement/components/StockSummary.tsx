@@ -1,18 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationStockManagementRequest, StockManagementRequestData } from "../models/StockManagementModel";
+import type { FilterWithPaginationStockManagementSummaryRequest, StockManagementRequestData } from "@/features/stockManagement/models/StockManagementModel";
 import useToast from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import usePagination from "@/core/hooks/usePagination";
 import { useParams } from "react-router-dom";
-import { useStockManagementListState } from "../context/StockManagementListStateContext";
+import { useStockManagementListState } from "@/features/stockManagement/context/StockManagementListStateContext";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
-import { stockManagementService } from "../services/StockManagementService";
+import { stockManagementService } from "@/features/stockManagement/services/StockManagementService";
 import * as E from 'fp-ts/Either';
 import type { PaginationInfo, TableColumn } from "@/ui/components/DataTable/DataTableWithHeadColor";
 import { Loader } from "@/core/utils/loader";
 import { DataTable } from "@/ui/components/DataTable/DataTable";
-
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const StockSummary: React.FC = () => {
 
@@ -22,12 +24,11 @@ export const StockSummary: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { pagination, setPagination } = usePagination(20);
-    const { SubMaterialMasterId, MaterialMasterId, MaterialId, SubMaterialId } = useParams<{ SubMaterialMasterId?: string; MaterialMasterId?: string; MaterialId?: string; SubMaterialId?: string }>();
+    const { SubMaterialMasterId, MaterialId, } = useParams<{ SubMaterialMasterId?: string; MaterialMasterId?: string; MaterialId?: string; SubMaterialId?: string }>();
     const { listState } = useStockManagementListState();
     const currentSubMaterialMasterId = SubMaterialMasterId ? Number(SubMaterialMasterId) : listState.SubMaterialMasterId;
-    const currentMaterialMasterId = MaterialMasterId ? Number(MaterialMasterId) : listState.MaterialId;
     const currentMaterialId = MaterialId ? Number(MaterialId) : listState.MaterialId;
-    const currentSubMaterialId = SubMaterialId ? Number(SubMaterialId) : listState.SubMaterialId;
+    const { canExport } = useMenuPermissions();
 
     useEffect(() => {
         if (!projectId) return
@@ -39,14 +40,12 @@ export const StockSummary: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const params: FilterWithPaginationStockManagementRequest = {
+                const params: FilterWithPaginationStockManagementSummaryRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MaterialId: currentMaterialId,
-                    SubMaterialId: currentSubMaterialId,
-                    MaterialMasterId: currentMaterialMasterId,
-                    SubMaterialMasterId: currentSubMaterialMasterId,
+                    SubMaterialId: currentSubMaterialMasterId,
                 };
 
                 const response = await stockManagementService.apiCallPullStockSummary(params);
@@ -144,9 +143,47 @@ export const StockSummary: React.FC = () => {
 
     const StockManagementSummaryForTable = useMemo(() => stockManagementSummaryList, [stockManagementSummaryList]);
 
+    const handleExportStockManagementSummary = async (exportType: 'Excel' | 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationStockManagementSummaryRequest = {
+                    PageNumber: 1,
+                    PageSize: 1000,
+                    ProjectId: Number(projectId),
+                    SubMaterialId: currentSubMaterialMasterId,
+                    ExportType: exportType,
+                };
+
+                const response = await stockManagementService.apiCallPullStockSummary(params);
+
+                handleExportFile(response, exportType, "Stock Management Summary", addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: "error", title: error.message || "Export failed" }),
+            undefined,
+            "Preparing Export",
+        );
+    }
+
+    const handleExportStockManagementSummaryExcel = () => handleExportStockManagementSummary("Excel");
+    const handleExportStockManagementSummaryPdf = () => handleExportStockManagementSummary("PDF")
+
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "}</Loader>
+
+            <TableActionToolbar
+                isShowSearchBar={false}
+                isShowExportButton={canExport}
+                onExportExcel={handleExportStockManagementSummaryExcel}
+                onExportPdf={handleExportStockManagementSummaryPdf}
+                exportLoading={isLoading}
+            />
 
             <DataTable
                 data={StockManagementSummaryForTable}

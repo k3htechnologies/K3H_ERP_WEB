@@ -25,6 +25,7 @@ import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeCol
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 
 const initialFormState = (): AddUpdateStockManagementRequest => ({
     SubMaterialMasterId: 0,
@@ -32,11 +33,13 @@ const initialFormState = (): AddUpdateStockManagementRequest => ({
     Reason: "",
     InwardOutwardType: "",
     MaterialQuantityInwardOutward: 0,
-    SenderName: "",
-    ReceiverName: ""
+    PartyName: "",
+    TransferNoteURL: null,
+    RemoveTransferNoteURL: ""
 })
 
 export const StockManagement: React.FC = () => {
+
     const [stockManagementList, setStockManagementList] = useState<StockManagementRequestData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -55,6 +58,9 @@ export const StockManagement: React.FC = () => {
     const { page, filters, sortInfo, searchTerm } = listState;
     const [isShowCustomizeStockManagementColumnsModal, setIsShowCustomizeStockManagementColumnsModal] = useState(false);
     const isInward = formData.InwardOutwardType === "INWARD";
+
+    const [transferNoteFiles, setTransferNoteFiles] = useState<(File | string)[]>([]);
+    const [transferNoteURL, setTransferNoteURL] = useState<string>();
 
     useEffect(() => {
         if (!projectId) return;
@@ -90,7 +96,6 @@ export const StockManagement: React.FC = () => {
     );
 
     const loadStockManagementData = async (page: number = pagination.currentPage, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string,) => {
-        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -148,12 +153,12 @@ export const StockManagement: React.FC = () => {
     const handleSortColumn = useCallback(
         (sort: SortInfo) => {
             updateListState({ sortInfo: sort, page: 1 });
-        },
-        [updateListState],
-    );
+        }, [updateListState]);
 
     const ViewStockManagementDetails = useCallback((row: StockManagementRequestData) => {
         updateListState({
+            MaterialId: row.MaterialId ?? 0,
+            SubMaterialId: row.SubMaterialMasterId ?? 0,
             SubMaterialMasterId: row.SubMaterialMasterId ?? 0,
             MaterialName: row.MaterialName ?? "",
             SubMaterialName: row.SubMaterialName ?? ""
@@ -223,12 +228,28 @@ export const StockManagement: React.FC = () => {
                 render: (value) => value || "-"
             },
             {
-                key: "AvailableMaterialQuantityInStock",
+                key: "AvailableMaterial",
                 label: 'Available Quantity',
                 width: "20",
                 sortable: false,
                 align: "left",
                 render: (value) => value || "-"
+            },
+            {
+                key: "UsedQuantity",
+                label: "Used Quantity",
+                width: "20",
+                sortable: false,
+                align: "left",
+                render: (value) => value ?? "-"
+            },
+            {
+                key: "ScrapQuantity",
+                label: "Scrap Quantity",
+                width: "20",
+                sortable: false,
+                align: "left",
+                render: (value) => value ?? "-"
             },
             {
                 key: 'Actions',
@@ -254,6 +275,8 @@ export const StockManagement: React.FC = () => {
 
                                     setErrors({});
                                     setIsAddUpdateModalOpen(true);
+                                    setTransferNoteFiles([]);
+                                    setTransferNoteURL('');
                                 }}
                                 color="blue"
                                 variant="solid"
@@ -277,6 +300,8 @@ export const StockManagement: React.FC = () => {
 
                                     setErrors({});
                                     setIsAddUpdateModalOpen(true);
+                                    setTransferNoteFiles([]);
+                                    setTransferNoteURL('');
                                 }}
                                 color="red"
                                 variant="solid"
@@ -329,6 +354,7 @@ export const StockManagement: React.FC = () => {
     const handleExportStockManagementPdf = () => handleExportStockManagement("PDF")
 
     const handleFieldChange = (field: keyof AddUpdateStockManagementRequest, value: any) => {
+
         setFormData((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -352,28 +378,38 @@ export const StockManagement: React.FC = () => {
         ) {
             newErrors.MaterialQuantityInwardOutward = "You Cannot remove stock more than available stock.";
         }
-        if (formData.InwardOutwardType === "INWARD" && !formData.SenderName?.trim()) {
-            newErrors.SenderName = "Sender Name is required.";
+        if ((formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") && !formData.PartyName?.trim()
+        ) {
+            newErrors.PartyName = formData.InwardOutwardType === "INWARD"
+                ? "Sender Name is required."
+                : "Receiver Name is required.";
         }
-        if (formData.InwardOutwardType === "OUTWARD" && !formData.ReceiverName?.trim()) {
-            newErrors.ReceiverName = "Receiver Name is required.";
-        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
         }
     }
 
-    const PushStocks = (): AddUpdateStockManagementRequest => {
-        return {
-            SubMaterialMasterId: formData.SubMaterialMasterId,
-            Reason: formData.Reason,
-            InwardOutwardType: formData.InwardOutwardType,
-            ProjectId: Number(projectId),
-            MaterialQuantityInwardOutward: formData.MaterialQuantityInwardOutward,
-            SenderName: formData.SenderName,
-            ReceiverName: formData.ReceiverName
-        };
+    const PushStocks = (): FormData => {
+
+        const fd = new FormData();
+
+        fd.append('SubMaterialMasterId', String(formData.SubMaterialMasterId ?? 0));
+        fd.append('InwardOutwardType', formData.InwardOutwardType ?? "");
+        fd.append('MaterialQuantityInwardOutward', String(formData.MaterialQuantityInwardOutward ?? 0));
+        fd.append('ProjectId', String(projectId));
+        fd.append('PartyName', formData.PartyName ?? '');
+        fd.append('Reason', formData.Reason ?? '');
+        fd.append("RemoveTransferNoteURL", formData.RemoveTransferNoteURL ?? "")
+
+        transferNoteFiles.forEach(file => {
+            if (file instanceof File) {
+                fd.append('TransferNoteURL', file);
+            }
+        });
+
+        return fd;
     };
 
     const handleAddRemoveStocks = async (e: React.FormEvent) => {
@@ -386,6 +422,7 @@ export const StockManagement: React.FC = () => {
             setErrors(validation.errors)
             return
         }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -401,8 +438,9 @@ export const StockManagement: React.FC = () => {
 
                     await loadStockManagementData(1, {})
 
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    setTransferNoteFiles([]);
+                    setTransferNoteURL('');
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -421,25 +459,24 @@ export const StockManagement: React.FC = () => {
 
     const allStockManagementColumnKeys: string[] = StockManagementColumn.map((c) => c.key);
 
-    const [selectedStockManagementColumnKeys, setSelectedStockManagementColumnKeys] =
-        useState<string[]>(() => {
-            try {
-                const saved = LocalStorageHelper.getStockManagementTableColumns?.();
+    const [selectedStockManagementColumnKeys, setSelectedStockManagementColumnKeys] = useState<string[]>(() => {
+        try {
+            const saved = LocalStorageHelper.getStockManagementTableColumns?.();
 
-                if (saved) {
-                    const parsed = JSON.parse(saved) as string[];
+            if (saved) {
+                const parsed = JSON.parse(saved) as string[];
 
-                    const withRequired = Array.from(
-                        new Set([...parsed, ...requiredStockManagementColumnKeys]),
-                    );
+                const withRequired = Array.from(
+                    new Set([...parsed, ...requiredStockManagementColumnKeys]),
+                );
 
-                    return withRequired.filter((k) =>
-                        allStockManagementColumnKeys.includes(k),
-                    );
-                }
-            } catch { }
-            return allStockManagementColumnKeys;
-        });
+                return withRequired.filter((k) =>
+                    allStockManagementColumnKeys.includes(k),
+                );
+            }
+        } catch { }
+        return allStockManagementColumnKeys;
+    });
 
     useEffect(() => {
         setSelectedStockManagementColumnKeys((prev) =>
@@ -450,13 +487,10 @@ export const StockManagement: React.FC = () => {
     }, [StockManagementColumn.length]);
 
     const visibleStockManagementColumns = useMemo(
-        () =>
-            StockManagementColumn.filter((col) =>
-                selectedStockManagementColumnKeys.includes(col.key),
-            ),
-
-        [StockManagementColumn, selectedStockManagementColumnKeys],
-    );
+        () => StockManagementColumn.filter((col) =>
+            selectedStockManagementColumnKeys.includes(col.key),
+        ),
+        [StockManagementColumn, selectedStockManagementColumnKeys],);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -562,11 +596,15 @@ export const StockManagement: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setErrors({});
+                    setTransferNoteFiles([]);
+                    setTransferNoteURL('');
                 }}
                 onCancel={() => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setErrors({});
+                    setTransferNoteFiles([]);
+                    setTransferNoteURL('');
                 }}
                 title={isInward ? 'Add Stock' : 'Remove Stocks'}
                 onSubmit={handleAddRemoveStocks}
@@ -602,11 +640,11 @@ export const StockManagement: React.FC = () => {
                                 label={isInward ? "Sender Name" : "Receiver Name"}
                                 required
                                 type="text"
-                                value={isInward ? formData.SenderName ?? '' : formData.ReceiverName ?? ''}
+                                value={formData.PartyName || ''}
                                 onChange={(e) =>
-                                    handleFieldChange(isInward ? "SenderName" : "ReceiverName", e.target.value)
+                                    handleFieldChange("PartyName", e.target.value)
                                 }
-                                error={isInward ? errors.SenderName : errors.ReceiverName}
+                                error={errors.PartyName}
                                 maxLength={250}
                                 placeholder={isInward ? "Enter Sender Name" : "Enter Receiver Name"}
                             />
@@ -622,6 +660,19 @@ export const StockManagement: React.FC = () => {
                                 error={errors.MaterialQuantityInwardOutward}
                                 maxLength={250}
                                 placeholder="Enter Quantity"
+                            />
+                        </div>
+
+                        <div>
+
+                            <MultiFilePicker
+                                label="Files"
+                                placeholder='Select Files'
+                                value={transferNoteFiles}
+                                onChange={setTransferNoteFiles}
+                                availableFilesURL={transferNoteURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={5}
                             />
                         </div>
 

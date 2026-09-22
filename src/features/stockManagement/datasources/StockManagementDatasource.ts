@@ -1,13 +1,13 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
+import type { AddUpdateStockUsage, FilterWithPaginationStockManagementHistoryRequest, FilterWithPaginationStockManagementRequest, FilterWithPaginationStockManagementSummaryRequest, StockManagementHistoryListResponse, StockManagementListResponse, StockManagementSaveResponse } from "@/features/stockManagement/models/StockManagementModel";
 import { StockManagementApi } from '@/features/stockManagement/api/StockManagementApi';
-import type { AddUpdateStockManagementRequest, FilterWithPaginationStockManagementHistoryRequest, FilterWithPaginationStockManagementRequest, StockManagementHistoryListResponse, StockManagementListResponse, StockManagementSaveResponse } from '../models/StockManagementModel';
 
 export abstract class StockManagementDatasource {
-
     abstract pullStockManagement(params: FilterWithPaginationStockManagementRequest, signal?: AbortSignal): Promise<StockManagementListResponse>;
     abstract pullStockManagementHistory(params: FilterWithPaginationStockManagementHistoryRequest, signal?: AbortSignal): Promise<StockManagementHistoryListResponse>;
-    abstract addUpdateStockManagement(data: AddUpdateStockManagementRequest): Promise<StockManagementSaveResponse>;
+    abstract addUpdateStockManagement(data: FormData): Promise<StockManagementSaveResponse>;
+    abstract addUpdateStockManagementUsage(params: AddUpdateStockUsage): Promise<StockManagementSaveResponse>;
 }
 
 export class StockManagementDatasourceImpl implements StockManagementDatasource {
@@ -74,12 +74,41 @@ export class StockManagementDatasourceImpl implements StockManagementDatasource 
         }
     }
 
-    async addUpdateStockManagement(params: AddUpdateStockManagementRequest): Promise<StockManagementSaveResponse> {
+    async pullStockSummary(params: FilterWithPaginationStockManagementSummaryRequest, signal?: AbortSignal): Promise<StockManagementListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                PageSize: (params.PageSize ?? 10).toString(),
+                PageNumber: (params.PageNumber ?? 1).toString(),
+            })
+
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
+            if (params.MaterialId) queryParams.append('MaterialId', params.MaterialId.toString());
+            if (params.SubMaterialId) queryParams.append('SubMaterialId', params.SubMaterialId.toString());
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${StockManagementApi.PULL_SUMMARY}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
+
+            console.error('ERROR: PULL STOCK MANAGEMENT SUMMARY :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullStockSummary(params);
+            }
+            throw error
+        }
+    }
+
+    async addUpdateStockManagement(data: FormData): Promise<StockManagementSaveResponse> {
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 StockManagementApi.ADD_UPDATE,
-                params
+                data
             )
 
             return response
@@ -89,7 +118,28 @@ export class StockManagementDatasourceImpl implements StockManagementDatasource 
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateStockManagement(params);
+                return await this.addUpdateStockManagement(data);
+            }
+            throw error
+        }
+    }
+
+    async addUpdateStockManagementUsage(params: AddUpdateStockUsage): Promise<StockManagementSaveResponse> {
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                StockManagementApi.ADD_UPDATE_STOCKUSAGE,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD UPDATE STOCK USAGE :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateStockManagementUsage(params);
             }
             throw error
         }

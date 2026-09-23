@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Menu, Bell, User, Info } from 'lucide-react'
+import { Menu, Bell, User, Info, Route } from 'lucide-react'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
 import { useLocation, useNavigate } from 'react-router-dom'
@@ -110,7 +110,14 @@ export const Header: React.FC<HeaderProps> = ({
         loadNotifications(1);
     }
 
+    // #region ERP Roadmap 
+    const handleErpRoadMapClick = () => {
+        navigate('/erpRoadmap');
+    }
+    // #endregion
+
     //#region INITIALIZATION
+    
 
     useEffect(() => {
         fetchNotificationList()
@@ -414,7 +421,13 @@ export const Header: React.FC<HeaderProps> = ({
                             />
                         </div>
                     )}
-                    {/* Notifications - Hidden on small mobile */}
+                     <button
+                        onClick={handleErpRoadMapClick}
+                        className="hidden sm:block p-1 bg-blue-50 rounded-md hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200 relative touch-manipulation cursor-pointer"
+                    >
+                        <Route  className="h-5 w-6 text-blue-800" />
+                    </button>
+                    
                     <button
                         onClick={handleNotificationModal}
                         className="hidden sm:block p-1 bg-blue-50 rounded-md hover:bg-blue-100 active:bg-blue-200 transition-colors duration-200 relative touch-manipulation">

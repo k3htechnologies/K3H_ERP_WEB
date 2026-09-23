@@ -109,14 +109,27 @@ export const isValidEmail = (email: string): boolean => {
 export const filterGST = (value: string): string =>
   value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 15);
 
-export const isValidGST = (gst: string): boolean => {
+export const isValidGST = ( gst: string, gstStateCode?: string): boolean => {
+
   if (!gst) return false;
+
   const value = gst.toUpperCase().trim();
   if (value.length !== 15) return false;
 
   const regex =
     /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-  return regex.test(value);
+
+  if (!regex.test(value)) return false;
+
+  if (gstStateCode) {
+    const gstinStateCode = value.substring(0, 2);
+
+    if (gstinStateCode !== gstStateCode) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 // Only A-Z + 0-9 and max 21 chars

@@ -150,6 +150,8 @@ export const PurchaseOrder: React.FC = () => {
 
         if (!formData.Remarks?.trim()) {
             newErrors.Remarks = "Remarks is required.";
+        }else if (formData.Remarks.split(/\s+/).length < 25) {
+            newErrors.Remarks = "Remark must be at least 25 characters";
         }
         if (!formData.TermsCondition?.trim()) {
             newErrors.TermsCondition = "Terms & Condition is required.";

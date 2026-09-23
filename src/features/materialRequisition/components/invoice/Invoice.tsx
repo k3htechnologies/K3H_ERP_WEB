@@ -262,8 +262,12 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                     {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && row.InvoiceStatus.toUpperCase() === "APPROVED" && !materialRequisitionStatus && (
                         <Button
-                            color="blue"
+                            color="green"
                             size="sm"
+                            style={{
+                                background:"#00AC00"
+                            }}
+
                             onClick={() => handleMakePayment(row)}
                         >
                             Make Payment
@@ -273,6 +277,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                     {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && !materialRequisitionStatus && (
                         <Button
                             color="blue"
+                            variant="solid"
+                            colorMode="extraLight"
                             size="sm"
                             onClick={() => handleMakePayment(row)}
                         >
@@ -283,6 +289,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                     {materialRequisitionStatus && (
                         <Button
                             color="blue"
+                            variant="solid"
+                            colorMode="extraLight"
                             size="sm"
                             onClick={() => handleMakePayment(row)}
                         >
@@ -437,7 +445,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
     };
 
     return (
-        <div className="pt-2">
+        <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
@@ -509,6 +517,12 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                 label="Paid (₹)"
                                 value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)}
                             />
+
+                             <FieldItem
+                                label="TDS Paid (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalTDSAmountPaid)}
+                            />
+                            
 
                             <FieldItem
                                 label="Pending(₹)"
@@ -602,10 +616,19 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                         }
                                                         isRow
                                                     />
+                                                    <FieldItem
+                                                        label="TDS Paid Till Date"
+                                                        value={
+                                                            <span className="text-green-600 font-semibold">
+                                                                {formatCurrency(row?.InvoiceTDSPaidTillDate)}
+                                                            </span>
+                                                        }
+                                                        isRow
+                                                    />
 
                                                     <FieldItem label=" Amount to be Paid" value={
                                                         <span className="text-red-600 font-semibold">
-                                                            {formatCurrency(Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate))}
+                                                            {formatCurrency(Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate) - Number(row.InvoiceTDSPaidTillDate))}
                                                         </span>
                                                     } isRow />
                                                 </div>

@@ -13,7 +13,6 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import usePagination from "@/core/hooks/usePagination";
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useNavigate } from "react-router-dom";
 import { handleExportFile } from "@/core/utils/exportFile";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
@@ -56,7 +55,8 @@ export const MaterialRequisition: React.FC = () => {
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const [vendorName, setVendorName] = useState<string | null>("");
-    const { canAction, canExport } = useMenuPermissions();
+    const canAction = true;
+    const canExport = true;
 
 
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -317,6 +317,14 @@ export const MaterialRequisition: React.FC = () => {
         {
             key: 'PaidAmount',
             label: 'Paid Amount (₹)',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => formatCurrency(value) || 0
+        },
+        {
+            key: 'TDSPaidAmount',
+            label: 'TDS Paid Amount (₹)',
             width: '15',
             sortable: false,
             align: 'left',

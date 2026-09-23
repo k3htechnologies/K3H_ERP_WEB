@@ -188,8 +188,14 @@ const AddCompany: React.FC = () => {
       ? (statesByCountryId[selectedCountryId] || []).map(s => ({
         label: s.name,
         value: s.id,
+        gSTStateCode:s.gSTStateCode
       }))
-      : []
+      : [];
+
+  const selectedState = stateOptions.find(state => Number(state.value) === Number(selectedStateId));
+
+  const selectedGSTStateCode = selectedState?.gSTStateCode || "";
+  const selectedStateName = selectedState?.label || "";
 
   const districtOptions =
     selectedStateId != null
@@ -397,12 +403,12 @@ const AddCompany: React.FC = () => {
     const hasGSTFile = hasAnyFile(gstGSTCertificateFiles, gSTCertificateURL);
 
     // Rule 1 — number present but invalid
-    if (hasGSTNumber && !isValidGST(gst)) {
-      newErrors.GSTNumber = "Enter a Valid GST Number";
+    if (hasGSTNumber &&  !isValidGST(gst,selectedGSTStateCode)) {
+      newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
-    if (hasGSTNumber && !isValidGST(gst)) {
-      newErrors.GSTNumber = "Enter a Valid GST Number";
+    if (hasGSTNumber && !isValidGST(gst,selectedGSTStateCode)) {
+     newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
     // Rule 2 — number entered but NO document
@@ -1326,6 +1332,157 @@ const AddCompany: React.FC = () => {
             </div>
           </div>
         </div>
+        
+
+        {/* ============================================================= [ADDRESS] ============================================================================================= */}
+        <div className="space-y-4 pt-5">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+            <div>
+
+              <SinglePageSelection
+                label='Country'
+                placeholder="Select Country"
+                required
+                value={selectedCountryId || ''}
+                error={errors.CountryMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedCountryId(null);
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('CountryMasterId', 0);
+                    handleFieldChange('StateMasterId', 0);
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCountryId(id);
+                  setSelectedStateId(null);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('CountryMasterId', id);
+                  handleFieldChange('StateMasterId', 0);
+                  handleFieldChange('DistrictMasterId', 0);
+                  handleFieldChange('CityMasterId', 0);
+                }}
+                disabled={isLocationLoading}
+                options={countryOptions}
+              />
+
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='State'
+                placeholder="Select State"
+                required
+                value={selectedStateId ?? ''}
+                error={errors.StateMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedStateId(null);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange("StateMasterId", 0);
+                    handleFieldChange("DistrictMasterId", 0);
+                    handleFieldChange("CityMasterId", 0);
+
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedStateId(id);
+                  setSelectedDistrictId(null);
+                  setSelectedCityId(null);
+
+                  handleFieldChange("StateMasterId", id);
+                  handleFieldChange("DistrictMasterId", 0);
+                  handleFieldChange("CityMasterId", 0);
+                }}
+                disabled={!selectedCountryId || stateOptions.length === 0}
+                options={stateOptions}
+              />
+
+
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='District'
+                placeholder="Select District"
+                required
+                value={selectedDistrictId ?? ''}
+                error={errors.DistrictMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('DistrictMasterId', 0);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedDistrictId(id);
+                  setSelectedCityId(null);
+
+                  handleFieldChange('DistrictMasterId', id);
+                  handleFieldChange('CityMasterId', 0);
+                }}
+                disabled={!selectedStateId || districtOptions.length === 0}
+                options={districtOptions}
+              />
+            </div>
+
+            <div>
+
+              <SinglePageSelection
+                label='City'
+                placeholder="Select City"
+                required
+                value={selectedCityId ?? ''}
+                error={errors.CityMasterId}
+                onChange={(item) => {
+
+                  if (!item) {
+                    setSelectedCityId(null);
+                    handleFieldChange('CityMasterId', 0);
+                    return;
+                  }
+
+                  const id = Number(item);
+
+                  setSelectedCityId(id);
+                  handleFieldChange('CityMasterId', id);
+                }}
+                disabled={!selectedDistrictId || cityOptions.length === 0}
+                options={cityOptions}
+              />
+
+            </div>
+
+          </div>
+        </div>
+
         {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
         <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Government Identifiers</h3>
@@ -1334,7 +1491,7 @@ const AddCompany: React.FC = () => {
             <div>
 
               <Input
-                label='GST Number'
+                label={`GST Number ${selectedStateName && selectedGSTStateCode ? ` (${selectedStateName} GST Code - ${selectedGSTStateCode})` : ""}`}
                 type="text"
                 value={formData.GSTNumber}
                 error={errors.GSTNumber}
@@ -1485,155 +1642,6 @@ const AddCompany: React.FC = () => {
               />
 
             </div>
-          </div>
-        </div>
-
-        {/* ============================================================= [ADDRESS] ============================================================================================= */}
-        <div className="space-y-4 pt-5">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-            <div>
-
-              <SinglePageSelection
-                label='Country'
-                placeholder="Select Country"
-                required
-                value={selectedCountryId || ''}
-                error={errors.CountryMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedCountryId(null);
-                    setSelectedStateId(null);
-                    setSelectedDistrictId(null);
-                    setSelectedCityId(null);
-
-                    handleFieldChange('CountryMasterId', 0);
-                    handleFieldChange('StateMasterId', 0);
-                    handleFieldChange('DistrictMasterId', 0);
-                    handleFieldChange('CityMasterId', 0);
-
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  setSelectedCountryId(id);
-                  setSelectedStateId(null);
-                  setSelectedDistrictId(null);
-                  setSelectedCityId(null);
-
-                  handleFieldChange('CountryMasterId', id);
-                  handleFieldChange('StateMasterId', 0);
-                  handleFieldChange('DistrictMasterId', 0);
-                  handleFieldChange('CityMasterId', 0);
-                }}
-                disabled={isLocationLoading}
-                options={countryOptions}
-              />
-
-
-            </div>
-
-            <div>
-
-              <SinglePageSelection
-                label='State'
-                placeholder="Select State"
-                required
-                value={selectedStateId ?? ''}
-                error={errors.StateMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedStateId(null);
-                    setSelectedDistrictId(null);
-                    setSelectedCityId(null);
-
-                    handleFieldChange("StateMasterId", 0);
-                    handleFieldChange("DistrictMasterId", 0);
-                    handleFieldChange("CityMasterId", 0);
-
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  setSelectedStateId(id);
-                  setSelectedDistrictId(null);
-                  setSelectedCityId(null);
-
-                  handleFieldChange("StateMasterId", id);
-                  handleFieldChange("DistrictMasterId", 0);
-                  handleFieldChange("CityMasterId", 0);
-                }}
-                disabled={!selectedCountryId || stateOptions.length === 0}
-                options={stateOptions}
-              />
-
-
-            </div>
-
-            <div>
-
-              <SinglePageSelection
-                label='District'
-                placeholder="Select District"
-                required
-                value={selectedDistrictId ?? ''}
-                error={errors.DistrictMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedDistrictId(null);
-                    setSelectedCityId(null);
-
-                    handleFieldChange('DistrictMasterId', 0);
-                    handleFieldChange('CityMasterId', 0);
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  setSelectedDistrictId(id);
-                  setSelectedCityId(null);
-
-                  handleFieldChange('DistrictMasterId', id);
-                  handleFieldChange('CityMasterId', 0);
-                }}
-                disabled={!selectedStateId || districtOptions.length === 0}
-                options={districtOptions}
-              />
-            </div>
-
-            <div>
-
-              <SinglePageSelection
-                label='City'
-                placeholder="Select City"
-                required
-                value={selectedCityId ?? ''}
-                error={errors.CityMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedCityId(null);
-                    handleFieldChange('CityMasterId', 0);
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  setSelectedCityId(id);
-                  handleFieldChange('CityMasterId', id);
-                }}
-                disabled={!selectedDistrictId || cityOptions.length === 0}
-                options={cityOptions}
-              />
-
-            </div>
-
           </div>
         </div>
 

@@ -14,6 +14,8 @@ import { LocalStorageHelper } from '../utils/localStorageHelper'
 export interface CountryStateCityDistrictVillageOption {
   id: number
   name: string
+  gSTStateCode: string
+
 }
 
 interface CountryStateCityDistrictVillageContextValue {
@@ -26,7 +28,7 @@ interface CountryStateCityDistrictVillageContextValue {
   citiesByDistrictId: Record<number, CountryStateCityDistrictVillageOption[]>
   wardByDistrictId: Record<number, CountryStateCityDistrictVillageOption[]>
   villagesByCityId: Record<number, CountryStateCityDistrictVillageOption[]>
-  
+
 }
 
 const CountryStateCityDistrictVillageContext =
@@ -47,7 +49,7 @@ export const CountryStateCityDistrictVillage: React.FC<{ children: ReactNode }> 
       citiesByDistrictId: {},
       wardByDistrictId: {},
       villagesByCityId: {},
-      
+
     })
 
   useEffect(() => {
@@ -184,6 +186,7 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
       statesByCountryId[row.CountryMasterId].push({
         id: row.StateMasterId,
         name: row.StateName,
+        gSTStateCode: row.GSTStateCode
       })
     }
 
@@ -199,6 +202,7 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
       districtsByStateId[row.StateMasterId].push({
         id: row.DistrictMasterId,
         name: row.DistrictName,
+        gSTStateCode: ""
       })
     }
 
@@ -214,6 +218,7 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
       citiesByDistrictId[row.DistrictMasterId].push({
         id: row.CityMasterId,
         name: row.CityName,
+        gSTStateCode: ""
       })
     }
 
@@ -229,6 +234,7 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
       wardByDistrictId[row.DistrictMasterId].push({
         id: row.WardMasterId,
         name: row.WardName,
+        gSTStateCode: ""
       })
     }
 
@@ -244,13 +250,14 @@ function buildLocationMaps(list: CountryStateCityDistrictVillageData[]) {
       villagesByCityId[row.CityMasterId].push({
         id: row.VillageMasterId,
         name: row.VillageName,
+        gSTStateCode: ""
       })
     }
   }
 
   const countries: CountryStateCityDistrictVillageOption[] = Array.from(
     countryMap.entries(),
-  ).map(([id, name]) => ({ id, name }))
+  ).map(([id, name]) => ({ id, name, gSTStateCode:"" }))
 
   return {
     countries,

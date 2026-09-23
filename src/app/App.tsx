@@ -246,6 +246,7 @@ import PurchaseMasterReport from '@/features/purchaseMasterReport/pages/Purchase
 import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
+import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -297,6 +298,7 @@ function App() {
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="erpRoadmap" element={<ErpRoadmap />} />
 
             {/* SETTING -> COMPANY SETUP */}
             <Route path="settingDashboard" element={<SettingsDashboard />} />

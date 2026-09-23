@@ -46,16 +46,15 @@ interface FinalizedVendorProps {
     onApprovalSuccess?: () => Promise<void>;
 }
 
-export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSuccess }) => {
+export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) => {
 
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>()
-    const { listState,updateListState } = useMaterialRequisitionListState()
+    const { listState, updateListState } = useMaterialRequisitionListState()
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId
     const currentUniquekey = listState.Uniquekey
     const { projectId } = useProject()
     const { addToast } = useToast()
     const { detailData } = useMaterialRequisitionListState()
-    const { canAction } = useMenuPermissions('/materialRequisition')
     const [checkedFinalVendor, setCheckedFinalVendor] = useState<number | null>(null)
     const [isQuotationAvailable, setQuotationAvailable] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -198,7 +197,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                     setSelectedVendorIds([])
 
-                     updateListState({ MaterialRequisitionStage: 'Get Compare' });
+                    updateListState({ MaterialRequisitionStage: 'Get Compare' });
 
                     await loadSelectedVendor()
 
@@ -432,7 +431,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                 {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
                     <Button
-                         type="button"
+                        type="button"
                         size="md"
                         style={{
                             color: '#00A800',
@@ -502,18 +501,31 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                             isShadow={false}
                             titleClassName="flex-1 min-w-0"
                             title={
-                                <div className="flex flex-col w-full">
+                                <div className="flex flex-col w-full" onClick={(e) => e.stopPropagation()}>
 
                                     <div className="flex items-center justify-between w-full pb-4 px-1 border-b border-gray-200">
 
                                         <div className="flex items-center gap-3">
 
-                                            <Checkbox
+                                            {/* <Checkbox
                                                 checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
-                                                disabled={!canAction || (isAnyFinalized && !vendor.IsFinalized)}
-                                                onChange={() => canAction && setCheckedFinalVendor(
+                                                disabled={!cangetQuotation || (isAnyFinalized && !vendor.IsFinalized)}
+                                                onChange={() => cangetQuotation && setCheckedFinalVendor(
                                                     checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
                                                 }
+                                                onClick={(e) => e.stopPropagation()}
+                                                size="md"
+                                            /> */}
+
+                                            <Checkbox
+                                                checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
+                                                disabled={!canfinalizeVendor || (isAnyFinalized && !vendor.IsFinalized)}
+                                                onChange={() => {
+                                                    if (isAnyFinalized) return
+
+                                                    canfinalizeVendor && setCheckedFinalVendor(
+                                                        checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
+                                                }}
                                                 onClick={(e) => e.stopPropagation()}
                                                 size="md"
                                             />
@@ -715,12 +727,12 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
             >
                 <div className="flex flex-col h-[calc(100vh-180px)]">
 
-                   <div className="px-2 py-2 shrink-0">
+                    <div className="px-2 py-2 shrink-0">
                         <div className="flex items-center gap-3 w-full">
                             <Checkbox
                                 checked={selectedVendorIds.length === materialRequisitionVendorFinalizedList.length}
-                                disabled={!canAction}
-                                onChange={() => canAction && toggleVendorSelectAllVisible()} />
+                                disabled={!cangetQuotation}
+                                onChange={() => cangetQuotation && toggleVendorSelectAllVisible()} />
 
                             <Input
                                 type="text"
@@ -754,12 +766,12 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                                     return (
                                         <div key={vendor.VendorId}
                                             className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-200"
-                                            onClick={() => canAction && toggleVendor(vendor.VendorId)}
+                                            onClick={() => cangetQuotation && toggleVendor(vendor.VendorId)}
                                         >
                                             <Checkbox
                                                 checked={checked}
-                                                disabled={!canAction}
-                                                onChange={() => canAction && toggleVendor(vendor.VendorId)}
+                                                disabled={!cangetQuotation}
+                                                onChange={() => cangetQuotation && toggleVendor(vendor.VendorId)}
                                                 onClick={(e) => e.stopPropagation()}
                                             />
 
@@ -798,7 +810,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                         )}
 
                     </div>
-                
+
                 </div>
             </Modal>
 

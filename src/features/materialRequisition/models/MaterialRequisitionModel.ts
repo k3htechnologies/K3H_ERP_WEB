@@ -72,6 +72,7 @@ export interface MaterialRequisitionData {
     ModifiedBy: string;
     ModifiedDate: string;
     PaidAmount: number;
+    TDSPaidAmount: number;
     TotalPoAmount: number;
     TotalInvoiceAmount: number;
     TotalInvoice: number;

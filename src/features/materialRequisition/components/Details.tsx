@@ -296,7 +296,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
 
                     <div>
-                        <p className="text-gray-500">Attachment</p>
+                        <p className="text-sm font-medium text-[#1D1D1D80]">Attachment</p>
                         <MultiImageViewer
                             images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
                             title="Attachment"

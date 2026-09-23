@@ -233,6 +233,7 @@ import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
 import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
 import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
 import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
+import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -409,6 +410,7 @@ function App() {
 
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
+            <Route path="erpRoadmap" element={<ErpRoadmap />} />
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />

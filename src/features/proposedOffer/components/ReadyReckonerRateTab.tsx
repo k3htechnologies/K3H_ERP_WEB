@@ -525,7 +525,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                             label="Zone"
                             required
                             type="text"
-
                             value={formDataReadyReckonerRate.Zone || ''}
                             onChange={(e) => {
                                 handleFieldChangeReadyReckonerRate('Zone', e.target.value);
@@ -550,8 +549,6 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-
-
                         <SinglePageSelection
                             label="Financial Year"
                             placeholder="Select Financial Year"

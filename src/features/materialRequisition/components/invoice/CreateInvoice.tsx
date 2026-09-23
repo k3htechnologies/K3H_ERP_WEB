@@ -493,33 +493,81 @@ const CreateInvoice: React.FC = () => {
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2">
-                        Vendor Details
-                    </h4>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-3">
-                        <FieldItem label="Vendor Name" value={invoiceSummaryData?.FinalVendor} />
-                        <FieldItem label="Vendor Company" value={invoiceSummaryData?.FinalVendorCompanyName} />
-                        <FieldItem label="Mobile Number" value={invoiceSummaryData?.FinalVendorMobileNumber} />
-                        <FieldItem label="GST Number" value={invoiceSummaryData?.FinalVendorGSTNumber} />
+                    <div className="mb-5">
+                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            Vendor Details
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem
+                                label="Vendor Name"
+                                value={invoiceSummaryData?.FinalVendor}
+                            />
+
+                            <FieldItem
+                                label="Vendor Company"
+                                value={invoiceSummaryData?.FinalVendorCompanyName}
+                            />
+
+                            <FieldItem
+                                label="Mobile Number"
+                                value={`${invoiceSummaryData?.FinalVendorMobileNumberCountryCode ?? "+91"} ${invoiceSummaryData?.FinalVendorMobileNumber ?? ""}`}
+                            />
+
+                            <FieldItem
+                                label="GST Number"
+                                value={invoiceSummaryData?.FinalVendorGSTNumber}
+                            />
+                        </div>
                     </div>
 
-                    <h4 className="text-lg font-semibold text-gray-900 mb-2 pt-1">
-                        Amount Details
-                    </h4>
+                    <div className="mb-5">
+                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            PO Amount Details (₹)
+                        </h3>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Total Amount (₹)" value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)} />
-                        <FieldItem label="Paid  Amount (₹)" value={formatCurrency(invoiceSummaryData?.PaidRequisitionAmount)} />
-                        <FieldItem label="Pending Amount (₹)" value={formatCurrency(invoiceSummaryData?.PendingRequisitionAmount)} />
-                        <FieldItem label="Total Invoice Amount (₹)" value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)} />
-                        <FieldItem label="Paid  Invoice Amount (₹)" value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)} />
-                        <FieldItem label="Pending Invoice Amount (₹)" value={formatCurrency(invoiceSummaryData?.RemainingInvoiceAmount)} />
-                        <FieldItem
-                            label="Raised Invoice Amount (₹)"
-                            value={formatCurrency(raisedInvoiceAmount)}
-                        />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem
+                                label="Total (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)}
+                            />
+
+                            <FieldItem
+                                label="Paid (₹)"
+                                value={formatCurrency(invoiceSummaryData?.PaidRequisitionAmount)}
+                            />
+
+                            <FieldItem
+                                label="Pending (₹)"
+                                value={formatCurrency(invoiceSummaryData?.PendingRequisitionAmount)}
+                            />
+                        </div>
                     </div>
+
+                    <div>
+                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            Invoice Details  (₹)
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <FieldItem
+                                label="Total (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)}
+                            />
+
+                            <FieldItem
+                                label="Paid (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)}
+                            />
+
+                            <FieldItem
+                                label="Pending(₹)"
+                                value={formatCurrency(invoiceSummaryData?.RemainingInvoiceAmount)}
+                            />
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -590,28 +638,13 @@ const CreateInvoice: React.FC = () => {
                                 onChange={(e) => {
                                     const value = filterNumbersWithDecimal(e.target.value);
 
-                                    const invoiceAmount = Number(value);
-                                    const pendingAmount = Number(
-                                        invoiceSummaryData?.PendingRequisitionAmount ?? 0
-                                    );
-
-                                    if (invoiceAmount < 0) {
-                                        return;
+                                    if (Number(value) <= (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0)) ) {
+                                        handleFieldChange("InvoiceAmount", value);
                                     }
-
-                                    if (invoiceAmount > pendingAmount) {
-                                        addToast({
-                                            type: "error",
-                                            title: `Invoice Amount cannot exceed Pending Requisition Amount (${pendingAmount})`,
-                                        });
-                                        return;
-                                    }
-
-                                    handleFieldChange("InvoiceAmount", value);
                                 }}
                                 placeholder="Enter Invoice Amount"
                                 rightIcon="(₹)"
-                                max={Number(invoiceSummaryData?.PendingRequisitionAmount ?? 0)}
+                                max={(Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
                                 error={errors.InvoiceAmount}
                             />
                         </div>

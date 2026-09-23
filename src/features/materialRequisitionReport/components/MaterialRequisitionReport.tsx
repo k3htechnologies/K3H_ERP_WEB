@@ -113,41 +113,25 @@ export const MaterialRequisitionReport: React.FC = () => {
             sortable: true,
             render: value => value || "-"
         },
-        {
-            key: "MaterialCode",
-            label: "Material Code",
+         {
+            key: "MaterialQuantityRequested",
+            label: "Requested Quantity",
             width: '15',
             align: "left",
             sortable: false,
-            render: value => value || "-"
-        },
-        {
-            key: "UomCode",
-            label: "Uom",
-            width: '15',
-            align: "left",
-            sortable: false,
-            render: value => value || "-"
+            render: (value, row) =>   value != null && value !== "" ? `${value} ${row?.UomCode ?? ""}` : "-"
         },
         {
             key: "MaterialQuantityReceived",
-            label: "Material Quantity Received",
+            label: "Received Quantity",
             width: '15',
             align: "left",
             sortable: false,
-            render: value => value || "-"
-        },
-        {
-            key: "MaterialQuantityRequested",
-            label: "Material Quantity Requested",
-            width: '15',
-            align: "left",
-            sortable: false,
-            render: value => value || "-"
+            render: (value, row) =>   value != null && value !== "" ? `${value} ${row?.UomCode ?? ""}` : "-"
         },
         {
             key: "TotalInvoiceAmount",
-            label: "Total Invoice Amount",
+            label: "Total Invoice Amount (₹)",
             width: '15',
             align: "left",
             sortable: false,

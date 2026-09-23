@@ -13,7 +13,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, filterNumbers, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import { filterChallanNumber, filterNumbersWithDecimal, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
@@ -422,7 +422,7 @@ export const AddUpdateGRN = () => {
                                     value={value ?? 0}
                                     maxLength={9}
                                     onChange={(e) => {
-                                        const raw = filterNumbers(e.target.value);
+                                        const raw = filterNumbersWithDecimal(e.target.value);
 
                                         const receivedQuantity = Number(raw);
 

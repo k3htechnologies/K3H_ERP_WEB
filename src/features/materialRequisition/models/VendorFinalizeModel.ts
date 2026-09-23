@@ -56,7 +56,6 @@ export interface SelectedVendorData {
     ProjectName: string;
 }
 
-//used for material quotation
 export interface AddVendorForEnquiryRequest {
     MaterialRequisitionId: number;
     Uniquekey: string;
@@ -64,5 +63,12 @@ export interface AddVendorForEnquiryRequest {
     ProjectId: number | 0;
 }
 
+export interface RevokeFinalizationVendorRequest {
+    MaterialRequisitionId: number,
+    Uniquekey: string | null,
+    ProjectId: number | 0,
+}
+
 export type SelectedVendorListResponse = ApiResponse<SelectedVendorData[]>;
 export type AddVendorForEnquiryRequestResponse = ApiResponse<SelectedVendorData>;
+export type RevokeFinalizationVendorResponse = ApiResponse<number>;

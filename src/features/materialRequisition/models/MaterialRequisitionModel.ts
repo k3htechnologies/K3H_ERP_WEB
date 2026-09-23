@@ -169,6 +169,8 @@ export interface CloseMaterialRequisitionRequest {
     CloseCompletionRemark: string | null,
 }
 
+
+
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionOverviewResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionDetailsResponse = ApiResponse<MaterialRequisitionData[]>;

@@ -235,7 +235,9 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                 width: '10',
                 sortable: false,
                 align: 'right',
-                render: (value?: string) => value || '-'
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
             },
             {
                 key: "QualityAnalystRemark",

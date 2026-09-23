@@ -293,7 +293,7 @@ export const DataTableEditable: React.FC<Props> = ({
       )}
 
       <div className="overflow-x-auto  thin-scroll">
-        <table className={`w-full min-w-[600px] ${tableClassName || ""}`}>
+        <table className={`w-full min-w-[600px]  ${tableClassName || ""}`}>
 
           <thead>
 

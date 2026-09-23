@@ -13,6 +13,10 @@ export const filterNumbers = (value: string): string =>
 export const filterLetters = (value: string): string =>
   value.replace(/[^A-Za-z\s]/g, "");
 
+
+export const filterNameCharacters = (value: string): string =>
+  value.replace(/[^A-Za-z\s']/g, "");
+
 // ----------------------------------
 // 🔹 FILTER ALPHA-NUMERIC + SPACE
 // ----------------------------------

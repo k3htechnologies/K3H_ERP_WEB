@@ -112,7 +112,7 @@ const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
 });
 
 
-// --- add after imports, before component ---
+
 type TenantApplicantWithFiles = TenantApplicant & {
   _photoFiles?: (File | string)[];
   _aadharFiles?: (File | string)[];

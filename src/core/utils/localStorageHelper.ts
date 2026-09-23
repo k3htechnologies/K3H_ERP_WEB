@@ -1641,6 +1641,31 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
+   //#region STORE STOCK MANAGEMENT COLUMNS
+  storeStockManagementTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Stock Management Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET STOCK MANAGEMENT COLUMNS
+  getStockManagementTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Stock Management Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+  
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
@@ -1743,6 +1768,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
@@ -1774,6 +1800,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_ROLE_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.STOCK_MANAGEMENT);
 
 
     } catch (error) {

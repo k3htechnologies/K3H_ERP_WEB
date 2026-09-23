@@ -223,7 +223,7 @@ export const AddUpdateMaterialRequisition = () => {
         }
 
         const loadProjectBudget = async () => {
-            const data = await fetchProjectBudget(Number(projectId));
+            const data = await fetchProjectBudget(Number(projectId),"APPROVED");
             setProjectBudgetList(data);
         };
 

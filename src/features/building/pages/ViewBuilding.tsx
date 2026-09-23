@@ -708,17 +708,17 @@ export const ViewBuilding: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem
                                                 label="Gross Plot Area (SqMt)"
-                                                value={buildingDetailsList?.[0]?.GrossPlotAreaSqFt ?? 0}
+                                                value={buildingDetailsList?.[0]?.GrossPlotAreaSqMt ?? 0}
                                             />
 
                                             <FieldItem
                                                 label="Physical Survey Area (SqMt)"
-                                                value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqFt ?? 0}
+                                                value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqMt ?? 0}
                                             />
 
                                             <FieldItem
                                                 label="Old Approved Plan Area (SqMt)"
-                                                value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqFt ?? 0}
+                                                value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqMt ?? 0}
                                             />
                                         </div>
                                     </div>
@@ -729,12 +729,12 @@ export const ViewBuilding: React.FC = () => {
 
                                             <FieldItem
                                                 label="Conveyance Area (SqMt)"
-                                                value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqFt ?? 0}
+                                                value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqMt ?? 0}
                                             />
 
                                             <FieldItem
                                                 label="PR Card Area (SqMt)"
-                                                value={buildingDetailsList?.[0]?.PlotAreaPRCardSqFt ?? 0}
+                                                value={buildingDetailsList?.[0]?.PlotAreaPRCardSqMt ?? 0}
                                             />
 
                                         </div>

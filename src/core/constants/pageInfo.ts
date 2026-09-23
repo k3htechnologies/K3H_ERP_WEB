@@ -675,14 +675,27 @@ export const getPageInfo = (path: string) => {
         title: "Material Requisition",
         description: "Streamlined material requests for efficient project execution",
       };
-      
-      case "materialRequisitionReports":
+
+    case "materialRequisitionReports":
       return {
         title: "Material Requisition Report",
         description: "Streamlined material requests for efficient project execution",
       };
 
-      
+    case "purchaseMasterReport":
+      return {
+        title: "Purchase Master Report",
+        description: "Streamlined material requests for efficient project execution",
+      };
+
+    //STORE STOCK MANAGEMENT
+    case "stock":
+      return {
+        title: "Stock Management",
+        description: "Streamlined material requests for efficient project execution",
+      };
+
+
 
     default:
       return {

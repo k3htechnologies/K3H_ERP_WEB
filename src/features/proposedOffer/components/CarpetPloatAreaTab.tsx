@@ -103,17 +103,17 @@ export const CarpetPlotAreaTab: React.FC<CarpetPlotAreaTabProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <FieldItem
                     label="Gross Plot Area (SqMt)"
-                    value={buildingDetailsList?.GrossPlotAreaSqFt ?? 0}
+                    value={buildingDetailsList?.GrossPlotAreaSqMt ?? 0}
                   />
 
                   <FieldItem
                     label="Physical Survey Area (SqMt)"
-                    value={buildingDetailsList?.PlotAreaPhysicalSurveySqFt ?? 0}
+                    value={buildingDetailsList?.PlotAreaPhysicalSurveySqMt ?? 0}
                   />
 
                   <FieldItem
                     label="Old Approved Plan Area (SqMt)"
-                    value={buildingDetailsList?.PlotAreaOldApprovedPlanSqFt ?? 0}
+                    value={buildingDetailsList?.PlotAreaOldApprovedPlanSqMt ?? 0}
                   />
                 </div>
               </div>
@@ -124,12 +124,12 @@ export const CarpetPlotAreaTab: React.FC<CarpetPlotAreaTabProps> = ({
 
                   <FieldItem
                     label="Conveyance Area (SqMt)"
-                    value={buildingDetailsList?.PlotAreaConveyanceSqFt ?? 0}
+                    value={buildingDetailsList?.PlotAreaConveyanceSqMt ?? 0}
                   />
 
                   <FieldItem
                     label="PR Card Area (SqMt)"
-                    value={buildingDetailsList?.PlotAreaPRCardSqFt ?? 0}
+                    value={buildingDetailsList?.PlotAreaPRCardSqMt ?? 0}
                   />
 
                 </div>

@@ -76,3 +76,4 @@ export interface Table6 {
 }
 
 export type CrmDashboardResponse = ApiResponse<CrmDashboardModel>;
+export type CrmMilestoneCollectionResponse = ApiResponse<string>;

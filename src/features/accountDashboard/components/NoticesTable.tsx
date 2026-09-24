@@ -100,6 +100,7 @@ export default function NoticesTable({ }) {
 
                 <div className="min-w-[500px] sm:min-w-full flex-1 flex flex-col mt-3">
                     <DataTableWithHeaderRowDivider
+
                         data={data}
                         columns={columns}
                         recordsPerPage={6}

@@ -66,7 +66,7 @@ export default function OverviewCards({ }) {
                         >
                             {/* Left content */}
                             <div>
-                                <h2 className="text-xs font-medium text-slate-500">
+                                <h2 className="text-sm   font-medium text-slate-500">
                                     {item.title}
                                 </h2>
 
@@ -74,7 +74,7 @@ export default function OverviewCards({ }) {
                                     {item.value}
                                 </p>
 
-                                <p className="text-[11px] text-slate-500 mt-1">
+                                <p className="text-xs text-slate-500 mt-1">
                                     {item.subtitle}
                                 </p>
                             </div>

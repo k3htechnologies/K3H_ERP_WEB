@@ -75,6 +75,7 @@ export interface FilterWithPaginationStockManagementSummaryRequest {
 export interface AddUpdateStockUsage {
     ProjectId: number | 0,
     MaterialRequisitionGRNStockId: number | 0,
+    SubMaterialMasterId: number | 0,
     UsedQuantity: number | 0
     UnusedQuantity: number | 0
 }

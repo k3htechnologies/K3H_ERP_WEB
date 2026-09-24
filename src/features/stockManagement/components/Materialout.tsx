@@ -95,6 +95,7 @@ export const MaterialOut: React.FC = () => {
                 const payload = {
                     ProjectId: Number(projectId),
                     MaterialRequisitionGRNStockId: selectedMaterialOut.MaterialRequisitionGRNStockId ?? 0,
+                    SubMaterialMasterId: selectedMaterialOut.SubMaterialMasterId ?? 0,
                     TotalQuantity: totalQty,
                     UnusedQuantity: Number(usageForm.unusedQuantity),
                     UsedQuantity: totalQty - Number(usageForm.unusedQuantity),
@@ -145,7 +146,7 @@ export const MaterialOut: React.FC = () => {
                     );
                 },
             },
-             {
+            {
                 key: "PartyName",
                 label: 'Receiver Name',
                 width: "20",
@@ -286,7 +287,7 @@ export const MaterialOut: React.FC = () => {
     const MaterialOutForTable = useMemo(() => materialOutList, [materialOutList]);
 
     return (
-        <div>
+        <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "}</Loader>
 
             <DataTable
@@ -310,51 +311,69 @@ export const MaterialOut: React.FC = () => {
                         e.preventDefault();
                         handleSaveUsage();
                     }}
-                    cancelText="Cancel"
+
                     saveText="Save"
                     loading={isSavingUsage}
                 >
-                    <div className="space-y-4 p-1">
-                        <div>
-                            <Input
-                                label="Total Quantity"
-                                value={`${totalQty} ${uomCode}`}
-                                disabled
-                            />
+                    <div className="space-y-10 p-6 bg-blue-100">
+                        <div className="space-y-4">
+                            <div>
+                                <Input
+                                    label="Total Quantity"
+                                    value={`${totalQty} ${uomCode}`}
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <Input
+                                    label="Used Quantity"
+                                    value={`${usedQty < 0 ? 0 : usedQty} ${uomCode}`}
+                                    disabled
+                                />
+                            </div>
+
+                            <div>
+                                <Input
+                                    label="Scrap Quantity"
+                                    max={totalQty}
+                                    required
+                                    placeholder="Enter Scrap Quantity "
+                                    value={usageForm.unusedQuantity}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+
+                                        if (value === "") {
+                                            setUsageForm({
+                                                unusedQuantity: "",
+                                            });
+                                            return;
+                                        }
+
+                                        const quantity = Number(value);
+
+                                        if (quantity > Number(totalQty)) {
+                                            
+                                            return;
+                                        }
+
+                                        setUsageForm({
+                                            unusedQuantity: value,
+                                        });
+
+                                        if (usageErrors.unusedQuantity) {
+                                            setUsageErrors((er) => ({
+                                                ...er,
+                                                unusedQuantity: undefined,
+                                            }));
+                                        }
+                                    }}
+                                    rightIcon={uomCode}
+                                    error={usageErrors.unusedQuantity}
+                                />
+                            </div>
+
                         </div>
-
-                        <div>
-                            <Input
-                                label="Used Quantity"
-                                value={`${usedQty < 0 ? 0 : usedQty} ${uomCode}`}
-                                disabled
-                            />
-                        </div>
-
-                        <div>
-                            <Input
-                                label="Scrap Quantity"
-                                max={totalQty}
-                                required
-                                placeholder="Enter Scrap Quantity "
-                                value={usageForm.unusedQuantity}
-                                onChange={(e) => {
-                                    setUsageForm({
-                                        unusedQuantity: e.target.value,
-                                    });
-
-                                    if (usageErrors.unusedQuantity) {
-                                        setUsageErrors((er) => ({
-                                            ...er,
-                                            unusedQuantity: undefined,
-                                        }));
-                                    }
-                                }}
-                                rightIcon={uomCode}
-                                error={usageErrors.unusedQuantity}
-                            />
-                        </div>
-
                     </div>
                 </Modal>
             )}

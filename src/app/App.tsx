@@ -224,10 +224,11 @@ import InvoicePayment from '@/features/materialRequisition/components/invoice/In
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
 import ViewMaterialRequisitionReport from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
-import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+import PurchaseMasterReport from '@/features/purchaseMasterReport/pages/PurchaseMasterReport';
 import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
+import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -572,9 +573,14 @@ function App() {
             <Route path="/materialRequisition/makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
 
+            <Route path="purchaseMasterReport" element={<PurchaseMasterReport />} />
+
+            
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
+
+
 
           </Route>
 

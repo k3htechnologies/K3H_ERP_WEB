@@ -214,7 +214,7 @@ export const AddUpdateMaterialRequisition = () => {
         }
 
         const loadProjectBudget = async () => {
-            const data = await fetchProjectBudget(Number(projectId));
+            const data = await fetchProjectBudget(Number(projectId), "APPROVED");
             setProjectBudgetList(data);
         };
 
@@ -721,13 +721,13 @@ export const AddUpdateMaterialRequisition = () => {
         );
     };
 
-    const budgetQuantity =  Number(subMaterialDetails?.Quantity ?? 0) *Number(subMaterialDetails?.L3Quantity ?? 0);
+    const budgetQuantity = Number(subMaterialDetails?.Quantity ?? 0) * Number(subMaterialDetails?.L3Quantity ?? 0);
 
     const orderQuantity = Number(subMaterialDetails?.OrderQuantity ?? 0);
 
-    const existingRequisitionQuantity =  Number(materialData.MaterialRequisitionDetailId ?? 0) > 0 ? originalMaterialQuantity: 0;
+    const existingRequisitionQuantity = Number(materialData.MaterialRequisitionDetailId ?? 0) > 0 ? originalMaterialQuantity : 0;
 
-    const maxQuantity = budgetQuantity -  orderQuantity + existingRequisitionQuantity;
+    const maxQuantity = budgetQuantity - orderQuantity + existingRequisitionQuantity;
 
     return (
         <div>
@@ -1331,6 +1331,7 @@ export const AddUpdateMaterialRequisition = () => {
                                         </div>
                                     </div>
                                 )}
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                                     <Input

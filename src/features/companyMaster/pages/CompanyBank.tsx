@@ -39,7 +39,7 @@ const initialFormState = (): AddUpdateCompanyMasterWithBankDetailsRequest => ({
    Status: '',
    MICRCode: '',
    CancelChequeURL: null,
-   RemoveCancelChequeURLURL: ""
+   RemoveCancelChequeURL: ""
 });
 
 export const CompanyBank: React.FC = () => {
@@ -118,7 +118,7 @@ export const CompanyBank: React.FC = () => {
                Status: editCompanyMasterWithBankDetails.Status || "",
                MICRCode: editCompanyMasterWithBankDetails.MICRCode || "",
                CancelChequeURL: null,
-               RemoveCancelChequeURLURL: ""
+               RemoveCancelChequeURL: ""
             })
             setCancelChequeFiles([]);
             setCancelChequeURL(editCompanyMasterWithBankDetails.CancelChequeURL || '');
@@ -431,7 +431,7 @@ export const CompanyBank: React.FC = () => {
          }
       });
 
-      fd.append('RemoveCancelChequeURLURL', removeCancelChequeUrls.join(','));
+      fd.append('RemoveCancelChequeURL', removeCancelChequeUrls.join(','));
 
       return fd;
    }

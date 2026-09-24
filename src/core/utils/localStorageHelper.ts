@@ -1639,8 +1639,8 @@ export const LocalStorageHelper = {
     return null;
   },
   //#endregion
-  //#endregion
-  //#region STORE STOCK MANAGEMENT COLUMNS
+
+   //#region STORE STOCK MANAGEMENT COLUMNS
   storeStockManagementTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS, columns);
@@ -1664,6 +1664,7 @@ export const LocalStorageHelper = {
   },
   //#endregion
   
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
@@ -1765,6 +1766,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_LAND_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_REDEVELOPMENT_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
@@ -1796,6 +1798,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_ROLE_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.STOCK_MANAGEMENT);
 
 
     } catch (error) {

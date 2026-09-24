@@ -146,7 +146,7 @@ export const MaterialIn: React.FC = () => {
     const MaterialInForTable = useMemo(() => materialInList, [materialInList]);
 
     return (
-        <div >
+        <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "}</Loader>
 
             <DataTable

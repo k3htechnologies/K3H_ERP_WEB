@@ -474,7 +474,7 @@ const InvoicePayment: React.FC = () => {
                     {PendingAmount !== 0 && !materialRequisitionStatus && (
                         <div className="absolute bottom-4 right-4">
                             <Button
-                                color="blue"
+                                color="green"
                                 onClick={() =>
                                     handleMakePayment(
                                         invoiceData as MaterialRequisitionInvoiceData
@@ -482,9 +482,7 @@ const InvoicePayment: React.FC = () => {
                                 }
                                 size="sm"
                                 style={{
-                                    color: '#FFFFFF',
-                                    padding: '4px 8px',
-                                    backgroundColor: '#135BEC'
+                                    background: "#00AC00"
                                 }}
                             >
                                 Make Payment
@@ -560,7 +558,7 @@ const InvoicePayment: React.FC = () => {
                                 <h3 className="font-semibold mb-2">Action Details</h3>
                                 <FieldItem label="Created By" value={item?.CreatedBy ?? "-"} />
                                 <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(item?.CreatedDate ?? "-")} />
-                                
+
                             </div>
                         </div>
                     </div>

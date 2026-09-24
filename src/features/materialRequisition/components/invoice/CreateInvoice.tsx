@@ -470,8 +470,6 @@ const CreateInvoice: React.FC = () => {
         );
     };
 
-    const raisedInvoiceAmount = (Number(invoiceSummaryData?.TotalRequisitionAmount) || 0) - (Number(invoiceSummaryData?.TotalInvoiceAmount) || 0)
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
@@ -638,13 +636,13 @@ const CreateInvoice: React.FC = () => {
                                 onChange={(e) => {
                                     const value = filterNumbersWithDecimal(e.target.value);
 
-                                    if (Number(value) <= (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0)) ) {
+                                    if (Number(value) <= (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))) {
                                         handleFieldChange("InvoiceAmount", value);
                                     }
                                 }}
                                 placeholder="Enter Invoice Amount"
                                 rightIcon="(₹)"
-                                max={(Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
+                                max={(Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
                                 error={errors.InvoiceAmount}
                             />
                         </div>

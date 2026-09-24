@@ -258,9 +258,12 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                     {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && row.InvoiceStatus.toUpperCase() === "APPROVED" && !materialRequisitionStatus && (
                         <Button
-                            color="blue"
                             size="sm"
+                            color="green"
                             onClick={() => handleMakePayment(row)}
+                            style={{
+                                background: "#00AC00"
+                            }}
                         >
                             Make Payment
                         </Button>
@@ -434,7 +437,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
     };
 
     return (
-        <div className="pt-2">
+        <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
@@ -615,6 +618,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                         isIcons={true}
                                                         onHistory={() => handleApprovalLog(row as MaterialRequisitionInvoiceData)}
                                                     />
+
                                                     <Button
                                                         type="button"
                                                         onClick={(e) => {
@@ -664,10 +668,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                 <div className="space-y-3">
                                                     <h3 className="font-semibold mb-2">Invoice Details</h3>
 
-
                                                     <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row?.InvoiceDate ?? '')} />
                                                     <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(row?.InvoiceDueDate ?? '')} />
-
                                                     <FieldItem label="Remark" value={row?.Remarks ?? ''} />
                                                 </div>
 
@@ -675,7 +677,6 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                     <h3 className="font-semibold mb-2">Document's Details</h3>
 
                                                     <FieldItem label="Invoice" urls={row.UploadInvoiceURL} isSetValue={false} isIcon />
-
                                                     <FieldItem label="Performance Report" urls={row.PerformaInvoiceURL} isSetValue={false} isIcon />
                                                     <FieldItem label="Measurement Report" urls={row.MeasurementReportURL} isSetValue={false} isIcon />
 
@@ -685,7 +686,6 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                     <h3 className="font-semibold mb-2">Action Details</h3>
 
                                                     <FieldItem label="Created By" value={row?.CreatedBy ?? "-"} />
-
                                                     <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")} />
                                                     <FieldItem label="Modified By" value={row?.ModifiedBy ?? "-"} />
                                                     <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")} />

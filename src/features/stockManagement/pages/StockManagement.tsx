@@ -212,45 +212,41 @@ export const StockManagement: React.FC = () => {
                 ),
             },
             {
-                key: "UomCode",
-                label: 'Uom Code',
-                width: "20",
-                sortable: false,
-                align: "left",
-                render: (value) => value || "-"
-            },
-            {
-                key: "TotalMaterialQuantityInStock",
-                label: 'Total Quantity',
-                width: "20",
-                sortable: false,
-                align: "left",
-                render: (value) => value || "-"
-            },
-            {
-                key: "AvailableMaterial",
-                label: 'Available Quantity',
-                width: "20",
-                sortable: false,
-                align: "left",
-                render: (value) => value || "-"
-            },
-            {
-                key: "UsedQuantity",
-                label: "Used Quantity",
-                width: "20",
-                sortable: false,
-                align: "left",
-                render: (value) => value ?? "-"
-            },
-            {
-                key: "ScrapQuantity",
-                label: "Scrap Quantity",
-                width: "20",
-                sortable: false,
-                align: "left",
-                render: (value) => value ?? "-"
-            },
+    key: "TotalMaterialQuantityInStock",
+    label: "Total Quantity",
+    width: "20",
+    sortable: false,
+    align: "left",
+    render: (value, row) =>
+        value != null ? `${value} ${row.UomCode || ""}` : "-"
+},
+{
+    key: "AvailableMaterial",
+    label: "Available Quantity",
+    width: "20",
+    sortable: false,
+    align: "left",
+    render: (value, row) =>
+        value != null ? `${value} ${row.UomCode || ""}` : "-"
+},
+{
+    key: "UsedQuantity",
+    label: "Used Quantity",
+    width: "20",
+    sortable: false,
+    align: "left",
+    render: (value, row) =>
+        value != null ? `${value} ${row.UomCode || ""}` : "-"
+},
+{
+    key: "ScrapQuantity",
+    label: "Scrap Quantity",
+    width: "20",
+    sortable: false,
+    align: "left",
+    render: (value, row) =>
+        value != null ? `${value} ${row.UomCode || ""}` : "-"
+},
             {
                 key: 'Actions',
                 label: 'Actions',
@@ -599,18 +595,10 @@ export const StockManagement: React.FC = () => {
                     setTransferNoteFiles([]);
                     setTransferNoteURL('');
                 }}
-                onCancel={() => {
-                    setIsAddUpdateModalOpen(false);
-                    setFormData(initialFormState());
-                    setErrors({});
-                    setTransferNoteFiles([]);
-                    setTransferNoteURL('');
-                }}
                 title={isInward ? 'Add Stock' : 'Remove Stocks'}
                 onSubmit={handleAddRemoveStocks}
                 saveText={isInward ? 'Add Stock' : 'Remove Stocks'}
                 loading={isLoading}
-                cancelText="Cancel"
                 size="xl"
             >
                 <div className="space-y-10 p-6 bg-blue-100">
@@ -666,8 +654,8 @@ export const StockManagement: React.FC = () => {
                         <div>
 
                             <MultiFilePicker
-                                label="Files"
-                                placeholder='Select Files'
+                                label="Transfer Note"
+                                placeholder='Select Transfer Note'
                                 value={transferNoteFiles}
                                 onChange={setTransferNoteFiles}
                                 availableFilesURL={transferNoteURL ?? ""}

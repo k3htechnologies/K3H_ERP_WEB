@@ -145,7 +145,11 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         // PURCHASE MATERIAL REQUISITION
         '/materialrequisition': '/materialRequisition',
-        '/materialrequisitionreports':'/materialRequisitionReports'
+        '/materialrequisitionreports':'/materialRequisitionReports',
+        '/purchasemasterreport':'/purchaseMasterReport',
+
+        //STORE STOCK MANAGEMENT
+        '/stock':'/stock',
     }
 
 

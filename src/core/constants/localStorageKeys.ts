@@ -127,13 +127,12 @@ export const LOCAL_STORAGE_KEYS = {
 
     //PURCHASE  MATERIAL REQUISITION
     MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
-
-
+    
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
 
-    // PROJECT PROFESSIONAL DETAILS
-    PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS: 'projectProfessionalDetails.selectedColumns',
+
+
 
 } as const
 
@@ -169,8 +168,8 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
 
     STOCK_MANAGEMENT: 'stock.listState',
     MATERIAL_REQUISITION: 'materialRequisition.listState',
-    PROJECT_PROFESSIONAL_DETAILS: 'projectProfessionalDetails.listState',
-    PROJECT_LAND: 'projectLead.listState',
-    PROJECT_REDEVELOPMENT: 'projectLead.listState',
+    STOCK_MANAGEMENT: 'stock.listState',
+
+
 
 } as const

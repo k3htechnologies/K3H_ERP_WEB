@@ -164,11 +164,11 @@ export interface BuildingDetailsData {
   ProjectId: number;
 
   // ===================== [BUILDING PLOT AREA] =====================
-  GrossPlotAreaSqFt: number;
-  PlotAreaPhysicalSurveySqFt?: number | null;
-  PlotAreaOldApprovedPlanSqFt?: number | null;
-  PlotAreaConveyanceSqFt?: number | null;
-  PlotAreaPRCardSqFt?: number | null;
+  GrossPlotAreaSqMt: number;
+  PlotAreaPhysicalSurveySqMt?: number | null;
+  PlotAreaOldApprovedPlanSqMt?: number | null;
+  PlotAreaConveyanceSqMt?: number | null;
+  PlotAreaPRCardSqMt?: number | null;
 
   // ===================== [BUILDING CONSTRUCTION DETAILS] =====================
   TotalCarpetAreaSqFt: number;
@@ -220,11 +220,11 @@ export interface AddUpdateBuildingDetailsRequest {
   ProjectId: number;
 
   // ===================== [BUILDING PLOT AREA] =====================
-  GrossPlotAreaSqFt: number;
-  PlotAreaPhysicalSurveySqFt?: number;
-  PlotAreaOldApprovedPlanSqFt?: number;
-  PlotAreaConveyanceSqFt?: number;
-  PlotAreaPRCardSqFt?: number;
+  GrossPlotAreaSqMt: number;
+  PlotAreaPhysicalSurveySqMt?: number;
+  PlotAreaOldApprovedPlanSqMt?: number;
+  PlotAreaConveyanceSqMt?: number;
+  PlotAreaPRCardSqMt?: number;
 
   // ================== [BUILDING CONSTRUCTION DETAILS] ==============
   TotalCarpetAreaSqFt: number;

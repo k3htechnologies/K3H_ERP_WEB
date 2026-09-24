@@ -21,7 +21,7 @@ export interface BudgetDropdownItem {
     OrderQuantity: number | 0
 }
 
-export const fetchProjectBudget = async (projectId: number): Promise<BudgetData[]> => {
+export const fetchProjectBudget = async ( projectId: number,approvalStatus? :string): Promise<BudgetData[]> => {
 
     try {
 
@@ -29,11 +29,13 @@ export const fetchProjectBudget = async (projectId: number): Promise<BudgetData[
             return [];
         }
 
-        const responseEither = await budgetService.apiCallPullBudget({
-            PageSize: 1000,
-            PageNumber: 1,
-            ProjectId: projectId
-        });
+        const responseEither =
+            await budgetService.apiCallPullBudget({
+                PageSize: 100000,
+                PageNumber: 1,
+                ProjectId: projectId,
+                ApprovalStatus:approvalStatus?.trim()
+            });
 
         if (E.isLeft(responseEither)) {
 

@@ -185,7 +185,7 @@ export interface AddUpdateCompanyMasterWithBankDetailsRequest {
     Status: string | '';
     MICRCode: string | '';
     CancelChequeURL: File[] | null;
-    RemoveCancelChequeURLURL: string | '';
+    RemoveCancelChequeURL: string | '';
 }
 
 export interface DeleteCompanyMasterWithBankDetailsRequest {

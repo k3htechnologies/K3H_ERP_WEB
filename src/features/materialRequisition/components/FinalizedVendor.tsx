@@ -46,10 +46,10 @@ interface FinalizedVendorProps {
     onApprovalSuccess?: () => Promise<void>;
 }
 
-export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSuccess }) => {
+export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) => {
 
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>()
-    const { listState,updateListState } = useMaterialRequisitionListState()
+    const { listState, updateListState } = useMaterialRequisitionListState()
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId
     const currentUniquekey = listState.Uniquekey
     const { projectId } = useProject()
@@ -198,7 +198,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                     setSelectedVendorIds([])
 
-                     updateListState({ MaterialRequisitionStage: 'Get Compare' });
+                    updateListState({ MaterialRequisitionStage: 'Get Compare' });
 
                     await loadSelectedVendor()
 
@@ -428,7 +428,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                 {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
                     <Button
-                         type="button"
+                        type="button"
                         size="md"
                         style={{
                             color: '#00A800',
@@ -475,7 +475,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
             {materialRequisitionVendorSelectedList.length === 0
                 ? <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message='No Finalize Vendor data found' />
+                    <NoDataView message='No Finalize Vendor data found' />
                 </section>
 
                 : materialRequisitionVendorSelectedList.map((vendor: any) => {
@@ -498,18 +498,22 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                             isShadow={false}
                             titleClassName="flex-1 min-w-0"
                             title={
-                                <div className="flex flex-col w-full">
+                                <div className="flex flex-col w-full"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
 
                                     <div className="flex items-center justify-between w-full pb-4 px-1 border-b border-gray-200">
 
                                         <div className="flex items-center gap-3">
-
                                             <Checkbox
                                                 checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
                                                 disabled={!canAction || (isAnyFinalized && !vendor.IsFinalized)}
-                                                onChange={() => canAction && setCheckedFinalVendor(
-                                                    checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
-                                                }
+                                                onChange={() => {
+                                                    if (isAnyFinalized) return
+
+                                                    canAction && setCheckedFinalVendor(
+                                                        checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
+                                                }}
                                                 onClick={(e) => e.stopPropagation()}
                                                 size="md"
                                             />
@@ -706,7 +710,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
             >
                 <div className="flex flex-col h-[calc(100vh-180px)]">
 
-                   <div className="px-2 py-2 shrink-0">
+                    <div className="px-2 py-2 shrink-0">
                         <div className="flex items-center gap-3 w-full">
                             <Checkbox
                                 checked={selectedVendorIds.length === materialRequisitionVendorFinalizedList.length}
@@ -726,7 +730,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
 
                         </div>
                     </div>
-
 
                     <div className="flex-1 min-h-0 overflow-y-auto divide-y thin-scroll">
 
@@ -789,7 +792,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({onApprovalSucce
                         )}
 
                     </div>
-                
+
                 </div>
             </Modal>
 

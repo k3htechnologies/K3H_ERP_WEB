@@ -9,6 +9,11 @@ export const getPageInfo = (path: string) => {
         description: "Quick insights, smarter decisions",
       };
 
+    case "erpRoadmap":
+      return {
+        title: "ERP Roadmap",
+        description: "Track ERP Modules, Development Progress, Upcoming Features and Enhancements",
+      };
       {
         /* SETTING -> COMPANY SETUP */
       }

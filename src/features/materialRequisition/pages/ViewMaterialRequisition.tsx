@@ -238,6 +238,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                             !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
                             !["COMPLETED", "CLOSED"].includes(listState?.MaterialRequisitionStage?.toUpperCase() ?? "") &&
                             ["GET QUOTATION"].includes(listState?.MaterialRequisitionStage?.toUpperCase())}
+
                         onEdit={() => {
 
                             if (activeTab === "Overview") {
@@ -257,7 +258,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                             setIsRevokeFinalizationVendorDialogOpen(true);
                         }}
-                        canActionExtraButtonText={canMaterialRequisitionView && matrialRequisitionData?.IsCopy && activeTab === 'Details' && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())}
+                        canActionExtraButtonText={canMaterialRequisitionView && matrialRequisitionData?.IsCopy  && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())}
 
                         ExtraExtraButtonText="Closed | Completed"
                         onExtraExtraButton={() => {
@@ -271,7 +272,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                             setIsCloseRequisitionDialogOpen(true);
                         }}
-                        canActionExtraExtraButton={canMaterialRequisitionView && activeTab === 'Details' && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())}
+                        canActionExtraExtraButton={canMaterialRequisitionView && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())}
                     />
                 </div>
             </div>

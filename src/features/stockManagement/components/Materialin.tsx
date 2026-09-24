@@ -6,13 +6,13 @@ import { stockManagementService } from "@/features/stockManagement/services/Stoc
 import { runApiWithLoader } from "@/core/utils";
 import * as E from 'fp-ts/Either';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Loader } from "@/core/utils/loader";
 import { useStockManagementListState } from "@/features/stockManagement/context/StockManagementListStateContext";
 import { useParams } from "react-router-dom";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import usePagination from "@/core/hooks/usePagination";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 export const MaterialIn: React.FC = () => {
 
@@ -102,12 +102,8 @@ export const MaterialIn: React.FC = () => {
                 fixed: "left",
                 align: "left",
                 render: (value) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                    />
-                ),
+                    <FieldInfoTooltip value={value} />
+                )
             },
             {
                 key: "CreatedBy",

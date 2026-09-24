@@ -1,4 +1,4 @@
-import { INVOICE_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants/staticData";
+import {  PAYMENT_MODE } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -89,27 +89,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                 updated.AccountNumber = "";
                 updated.IFSCCode = "";
             }
-
-            if (field === "PaymentType") {
-                if (value === "Full") {
-                    updated.AmountPaid = remainingInvoiceAmount;
-                    updated.PendingAmount = 0;
-                }
-
-                if (value === "Partial") {
-                    updated.AmountPaid = 0;
-                    updated.PendingAmount = remainingInvoiceAmount;
-                }
-            }
-
-            if (field === "AmountPaid") {
-                const paid = toNumber(updated.AmountPaid);
-
-                updated.PendingAmount = Math.max(
-                    remainingInvoiceAmount - paid,
-                    0
-                );
-            }
+           
             return updated;
         });
 
@@ -128,9 +108,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
         if (!formData.PaymentMode) {
             newErrors.PaymentMode = " Payment Mode is Required";
         }
-        if (!formData.PaymentType) {
-            newErrors.PaymentType = " Payment Type is Required";
-        }
+        
         if (!formData.AmountPaid) {
             newErrors.AmountPaid = " Amount Paid is Required";
         } else if (toNumber(formData.AmountPaid) <= 0) {
@@ -139,14 +117,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
         if (toNumber(formData.AmountPaid) > remainingInvoiceAmount) {
             newErrors.AmountPaid = `Amount cannot exceed ₹${remainingInvoiceAmount}`;
         }
-        if (!formData.TDSAmount) {
-            newErrors.TDSAmount = "TDS Amount is Required";
 
-        } else if (toNumber(formData.TDSAmount) < 0) {
-            newErrors.TDSAmount = "Invalid";
-
-        } else if (toNumber(formData.TDSAmount) > toNumber(formData.AmountPaid)) {
-            newErrors.TDSAmount = "TDS Amount can't be greater than Amount Paid";
+        if (toNumber(formData.AmountPaid) + toNumber(formData.TDSAmount) > remainingInvoiceAmount) {
+            newErrors.AmountPaid = `Amount + TDS Amount cannot exceed invoice amount`;
         }
 
         if (!formData.TransactionNumber) {
@@ -320,7 +293,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
 
                             const paidAmt = toNumber(invoice.InvoiceAmountPaidTillDate);
 
-                            const pendingAmt = Math.max(invoiceAmt - paidAmt, 0);
+                             const tdsAmt = toNumber(invoice.InvoiceTDSPaidTillDate);
+
+                            const pendingAmt = Math.max(invoiceAmt - paidAmt -tdsAmt, 0);
 
                             setRemainingInvoiceAmount(pendingAmt);
 
@@ -418,20 +393,17 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                         />
                     )}
 
-                    <SinglePageSelection
-                        label="Payment Type"
-                        required
-                        value={formData.PaymentType}
-                        onChange={(e) => handleFieldChange("PaymentType", String(e))}
-                        options={INVOICE_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
-                        error={errors.PaymentType}
+                     <Input
+                        label="Invoice Amount"
+                        value={String(formData.PendingAmount)}
+                        disabled
+                        rightIcon="₹"
                     />
 
                     <Input
                         required
                         label="Amount Paid"
                         value={String(formData.AmountPaid)}
-                        disabled={formData.PaymentType === "Full"}
                         onChange={(e) => {
                             const value = filterNumbersWithDecimal(e.target.value);
 
@@ -441,13 +413,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                             }
                         }}
                         error={errors.AmountPaid}
-                        rightIcon="₹"
-                    />
-
-                    <Input
-                        label="Pending Amount"
-                        value={String(formData.PendingAmount)}
-                        disabled
                         rightIcon="₹"
                     />
 

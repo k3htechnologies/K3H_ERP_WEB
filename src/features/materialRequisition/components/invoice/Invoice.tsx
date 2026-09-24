@@ -258,12 +258,13 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                     {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && row.InvoiceStatus.toUpperCase() === "APPROVED" && !materialRequisitionStatus && (
                         <Button
-                            size="sm"
                             color="green"
-                            onClick={() => handleMakePayment(row)}
+                            size="sm"
                             style={{
-                                background: "#00AC00"
+                                background:"#00AC00"
                             }}
+
+                            onClick={() => handleMakePayment(row)}
                         >
                             Make Payment
                         </Button>
@@ -272,6 +273,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                     {row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && !materialRequisitionStatus && (
                         <Button
                             color="blue"
+                            variant="solid"
+                            colorMode="extraLight"
                             size="sm"
                             onClick={() => handleMakePayment(row)}
                         >
@@ -282,6 +285,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                     {materialRequisitionStatus && (
                         <Button
                             color="blue"
+                            variant="solid"
+                            colorMode="extraLight"
                             size="sm"
                             onClick={() => handleMakePayment(row)}
                         >
@@ -510,6 +515,12 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                 value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)}
                             />
 
+                             <FieldItem
+                                label="TDS Paid (₹)"
+                                value={formatCurrency(invoiceSummaryData?.TotalTDSAmountPaid)}
+                            />
+                            
+
                             <FieldItem
                                 label="Pending(₹)"
                                 value={formatCurrency(invoiceSummaryData?.RemainingInvoiceAmount)}
@@ -601,10 +612,19 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                         }
                                                         isRow
                                                     />
+                                                    <FieldItem
+                                                        label="TDS Paid Till Date"
+                                                        value={
+                                                            <span className="text-green-600 font-semibold">
+                                                                {formatCurrency(row?.InvoiceTDSPaidTillDate)}
+                                                            </span>
+                                                        }
+                                                        isRow
+                                                    />
 
                                                     <FieldItem label=" Amount to be Paid" value={
                                                         <span className="text-red-600 font-semibold">
-                                                            {formatCurrency(Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate))}
+                                                            {formatCurrency(Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate) - Number(row.InvoiceTDSPaidTillDate))}
                                                         </span>
                                                     } isRow />
                                                 </div>

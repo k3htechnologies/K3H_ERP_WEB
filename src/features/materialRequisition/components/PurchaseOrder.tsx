@@ -149,7 +149,9 @@ export const PurchaseOrder: React.FC = () => {
         const newErrors: { [key: string]: string } = {}
 
         if (!formData.Remarks?.trim()) {
-            newErrors.Remarks = "Remark is required.";
+            newErrors.Remarks = "Remarks is required.";
+        } else if (formData.Remarks.replace(/\s/g, "").length < 25) {
+            newErrors.Remarks = "Remark must be at least 25 characters";
         }
         if (!formData.TermsCondition?.trim()) {
             newErrors.TermsCondition = "Terms & Condition is required.";
@@ -366,7 +368,6 @@ export const PurchaseOrder: React.FC = () => {
                             <Maximize2 className="h-5 w-5 text-gray-700" />
                         </button>
                     </div>
-
 
                     <div
                         className="w-full" style={{ height: `${pdfHeight - 180}px` }}  >

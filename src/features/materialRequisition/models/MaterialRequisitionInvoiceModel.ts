@@ -27,6 +27,7 @@ export interface MaterialRequisitionInvoiceData {
     RemoveMeasurementReportURL: string | null;
     InvoiceAmount: number | 0;
     InvoiceAmountPaidTillDate: number | 0;
+    InvoiceTDSPaidTillDate: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
     InvoiceStatus: string;
@@ -74,6 +75,7 @@ export interface MaterialRequisitionInvoiceSummaryData {
     MaterialRequisitionId: number | 0;
     TotalInvoiceAmount: number | 0,
     TotalAmountPaid: number | 0,
+    TotalTDSAmountPaid: number | 0,
     RemainingInvoiceAmount: number | 0,
     TotalRequisitionAmount: number | 0,
     PaidRequisitionAmount: number | 0,

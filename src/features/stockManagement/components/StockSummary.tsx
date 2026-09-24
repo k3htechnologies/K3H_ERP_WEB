@@ -15,6 +15,9 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { Button } from "@/ui/components/forms";
+import { copyToClipboard } from "@/core/utils/comman";
+import { Copy } from "lucide-react";
 
 export const StockSummary: React.FC = () => {
 
@@ -75,7 +78,7 @@ export const StockSummary: React.FC = () => {
             {
                 key: "MaterialName",
                 label: 'Material Name',
-                width: "30",
+                width: "20",
                 sortable: false,
                 align: "left",
                 render: (value) => (
@@ -88,7 +91,7 @@ export const StockSummary: React.FC = () => {
             },
             {
                 key: "SubMaterialName",
-                label: 'SubMaterial Name',
+                label: 'Sub Material',
                 width: "20",
                 sortable: false,
                 align: "left",
@@ -100,28 +103,59 @@ export const StockSummary: React.FC = () => {
                     />
                 )
             },
+            
             {
-                key: "UomCode",
-                label: 'UOM',
-                width: "20",
-                sortable: false,
-                align: "left",
-                render: (value) => value || "-"
-            },
-            {
-                key: "SystemGeneratedCode",
-                label: 'PO No.',
-                width: "30",
-                sortable: false,
-                align: "left",
-                render: (value) => value || "-"
-            },
+            key: 'SystemGeneratedCode',
+            label: 'MR Code',
+            sortable: false,
+            width: '20',
+            fixed: 'left',
+            align: 'left',
+            render: (value) => {
+                return (
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="180px"
+                            tooltipThreshold={30}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+
+                        />
+
+                        {value && (
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const success = await copyToClipboard(value);
+                                    if (success) {
+                                        addToast({ type: 'success', title: `${value} Copied!` });
+                                    }
+                                }}
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    padding: '2px 6px',
+                                    color: '#6B7280',
+                                    cursor: 'pointer'
+                                }}
+                                title="Copy"
+                            >
+                                <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
+        },
             {
                 key: "TotalMaterialQuantityInStock",
-                label: 'Total Material Quantity in Stock',
+                label: 'Quantity in Stock',
                 width: "10",
                 sortable: false,
                 align: "left",
+                render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
             }
         ], [])
 

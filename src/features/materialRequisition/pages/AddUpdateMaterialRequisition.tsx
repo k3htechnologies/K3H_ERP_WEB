@@ -662,6 +662,25 @@ export const AddUpdateMaterialRequisition = () => {
         return { label, value: String(id) };
     };
 
+    const validateMaterialRequisitionForm = (): {
+
+        isValid: boolean
+        errors: { [key: string]: string }
+    } => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!formData.Remarks) {
+            newErrors.Remarks = ' Remarks is required.';
+        } else if (formData.Remarks.split(/\s+/).length < 25) {
+            newErrors.Remarks = "Remark must be at least 25 characters";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors
+        };
+    };
+
 
     const PushMaterialRequisitionFormData = (): FormData => {
 
@@ -691,6 +710,12 @@ export const AddUpdateMaterialRequisition = () => {
         }
 
         setErrors({});
+        const validation = validateMaterialRequisitionForm();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return;
+        }
 
         await runApiWithLoader(
             setIsLoading,

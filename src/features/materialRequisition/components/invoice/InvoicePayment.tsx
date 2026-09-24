@@ -306,7 +306,9 @@ const InvoicePayment: React.FC = () => {
 
     const amountPaid = invoiceData?.InvoiceAmountPaidTillDate ? Number(invoiceData.InvoiceAmountPaidTillDate) : 0;
 
-    const PendingAmount = Math.max(InvoiceAmount - amountPaid);
+    const tdsPaid = invoiceData?.InvoiceTDSPaidTillDate ? Number(invoiceData.InvoiceTDSPaidTillDate) : 0;
+
+    const PendingAmount = Math.max(InvoiceAmount - amountPaid - tdsPaid);
 
     const handleConfirmationDialogBoxOpenForPayment = useCallback((row: MaterialRequisitionPaymentData) => {
         setDeletePaymentData(row)
@@ -409,18 +411,27 @@ const InvoicePayment: React.FC = () => {
                             <FieldItem label="Invoice Number" value={invoiceData?.InvoiceNumber || "-"} isRow />
                             <FieldItem label="Invoice Amount" value={formatCurrency(invoiceData?.InvoiceAmount)} isRow />
 
-                            {PendingAmount !== 0 && (
-                                <FieldItem
-                                    label="Amount Paid Till Date"
-                                    isRow
-                                    value={
-                                        <span className="text-green-600 font-semibold">
-                                            {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
-                                        </span>
-                                    }
-                                />
-                            )}
+                            
+                                    <FieldItem
+                                        label="Amount Paid Till Date"
+                                        isRow
+                                        value={
+                                            <span className="text-green-600 font-semibold">
+                                                {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
+                                            </span>
+                                        }
+                                    />
 
+                                    <FieldItem
+                                        label="TDS Paid Till Date"
+                                        value={
+                                            <span className="text-green-600 font-semibold">
+                                                {formatCurrency(invoiceData?.InvoiceTDSPaidTillDate)}
+                                            </span>
+                                        }
+                                        isRow
+                                    />
+                               
                             <FieldItem label=" Amount to be Paid"
                                 isRow
                                 value={
@@ -476,12 +487,12 @@ const InvoicePayment: React.FC = () => {
                             <Button
                                 color="green"
                                 onClick={() =>
-                                    handleMakePayment(
-                                        invoiceData as MaterialRequisitionInvoiceData
-                                    )
+                                    handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)
                                 }
                                 size="sm"
                                 style={{
+                                    color: '#FFFFFF',
+                                    padding: '4px 8px',
                                     background: "#00AC00"
                                 }}
                             >

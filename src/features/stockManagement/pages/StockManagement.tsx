@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { AddUpdateStockManagementRequest, FilterWithPaginationStockManagementRequest, StockManagementRequestData } from "@/features/stockManagement/models/StockManagementModel";
+import type {
+  AddUpdateStockManagementRequest,
+  FilterWithPaginationStockManagementRequest,
+  StockManagementRequestData,
+} from "@/features/stockManagement/models/StockManagementModel";
 import { runApiWithLoader } from "@/core/utils";
 import usePagination from "@/core/hooks/usePagination";
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
+import {  type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import { stockManagementService } from "@/features/stockManagement/services/StockManagementService";
-import * as E from 'fp-ts/Either';
+import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Loader } from "@/core/utils/loader";
@@ -26,663 +30,642 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 
 const initialFormState = (): AddUpdateStockManagementRequest => ({
-    SubMaterialMasterId: 0,
-    ProjectId: 0,
-    Reason: "",
-    InwardOutwardType: "",
-    MaterialQuantityInwardOutward: 0,
-    PartyName: "",
-    TransferNoteURL: null,
-    RemoveTransferNoteURL: ""
-})
+  SubMaterialMasterId: 0,
+  ProjectId: 0,
+  Reason: "",
+  InwardOutwardType: "",
+  MaterialQuantityInwardOutward: 0,
+  PartyName: "",
+  TransferNoteURL: null,
+  RemoveTransferNoteURL: "",
+});
 
 export const StockManagement: React.FC = () => {
+  const [stockManagementList, setStockManagementList] = useState<StockManagementRequestData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const { pagination, setPagination } = usePagination(20);
+  const { addToast } = useToast();
+  const { projectId } = useProject();
+  const { canAction, canExport } = useMenuPermissions();
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+  const navigate = useNavigate();
+  const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+  const [formData, setFormData] = useState<AddUpdateStockManagementRequest>(() => initialFormState());
+  const [selectedRow, setSelectedRow] = useState<StockManagementRequestData | null>(null);
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  const { listState, updateListState, resetFilters, clearStockManagementContext } = useStockManagementListState();
+  const { page, filters, sortInfo, searchTerm } = listState;
+  const [isShowCustomizeStockManagementColumnsModal, setIsShowCustomizeStockManagementColumnsModal] = useState(false);
+  const isInward = formData.InwardOutwardType === "INWARD";
 
-    const [stockManagementList, setStockManagementList] = useState<StockManagementRequestData[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState('');
-    const { pagination, setPagination } = usePagination(20);
-    const { addToast } = useToast();
-    const { projectId } = useProject();
-    const { canAction, canExport } = useMenuPermissions();
-    const [showFilterPopup, setShowFilterPopup] = useState(false);
-    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-    const navigate = useNavigate();
-    const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const [formData, setFormData] = useState<AddUpdateStockManagementRequest>(() => initialFormState());
-    const [selectedRow, setSelectedRow] = useState<StockManagementRequestData | null>(null);
-    const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const { listState, updateListState, resetFilters, clearStockManagementContext } = useStockManagementListState();
-    const { page, filters, sortInfo, searchTerm } = listState;
-    const [isShowCustomizeStockManagementColumnsModal, setIsShowCustomizeStockManagementColumnsModal] = useState(false);
-    const isInward = formData.InwardOutwardType === "INWARD";
+  const [transferNoteFiles, setTransferNoteFiles] = useState<(File | string)[]>([]);
+  const [transferNoteURL, setTransferNoteURL] = useState<string>();
 
-    const [transferNoteFiles, setTransferNoteFiles] = useState<(File | string)[]>([]);
-    const [transferNoteURL, setTransferNoteURL] = useState<string>();
+  useEffect(() => {
+    if (!projectId) return;
 
-    useEffect(() => {
-        if (!projectId) return;
+    if (searchTerm && searchTerm.trim()) {
+      loadStockManagementData(page, { MaterialName: searchTerm.trim() }, sortInfo);
+    } else {
+      loadStockManagementData(page, filters, sortInfo);
+    }
+  }, [projectId, page, filters, sortInfo, searchTerm, clearStockManagementContext]);
 
-        if (searchTerm && searchTerm.trim()) {
-            loadStockManagementData(page, { MaterialName: searchTerm.trim() }, sortInfo);
+  useEffect(() => {
+    setPagination({ currentPage: page });
+  }, [page]);
+
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [filters]);
+
+  const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
+    let filterParams: FilterInfo = {};
+
+    if (value.trim() === "") {
+      updateListState({ searchTerm: "", filters: {}, page: 1 });
+      return;
+    }
+    if (isSerach) {
+      filterParams = { MaterialName: value.trim() };
+    }
+    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+  });
+
+  const loadStockManagementData = async (
+    page: number = pagination.currentPage,
+    filterParams: FilterInfo,
+    sortInfo?: SortInfo,
+    searchtext?: string,
+  ) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationStockManagementRequest = {
+          PageNumber: page,
+          PageSize: pagination.pageSize,
+          ProjectId: Number(projectId),
+          MaterialName: searchtext ? searchtext.trim() : filterParams.MaterialName?.trim() || undefined,
+          SubMaterialName: filterParams.SubMaterialName ? filterParams.SubMaterialName : undefined,
+          SortBy: getSortByParam(sortInfo ?? null, StockManagementColumn),
+        };
+
+        const response = await stockManagementService.apiCallPullStockManagement(params);
+
+        if (E.isRight(response)) {
+          setStockManagementList(response.right.Data);
+
+          setPagination({
+            currentPage: page,
+            totalRecords: response.right.TotalNumberOfRecord,
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+          });
         } else {
-            loadStockManagementData(page, filters, sortInfo);
+          addToast({ type: "error", title: response.left.message });
+          return response;
         }
-    }, [projectId, page, filters, sortInfo, searchTerm, clearStockManagementContext]);
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Loading Stock Management",
+    );
+  };
 
-    useEffect(() => {
-        setPagination({ currentPage: page });
-    }, [page]);
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      updateListState({ page: newPage });
+    },
+    [updateListState],
+  );
 
-    useEffect(() => {
-        setTempFilters(filters);
-    }, [filters]);
+  const handleSearchChange = (searchValue: string) => {
+    updateListState({ searchTerm: searchValue });
+    debouncedSearch(searchValue, false);
+  };
 
-    const debouncedSearch = useDebouncedCallback(
-        (value: string, isSerach: boolean = true) => {
-            let filterParams: FilterInfo = {};
+  const handleClearSearch = () => {
+    debouncedSearch.cancel?.();
+    resetFilters();
+    setTempFilters({});
+  };
 
-            if (value.trim() === "") {
-                updateListState({ searchTerm: "", filters: {}, page: 1 });
-                return;
-            }
-            if (isSerach) {
-                filterParams = { MaterialName: value.trim() }
-            }
-            updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+  const handleSortColumn = useCallback(
+    (sort: SortInfo) => {
+      updateListState({ sortInfo: sort, page: 1 });
+    },
+    [updateListState],
+  );
+
+  const ViewStockManagementDetails = useCallback(
+    (row: StockManagementRequestData) => {
+      updateListState({
+        MaterialId: row.MaterialId ?? 0,
+        SubMaterialId: row.SubMaterialMasterId ?? 0,
+        SubMaterialMasterId: row.SubMaterialMasterId ?? 0,
+        MaterialName: row.MaterialName ?? "",
+        SubMaterialName: row.SubMaterialName ?? "",
+      });
+      navigate("/stock/view");
+    },
+    [navigate, updateListState],
+  );
+
+  const StockManagementPaginationInfo: PaginationInfo = useMemo(
+    () => ({
+      currentPage: pagination.currentPage,
+      totalPages: pagination.totalPages,
+      totalRecords: pagination.totalRecords,
+      pageSize: pagination.pageSize,
+      onPageChange: handlePageChange,
+    }),
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
+  );
+
+  const StockManagementForTable = useMemo(() => stockManagementList, [stockManagementList]);
+
+  const StockManagementColumn = useMemo<TableColumn[]>(
+    () => [
+      {
+        key: "MaterialName",
+        label: "Material Name",
+        width: "20",
+        sortable: true,
+        fixed: "left",
+        align: "left",
+        render: (value, row) => (
+          <TooltipText text={value || "-"} maxWidth="250px" tooltipThreshold={25} onClick={() => ViewStockManagementDetails(row)} />
+        ),
+      },
+      {
+        key: "SubMaterialName",
+        label: "Sub Material",
+        width: "20",
+        sortable: true,
+        align: "left",
+        render: (value) => <TooltipText text={value || "-"} maxWidth="250px" tooltipThreshold={25} />,
+      },
+      {
+        key: "QuantityGroup",
+        label: "Quantity",
+        align: "center",
+        children: [
+          {
+            key: "TotalMaterialQuantityInStock",
+            label: "Total",
+            width: "20",
+            sortable: false,
+            align: "right",
+            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+          },
+          {
+            key: "AvailableMaterial",
+            label: "Available",
+            width: "20",
+            sortable: false,
+            align: "right",
+            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+          },
+          {
+            key: "UsedQuantity",
+            label: "Used",
+            width: "20",
+            sortable: false,
+            align: "right",
+            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+          },
+          {
+            key: "ScrapQuantity",
+            label: "Scrap",
+            width: "20",
+            sortable: false,
+            align: "right",
+            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+          },
+        ],
+      },
+      {
+        key: "Actions",
+        label: "Actions",
+        width: "20",
+        fixed: "left",
+        align: "center",
+        render: (_value, row) => {
+          if (!canAction) return null;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedRow(row);
+                  setFormData({
+                    ...initialFormState(),
+                    SubMaterialMasterId: row.SubMaterialMasterId,
+                    InwardOutwardType: "INWARD",
+                  });
+
+                  setErrors({});
+                  setIsAddUpdateModalOpen(true);
+                  setTransferNoteFiles([]);
+                  setTransferNoteURL("");
+                }}
+                color="blue"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: "30px", height: "30px" }}
+                centerIcon={<Plus className="h-4 w-4" />}
+                title="Add Stocks"
+              ></Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setSelectedRow(row);
+                  setFormData({
+                    ...initialFormState(),
+                    SubMaterialMasterId: row.SubMaterialMasterId,
+                    InwardOutwardType: "OUTWARD",
+                  });
+
+                  setErrors({});
+                  setIsAddUpdateModalOpen(true);
+                  setTransferNoteFiles([]);
+                  setTransferNoteURL("");
+                }}
+                color="red"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: "30px", height: "30px" }}
+                centerIcon={<Minus className="h-4 w-4" />}
+                title="Remove Stocks"
+              ></Button>
+            </div>
+          );
         },
+      },
+    ],
+    [ViewStockManagementDetails],
+  );
+
+  const handleFilterChange = (key: string, value: string) => {
+    setTempFilters((prev) => updateFilter(prev, key, value));
+  };
+
+  const handleExportStockManagement = async (exportType: "Excel" | "PDF") => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationStockManagementRequest = {
+          PageNumber: 1,
+          PageSize: pagination.totalRecords,
+          MaterialName: filters.MaterialName?.trim() || undefined,
+          SubMaterialName: filters.SubMaterialName ?? undefined,
+          ProjectId: Number(projectId),
+          SortBy: getSortByParam(sortInfo ?? null, StockManagementColumn),
+          ExportType: exportType,
+        };
+
+        const response = await stockManagementService.apiCallPullStockManagement(params);
+
+        handleExportFile(response, exportType, "Stock Management", addToast);
+
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message || "Export failed" }),
+      undefined,
+      "Preparing Export",
     );
+  };
 
-    const loadStockManagementData = async (page: number = pagination.currentPage, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string,) => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationStockManagementRequest = {
-                    PageNumber: page,
-                    PageSize: pagination.pageSize,
-                    ProjectId: Number(projectId),
-                    MaterialName: searchtext ? searchtext.trim() : filterParams.MaterialName?.trim() || undefined,
-                    SubMaterialName: filterParams.SubMaterialName ? (filterParams.SubMaterialName) : undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, StockManagementColumn)
-                };
+  const handleExportStockManagementExcel = () => handleExportStockManagement("Excel");
+  const handleExportStockManagementPdf = () => handleExportStockManagement("PDF");
 
-                const response = await stockManagementService.apiCallPullStockManagement(params);
+  const handleFieldChange = (field: keyof AddUpdateStockManagementRequest, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
 
-                if (E.isRight(response)) {
+  const validateAddRemoveStock = (): {
+    isValid: boolean;
+    errors: { [key: string]: string };
+  } => {
+    const newErrors: { [key: string]: string } = {};
 
-                    setStockManagementList(response.right.Data);
-
-                    setPagination({
-                        currentPage: page,
-                        totalRecords: response.right.TotalNumberOfRecord,
-                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-                    });
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                    return response;
-                }
-            },
-            undefined,
-            (error: any) => addToast({ type: 'error', title: error.message }),
-            undefined,
-            'Loading Stock Management'
-        );
+    if (!formData.Reason?.trim()) {
+      newErrors.Reason = "Remark is required.";
+    } else if (formData.Reason.split(/\s+/).length < 25) {
+      newErrors.Reason = "Remark must be at least 25 characters";
     }
 
-    const handlePageChange = useCallback(
-        (newPage: number) => {
-            updateListState({ page: newPage });
-        },
-        [updateListState],
-    );
-
-    const handleSearchChange = (searchValue: string) => {
-        updateListState({ searchTerm: searchValue });
-        debouncedSearch(searchValue, false);
-    };
-
-    const handleClearSearch = () => {
-        debouncedSearch.cancel?.();
-        resetFilters();
-        setTempFilters({});
-    };
-
-    const handleSortColumn = useCallback(
-        (sort: SortInfo) => {
-            updateListState({ sortInfo: sort, page: 1 });
-        }, [updateListState]);
-
-    const ViewStockManagementDetails = useCallback((row: StockManagementRequestData) => {
-        updateListState({
-            MaterialId: row.MaterialId ?? 0,
-            SubMaterialId: row.SubMaterialMasterId ?? 0,
-            SubMaterialMasterId: row.SubMaterialMasterId ?? 0,
-            MaterialName: row.MaterialName ?? "",
-            SubMaterialName: row.SubMaterialName ?? ""
-        });
-        navigate("/stock/view");
-    }, [navigate, updateListState]);
-
-    const StockManagementPaginationInfo: PaginationInfo = useMemo(
-        () => ({
-            currentPage: pagination.currentPage,
-            totalPages: pagination.totalPages,
-            totalRecords: pagination.totalRecords,
-            pageSize: pagination.pageSize,
-            onPageChange: handlePageChange,
-        }),
-        [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
-    );
-
-    const StockManagementForTable = useMemo(() => stockManagementList, [stockManagementList]);
-
-    const StockManagementColumn = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: "MaterialName",
-                label: 'Material Name',
-                width: "20",
-                sortable: true,
-                fixed: "left",
-                align: "left",
-                render: (value, row) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                        onClick={() => ViewStockManagementDetails(row)}
-                    />
-                ),
-            },
-            {
-                key: "SubMaterialName",
-                label: 'Sub Material',
-                width: "20",
-                sortable: true,
-                align: "left",
-                render: (value) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                    />
-                ),
-            },
-            {
-    key: "TotalMaterialQuantityInStock",
-    label: "Total Quantity",
-    width: "20",
-    sortable: false,
-    align: "left",
-    render: (value, row) =>
-        value != null ? `${value} ${row.UomCode || ""}` : "-"
-},
-{
-    key: "AvailableMaterial",
-    label: "Available Quantity",
-    width: "20",
-    sortable: false,
-    align: "left",
-    render: (value, row) =>
-        value != null ? `${value} ${row.UomCode || ""}` : "-"
-},
-{
-    key: "UsedQuantity",
-    label: "Used Quantity",
-    width: "20",
-    sortable: false,
-    align: "left",
-    render: (value, row) =>
-        value != null ? `${value} ${row.UomCode || ""}` : "-"
-},
-{
-    key: "ScrapQuantity",
-    label: "Scrap Quantity",
-    width: "20",
-    sortable: false,
-    align: "left",
-    render: (value, row) =>
-        value != null ? `${value} ${row.UomCode || ""}` : "-"
-},
-            {
-                key: 'Actions',
-                label: 'Actions',
-                width: "20",
-                fixed: "left",
-                align: "center",
-                render: (_value, row) => {
-                    if (!canAction) return null;
-
-                    return (
-                        <div className="flex items-center justify-center gap-2">
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedRow(row);
-                                    setFormData({
-                                        ...initialFormState(),
-                                        SubMaterialMasterId: row.SubMaterialMasterId,
-                                        InwardOutwardType: "INWARD"
-                                    });
-
-                                    setErrors({});
-                                    setIsAddUpdateModalOpen(true);
-                                    setTransferNoteFiles([]);
-                                    setTransferNoteURL('');
-                                }}
-                                color="blue"
-                                variant="solid"
-                                colorMode="extraLight"
-                                style={{ width: "30px", height: "30px" }}
-                                centerIcon={<Plus className="h-4 w-4" />}
-                                title="Add Stocks"
-                            >
-                            </Button>
-
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedRow(row);
-                                    setFormData({
-                                        ...initialFormState(),
-                                        SubMaterialMasterId: row.SubMaterialMasterId,
-                                        InwardOutwardType: "OUTWARD"
-                                    });
-
-                                    setErrors({});
-                                    setIsAddUpdateModalOpen(true);
-                                    setTransferNoteFiles([]);
-                                    setTransferNoteURL('');
-                                }}
-                                color="red"
-                                variant="solid"
-                                colorMode="extraLight"
-                                style={{ width: "30px", height: "30px" }}
-                                centerIcon={<Minus className="h-4 w-4" />}
-                                title="Remove Stocks"
-                            >
-                            </Button>
-                        </div>
-                    )
-                }
-            },
-        ], [ViewStockManagementDetails])
-
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
+    if (!formData.MaterialQuantityInwardOutward) {
+      newErrors.MaterialQuantityInwardOutward = "Quantity is required.";
+    }
+    if (
+      formData.InwardOutwardType === "OUTWARD" &&
+      selectedRow &&
+      formData.MaterialQuantityInwardOutward > Number(selectedRow.AvailableMaterial ?? 0)
+    ) {
+      newErrors.MaterialQuantityInwardOutward = "You Cannot remove stock more than available stock.";
     }
 
-    const handleExportStockManagement = async (exportType: 'Excel' | 'PDF') => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationStockManagementRequest = {
-                    PageNumber: 1,
-                    PageSize: pagination.totalRecords,
-                    MaterialName: filters.MaterialName?.trim() || undefined,
-                    SubMaterialName: filters.SubMaterialName ?? undefined,
-                    ProjectId: Number(projectId),
-                    SortBy: getSortByParam(sortInfo ?? null, StockManagementColumn),
-                    ExportType: exportType,
-                };
-
-                const response = await stockManagementService.apiCallPullStockManagement(params);
-
-                handleExportFile(response, exportType, "Stock Management", addToast);
-
-                return response;
-            },
-            undefined,
-            (error: any) =>
-                addToast({ type: "error", title: error.message || "Export failed" }),
-            undefined,
-            "Preparing Export",
-        );
+    if ((formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") && !formData.PartyName?.trim()) {
+      newErrors.PartyName = formData.InwardOutwardType === "INWARD" ? "Sender Name is required." : "Receiver Name is required.";
+    } else if (
+      (formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") &&
+      (formData.PartyName?.trim().length ?? 0) < 12
+    ) {
+      newErrors.PartyName =
+        formData.InwardOutwardType === "INWARD"
+          ? "Sender Name must be at least 12 characters."
+          : "Receiver Name must be at least 12 characters.";
     }
 
-    const handleExportStockManagementExcel = () => handleExportStockManagement("Excel");
-    const handleExportStockManagementPdf = () => handleExportStockManagement("PDF")
-
-    const handleFieldChange = (field: keyof AddUpdateStockManagementRequest, value: any) => {
-
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors,
     };
+  };
 
-    const validateAddRemoveStock = (): {
-        isValid: boolean
-        errors: { [key: string]: string }
-    } => {
+  const PushStocks = (): FormData => {
+    const fd = new FormData();
 
-        const newErrors: { [key: string]: string } = {}
+    fd.append("SubMaterialMasterId", String(formData.SubMaterialMasterId ?? 0));
+    fd.append("InwardOutwardType", formData.InwardOutwardType ?? "");
+    fd.append("MaterialQuantityInwardOutward", String(formData.MaterialQuantityInwardOutward ?? 0));
+    fd.append("ProjectId", String(projectId));
+    fd.append("PartyName", formData.PartyName ?? "");
+    fd.append("Reason", formData.Reason ?? "");
+    fd.append("RemoveTransferNoteURL", formData.RemoveTransferNoteURL ?? "");
 
-        if (!formData.Reason?.trim()) {
-            newErrors.Reason = "Remark is required.";
-        }
-        if (!formData.MaterialQuantityInwardOutward) {
-            newErrors.MaterialQuantityInwardOutward = "Quantity is required.";
-        }
-        if (formData.InwardOutwardType === "OUTWARD" && selectedRow && formData.MaterialQuantityInwardOutward > Number(selectedRow.TotalMaterialQuantityInStock ?? 0)
-        ) {
-            newErrors.MaterialQuantityInwardOutward = "You Cannot remove stock more than available stock.";
-        }
-        if ((formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") && !formData.PartyName?.trim()
-        ) {
-            newErrors.PartyName = formData.InwardOutwardType === "INWARD"
-                ? "Sender Name is required."
-                : "Receiver Name is required.";
-        }
-
-        return {
-            isValid: Object.keys(newErrors).length === 0,
-            errors: newErrors
-        }
-    }
-
-    const PushStocks = (): FormData => {
-
-        const fd = new FormData();
-
-        fd.append('SubMaterialMasterId', String(formData.SubMaterialMasterId ?? 0));
-        fd.append('InwardOutwardType', formData.InwardOutwardType ?? "");
-        fd.append('MaterialQuantityInwardOutward', String(formData.MaterialQuantityInwardOutward ?? 0));
-        fd.append('ProjectId', String(projectId));
-        fd.append('PartyName', formData.PartyName ?? '');
-        fd.append('Reason', formData.Reason ?? '');
-        fd.append("RemoveTransferNoteURL", formData.RemoveTransferNoteURL ?? "")
-
-        transferNoteFiles.forEach(file => {
-            if (file instanceof File) {
-                fd.append('TransferNoteURL', file);
-            }
-        });
-
-        return fd;
-    };
-
-    const handleAddRemoveStocks = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        setErrors({})
-        const validation = validateAddRemoveStock()
-
-        if (!validation.isValid) {
-            setErrors(validation.errors)
-            return
-        }
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload = PushStocks();
-
-                const response = await stockManagementService.apiCallAddUpdateStockManagement(payload);
-
-                if (E.isRight(response)) {
-
-                    setIsAddUpdateModalOpen(false);
-
-                    await loadStockManagementData(1, {})
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-                    setTransferNoteFiles([]);
-                    setTransferNoteURL('');
-                } else {
-                    addToast({ type: "error", title: response.left?.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message })
-            },
-            undefined,
-            'Add Remove Stocks'
-        )
-    };
-
-    const requiredStockManagementColumnKeys: string[] = ["MaterialName", "Actions"];
-
-    const allStockManagementColumnKeys: string[] = StockManagementColumn.map((c) => c.key);
-
-    const [selectedStockManagementColumnKeys, setSelectedStockManagementColumnKeys] = useState<string[]>(() => {
-        try {
-            const saved = LocalStorageHelper.getStockManagementTableColumns?.();
-
-            if (saved) {
-                const parsed = JSON.parse(saved) as string[];
-
-                const withRequired = Array.from(
-                    new Set([...parsed, ...requiredStockManagementColumnKeys]),
-                );
-
-                return withRequired.filter((k) =>
-                    allStockManagementColumnKeys.includes(k),
-                );
-            }
-        } catch { }
-        return allStockManagementColumnKeys;
+    transferNoteFiles.forEach((file) => {
+      if (file instanceof File) {
+        fd.append("TransferNoteURL", file);
+      }
     });
 
-    useEffect(() => {
-        setSelectedStockManagementColumnKeys((prev) =>
-            Array.from(new Set([...prev, ...requiredStockManagementColumnKeys])).filter(
-                (k) => allStockManagementColumnKeys.includes(k),
-            ),
-        );
-    }, [StockManagementColumn.length]);
+    return fd;
+  };
 
-    const visibleStockManagementColumns = useMemo(
-        () => StockManagementColumn.filter((col) =>
-            selectedStockManagementColumnKeys.includes(col.key),
-        ),
-        [StockManagementColumn, selectedStockManagementColumnKeys],);
+  const handleAddRemoveStocks = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-    return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "}</Loader>
+    setErrors({});
+    const validation = validateAddRemoveStock();
 
-            <TableActionToolbar
-                isShowSearchBar
-                searchTerm={searchTerm}
-                searchPlaceholder="Search By Material Name"
-                onSearchChange={handleSearchChange}
-                onClearSearch={handleClearSearch}
-                isShowFilterButton
-                filters={filters}
-                onOpenFilter={() => {
-                    setTempFilters(filters)
-                    setShowFilterPopup(true)
-                }}
+    if (!validation.isValid) {
+      setErrors(validation.errors);
+      return;
+    }
 
-                isShowCustomizeButton
-                onCustomize={() => setIsShowCustomizeStockManagementColumnsModal(true)}
-                isShowExportButton={canExport && StockManagementForTable.length > 0}
-                onExportExcel={handleExportStockManagementExcel}
-                onExportPdf={handleExportStockManagementPdf}
-                exportLoading={isLoading}
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const payload = PushStocks();
+
+        const response = await stockManagementService.apiCallAddUpdateStockManagement(payload);
+
+        if (E.isRight(response)) {
+          setIsAddUpdateModalOpen(false);
+
+          await loadStockManagementData(1, {});
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          setTransferNoteFiles([]);
+          setTransferNoteURL("");
+        } else {
+          addToast({ type: "error", title: response.left?.message });
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      "Add Remove Stocks",
+    );
+  };
+
+  const requiredStockManagementColumnKeys: string[] = ["MaterialName", "Actions"];
+
+  const allStockManagementColumnKeys: string[] = StockManagementColumn.map((c) => c.key);
+
+  const [selectedStockManagementColumnKeys, setSelectedStockManagementColumnKeys] = useState<string[]>(() => {
+    try {
+      const saved = LocalStorageHelper.getStockManagementTableColumns?.();
+
+      if (saved) {
+        const parsed = JSON.parse(saved) as string[];
+
+        const withRequired = Array.from(new Set([...parsed, ...requiredStockManagementColumnKeys]));
+
+        return withRequired.filter((k) => allStockManagementColumnKeys.includes(k));
+      }
+    } catch {}
+    return allStockManagementColumnKeys;
+  });
+
+  useEffect(() => {
+    setSelectedStockManagementColumnKeys((prev) =>
+      Array.from(new Set([...prev, ...requiredStockManagementColumnKeys])).filter((k) => allStockManagementColumnKeys.includes(k)),
+    );
+  }, [StockManagementColumn.length]);
+
+  const visibleStockManagementColumns = useMemo(
+    () => StockManagementColumn.filter((col) => selectedStockManagementColumnKeys.includes(col.key)),
+    [StockManagementColumn, selectedStockManagementColumnKeys],
+  );
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+      <Loader loading={isLoading} title={loadingMessage}>
+        {" "}
+        <div></div>{" "}
+      </Loader>
+
+      <TableActionToolbar
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Material Name"
+        onSearchChange={handleSearchChange}
+        onClearSearch={handleClearSearch}
+        isShowFilterButton
+        filters={filters}
+        onOpenFilter={() => {
+          setTempFilters(filters);
+          setShowFilterPopup(true);
+        }}
+        isShowCustomizeButton
+        onCustomize={() => setIsShowCustomizeStockManagementColumnsModal(true)}
+        isShowExportButton={canExport && StockManagementForTable.length > 0}
+        onExportExcel={handleExportStockManagementExcel}
+        onExportPdf={handleExportStockManagementPdf}
+        exportLoading={isLoading}
+      />
+
+      <CustomTable
+        data={StockManagementForTable}
+        columns={visibleStockManagementColumns}
+        pagination={StockManagementPaginationInfo}
+        emptyMessage="No Stock Management Data found"
+        fixedHeight
+        recordsPerPage={20}
+        className="flex-1"
+        sortInfo={sortInfo}
+        onSort={handleSortColumn}
+      />
+
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeStockManagementColumnsModal}
+        onClose={() => setIsShowCustomizeStockManagementColumnsModal(false)}
+        onApply={(keys) => {
+          const withRequired = Array.from(new Set([...keys, ...requiredStockManagementColumnKeys]));
+          setSelectedStockManagementColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeStockManagementTableColumns?.(JSON.stringify(withRequired));
+          } catch {}
+        }}
+        columns={StockManagementColumn}
+        selectedKeys={selectedStockManagementColumnKeys}
+        requiredKeys={requiredStockManagementColumnKeys}
+        title="Customize Table Columns"
+      />
+
+      <Modal
+        isOpen={showFilterPopup}
+        onClose={() => setShowFilterPopup(false)}
+        title="Filter - Stock Management "
+        onSubmit={(e) => {
+          e.preventDefault();
+          updateListState({ filters: tempFilters, page: 1 });
+          setShowFilterPopup(false);
+        }}
+        saveText="Apply"
+        cancelText="Clear"
+        onCancel={() => {
+          setTempFilters({});
+          resetFilters();
+        }}
+        size="small-half"
+      >
+        <div className="space-y-4">
+          <div>
+            <Input
+              type="text"
+              label="Material Name"
+              value={tempFilters.MaterialName || ""}
+              onChange={(e) => handleFilterChange("MaterialName", e.target.value)}
+              placeholder="Enter Material Name"
             />
+          </div>
 
-            <DataTable
-                data={StockManagementForTable}
-                columns={visibleStockManagementColumns}
-                pagination={StockManagementPaginationInfo}
-                emptyMessage="No Stock Management Data found"
-                fixedHeight
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
+          <div>
+            <Input
+              type="text"
+              label="Sub Material Name"
+              value={tempFilters.SubMaterialName || ""}
+              onChange={(e) => handleFilterChange("SubMaterialName", e.target.value)}
+              placeholder="Enter Sub Material Name"
             />
-
-            <CustomizeColumnsModal
-                isOpen={isShowCustomizeStockManagementColumnsModal}
-                onClose={() => setIsShowCustomizeStockManagementColumnsModal(false)}
-                onApply={(keys) => {
-                    const withRequired = Array.from(
-                        new Set([...keys, ...requiredStockManagementColumnKeys]),
-                    );
-                    setSelectedStockManagementColumnKeys(withRequired);
-
-                    try {
-                        LocalStorageHelper.storeStockManagementTableColumns?.(
-                            JSON.stringify(withRequired),
-                        );
-                    } catch { }
-                }}
-                columns={StockManagementColumn}
-                selectedKeys={selectedStockManagementColumnKeys}
-                requiredKeys={requiredStockManagementColumnKeys}
-                title="Customize Table Columns"
-            />
-
-            <Modal
-                isOpen={showFilterPopup}
-                onClose={() => setShowFilterPopup(false)}
-                title="Filter - Stock Management "
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    updateListState({ filters: tempFilters, page: 1 });
-                    setShowFilterPopup(false);
-                }}
-                saveText="Apply"
-                cancelText="Clear"
-                onCancel={() => {
-                    setTempFilters({});
-                    resetFilters();
-                }}
-                size="small-half"
-            >
-                <div className="space-y-4">
-                    <div>
-                        <Input
-                            type="text"
-                            label="Material Name"
-                            value={tempFilters.MaterialName || ""}
-                            onChange={(e) => handleFilterChange("MaterialName", e.target.value)}
-                            placeholder="Enter Material Name"
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            type="text"
-                            label="Sub Material Name"
-                            value={tempFilters.SubMaterialName || ""}
-                            onChange={(e) => handleFilterChange("SubMaterialName", e.target.value)}
-                            placeholder="Enter Sub Material Name"
-                        />
-                    </div>
-                </div>
-            </Modal>
-
-            <Modal
-                isOpen={isAddUpdateModalOpen}
-                onClose={() => {
-                    setIsAddUpdateModalOpen(false);
-                    setFormData(initialFormState());
-                    setErrors({});
-                    setTransferNoteFiles([]);
-                    setTransferNoteURL('');
-                }}
-                title={isInward ? 'Add Stock' : 'Remove Stocks'}
-                onSubmit={handleAddRemoveStocks}
-                saveText={isInward ? 'Add Stock' : 'Remove Stocks'}
-                loading={isLoading}
-                size="xl"
-            >
-                <div className="space-y-10 p-6 bg-blue-100">
-                    <div className="space-y-4" >
-
-                        <div>
-                            <Input
-                                label='Material Name'
-                                type="text"
-                                required
-                                value={selectedRow?.MaterialName ?? ''}
-                                disabled
-                            />
-                        </div>
-
-                        <div>
-                            <Input
-                                label='Sub Material Name'
-                                required
-                                value={selectedRow?.SubMaterialName ?? ''}
-                                disabled
-                            />
-                        </div>
-
-                        <div>
-                            <Input
-                                label={isInward ? "Sender Name" : "Receiver Name"}
-                                required
-                                type="text"
-                                value={formData.PartyName || ''}
-                                onChange={(e) =>
-                                    handleFieldChange("PartyName", e.target.value)
-                                }
-                                error={errors.PartyName}
-                                maxLength={250}
-                                placeholder={isInward ? "Enter Sender Name" : "Enter Receiver Name"}
-                            />
-                        </div>
-
-                        <div>
-                            <Input
-                                label='Quantity'
-                                required
-                                type="text"
-                                value={formData.MaterialQuantityInwardOutward ?? ''}
-                                onChange={(e) => handleFieldChange("MaterialQuantityInwardOutward", filterNumbersWithDecimal(e.target.value))}
-                                error={errors.MaterialQuantityInwardOutward}
-                                maxLength={250}
-                                placeholder="Enter Quantity"
-                            />
-                        </div>
-
-                        <div>
-
-                            <MultiFilePicker
-                                label="Transfer Note"
-                                placeholder='Select Transfer Note'
-                                value={transferNoteFiles}
-                                onChange={setTransferNoteFiles}
-                                availableFilesURL={transferNoteURL ?? ""}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                                maxFiles={5}
-                            />
-                        </div>
-
-                        <div>
-                            <TextArea
-                                label='Remark'
-                                required
-                                value={formData.Reason || ''}
-                                onChange={(e) => handleFieldChange("Reason", e.target.value)}
-                                error={errors.Reason}
-                                maxLength={255}
-                                placeholder="Enter Remark"
-                                rows={4}
-                            />
-                        </div>
-
-                    </div>
-                </div>
-            </Modal>
-
+          </div>
         </div>
-    )
-}
+      </Modal>
+
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setFormData(initialFormState());
+          setErrors({});
+          setTransferNoteFiles([]);
+          setTransferNoteURL("");
+        }}
+        title={isInward ? "Add Stock" : "Remove Stocks"}
+        onSubmit={handleAddRemoveStocks}
+        saveText={isInward ? "Add Stock" : "Remove Stocks"}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4">
+            <div>
+              <Input label="Material Name" type="text" required value={selectedRow?.MaterialName ?? ""} disabled />
+            </div>
+
+            <div>
+              <Input label="Sub Material Name" required value={selectedRow?.SubMaterialName ?? ""} disabled />
+            </div>
+
+            <div>
+              <Input
+                label={isInward ? "Sender Name" : "Receiver Name"}
+                required
+                type="text"
+                value={formData.PartyName || ""}
+                onChange={(e) => handleFieldChange("PartyName", e.target.value)}
+                error={errors.PartyName}
+                maxLength={250}
+                placeholder={isInward ? "Enter Sender Name" : "Enter Receiver Name"}
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Quantity"
+                required
+                type="text"
+                value={formData.MaterialQuantityInwardOutward ?? ""}
+                onChange={(e) => handleFieldChange("MaterialQuantityInwardOutward", filterNumbersWithDecimal(e.target.value))}
+                error={errors.MaterialQuantityInwardOutward}
+                maxLength={250}
+                placeholder="Enter Quantity"
+              />
+            </div>
+
+            <div>
+              <MultiFilePicker
+                label="Transfer Note"
+                placeholder="Select Transfer Note"
+                value={transferNoteFiles}
+                onChange={setTransferNoteFiles}
+                availableFilesURL={transferNoteURL ?? ""}
+                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                maxFiles={5}
+              />
+            </div>
+
+            <div>
+              <TextArea
+                label="Remark"
+                required
+                value={formData.Reason || ""}
+                onChange={(e) => handleFieldChange("Reason", e.target.value)}
+                error={errors.Reason}
+                maxLength={255}
+                placeholder="Enter Remark"
+                rows={4}
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
+    </div>
+  );
+};
 
 export default StockManagement;

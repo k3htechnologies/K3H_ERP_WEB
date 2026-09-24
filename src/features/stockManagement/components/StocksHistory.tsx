@@ -18,6 +18,7 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 export const StockHistory: React.FC = () => {
     const [stockManagementHistoryList, setStockManagementHistoryList] = useState<StockManagementHistoryData[]>([]);
@@ -75,7 +76,7 @@ export const StockHistory: React.FC = () => {
         () => [
             {
                 key: "MaterialQuantityInwardOutward",
-                label: 'Material In / Out',
+                label: 'Material IN / OUT',
                 width: "20",
                 sortable: false,
                 align: "left",
@@ -126,12 +127,8 @@ export const StockHistory: React.FC = () => {
                 fixed: "left",
                 align: "left",
                 render: (value) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                    />
-                ),
+                    <FieldInfoTooltip value={value} />
+                )
             },
             {
                 key: "CreatedBy",

@@ -40,6 +40,7 @@ export interface CountryStateCityDistrictVillageData {
     CountryName: string
     StateMasterId: number
     StateName: string
+    GSTStateCode: string
     CountryMasterIdRef: number
     DistrictMasterId: number
     DistrictName: string

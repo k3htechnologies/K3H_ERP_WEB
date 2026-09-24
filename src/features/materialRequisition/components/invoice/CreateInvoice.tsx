@@ -76,6 +76,8 @@ const CreateInvoice: React.FC = () => {
     const materialRequisitionInvoiceId = MaterialRequisitionInvoiceId ? Number(MaterialRequisitionInvoiceId) : 0;
     const isAddMode = materialRequisitionInvoiceId === 0;
 
+    const [editInvoiceAmount, setEditInvoiceAmount] = useState<number>();
+
     useEffect(() => {
         if (!projectId) return;
         loadMaterialRequisitionGRNData();
@@ -187,7 +189,7 @@ const CreateInvoice: React.FC = () => {
                             InvoiceAmount: e.InvoiceAmount ?? prev.InvoiceAmount,
                             Remarks: e.Remarks ?? prev.Remarks,
                         }));
-
+                        setEditInvoiceAmount(e.InvoiceAmount)
                         setUploadInvoiceURL(e.UploadInvoiceURL ?? "");
                         setPerformaInvoiceURLL(e.PerformaInvoiceURL ?? "");
                         setMeasurementReportURL(e.MeasurementReportURL ?? "");
@@ -201,6 +203,7 @@ const CreateInvoice: React.FC = () => {
                         SetRemoveMeasurementReportUrls([]);
                     }
                 } else {
+                    setEditInvoiceAmount(0);
                     setUploadInvoiceURL('')
                     setUploadInvoiceURLFiles([])
                     SetRemoveUploadInvoiceUrls([]);
@@ -452,7 +455,7 @@ const CreateInvoice: React.FC = () => {
                     navigate("/materialRequisition/view", {
                         state: { activeTab: "Invoice" }
                     });
-
+                    setEditInvoiceAmount(0);
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
                     setMeasurementReportURL('');
@@ -636,13 +639,22 @@ const CreateInvoice: React.FC = () => {
                                 onChange={(e) => {
                                     const value = filterNumbersWithDecimal(e.target.value);
 
-                                    if (Number(value) <= (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))) {
+                                    const totalRequisitionAmount = Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0);
+
+                                    const totalInvoiceAmount = Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0);
+
+                                    const currentInvoiceAmount = Number(editInvoiceAmount);
+
+                                    const maxInvoiceAmount = Number(formData.MaterialRequisitionInvoiceId) > 0 ? totalRequisitionAmount - totalInvoiceAmount + currentInvoiceAmount : totalRequisitionAmount - totalInvoiceAmount;
+
+                                    if (Number(value) <= maxInvoiceAmount) {
                                         handleFieldChange("InvoiceAmount", value);
                                     }
                                 }}
                                 placeholder="Enter Invoice Amount"
                                 rightIcon="(₹)"
-                                max={(Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
+                                max={Number(formData.MaterialRequisitionInvoiceId) > 0 ? (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0) + Number(editInvoiceAmount)) 
+                                                                                       : (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
                                 error={errors.InvoiceAmount}
                             />
                         </div>

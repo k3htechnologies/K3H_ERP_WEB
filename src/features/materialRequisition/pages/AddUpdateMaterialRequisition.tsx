@@ -681,7 +681,7 @@ export const AddUpdateMaterialRequisition = () => {
 
         if (!formData.Remarks) {
             newErrors.Remarks = ' Remarks is required.';
-        } else if (formData.Remarks.split(/\s+/).length < 25) {
+        } else if (formData.Remarks.trim().length < 25) {
             newErrors.Remarks = "Remark must be at least 25 characters";
         }
 
@@ -828,6 +828,7 @@ export const AddUpdateMaterialRequisition = () => {
                         <div className="flex items-center justify-between">
                             <TextArea
                                 label="Remark"
+                                required
                                 className="thin-scroll"
                                 value={formData.Remarks}
                                 onChange={(e) =>

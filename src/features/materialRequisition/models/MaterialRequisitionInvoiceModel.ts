@@ -28,11 +28,18 @@ export interface MaterialRequisitionInvoiceData {
     RemoveMeasurementReportURL: string | null;
     InvoiceAmount: number | 0;
     InvoiceAmountPaidTillDate: number | 0;
+    InvoiceTDSPaidTillDate: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
     InvoiceStatus: string;
     MaterialRequisitionGRNId: number | 0;
     IsApproval: boolean
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: string;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: string;
 }
 
 export interface AddUpdateMaterialRequisitionInvoice {
@@ -69,10 +76,16 @@ export interface MaterialRequisitionInvoiceSummaryData {
     MaterialRequisitionId: number | 0;
     TotalInvoiceAmount: number | 0,
     TotalAmountPaid: number | 0,
+    TotalTDSAmountPaid: number | 0,
     RemainingInvoiceAmount: number | 0,
     TotalRequisitionAmount: number | 0,
     PaidRequisitionAmount: number | 0,
     PendingRequisitionAmount: number | 0
+    FinalVendor: string;
+    FinalVendorCompanyName: string;
+    FinalVendorMobileNumber: string;
+    FinalVendorMobileNumberCountryCode: string;
+    FinalVendorGSTNumber: string;
 }
 
 export type MaterialRequisitionInvoiceListResponse = ApiResponse<MaterialRequisitionInvoiceData[]>;

@@ -67,7 +67,12 @@ export const Brokerage: React.FC = () => {
             loadBrokerageBooking(listState.page, listState.filters, listState.sortInfo);
 
         }
-    }, [projectId,listState.page,  listState.filters, listState.sortInfo, listState.searchTerm, ]);
+    }, [projectId,
+        listState.page,
+        listState.filters,
+        listState.sortInfo,
+        listState.searchTerm,
+    ]);
 
     useEffect(() => {
         return () => {
@@ -216,6 +221,7 @@ export const Brokerage: React.FC = () => {
             bookingName: row.ApplicantName ?? "",
             cpName: row.ChannelPartnerName ?? "",
             cpMobileNumber: row.ChannelPartnerMobileNumber ?? "",
+            channelPartnerMobileNumberCountryCode: row.ChannelPartnerMobileNumberCountryCode ?? "",
             cpCompany: row.ChannelPartnerCompany ?? "",
             agreementValue: row.AgreementValue,
             brokerageAmount: row.BrokerageAmount,
@@ -350,7 +356,7 @@ export const Brokerage: React.FC = () => {
                     width: '25',
                     sortable: false,
                     align: 'left',
-                    render: (value) => value ? `${value} SqFt` : '-'
+                    render: (value) => value ? `${value} Sq Ft` : '-'
                 },
             ]
         },
@@ -401,7 +407,7 @@ export const Brokerage: React.FC = () => {
                         const brokerageAmount = Number(row.BrokerageAmount) || 0
                         const paidBrokerageAmount = Number(row.PaymentPaidAmount) || 0
                         const outstandingAmount = brokerageAmount - paidBrokerageAmount
-                        return formatCurrency(outstandingAmount) || '0'
+                        return `₹ ${outstandingAmount.toFixed(2)}`
                     }
                 }
             ]

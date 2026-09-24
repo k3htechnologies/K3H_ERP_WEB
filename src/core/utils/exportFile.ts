@@ -21,7 +21,7 @@ export const handleExportFile = (
 
 export const handleBase64Export = (
   fileData: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'Zip',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'Zip' | 'Zip',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string,

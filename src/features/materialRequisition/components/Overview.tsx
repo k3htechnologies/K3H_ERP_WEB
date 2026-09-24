@@ -1,174 +1,41 @@
-import { runApiWithLoader } from "@/core/utils";
-import { useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import * as E from "fp-ts/Either";
-import useToast from "@/core/hooks/useToast";
-import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
-import { useParams } from "react-router-dom";
+
+import { useMemo, useState } from "react";
+import type { MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
-import { Loader } from "@/core/utils/loader";
-import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
-import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
-import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "@/features/materialRequisition/models/VendorFinalizeModel";
-import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService";
-import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
-import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
 import { formatCurrency } from "@/core/utils/comman";
 import { DataTableWithHeaderRowDivider, type TableColumn } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 
-export const Overview: React.FC = () => {
+interface OverviewProps {
+    matrialRequisitionData: MaterialRequisitionData | null;
+    matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+    materialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
+}
 
-    const [loadingMessage, setLoadingMessage] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const { addToast } = useToast();
-    const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
-    const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
-    const [MaterialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([])
-    const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<SelectedVendorData | null>(null)
-    const [materialRequisitionQuotationTermsData, setMaterialRequisitionQuotationTermsData] = useState<MaterialRequisitionQuotationDetailsTermsData[]>([])
-    const { projectId } = useProject();
-    const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData, materialRequisitionInvoiceData }) => {
+
     const { listState } = useMaterialRequisitionListState();
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey
-
-    useEffect(() => {
-        if (!projectId) return;
-
-        fetchMaterialRequisitiondata();
-        fetchVendorData();
-        fetchInvoiceData();
-    }, [projectId, currentMaterialRequisitionId]);
-
-    const fetchMaterialRequisitiondata = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
-
-                    setMaterialRequisitionData(Array.isArray(data) ? (data[0] ?? null) : data);
-
-                    const Item = Array.isArray(data) ? data[0] : data;
-
-                    setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Material Requisition",
-        );
-    };
-
-    const fetchVendorData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                    Uniquekey: currentUniquekey,
-                };
-
-                const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
-
-                    setMaterialRequisitionVendorData(Array.isArray(data) ? (data[0] ?? null) : data);
-
-                    const Item = Array.isArray(data) ? data[0] : data;
-
-                    setMaterialRequisitionQuotationTermsData(Item?.MaterialRequisitionQuotationTermsData ?? []);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Vendor",
-        );
-    };
-
-    const fetchInvoiceData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisitionInvoice = {
-                    PageNumber: 1,
-                    PageSize: 50,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
-
-                if (E.isRight(response)) {
-
-                    setMaterialRequisitionInvoiceData(response.right.Data);
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Invoice",
-        );
-    };
-
-    const firstTerm = materialRequisitionVendorData?.MaterialRequisitionQuotationTermsData?.[0];
-    const Vendoramount = firstTerm?.MaterialRequisitionQuotationData || []
-
-    const amountPaid = MaterialRequisitionInvoiceData.reduce(
-        (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0), 0);
+    const { projectId } = useProject();
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [invoiceNumber, setInvoiceNumber] = useState<string | null>("");
+    const [invoiceAmount, setInvoiceAmount] = useState<number | null>(0);
 
     const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
 
         const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
-        const columns: TableColumn[] = [
-            {
-                key: "MaterialRequisitionType",
-                label: "Type",
-                align: "left",
-                width: "30",
-                render: (value) => value || "-"
-            }
-        ];
+        const columns: TableColumn[] = [];
 
         if (isDirect) {
             columns.push(
@@ -207,8 +74,10 @@ export const Overview: React.FC = () => {
                     render: (value) => (
                         <TooltipText
                             text={value || "-"}
+
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -239,6 +108,7 @@ export const Overview: React.FC = () => {
                             text={value || "-"}
                             maxWidth="250px"
                             tooltipThreshold={25}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
                 },
@@ -253,7 +123,7 @@ export const Overview: React.FC = () => {
                 align: "left",
                 width: "30",
                 render: (value, row) => {
-                    return isDirect ? value : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                 }
             },
 
@@ -280,190 +150,419 @@ export const Overview: React.FC = () => {
         return columns;
     }, [matrialRequisitionDetailData]);
 
+    const materialRequisitionInvoiceDataWithTotal = useMemo(() => {
+        const data = materialRequisitionInvoiceData || [];
+
+        const totalInvoiceAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmount ?? 0),
+            0
+        );
+
+        const totalPaidAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmountPaidTillDate ?? 0),
+            0
+        );
+
+        const totalPaidTDSAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceTDSPaidTillDate ?? 0),
+            0
+        );
+
+        return [
+            ...data,
+            {
+                InvoiceNumber: "TOTAL",
+                InvoiceAmount: totalInvoiceAmount,
+                InvoiceAmountPaidTillDate: totalPaidAmount,
+                InvoiceTDSPaidTillDate: totalPaidTDSAmount,
+                isTotal: true,
+            },
+        ];
+    }, [materialRequisitionInvoiceData]);
+
+    const handleApprovalLog = (row: MaterialRequisitionInvoiceData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "ADD INVOICE",
+            Id: listState.MaterialRequisitionId ?? 0,
+            SubId: row.MaterialRequisitionInvoiceId ?? 0,
+            ProjectId: projectId ?? 0,
+        };
+        setInvoiceNumber(row.InvoiceNumber);
+        setInvoiceAmount(row.InvoiceAmount);
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
     const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
         () => [
             {
                 key: "InvoiceNumber",
                 label: "Invoice Number",
+                width: '15',
                 align: "left",
-                render: (value?: string) => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="180px"
-                        tooltipThreshold={18}
-                    />
-                )
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return (
+                            <span className="font-bold text-gray-500">
+                                TOTAL
+                            </span>
+                        );
+                    }
+                    return (
+                        <span className="font-medium text-black">
+                            {value || "-"}
+                        </span>
+                    );
+                }
+            },
+            {
+                key: 'UploadInvoiceURL',
+                label: 'Invoice',
+                width: '15',
+                sortable: false,
+                align: 'left',
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return "";
+                    }
+                    return (
+                        <div className="flex items-center justify-between w-full">
+                            <MultiImageViewer
+                                images={parseDocumentUrls(row.UploadInvoiceURL)}
+                                title="Invoice Document"
+                                isIcon={false}
+                                triggerLabel={value === '' || 'PDF'}
+                            />
+
+                        </div>
+                    );
+                }
+            },
+            {
+                key: 'PerformaInvoiceURL',
+                label: 'Performa',
+                width: '15',
+                sortable: false,
+                align: 'left',
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return "";
+                    }
+                    return (
+                        <div className="flex items-center justify-between w-full">
+                            <MultiImageViewer
+                                images={parseDocumentUrls(row.PerformaInvoiceURL)}
+                                title="DWG Document"
+                                isIcon={false}
+                                triggerLabel={value === '' || 'DWG'}
+                            />
+
+                        </div>
+                    );
+                }
             },
             {
                 key: "InvoiceAmount",
-                label: "Invoice Amount",
-                align: "left",
-                render: (value: string) => (
-                    <span className="font-medium text-black">
-                        {(value || '')}
+                label: "Amount",
+                width: '15',
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
                     </span>
                 )
+            },
+            {
+                key: "InvoiceAmountPaidTillDate",
+                label: "Paid",
+                width: '15',
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                )
+            },
+            {
+                key: "InvoiceTDSPaidTillDate",
+                label: "TDS",
+                width: '15',
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                )
+            },
+            {
+                key: "InvoiceDate",
+                label: "Invoice Date",
+                align: "left",
+                width: '15',
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
             },
             {
                 key: "InvoiceDueDate",
                 label: "Invoice Due Date",
                 align: "left",
-                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+                width: '15',
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
             },
-        ], []
+            {
+                key: "Remarks",
+                label: "Remark",
+                align: "left",
+                width: "10",
+                render: (value?: string, row?: any) => (
+                    row.isTotal
+                        ? ""
+                        : <FieldInfoTooltip value={value} />
+                )
+            },
+            {
+                key: "InvoiceStatus",
+                label: "Invoice Status",
+                width: "18",
+                sortable: false,
+                align: "left",
+                render: (value?: string, row?: any) => (
+                    row.isTotal
+                        ? ""
+                        :
+                        <ApprovalActions
+                            approvalStatus={value || "-"}
+                            isIcons={true}
+
+                            onHistory={() => handleApprovalLog(row)
+                            }
+                        />
+
+                )
+            },
+        ], [handleApprovalLog]
     );
 
     return (
-        <div className="bg-white p-1">
-            <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "} </Loader>
-            <div className="grid grid-cols-12 gap-3 pt-1">
+        <>
+            <div className="bg-white p-1 pt-5">
 
-                <div className="col-span-6">
+                <div className="grid grid-cols-12 gap-3 pt-1">
 
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#E7F2FF] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#1D4ED8]">
-                                Basic Details
-                            </h4>
-                        </div>
+                    <div className="col-span-5">
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4 border-b border-[#135bec2e]">
-                            <FieldItem label="MR Code" value={matrialRequisitionData?.SystemGeneratedCode} />
-                            <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
-                            <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
-
-                            <div>
-                                <p className="text-gray-500">Attachment</p>
-                                <MultiImageViewer
-                                    images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
-                                    title="Attachment"
-                                    isIcon={false}
-                                    triggerLabel="-"
-                                />
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#E7F2FF] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Basic Details
+                                </h4>
                             </div>
-                        </div>
-                    </section>
 
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#FFFFE4] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#7B6B28]">
-                                Purchase Order
-                            </h4>
-                        </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4 border-b border-[#135bec2e]">
+                                <FieldItem label="MR Code" value={matrialRequisitionData?.SystemGeneratedCode} />
+                                <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
+                                <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
 
-                        <div className="p-4">
-                            {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
-                                <p className="text-gray-900 text-md">No Document</p>
-                            ) : (
-                                <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                    <p>Document</p>
+                                <div>
+                                    <p className="text-sm font-medium text-[#1D1D1D80]">Attachment</p>
                                     <MultiImageViewer
-                                        images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL ?? '')}
-                                        title="Purchase Order"
+                                        images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
+                                        title="Attachment"
                                         isIcon={false}
                                         triggerLabel="-"
                                     />
                                 </div>
-                            )}
+                            </div>
+                        </section>
+
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#FFFFE4] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                    Purchase Order
+                                </h4>
+                            </div>
+
+                            <div className="p-4">
+                                {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
+                                    <p className="text-gray-900 text-md px-2 py-1.5">-</p>
+                                ) : (
+                                    <div className="inline-flex items-end gap-1 px-2 py-1.5 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                        <p>Document</p>
+                                        <MultiImageViewer
+                                            images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL ?? '')}
+                                            title="Purchase Order"
+                                            isIcon={false}
+                                            triggerLabel="-"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="col-span-7">
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+
+                                <h4 className="text-sm font-semibold text-[#C2410C]">
+                                    Vendor & Amount Details
+                                </h4>
+                                <span className="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-semibold bg-[#FFEDD5] text-[#C2410C]">
+                                    {matrialRequisitionData?.VendorFinalizationApprovalStatus || "-"}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border-b border-[#135bec2e]">
+                                <FieldItem label="Vendor Name" value={matrialRequisitionData?.FinalVendor} />
+                                <FieldItem label="Vendor Company" value={matrialRequisitionData?.FinalVendorCompanyName} />
+                                <FieldItem label="Mobile Number" value={matrialRequisitionData?.FinalVendorMobileNumber} />
+                                <FieldItem label="GST Number" value={matrialRequisitionData?.FinalVendorGSTNumber} />
+                                <FieldItem label="Base Amount (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0) - Number(matrialRequisitionData?.TotalTaxAmount ?? 0))} />
+                                <FieldItem label="Total Tax (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalTaxAmount))} />
+                                <FieldItem label="Grand Total (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0))} />
+
+                                <FieldItem label="Paid Amount (₹)" value={formatCurrency(Number(matrialRequisitionData?.PaidAmount))} />
+                                <FieldItem label="TDS Paid Amount (₹)" value={formatCurrency(Number(matrialRequisitionData?.TDSPaidAmount))} />
+                                <FieldItem
+                                    label="Pending Amount (₹)"
+                                    value={formatCurrency(
+                                        Math.max(
+                                            0,
+                                            (
+                                                Number(matrialRequisitionData?.TotalPoAmount ?? 0)) - Number(matrialRequisitionData?.PaidAmount ?? 0)  - Number(matrialRequisitionData?.TDSPaidAmount ?? 0)
+                                        )
+                                    )} />
+                                <FieldItem label="Expected Delivery (Days)" value={`${matrialRequisitionData?.ExpectedDeliveryInDays ?? 0} days`} />
+                                <FieldItem label="Expected Payment (Days)" value={`${matrialRequisitionData?.ExpectedPaymentInDays ?? 0} days`} />
+                            </div>
+                        </section>
+
+                    </div>
+
+                    <div className="col-span-12">
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#FCF1FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
+
+                                <h4 className="text-sm font-semibold text-[#7E22CE] flex items-center gap-2">
+                                    Material Details
+
+                                    <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
+                                        {matrialRequisitionDetailData.length}
+                                    </span>
+                                    :
+
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-[#F3DEF9] text-[#561F64] text-xs font-semibold">
+                                        {matrialRequisitionDetailData?.[0]?.MaterialRequisitionType || "-"}
+                                    </span>
+                                </h4>
+
+
+                            </div>
+
+                            <div className="overflow-y-auto thin-scroll">
+                                <DataTableWithHeaderRowDivider
+                                    columns={MatrialRequisitionDetailColumns}
+                                    data={matrialRequisitionDetailData}
+                                    emptyMessage="No Material Requisition Details Found"
+                                    fixedHeight={true}
+                                    className="flex-1"
+                                />
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="col-span-12">
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#FCE7F3] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#BE185D] flex items-center gap-2">
+                                    Invoice Details
+
+                                    <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F9CFE2] text-[#BE185D] text-xs font-semibold">
+                                        {materialRequisitionInvoiceData.length}
+                                    </span>
+                                </h4>
+                            </div>
+
+                            <div className="overflow-y-auto thin-scroll">
+                                <DataTableWithHeaderRowDivider
+                                    columns={MaterialRequisitionInvoiceColumns}
+                                    data={materialRequisitionInvoiceDataWithTotal}
+                                    emptyMessage="No Invoice Details Found"
+                                    fixedHeight={true}
+                                    className="flex-1"
+                                />
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="col-span-12">
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#E6FFE6] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#00A800]">
+                                    Remarks
+                                </h4>
+                            </div>
+
+                            <div className="p-4">
+                                <span>{matrialRequisitionData?.Remarks || "-"}</span>
+                            </div>
+                        </section>
+                    </div>
+                    {matrialRequisitionData?.CloseCompletionRemark && (
+                        <div className="col-span-12">
+                            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                                <div className="bg-[#FBF9F9] px-4 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                        {matrialRequisitionData?.MaterialRequisitionStatus} Remark
+                                    </h4>
+                                </div>
+
+                                <div className="p-4">
+                                    <span>{matrialRequisitionData?.CloseCompletionRemark || "-"}</span>
+                                </div>
+                            </section>
                         </div>
-                    </section>
-                </div>
+                    )}
 
-                <div className="col-span-6">
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#C2410C]">
-                                Vendor & Amount Details
-                            </h4>
-                        </div>
+                    <div className="col-span-12">
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#E1E2E4] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#333333]">
+                                    Action Details
+                                </h4>
+                            </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4 border-b border-[#135bec2e]">
-                            <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
-                            <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
-                            <FieldItem label="Base Amount" value={formatCurrency(computeBaseTotal(Vendoramount))} />
-                            <FieldItem label="Total Tax" value={formatCurrency(computeTaxTotal(Vendoramount))} />
-                            <FieldItem label="Grand Total" value={formatCurrency(computeLinesTotal(Vendoramount))} />
-                            <FieldItem label="Estimated Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
-                            <FieldItem label="Paid Amount (₹)" value={formatCurrency(amountPaid)} />
-                            <FieldItem label="Pending Amount (₹)" value={formatCurrency(computeLinesTotal(Vendoramount) - amountPaid)} />
-                        </div>
-                    </section>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
+                                <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
+                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
+                                <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
+                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
+                            </div>
+                        </section>
+                    </div>
 
-                </div>
+                </div >
+            </div>
 
-                <div className="col-span-12">
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#F3E8FF] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#7E22CE]">
-                                Material Requisition Detail
-                            </h4>
-                        </div>
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                titleText={invoiceNumber ?? ""}
+                subTitleText={String(invoiceAmount ?? 0)}
+                title='Invoice Approval'
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest}
+            />
 
-                        <div className="overflow-y-auto thin-scroll">
-                            <DataTableWithHeaderRowDivider
-                                columns={MatrialRequisitionDetailColumns}
-                                data={matrialRequisitionDetailData}
-                                emptyMessage="No Material Requisition Details Found"
-                                fixedHeight={true}
-                                className="flex-1"
-                            />
-                        </div>
-                    </section>
-                </div>
-
-                <div className="col-span-12">
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#FCE7F3] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#BE185D]">
-                                Invoice Details
-                            </h4>
-                        </div>
-
-                        <div className="overflow-y-auto thin-scroll">
-                            <DataTableWithHeaderRowDivider
-                                columns={MaterialRequisitionInvoiceColumns}
-                                data={MaterialRequisitionInvoiceData}
-                                emptyMessage="No Material Invoice Details Found"
-                                fixedHeight={true}
-                                className="flex-1"
-                            />
-                        </div>
-                    </section>
-                </div>
-
-                <div className="col-span-12">
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#E6FFE6] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#00A800]">
-                                Remarks
-                            </h4>
-                        </div>
-
-                        <div className="p-4">
-                            <span>{matrialRequisitionData?.Remarks}</span>
-                        </div>
-                    </section>
-                </div>
-
-                <div className="col-span-12">
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#E1E2E4] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#333333]">
-                                Action Details
-                            </h4>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
-                            <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
-                            <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
-                            <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
-                            <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
-                        </div>
-                    </section>
-                </div>
-
-            </div >
-        </div >
+        </>
     )
 }
 

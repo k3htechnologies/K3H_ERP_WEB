@@ -99,15 +99,17 @@ export const ApprovalLogModal: React.FC<Props> = ({
 
                         <div key={index} className="grid grid-cols-[24px_1fr] gap-3" >
 
-                            <div className="flex flex-col items-center">
+                             <div className="relative flex justify-center">
 
-                                <div className="h-4 w-4 rounded-full bg-blue-600"></div>
+        {/* LINE */}
+        {index !== data.length - 1 && (
+            <div className="absolute top-2 bottom-[-20px] w-[3px] bg-blue-600" />
+        )}
 
-                                {index !== data.length - 1 && (
-                                    <div className="w-[3px] bg-blue-600 flex-1"></div>
-                                )}
+        {/* DOT */}
+        <div className="relative z-10 h-4 w-4 rounded-full bg-blue-600 shrink-0" />
 
-                            </div>
+    </div>
 
                             <div>
 

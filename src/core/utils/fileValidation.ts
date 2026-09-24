@@ -13,6 +13,10 @@ export const filterNumbers = (value: string): string =>
 export const filterLetters = (value: string): string =>
   value.replace(/[^A-Za-z\s]/g, "");
 
+
+export const filterNameCharacters = (value: string): string =>
+  value.replace(/[^A-Za-z\s']/g, "");
+
 // ----------------------------------
 // 🔹 FILTER ALPHA-NUMERIC + SPACE
 // ----------------------------------
@@ -105,14 +109,27 @@ export const isValidEmail = (email: string): boolean => {
 export const filterGST = (value: string): string =>
   value.replace(/[^A-Za-z0-9]/g, "").toUpperCase().slice(0, 15);
 
-export const isValidGST = (gst: string): boolean => {
+export const isValidGST = ( gst: string, gstStateCode?: string): boolean => {
+
   if (!gst) return false;
+
   const value = gst.toUpperCase().trim();
   if (value.length !== 15) return false;
 
   const regex =
     /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
-  return regex.test(value);
+
+  if (!regex.test(value)) return false;
+
+  if (gstStateCode) {
+    const gstinStateCode = value.substring(0, 2);
+
+    if (gstinStateCode !== gstStateCode) {
+      return false;
+    }
+  }
+
+  return true;
 };
 
 // Only A-Z + 0-9 and max 21 chars
@@ -560,13 +577,19 @@ export const isValidAPF = (apf: string): boolean => {
 };
 
 
+
 export const isValidVehicleNumber = (value: string): boolean => {
-  if (!value?.trim()) return false;
+    if (!value?.trim()) return false;
 
-  const vehicleNumberRegex =
-    /^(?:[A-Z]{2}\s*\d{2}\s*[A-Z]{1,3}\s*\d{1,4}|\d{2}\s*BH\s*\d{4}\s*[A-Z]{2}|\d{1,4})$/i;
+    const normalized = value
+        .trim()
+        .toUpperCase()
+        .replace(/[\s-]+/g, "");
 
-  return vehicleNumberRegex.test(value.trim());
+    const regex =
+        /^(?:[A-Z]{2}\d{1,2}[A-Z]{1,3}\d{1,4}|\d{2}BH\d{4}[A-Z]{2})$/;
+
+    return regex.test(normalized);
 };
 
 // VALIDATE CHALLAN NUMBER 

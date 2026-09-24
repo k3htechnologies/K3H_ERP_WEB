@@ -1,12 +1,13 @@
 import * as E from 'fp-ts/Either';
 import { subMaterialMasterService } from '@/features/subMaterialMaster/services/SubMaterialMasterService';
 
-export const fetchSubMaterialMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
+export const fetchSubMaterialMasterDropdown = async (pageNumber: number, params?: { value?: string ,MaterialMasterId? : number}) => {
     try {
 
         const responseEither = await subMaterialMasterService.apiCallPullSubMaterialMaster({
             PageSize: 50,
             PageNumber: pageNumber,
+            MaterialMasterId: params?.MaterialMasterId || 0,
             SubMaterialName: params?.value || '',
             IsCheckPermission: false
         });

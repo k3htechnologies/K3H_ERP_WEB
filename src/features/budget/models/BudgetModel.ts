@@ -9,6 +9,7 @@ export interface FilterWithPaginationBudgetRequest {
     CategoryName?: string;
     Uom?: string;
     Flat?: string;
+    ApprovalStatus?: string;
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }
@@ -42,6 +43,9 @@ export interface BudgetData {
     OrderBy: number | 0
     WBSCode: string | null
     Quantity: number | 0
+    ReceivedQuantity :  number | 0
+    OrderQuantity:  number | 0
+    L3Quantity: number | 0
     LabourCost: number | 0
     MaterialCost: number | 0
     PMCost: number | 0

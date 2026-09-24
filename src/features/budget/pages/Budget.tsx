@@ -480,13 +480,75 @@ export const Budget: React.FC = () => {
                 );
             },
         },
-        {
-            key: "Uom",
-            label: "UOM",
+      
+        { 
+            key: 'Quantity',
+             label: 'Quantity', 
+             width: '15', 
+             sortable: false, 
+             align: 'right', 
+             render: (value, row) => 
+                row.LevelType === 'L4' ? `${(Number(value) || 0) * (Number(row.L3Quantity) || 0)} ${row.Uom || ''}`
+                                         : value ? `${value} ${row.Uom || ''}` : '-' 
+                                        },
+
+                                        {
+            key: 'OrderQuantity',
+            label: 'Order QTY',
             width: '15',
             sortable: false,
-            align: 'left',
-            render: value => value || '-'
+            align: 'right',
+             render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
+        },
+        
+        {
+            key: 'ReceivedQuantity',
+            label: 'Received QTY',
+            width: '15',
+            sortable: false,
+            align: 'right',
+             render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
+        },
+        
+        {
+            key: "MaterialCost",
+            label: "Material Rate (₹)",
+            width: '15',
+            sortable: false,
+            align: 'right',
+            render: value => value ? formatCurrency(value) : '0'
+        },
+        {
+            key: 'LabourCost',
+            label: 'Labour Rate (₹)',
+            width: '15',
+            sortable: false,
+            align: 'right',
+            render: value => value ? formatCurrency(value) : '0'
+        },
+        {
+            key: "PMCost",
+            label: "P&M Rate (₹)",
+            width: '15',
+            sortable: false,
+            align: 'right',
+            render: value => value ? formatCurrency(value) : '0'
+        },
+        {
+            key: "TotalRate",
+            label: "Total Rate (₹)",
+            width: '15',
+            sortable: false,
+            align: 'right',
+            render: value => value ? formatCurrency(value) : '0'
+        },
+        {
+            key: "BudgetAmount",
+            label: "Budget Amount (₹)",
+            width: '15',
+            sortable: false,
+            align: 'right',
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: 'Flat',
@@ -501,55 +563,6 @@ export const Budget: React.FC = () => {
                     maxWidth="200px"
                 />
             )
-        },
-        {
-            key: 'Quantity',
-            label: 'Quantity',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        
-        {
-            key: "MaterialCost",
-            label: "Material Rate (₹)",
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value ? formatCurrency(value) : '0'
-        },
-        {
-            key: 'LabourCost',
-            label: 'Labour Rate (₹)',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value ? formatCurrency(value) : '0'
-        },
-        {
-            key: "PMCost",
-            label: "P&M Rate (₹)",
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value ? formatCurrency(value) : '0'
-        },
-        {
-            key: "TotalRate",
-            label: "Total Rate (₹)",
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value ? formatCurrency(value) : '0'
-        },
-        {
-            key: "BudgetAmount",
-            label: "Budget Amount (₹)",
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: 'Remark',

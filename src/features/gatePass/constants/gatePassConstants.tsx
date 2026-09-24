@@ -10,16 +10,17 @@ export const INITIAL_FORM_STATE: AddUpdateGatePassRequest = {
     Purpose: '',
     Remark: '',
     EmployeeId: 0,
-    PassDateTime: '',
+    PassDateTime: new Date().toLocaleString("sv-SE").replace(" ", "T"),
     NoOfParticipants: 0,
     PhotoURL: null,
     RemovePhotoURL: "",
 };
 
-export const REQUIRED_COLUMN_KEYS: string[] = ['FullName','Actions'];
+export const REQUIRED_COLUMN_KEYS: string[] = ['FullName', 'Actions'];
 
 export const getInitialFormState = (): AddUpdateGatePassRequest => ({
-    ...INITIAL_FORM_STATE
+    ...INITIAL_FORM_STATE,
+    PassDateTime: new Date().toLocaleString("sv-SE").replace(" ", "T")
 });
 
 export const getGatePassTableColumns = (): TableColumn[] => [
@@ -74,7 +75,7 @@ export const getGatePassTableColumns = (): TableColumn[] => [
         align: 'left'
     },
 
-     {
+    {
         key: 'OutDateTime',
         label: 'Out Date / Time',
         width: '30',

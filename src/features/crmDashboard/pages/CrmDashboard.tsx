@@ -16,6 +16,7 @@ import RecentTransaction from "@/features/crmDashboard/components/RecentTransact
 import MilestoneCollection from "@/features/crmDashboard/components/MilestoneCollection";
 import { DateRangeWithActions } from "@/ui/components/DateRangeWithActions";
 import AgreementGstTdsTotalReceivedSummary from "@/features/crmDashboard/components/AgreementGstTdsTotalReceivedSummary";
+import { handleExportFile } from "@/core/utils/exportFile";
 
 
 const CrmDashboard: React.FC = () => {
@@ -84,6 +85,41 @@ const CrmDashboard: React.FC = () => {
         );
     }, [addToast, projectId, filterType, fromDate, toDate]);
 
+    const handleExportMilestoneExcel = async () => {
+
+        if (!projectId) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response =
+                    await crmDashboardService.apiCallPullCrmMilestoneCollection(
+                        Number(projectId),
+                        filterType.toUpperCase(),
+                        filterType.toUpperCase() === "DATEWISE"
+                            ? fromDate
+                            : "",
+                        filterType.toUpperCase() === "DATEWISE"
+                            ? toDate
+                            : "",
+                        "EXCEL"
+                    );
+
+                handleExportFile(response, "Excel", "Milestone Collection", addToast);
+                
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message || "Export failed" });
+            },
+            undefined,
+            "Preparing Export",
+
+        );
+    };
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
@@ -164,7 +200,7 @@ const CrmDashboard: React.FC = () => {
 
                 <div className="col-span-12 lg:col-span-8">
                     <AgreementGstTdsTotalReceivedSummary bookingRegisteredData={overViewCardData} />
-                    <MilestoneCollection data={milestoneCollectionData} />
+                    <MilestoneCollection data={milestoneCollectionData} onExport={handleExportMilestoneExcel} />
                     <RecentTransaction data={payTrackPaymentLedgerData} />
                 </div>
 

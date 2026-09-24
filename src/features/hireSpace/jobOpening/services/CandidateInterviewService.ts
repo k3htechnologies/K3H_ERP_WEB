@@ -5,6 +5,12 @@ import type {
     CandidateInterviewListResponse,
     CandidateInterviewSaveResponse
 } from '@/features/hireSpace/jobOpening/models/CandidateInterviewModel'
+import type {
+    CandidateApplicationStageListResponse,
+    CandidateApplicationTimelineListResponse,
+    FilterWithPaginationCandidateApplicationStageRequest,
+    FilterWithPaginationCandidateApplicationTimelineRequest,
+} from '@/features/hireSpace/jobOpening/models/CandidateModel'
 import * as E from 'fp-ts/Either'
 
 const candidateInterviewDatasource = new CandidateInterviewDatasourceImpl()
@@ -27,6 +33,36 @@ export const CandidateInterviewService = {
         try {
 
             return E.right(await candidateInterviewDatasource.addUpdateCandidateInterview(params))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
+    apiCallPullCandidateApplicationStage: async (
+        params: FilterWithPaginationCandidateApplicationStageRequest,
+        options?: { signal?: AbortSignal },
+    ): Promise<E.Either<Failure, CandidateApplicationStageListResponse>> => {
+        try {
+
+            return E.right(await candidateInterviewDatasource.pullCandidateApplicationStage(params, options?.signal))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
+    apiCallPullCandidateApplicationTimeline: async (
+        params: FilterWithPaginationCandidateApplicationTimelineRequest,
+        options?: { signal?: AbortSignal },
+    ): Promise<E.Either<Failure, CandidateApplicationTimelineListResponse>> => {
+        try {
+
+            return E.right(await candidateInterviewDatasource.pullCandidateApplicationTimeline(params, options?.signal))
 
         } catch (error: any) {
 

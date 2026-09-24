@@ -1,6 +1,6 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, RevokeFinalizationVendorRequest, RevokeFinalizationVendorResponse, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import { VendorFinalizationApi } from "@/features/materialRequisition/api/VendorFinalizationApi";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
@@ -8,14 +8,15 @@ import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 export abstract class VendorFinalizationDatasource {
     abstract pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
     abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
-    abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest,signal?: AbortSignal): Promise<SelectedVendorListResponse>;
+    abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest, signal?: AbortSignal): Promise<SelectedVendorListResponse>;
     abstract addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
     abstract pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
+    abstract revokeFinalizationVendor(payload: RevokeFinalizationVendorRequest): Promise<RevokeFinalizationVendorResponse>;
 }
 
 export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatasource {
 
-   private get k3hHttpClient() {
+    private get k3hHttpClient() {
         return baseClient;
     }
 
@@ -43,9 +44,10 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
             throw error
         }
     }
+
     async addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse> {
         try {
-            
+
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 VendorFinalizationApi.ADD,
                 payload
@@ -85,7 +87,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.pullSelectedVendorForEnquiry(params);
+                return await this.pullSelectedVendorForEnquiry(params);
             }
             throw error
         }
@@ -93,26 +95,26 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
 
     async addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse> {
         try {
-        
+
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                `${VendorFinalizationApi.ADD_FINALIZED_VENDOR}`,payload
+                `${VendorFinalizationApi.ADD_FINALIZED_VENDOR}`, payload
             )
 
             return response
-        
+
         } catch (error) {
 
             console.error('ERROR: ADD FINALIZED VENDOR :', error)
-            
+
             if (error instanceof TokenExpiredException) {
 
-                return await this.addFinalizedVendor(payload); 
+                return await this.addFinalizedVendor(payload);
             }
             throw error
         }
-        
+
     }
-                    
+
     async pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse> {
         try {
             const queryParams = new URLSearchParams({
@@ -135,5 +137,24 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
             }
             throw error
         }
+    }
+
+    async revokeFinalizationVendor(payload: RevokeFinalizationVendorRequest): Promise<RevokeFinalizationVendorResponse> {
+        try {
+
+            return await this.k3hHttpClient.postRequestWithAuthentication(VendorFinalizationApi.REVOKE_FINALIZATION_VENDOR, payload)
+
+
+        } catch (error) {
+
+            console.error('ERROR: REVOKE FINALIZATION VENDOR :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.revokeFinalizationVendor(payload);
+            }
+            throw error
+        }
+
     }
 }

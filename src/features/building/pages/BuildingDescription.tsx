@@ -7,7 +7,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters, filterNumbers } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, filterMobile, filterEmail, filterLetters, filterNumbers, filterNameCharacters } from "@/core/utils/fileValidation";
 import type { AddUpdateBuildingDetailsRequest, FilterWithPaginationBuildingDetailsRequest, BuildingKeyContactDetails } from "@/features/building/models/BuildingModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -18,11 +18,11 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
   BuildingId: 0,
   ProjectId: 0,
-  GrossPlotAreaSqFt: 0,
-  PlotAreaPhysicalSurveySqFt: undefined,
-  PlotAreaOldApprovedPlanSqFt: undefined,
-  PlotAreaConveyanceSqFt: undefined,
-  PlotAreaPRCardSqFt: undefined,
+  GrossPlotAreaSqMt: 0,
+  PlotAreaPhysicalSurveySqMt: undefined,
+  PlotAreaOldApprovedPlanSqMt: undefined,
+  PlotAreaConveyanceSqMt: undefined,
+  PlotAreaPRCardSqMt: undefined,
   TotalCarpetAreaSqFt: 0,
   TotalResidentialUnits: undefined,
   TotalResidentialCarpetAreaSqFt: undefined,
@@ -113,11 +113,11 @@ const BuildingDescription: React.FC = () => {
               ...prev,
               BuildingId: buildingId,
               ProjectId: projectId ?? 0,
-              GrossPlotAreaSqFt: row.GrossPlotAreaSqFt ?? prev.GrossPlotAreaSqFt ?? 0,
-              PlotAreaPhysicalSurveySqFt: row.PlotAreaPhysicalSurveySqFt ?? prev.PlotAreaPhysicalSurveySqFt,
-              PlotAreaOldApprovedPlanSqFt: row.PlotAreaOldApprovedPlanSqFt ?? prev.PlotAreaOldApprovedPlanSqFt,
-              PlotAreaConveyanceSqFt: row.PlotAreaConveyanceSqFt ?? prev.PlotAreaConveyanceSqFt,
-              PlotAreaPRCardSqFt: row.PlotAreaPRCardSqFt ?? prev.PlotAreaPRCardSqFt,
+              GrossPlotAreaSqMt: row.GrossPlotAreaSqMt ?? prev.GrossPlotAreaSqMt ?? 0,
+              PlotAreaPhysicalSurveySqMt: row.PlotAreaPhysicalSurveySqMt ?? prev.PlotAreaPhysicalSurveySqMt,
+              PlotAreaOldApprovedPlanSqMt: row.PlotAreaOldApprovedPlanSqMt ?? prev.PlotAreaOldApprovedPlanSqMt,
+              PlotAreaConveyanceSqMt: row.PlotAreaConveyanceSqMt ?? prev.PlotAreaConveyanceSqMt,
+              PlotAreaPRCardSqMt: row.PlotAreaPRCardSqMt ?? prev.PlotAreaPRCardSqMt,
               TotalCarpetAreaSqFt: row.TotalCarpetAreaSqFt ?? prev.TotalCarpetAreaSqFt ?? 0,
               TotalResidentialUnits: row.TotalResidentialUnits ?? prev.TotalResidentialUnits,
               TotalResidentialCarpetAreaSqFt: row.TotalResidentialCarpetAreaSqFt ?? prev.TotalResidentialCarpetAreaSqFt,
@@ -176,8 +176,8 @@ const BuildingDescription: React.FC = () => {
 
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.GrossPlotAreaSqFt === null || formData.GrossPlotAreaSqFt === undefined || formData.GrossPlotAreaSqFt <= 0) {
-      newErrors.GrossPlotAreaSqFt = "Gross Plot Area is required.";
+    if (formData.GrossPlotAreaSqMt === null || formData.GrossPlotAreaSqMt === undefined || formData.GrossPlotAreaSqMt <= 0) {
+      newErrors.GrossPlotAreaSqMt = "Gross Plot Area is required.";
     }
 
     if (formData.TotalCarpetAreaSqFt === null || formData.TotalCarpetAreaSqFt === undefined || formData.TotalCarpetAreaSqFt <= 0) {
@@ -209,11 +209,11 @@ const BuildingDescription: React.FC = () => {
     return {
       BuildingId: buildingId,
       ProjectId: projectId ?? 0,
-      GrossPlotAreaSqFt: formData.GrossPlotAreaSqFt ?? 0,
-      PlotAreaPhysicalSurveySqFt: formData.PlotAreaPhysicalSurveySqFt ?? undefined,
-      PlotAreaOldApprovedPlanSqFt: formData.PlotAreaOldApprovedPlanSqFt ?? undefined,
-      PlotAreaConveyanceSqFt: formData.PlotAreaConveyanceSqFt ?? undefined,
-      PlotAreaPRCardSqFt: formData.PlotAreaPRCardSqFt ?? undefined,
+      GrossPlotAreaSqMt: formData.GrossPlotAreaSqMt ?? 0,
+      PlotAreaPhysicalSurveySqMt: formData.PlotAreaPhysicalSurveySqMt ?? undefined,
+      PlotAreaOldApprovedPlanSqMt: formData.PlotAreaOldApprovedPlanSqMt ?? undefined,
+      PlotAreaConveyanceSqMt: formData.PlotAreaConveyanceSqMt ?? undefined,
+      PlotAreaPRCardSqMt: formData.PlotAreaPRCardSqMt ?? undefined,
       TotalCarpetAreaSqFt: formData.TotalCarpetAreaSqFt ?? 0,
       TotalResidentialUnits: formData.TotalResidentialUnits ?? undefined,
       TotalResidentialCarpetAreaSqFt: formData.TotalResidentialCarpetAreaSqFt ?? undefined,
@@ -297,10 +297,10 @@ const BuildingDescription: React.FC = () => {
                 <Input
                   label="Gross Plot Area (SqMt)"
                   required
-                  error={errors.GrossPlotAreaSqFt}
+                  error={errors.GrossPlotAreaSqMt}
                   type="text"
-                  value={formData.GrossPlotAreaSqFt || ''}
-                  onChange={(e) => handleFieldChange('GrossPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  value={formData.GrossPlotAreaSqMt || ''}
+                  onChange={(e) => handleFieldChange('GrossPlotAreaSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter gross plot Area"
                   rightIcon="SqMt"
                 />
@@ -309,8 +309,8 @@ const BuildingDescription: React.FC = () => {
                 <Input
                   label="Plot Area Physical Survey (SqMt)"
                   type="text"
-                  value={formData.PlotAreaPhysicalSurveySqFt || ''}
-                  onChange={(e) => handleFieldChange('PlotAreaPhysicalSurveySqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  value={formData.PlotAreaPhysicalSurveySqMt || ''}
+                  onChange={(e) => handleFieldChange('PlotAreaPhysicalSurveySqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Physical Survey Area"
                   rightIcon="SqMt"
                 />
@@ -319,8 +319,8 @@ const BuildingDescription: React.FC = () => {
                 <Input
                   label="Plot Area Old Approved Plan (SqMt)"
                   type="text"
-                  value={formData.PlotAreaOldApprovedPlanSqFt || ''}
-                  onChange={(e) => handleFieldChange('PlotAreaOldApprovedPlanSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  value={formData.PlotAreaOldApprovedPlanSqMt || ''}
+                  onChange={(e) => handleFieldChange('PlotAreaOldApprovedPlanSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Old Approved Plan Area"
                   rightIcon="SqMt"
                 />
@@ -329,10 +329,10 @@ const BuildingDescription: React.FC = () => {
                 <Input
                   label="Plot Area Conveyance (SqMt)"
                   type="text"
-                  value={formData.PlotAreaConveyanceSqFt || ''}
+                  value={formData.PlotAreaConveyanceSqMt || ''}
                   onChange={(e) =>
 
-                    handleFieldChange('PlotAreaConveyanceSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                    handleFieldChange('PlotAreaConveyanceSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
 
                   placeholder="Enter Conveyance Area"
                   rightIcon="SqMt"
@@ -342,8 +342,8 @@ const BuildingDescription: React.FC = () => {
                 <Input
                   label="Plot Area PR Card (SqMt)"
                   type="text"
-                  value={formData.PlotAreaPRCardSqFt || ''}
-                  onChange={(e) => handleFieldChange('PlotAreaPRCardSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  value={formData.PlotAreaPRCardSqMt || ''}
+                  onChange={(e) => handleFieldChange('PlotAreaPRCardSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter PR Card Area"
                   rightIcon="SqMt"
                 />
@@ -468,7 +468,7 @@ const BuildingDescription: React.FC = () => {
                         value={contact.ContactName || ''}
                         onChange={(e) => {
                           const updatedList = [...contactDetailsList];
-                          updatedList[index] = { ...updatedList[index], ContactName: filterLetters(e.target.value) };
+                          updatedList[index] = { ...updatedList[index], ContactName: filterNameCharacters(e.target.value) };
                           setContactDetailsList(updatedList);
                           if (contactDetailsErrors[index]?.ContactName) {
                             setContactDetailsErrors(prev => ({

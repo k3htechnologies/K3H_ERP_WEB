@@ -27,10 +27,9 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
             if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
 
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            return response;
 
         } catch (error: any) {
 
@@ -48,12 +47,11 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
     async addUpdateMaterialRequisitionGRN(formData: FormData): Promise<MaterialRequisitionGRNSaveResponse> {
         try {
 
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
                 MaterialRequisitionGRNApi.ADD,
                 formData
             )
 
-            return response
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE MATERIAL REQUISITION GRN:', error)
@@ -72,14 +70,14 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
 
                 MaterialRequisitionGRNId: (params.MaterialRequisitionGRNId ?? 0).toString(),
                 Uniquekey: params.Uniquekey ?? '',
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
 
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.DELETE}?${queryParams.toString()}`
-            )
-
-            return response
+            );
 
         } catch (error) {
 
@@ -100,10 +98,10 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
                 Uniquekey: params.Uniquekey ?? '',
             })
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.PULL_SUMMARY}?${queryParams.toString()}`, { signal }
-            )
-            return response;
+            );
+            
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION GRN SUMMARY :', error);

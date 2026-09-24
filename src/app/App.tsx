@@ -228,7 +228,6 @@ import { JobRoleMasterListStateProvider } from '@/features/hireSpace/JobRoleMast
 import JobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/JobRoleMaster';
 import AddUpdateJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/AddUpdateJobRoleMaster';
 import { JobOpeningListStateProvider } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
-import ViewJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/ViewJobRoleMaster';
 import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
 import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
 import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
@@ -241,6 +240,13 @@ import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdat
 import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
+import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
+import ViewMaterialRequisitionReport from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
+import PurchaseMasterReport from '@/features/purchaseMasterReport/pages/PurchaseMasterReport';
+import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
+import StockManagement from '@/features/stockManagement/pages/StockManagement';
+import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
+import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
 import AccountDashboard from '@/features/accountDashboard/pages/AccountDashbaord';
 import FinanceDashboard from '@/features/financeDashboard/pages/FinanceDashboard';
 
@@ -295,6 +301,7 @@ function App() {
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="erpRoadmap" element={<ErpRoadmap />} />
 
             {/* SETTING -> COMPANY SETUP */}
             <Route path="settingDashboard" element={<SettingsDashboard />} />
@@ -587,23 +594,34 @@ function App() {
             <Route path="projectLead/viewProjectRedevelopment" element={<ProjectRedevelopmentListStateProvider><ViewProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
 
             {/* HIRESPACE & JON OPENING */}
+            <Route path="hireSpaceDashboard" element={<JobOpeningListStateProvider><HireSpaceDashboard /></JobOpeningListStateProvider>} />
             <Route path="jobRoleMaster" element={<JobRoleMasterListStateProvider><JobRoleMaster /></JobRoleMasterListStateProvider>} />
-            <Route path="jobRoleMaster/add/:departmentId/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
-            <Route path="jobRoleMaster/view" element={<JobRoleMasterListStateProvider><ViewJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/add/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
             <Route path="jobOpenings" element={<JobOpeningListStateProvider><JobOpening /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />
-            <Route path="jobOpenings/:departmentId/JobApplicationDetails/:jobOpeningMasterId" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/JobApplicationDetails" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
-         
-          {/* MATERIAL REQUISITION */}
+            <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
+
+            {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
-            <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="/materialRequisition/addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
+            <Route path="/materialRequisition/makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
+
+            <Route path="purchaseMasterReport" element={<PurchaseMasterReport />} />
+
+
+            {/* Stock Management */}
+            <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
+            <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
+
+
 
           </Route>
 

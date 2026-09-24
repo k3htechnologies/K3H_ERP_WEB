@@ -188,8 +188,14 @@ const AddCompany: React.FC = () => {
       ? (statesByCountryId[selectedCountryId] || []).map(s => ({
         label: s.name,
         value: s.id,
+        gSTStateCode:s.gSTStateCode
       }))
-      : []
+      : [];
+
+  const selectedState = stateOptions.find(state => Number(state.value) === Number(selectedStateId));
+
+  const selectedGSTStateCode = selectedState?.gSTStateCode || "";
+  const selectedStateName = selectedState?.label || "";
 
   const districtOptions =
     selectedStateId != null
@@ -397,12 +403,12 @@ const AddCompany: React.FC = () => {
     const hasGSTFile = hasAnyFile(gstGSTCertificateFiles, gSTCertificateURL);
 
     // Rule 1 — number present but invalid
-    if (hasGSTNumber && !isValidGST(gst)) {
-      newErrors.GSTNumber = "Enter a Valid GST Number";
+    if (hasGSTNumber &&  !isValidGST(gst,selectedGSTStateCode)) {
+      newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
-    if (hasGSTNumber && !isValidGST(gst)) {
-      newErrors.GSTNumber = "Enter a Valid GST Number";
+    if (hasGSTNumber && !isValidGST(gst,selectedGSTStateCode)) {
+     newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
     // Rule 2 — number entered but NO document
@@ -793,26 +799,7 @@ const AddCompany: React.FC = () => {
     }
   };
 
-  //#endregion 
-
-  const ALLOWED_DOC_EXTENSIONS = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
-
-  const hasInvalidFileFormat = (
-    files: (File | string)[] = [],
-    extraUrl?: string
-  ) => {
-    const allFiles = extraUrl ? [...files, extraUrl] : files;
-
-    return allFiles.some((file) => {
-      const name = typeof file === 'string' ? file : file.name;
-      const extension = name.split('.').pop()?.toLowerCase() || '';
-      return extension && !ALLOWED_DOC_EXTENSIONS.includes(extension);
-    });
-  };
-
-  const invalidFormatMessage = (label: string) =>
-    `${label} Uploaded files must be in a valid format (PDF, DOC, DOCX, JPG, JPEG, PNG).`;
-
+  
   //#region ADD UPDATE COMPANY PARTNER DATA
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
@@ -1345,197 +1332,7 @@ const AddCompany: React.FC = () => {
             </div>
           </div>
         </div>
-        {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
-        <div className="space-y-4 pt-5">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Government Identifiers</h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-
-              <Input
-                label='GST Number'
-                type="text"
-                value={formData.GSTNumber}
-                error={errors.GSTNumber}
-                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                onChange={(e) => {
-                  const gstNumber = filterGST(e.target.value);
-                  handleFieldChange('GSTNumber', gstNumber)
-                }}
-                placeholder="Enter Valid GST Number"
-              />
-
-            </div>
-            <div>
-
-              <MultiFilePicker
-                label="GST Certificate"
-                placeholder='Select GST Certificate'
-                error={errors.GSTCertificateURL}
-                value={gstGSTCertificateFiles}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("GST Certificate") });
-                    return;
-                  }
-                  setGSTCertificateFiles(files);
-                }}
-                availableFilesURL={gSTCertificateURL ?? ""}
-                allowedTypes={["image/jpeg",
-                  "image/png",
-                  "image/jpg",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                ]}
-                maxFiles={5}
-                onRemoveExisting={(url) => {
-                  setRemovedGSTCertificateUrls((prev) => [...prev, url])
-                }}
-              />
-
-            </div>
-            <div>
-
-              <Input
-                label='PAN Number'
-                type="text"
-                value={formData.PanNumber}
-                error={errors.PanNumber}
-                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                onChange={(e) => {
-                  const panNumber = filterPAN(e.target.value);
-                  handleFieldChange('PanNumber', panNumber)
-                }}
-                placeholder="Enter Valid PAN Number"
-              />
-
-            </div>
-            <div>
-
-              <MultiFilePicker
-                label="PAN Card"
-                placeholder='Select Pan Card'
-                error={errors.PanCardURL}
-                value={panURLFiles}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("Pan Card") });
-                    return;
-                  }
-                  setPANURLFiles(files);
-                }}
-                availableFilesURL={panURL ?? ""}
-                allowedTypes={["image/jpeg",
-                  "image/png",
-                  "image/jpg",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                ]}
-                maxFiles={5}
-                onRemoveExisting={(url) => {
-                  setRemovedPanUrls((prev) => [...prev, url])
-                }}
-              />
-
-            </div>
-            <div>
-
-              <Input
-                label='CIN Number'
-                type="text"
-                value={formData.CINNumber}
-                error={errors.CINNumber}
-                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                maxLength={21}
-                onChange={(e) => {
-                  const cinNumber = filterCIN(e.target.value);
-                  handleFieldChange('CINNumber', cinNumber)
-                }}
-                placeholder="Enter Valid CIN Number"
-              />
-
-            </div>
-            <div>
-
-
-              <MultiFilePicker
-                label='CIN'
-                placeholder='Select CIN'
-                value={cinURLFiles}
-                error={errors.CINURL}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("CIN") });
-                    return;
-                  }
-                  setCINURLFiles(files);
-                }}
-                availableFilesURL={cinURL ?? ""}
-                allowedTypes={[
-                  "image/jpeg",
-                  "image/png",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ]}
-                maxFiles={5}
-                onRemoveExisting={(url) => {
-                  setRemovedCinUrls((prev) => [...prev, url])
-                }}
-              />
-
-            </div>
-
-            <div>
-
-              <Input
-                label='TAN Number'
-                type="text"
-                value={formData.TANNumber}
-                error={errors.TANNumber}
-                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                maxLength={20}
-                onChange={(e) => {
-                  const tanNumber = filterTAN(e.target.value);
-                  handleFieldChange('TANNumber', tanNumber)
-                }}
-                placeholder="Enter Valid TAN Number"
-              />
-
-            </div>
-
-            <div>
-              <MultiFilePicker
-                label='TAN'
-                placeholder='Select TAN'
-                value={tanURLFiles}
-                error={errors.TANURL}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("TAN") });
-                    return;
-                  }
-                  setTANURLFiles(files);
-                }}
-                availableFilesURL={tanURL ?? ""}
-                allowedTypes={[
-                  "image/jpeg",
-                  "image/png",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                ]}
-                maxFiles={5}
-                onRemoveExisting={(url) => {
-                  setRemovedTanUrls((prev) => [...prev, url])
-                }}
-              />
-
-            </div>
-          </div>
-        </div>
+        
 
         {/* ============================================================= [ADDRESS] ============================================================================================= */}
         <div className="space-y-4 pt-5">
@@ -1686,6 +1483,168 @@ const AddCompany: React.FC = () => {
           </div>
         </div>
 
+        {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
+        <div className="space-y-4 pt-5">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Government Identifiers</h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+
+              <Input
+                label={`GST Number ${selectedStateName && selectedGSTStateCode ? ` (${selectedStateName} GST Code - ${selectedGSTStateCode})` : ""}`}
+                type="text"
+                value={formData.GSTNumber}
+                error={errors.GSTNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => {
+                  const gstNumber = filterGST(e.target.value);
+                  handleFieldChange('GSTNumber', gstNumber)
+                }}
+                placeholder="Enter Valid GST Number"
+              />
+
+            </div>
+            <div>
+
+              <MultiFilePicker
+                label="GST Certificate"
+                placeholder='Select GST Certificate'
+                error={errors.GSTCertificateURL}
+                value={gstGSTCertificateFiles}
+                onChange={setGSTCertificateFiles}
+                
+                availableFilesURL={gSTCertificateURL ?? ""}
+                allowedTypes={["image/jpeg",
+                  "image/png",
+                  "image/jpg",
+                  "application/pdf"
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedGSTCertificateUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+            <div>
+
+              <Input
+                label='PAN Number'
+                type="text"
+                value={formData.PanNumber}
+                error={errors.PanNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => {
+                  const panNumber = filterPAN(e.target.value);
+                  handleFieldChange('PanNumber', panNumber)
+                }}
+                placeholder="Enter Valid PAN Number"
+              />
+
+            </div>
+            <div>
+
+              <MultiFilePicker
+                label="PAN Card"
+                placeholder='Select Pan Card'
+                error={errors.PanCardURL}
+                value={panURLFiles}
+                onChange={setPANURLFiles}
+                availableFilesURL={panURL ?? ""}
+                allowedTypes={["image/jpeg",
+                  "image/png",
+                  "image/jpg",
+                  "application/pdf"
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedPanUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+            <div>
+
+              <Input
+                label='CIN Number'
+                type="text"
+                value={formData.CINNumber}
+                error={errors.CINNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                maxLength={21}
+                onChange={(e) => {
+                  const cinNumber = filterCIN(e.target.value);
+                  handleFieldChange('CINNumber', cinNumber)
+                }}
+                placeholder="Enter Valid CIN Number"
+              />
+
+            </div>
+            <div>
+
+
+              <MultiFilePicker
+                label='CIN'
+                placeholder='Select CIN'
+                value={cinURLFiles}
+                error={errors.CINURL}
+                onChange={setCINURLFiles}
+                
+                availableFilesURL={cinURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedCinUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+
+            <div>
+
+              <Input
+                label='TAN Number'
+                type="text"
+                value={formData.TANNumber}
+                error={errors.TANNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                maxLength={20}
+                onChange={(e) => {
+                  const tanNumber = filterTAN(e.target.value);
+                  handleFieldChange('TANNumber', tanNumber)
+                }}
+                placeholder="Enter Valid TAN Number"
+              />
+
+            </div>
+
+            <div>
+              <MultiFilePicker
+                label='TAN'
+                placeholder='Select TAN'
+                value={tanURLFiles}
+                error={errors.TANURL}
+                onChange={setTANURLFiles}
+                availableFilesURL={tanURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf",
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedTanUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+          </div>
+        </div>
+
         {/* ============================================================= [COMPANY VERIFICATION] ============================================================================================= */}
         <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Company Verification</h3>
@@ -1700,20 +1659,12 @@ const AddCompany: React.FC = () => {
                 required
                 error={errors.CompanyLetterheadHeaderURL}
                 value={companyLetterHeadHeaderFiles}
-                onChange={(files) => {
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Header") });
-                    return;
-                  }
-                  setCompanyLetterHeadHeaderFiles(files);
-                }}
+                onChange={setCompanyLetterHeadHeaderFiles}
                 availableFilesURL={companyLetterHeadHeaderURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
                   "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ]}
                 maxFiles={1}
                 onRemoveExisting={(url) => {
@@ -1732,21 +1683,13 @@ const AddCompany: React.FC = () => {
                 required
                 value={companyLetterHeadFooterFiles}
                 error={errors.CompanyLetterheadFooterURL}
-                onChange={(files) => {
-                  
-                  if (hasInvalidFileFormat(files)) {
-                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Footer") });
-                    return;
-                  }
-                  setCompanyLetterHeadFooterFiles(files);
-                }}
+                onChange={setCompanyLetterHeadFooterFiles}
+                
                 availableFilesURL={companyLetterHeadFooterURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
                   "image/png",
                   "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 ]}
                 maxFiles={1}
                 onRemoveExisting={(url) => {
@@ -1993,8 +1936,6 @@ const AddCompany: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={2}
               onRemoveExisting={(url) => {
@@ -2029,8 +1970,6 @@ const AddCompany: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={2}
               onRemoveExisting={(url) => {
@@ -2050,8 +1989,6 @@ const AddCompany: React.FC = () => {
                 "image/jpeg",
                 "image/png",
                 "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={1}
               onRemoveExisting={(url) => {

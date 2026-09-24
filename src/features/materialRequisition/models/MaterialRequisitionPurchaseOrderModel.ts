@@ -17,6 +17,7 @@ export interface MaterialRequisitionPurchaseOrderData {
     MaterialRequisitionId: number | 0;
     PurchaseOrderURL: string | null;
     RemovePurchaseOrderURL: string | '';
+    NumberOfGRN: number | 0;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

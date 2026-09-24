@@ -1,7 +1,7 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
 import { VendorFinalizationDatasourceImpl } from "@/features/materialRequisition/datasources/VendorFinalizationDataSource";
-import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, RevokeFinalizationVendorRequest, RevokeFinalizationVendorResponse, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 const VendorFinalizationDatasource = new VendorFinalizationDatasourceImpl
@@ -65,5 +65,17 @@ export const vendorFinalizationService = {
             return E.left({ message: error.message, code: error.code });
 
         }
-    } 
+    },
+
+    apiCallRevokeFinalizationVendor: async (params: RevokeFinalizationVendorRequest): Promise<E.Either<Failure, RevokeFinalizationVendorResponse>> => {
+        try {
+    
+            return E.right(await VendorFinalizationDatasource.revokeFinalizationVendor(params));
+
+        } catch (error: any) {
+            
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    }  
 }

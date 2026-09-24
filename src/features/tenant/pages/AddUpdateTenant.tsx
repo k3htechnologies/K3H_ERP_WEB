@@ -112,7 +112,7 @@ const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
 });
 
 
-// --- add after imports, before component ---
+
 type TenantApplicantWithFiles = TenantApplicant & {
   _photoFiles?: (File | string)[];
   _aadharFiles?: (File | string)[];
@@ -761,6 +761,20 @@ const AddUpdateTenant: React.FC = () => {
   } => {
     const newErrorsTenantApplicant: { [key: string]: string } = {}
 
+    const otherApplicants = editingApplicantData?applicantList.filter((_, index) => index !== editingApplicantData.index): applicantList;
+
+    const existingApplicantCount = otherApplicants.filter(a => String(a.ApplicantType ?? '').trim() .toUpperCase() === 'APPLICANT' ).length;
+
+    const currentIsApplicant =  String(formDataForApplicant.ApplicantType ?? '') .trim().toUpperCase() === 'APPLICANT';
+
+    const finalApplicantCount =  existingApplicantCount +(currentIsApplicant ? 1 : 0);
+
+    if (finalApplicantCount === 0) {
+      newErrorsTenantApplicant.ApplicantType = 'One Applicant is required';
+    } else if (finalApplicantCount > 1) {
+      newErrorsTenantApplicant.ApplicantType = 'Only One Applicant is allowed';
+    }
+
     if (!formDataForApplicant.ApplicantType?.trim()) {
       newErrorsTenantApplicant.ApplicantType = 'Applicant Type is required'
     }
@@ -1091,7 +1105,7 @@ const AddUpdateTenant: React.FC = () => {
       IFSCCode: formDataForApplicant.IFSCCode || '',
       ChequeURL: createFileUrlString(mergedChequeFiles),
 
-      BankName:  dropdownLabels.bankName ?? "",
+      BankName: dropdownLabels.bankName ?? "",
       CreatedById: 0,
       CreatedBy: '',
       CreatedDate: null,

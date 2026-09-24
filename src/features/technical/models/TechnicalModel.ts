@@ -40,6 +40,7 @@ export interface CountryStateCityDistrictVillageData {
     CountryName: string
     StateMasterId: number
     StateName: string
+    GSTStateCode: string
     CountryMasterIdRef: number
     DistrictMasterId: number
     DistrictName: string
@@ -65,10 +66,9 @@ export interface MaterialSubMaterialUOM {
     MaterialMasterIdRef: number
     UomMasterId: number
     UomCode: string
+    Uom : string
     IsTolerant?: boolean
-    MaterialTolerant?: number
-    TolerancePercentage?: number
-    Tolerance?: number
+    LeadTimeInDays?: number
 }
 
 export interface MateriaLSubMaterialMasterUOMWrapper {

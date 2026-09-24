@@ -1,6 +1,6 @@
-import baseClient from "@/core/config/baseClient"
-import { TokenExpiredException } from "@/core/config/baseClientexceptions"
-import { JobRoleMasterApi } from "@/features/hireSpace/JobRoleMaster/api/JobRoleMasterApi"
+import baseClient from '@/core/config/baseClient'
+import { TokenExpiredException } from '@/core/config/baseClientexceptions'
+import { JobRoleMasterApi } from '@/features/hireSpace/JobRoleMaster/api/JobRoleMasterApi'
 import type {
     FilterWithPaginationJobRoleMasterRequest,
     AddUpdateJobRoleMasterRequest,
@@ -26,10 +26,11 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
 
     async pullJobDepartment(signal?: AbortSignal): Promise<JobDepartmentListResponse> {
         try {
-            return await this.k3hHttpClient.getRequestWithAuthentication(
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 JobRoleMasterApi.PULL_DEPARTMENTS, { signal }
             )
 
+            return response;
         } catch (error: any) {
             console.error('ERROR: PULL JOB DEPARTMENT :', error)
 
@@ -45,28 +46,25 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
             const queryParams = new URLSearchParams({
                 pageSize: (params.PageSize ?? 10).toString(),
                 pageNumber: (params.PageNumber ?? 1).toString(),
-                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.JobRoleId) queryParams.append('JobRoleId', params.JobRoleId.toString())
             if (params.DepartmentId) queryParams.append('DepartmentId', params.DepartmentId.toString())
-            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim())
-            if (params.RoleName?.trim()) queryParams.append('RoleName', params.RoleName.trim())
-            if (params.RoleSkills?.trim()) queryParams.append('RoleSkills', params.RoleSkills.trim())
-            if (params.IsActive !== undefined) queryParams.append('IsActive', params.IsActive.toString())
+            if (params.JobRoleName?.trim()) queryParams.append('JobRoleName', params.JobRoleName.trim())
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
-            return  await this.k3hHttpClient.getRequestWithAuthentication(
-                `${JobRoleMasterApi.PULL}?${queryParams.toString()}`,{ signal }
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${JobRoleMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
 
+            return response;
 
         } catch (error: any) {
             console.error('ERROR: PULL JOB ROLE MASTER :', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.pullJobRoleMaster(params)
+                return await this.pullJobRoleMaster(params, signal)
             }
             throw error
         }
@@ -74,11 +72,12 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
 
     async addUpdateJobRoleMaster(params: AddUpdateJobRoleMasterRequest): Promise<JobRoleMasterSaveResponse> {
         try {
-            return await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 JobRoleMasterApi.ADD_UPDATE,
                 params
             )
 
+            return response;
         } catch (error) {
             console.error('ERROR: ADD UPDATE JOB ROLE MASTER :', error)
 
@@ -96,10 +95,11 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
                 UniqueKey: params.UniqueKey ?? '',
             })
 
-            return await this.k3hHttpClient.deleteRequestWithAuthentication(
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${JobRoleMasterApi.DELETE}?${queryParams.toString()}`
             )
 
+            return response;
         } catch (error) {
             console.error('ERROR: DELETE JOB ROLE MASTER :', error)
 

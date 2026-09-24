@@ -1,16 +1,39 @@
 import { formatCurrency } from "@/core/utils/comman";
 import type { Table5 } from "@/features/crmDashboard/models/CrmDashboardModel";
+import { Button } from "@/ui/components/forms";
+import { Download } from "lucide-react";
 
 interface Props {
   data: Table5[];
+  onExport: () => void;
 }
 
-const MilestoneCollection: React.FC<Props> = ({ data }) => {
+const MilestoneCollection: React.FC<Props> = ({ data, onExport }) => {
+
+
   return (
+
     <div className="pt-5">
       <div className="bg-white p-4 rounded-xl border border-gray-100">
-        <h3 className="font-semibold mb-3">Milestone Collection  <span className="text-sm font-normal text-gray-500"> ({data.length} Records)</span></h3>
 
+        <div className="flex items-center justify-between mb-3">
+
+          <h3 className="font-semibold">  Milestone Collection <span className="text-sm font-normal text-gray-500 ml-1">({data.length} Records) </span> </h3>
+          {data?.length > 0 && (
+            <Button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onExport();
+              }}
+              color="blue"
+              variant="solid"
+              colorMode="extraLight"
+              style={{ width: '35px', height: '35px' }}
+              centerIcon={<Download className="h-5 w-5" />}>
+            </Button>
+          )}
+        </div>
         <div className="overflow-auto thin-scroll max-h-[500px] rounded-lg">
           <table className="w-full min-w-[750px] text-sm">
 
@@ -27,8 +50,8 @@ const MilestoneCollection: React.FC<Props> = ({ data }) => {
 
             <tbody className="w-full border-separate border-spacing-y-2">
 
-             
-               <tr className="sticky top-[35px] z-10 font-semibold border-t-2 border-gray-300 font-semibold bg-gray-50">
+
+              <tr className="sticky top-[35px] z-10 font-semibold border-t-2 border-gray-300 font-semibold bg-gray-50">
                 <td className="px-2 py-3 rounded-l-lg">
                   Total
                 </td>
@@ -102,7 +125,7 @@ const MilestoneCollection: React.FC<Props> = ({ data }) => {
                 );
               })}
 
-             
+
             </tbody>
           </table>
         </div>

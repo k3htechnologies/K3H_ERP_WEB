@@ -1,28 +1,23 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as E from 'fp-ts/Either';
-import { useToast } from '@/core/hooks/useToast';
+
+import { Input } from '@/ui/components/forms';
 import { runApiWithLoader } from '@/core/utils';
+import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
-import type { JobRoleMasterData } from '@/features/hireSpace/JobRoleMaster/models/JobRoleMasterModel';
-import {
-  fetchJobOpeningDepartmentDropdown,
-  fetchJobOpeningJobTitleDropdown,
-} from '@/features/hireSpace/jobOpening/jobOpeningDropDown';
-import { getJobRoleSkillsText } from '@/features/hireSpace/jobOpening/utils/jobOpeningUtils';
 import {
   ACTIVE_INACTIVE_OPTIONS,
   EMPLOYMENT_TYPE_OPTIONS,
   EXPERIENCE_MONTH_OPTIONS,
   EXPERIENCE_YEAR_OPTIONS,
-  JOB_OPENING_LOCKED_EDIT_FIELDS,
   WORK_MODE_OPTIONS,
 } from '@/core/constants';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import {
-  getInitialFormState,
-  INITIAL_FORM_STATE,
-} from '@/features/hireSpace/jobOpening/constants/jobOpeningConstants';
-import { useJobOpeningListState } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
+  fetchJobOpeningDepartmentDropdown,
+  fetchJobOpeningJobTitleDropdown,
+} from '@/features/hireSpace/jobOpening/jobOpeningDropDown';
 import type {
   AddUpdateJobOpeningRequest,
   FilterWithPaginationJobOpeningRequest,
@@ -30,89 +25,58 @@ import type {
 import { JobOpeningService } from '@/features/hireSpace/jobOpening/services/JobOpeningService';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { Input } from '@/ui/components/forms';
+import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 
-export const AddUpdateJobOpening: React.FC = () => {
+const INITIAL_FORM_STATE: AddUpdateJobOpeningRequest = {
+  JobOpeningMasterId: 0,
+  UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  DepartmentMasterId: 0,
+  JobRoleMasterId: 0,
+  JobDescription: '',
+  JobResponsibilities: '',
+  JobRequirement: '',
+  JobQualification: '',
+  JobSkills: '',
+  WorkMode: '',
+  ExperienceYears: 0,
+  ExperienceMonths: 0,
+  NumberOfOpenings: 0,
+  WorkLocation: '',
+  EmploymentType: '',
+  JobRoleStatus: true,
+}
 
-  const [formData, setFormData] = useState<AddUpdateJobOpeningRequest>(() => getInitialFormState());
+export const AddUpdateJobOpening: React.FC = () => {
+  const [formData, setFormData] = useState<AddUpdateJobOpeningRequest>(INITIAL_FORM_STATE);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
   const navigate = useNavigate();
 
   const { jobOpeningId } = useParams<{ jobOpeningId?: string }>();
-  const jobOpeningIdNumber = jobOpeningId ? Number(jobOpeningId) : 0;
-  const isAddMode = jobOpeningIdNumber === 0;
-  const isUpdateMode = !isAddMode;
+  const JobOpeningId = jobOpeningId ? Number(jobOpeningId) : 0;
+  const isAddMode = JobOpeningId === 0;
 
   const { addToast } = useToast();
 
-  const { listState } = useJobOpeningListState();
-
-  const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  const [departments, setDepartments] = useState<{ label: string; value: string }[]>([]);
-  const [jobTitles, setJobTitles] = useState<{ label: string; value: string }[]>([]);
-  const [jobRolesData, setJobRolesData] = useState<JobRoleMasterData[]>([]);
-
   const { canAction } = useMenuPermissions('/jobOpenings');
 
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  const [departments, setDepartments] = useState<{ id: string; label: string; count: number }[]>([]);
+  const [dropdownLabels, setDropdownLabels] = useState<{ jobTitleName?: string }>({});
 
 
+  const handleFieldChange = (field: keyof AddUpdateJobOpeningRequest, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
 
-  const fetchJobOpeningDetails = useCallback(async () => {
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        const params: FilterWithPaginationJobOpeningRequest = {
-          PageNumber: 1,
-          PageSize: 1,
-          JobOpeningMasterId: jobOpeningIdNumber,
-        };
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
 
-        const response = await JobOpeningService.apiCallPullJobOpening(params);
 
-        if (E.isRight(response)) {
-          const jobOpening = response.right.Data?.[0];
-
-          if (jobOpening) {
-            setFormData({
-              JobOpeningMasterId: jobOpening.JobOpeningMasterId,
-              UniqueKey: jobOpening.UniqueKey || INITIAL_FORM_STATE.UniqueKey,
-              DepartmentMasterId: jobOpening.DepartmentMasterId || 0,
-              JobRoleMasterId: jobOpening.JobRoleMasterId || 0,
-              JobDescription: jobOpening.JobDescription || '',
-              JobResponsibilities: jobOpening.JobResponsibilities || '',
-              JobRequirement: jobOpening.JobRequirement || '',
-              JobQualification: jobOpening.JobQualification || '',
-              JobSkills: jobOpening.JobSkills || '',
-              WorkMode: jobOpening.WorkMode || '',
-              ExperienceYears: jobOpening.ExperienceYears || 0,
-              ExperienceMonths: jobOpening.ExperienceMonths || 0,
-              NumberOfOpenings: jobOpening.NumberOfOpenings || 0,
-              WorkLocation: jobOpening.WorkLocation || '',
-              EmploymentType: jobOpening.EmploymentType || '',
-              JobRoleStatus: jobOpening.JobRoleStatus !== false,
-            });
-          } else {
-            addToast({ type: 'error', title: 'Job opening details not found' });
-          }
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-
-        return response;
-      },
-      undefined,
-      (error: any) => addToast({ type: 'error', title: error.message }),
-      undefined,
-      'Loading Job Opening'
-    );
-  }, [addToast, jobOpeningIdNumber]);
- 
-
-  const fetchDepartments = useCallback(async () => {
+  const fetchDepartments = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -122,106 +86,136 @@ export const AddUpdateJobOpening: React.FC = () => {
         return result;
       },
       undefined,
-      (error: any) => addToast({ type: 'error', title: error.message }),
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
       undefined,
-      'Loading Departments'
+      'Loading Departments',
     );
-  }, [addToast]);
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    if (!isAddMode) {
+      fetchJobOpeningDetails();
+    }
+  }, [JobOpeningId]);
 
 
-  const fetchJobTitles = useCallback(async (departmentId: number) => {
+  const fetchJobOpeningDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const result = await fetchJobOpeningJobTitleDropdown(departmentId);
-        setJobRolesData(result.data);
-        setJobTitles(result.itemList);
-        return result;
+        const params: FilterWithPaginationJobOpeningRequest = {
+          PageNumber: 1,
+          PageSize: 1,
+          JobOpeningMasterId: JobOpeningId,
+        };
+
+        const response = await JobOpeningService.apiCallPullJobOpening(params);
+
+        if (E.isRight(response)) {
+          const e = response.right.Data?.[0];
+
+          if (e) {
+            setFormData((prev) => ({
+              ...prev,
+              JobOpeningMasterId: e.JobOpeningMasterId ?? prev.JobOpeningMasterId,
+              UniqueKey: e.UniqueKey ?? prev.UniqueKey,
+              DepartmentMasterId: e.DepartmentMasterId ?? prev.DepartmentMasterId,
+              JobRoleMasterId: e.JobRoleMasterId ?? prev.JobRoleMasterId,
+              JobDescription: e.JobDescription ?? prev.JobDescription,
+              JobResponsibilities: e.JobResponsibilities ?? prev.JobResponsibilities,
+              JobRequirement: e.JobRequirement ?? prev.JobRequirement,
+              JobQualification: e.JobQualification ?? prev.JobQualification,
+              JobSkills: e.JobSkills ?? prev.JobSkills,
+              WorkMode: e.WorkMode ?? prev.WorkMode,
+              ExperienceYears: e.ExperienceYears ?? prev.ExperienceYears,
+              ExperienceMonths: e.ExperienceMonths ?? prev.ExperienceMonths,
+              NumberOfOpenings: e.NumberOfOpenings ?? prev.NumberOfOpenings,
+              WorkLocation: e.WorkLocation ?? prev.WorkLocation,
+              EmploymentType: e.EmploymentType ?? prev.EmploymentType,
+              JobRoleStatus: e.JobRoleStatus ?? prev.JobRoleStatus,
+            }));
+            setDropdownLabels({
+              jobTitleName: e.JobRoleName,
+            });
+          }
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
       },
       undefined,
-      (error: any) => addToast({ type: 'error', title: error.message }),
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
       undefined,
-      'Loading Job Titles'
+      'Loading Job Opening',
     );
-  }, [addToast]);
+  };
 
 
-  useEffect(() => {
-    const initializeScreen = async () => {
-      await fetchDepartments();
-
-      if (!isAddMode) {
-        await fetchJobOpeningDetails();
-      } else if (listState.departmentId) {
-        setFormData((prev) => ({
-          ...prev,
-          DepartmentMasterId: listState.departmentId,
-        }));
-      }
-    };
-
-    void initializeScreen();
-  }, [fetchDepartments, fetchJobOpeningDetails, isAddMode, listState.departmentId]);
-
-
-  useEffect(() => {
-    const departmentId = Number(formData.DepartmentMasterId);
-
-    if (!departmentId) {
-      setJobTitles([]);
-      setJobRolesData([]);
-      return;
-    }
-
-    void fetchJobTitles(departmentId);
-  }, [fetchJobTitles, formData.DepartmentMasterId]);
-
-
-  const validateAddJobOpeningForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
+  const validateAddJobOpeningForm = (): {
+    isValid: boolean;
+    errors: { [key: string]: string };
+  } => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.DepartmentMasterId) {
       newErrors.DepartmentMasterId = 'Department is required';
     }
+
     if (!formData.JobRoleMasterId) {
       newErrors.JobRoleMasterId = 'Job title is required';
     }
-    if (!formData.JobDescription.trim()) {
+
+    if (!formData.JobDescription?.trim()) {
       newErrors.JobDescription = 'Job description is required';
     }
-    if (!formData.JobResponsibilities.trim()) {
+
+    if (!formData.JobResponsibilities?.trim()) {
       newErrors.JobResponsibilities = 'Job responsibilities are required';
     }
-    if (!formData.JobRequirement.trim()) {
+
+    if (!formData.JobRequirement?.trim()) {
       newErrors.JobRequirement = 'Job requirement is required';
     }
-    if (!formData.JobQualification.trim()) {
+
+    if (!formData.JobQualification?.trim()) {
       newErrors.JobQualification = 'Qualification is required';
     }
-    if (!formData.JobSkills.trim()) {
+
+    if (!formData.JobSkills?.trim()) {
       newErrors.JobSkills = 'Skills are required';
     }
-    if (!formData.WorkMode.trim()) {
+
+    if (!formData.WorkMode?.trim()) {
       newErrors.WorkMode = 'Work mode is required';
     }
+
     if (!formData.ExperienceYears) {
       newErrors.ExperienceYears = 'Experience years is required';
     }
+
     if (!formData.ExperienceMonths) {
       newErrors.ExperienceMonths = 'Experience months is required';
     }
 
     if (!formData.NumberOfOpenings) {
       newErrors.NumberOfOpenings = 'Number of openings is required';
-    } else if (formData.NumberOfOpenings <= 0) {
-      newErrors.NumberOfOpenings = 'Number of openings must be greater than 0';
     }
 
-    if (!formData.WorkLocation.trim()) {
+    if (!formData.WorkLocation?.trim()) {
       newErrors.WorkLocation = 'Work location is required';
     }
-    if (!formData.EmploymentType.trim()) {
+
+    if (!formData.EmploymentType?.trim()) {
       newErrors.EmploymentType = 'Employment type is required';
     }
 
@@ -232,79 +226,28 @@ export const AddUpdateJobOpening: React.FC = () => {
   };
 
 
-  const pushJobOpeningFormData = (): AddUpdateJobOpeningRequest => ({
-    JobOpeningMasterId: formData.JobOpeningMasterId,
-    UniqueKey: formData.UniqueKey || INITIAL_FORM_STATE.UniqueKey,
-    DepartmentMasterId: formData.DepartmentMasterId || 0,
-    JobRoleMasterId: formData.JobRoleMasterId || 0,
-    JobDescription: formData.JobDescription.trim(),
-    JobResponsibilities: formData.JobResponsibilities.trim(),
-    JobRequirement: formData.JobRequirement.trim(),
-    JobQualification: formData.JobQualification.trim(),
-    JobSkills: formData.JobSkills.trim(),
-    WorkMode: formData.WorkMode.trim(),
-    ExperienceYears: formData.ExperienceYears || 0,
-    ExperienceMonths: formData.ExperienceMonths || 0,
-    NumberOfOpenings: formData.NumberOfOpenings || 0,
-    WorkLocation: formData.WorkLocation.trim(),
-    EmploymentType: formData.EmploymentType.trim(),
-    JobRoleStatus: formData.JobRoleStatus,
-  });
-
-    const handleFieldChange = (field: keyof AddUpdateJobOpeningRequest, value: any) => {
-    if (isUpdateMode && (JOB_OPENING_LOCKED_EDIT_FIELDS as readonly string[]).includes(field)) return;
-
-    setFormData((prev) => ({ ...prev, [field]: value }));
-
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: '' }));
-    }
+  const PushJobOpeningFormData = (): AddUpdateJobOpeningRequest => {
+    return {
+      JobOpeningMasterId: formData.JobOpeningMasterId,
+      UniqueKey: formData.UniqueKey,
+      DepartmentMasterId: formData.DepartmentMasterId,
+      JobRoleMasterId: formData.JobRoleMasterId,
+      JobDescription: formData.JobDescription,
+      JobResponsibilities: formData.JobResponsibilities,
+      JobRequirement: formData.JobRequirement,
+      JobQualification: formData.JobQualification,
+      JobSkills: formData.JobSkills,
+      WorkMode: formData.WorkMode,
+      ExperienceYears: formData.ExperienceYears,
+      ExperienceMonths: formData.ExperienceMonths,
+      NumberOfOpenings: formData.NumberOfOpenings,
+      WorkLocation: formData.WorkLocation,
+      EmploymentType: formData.EmploymentType,
+      JobRoleStatus: formData.JobRoleStatus,
+    };
   };
 
-  
-  const handleDropdownChange = (field: keyof AddUpdateJobOpeningRequest, value: string | number) => {
-    if (isUpdateMode && (field === 'DepartmentMasterId' || field === 'JobRoleMasterId')) return;
-
-    const extractedValue = String(value ?? '');
-
-    if (field === 'DepartmentMasterId') {
-      setFormData((prev) => ({
-        ...getInitialFormState(),
-        JobOpeningMasterId: prev.JobOpeningMasterId,
-        UniqueKey: isUpdateMode ? prev.UniqueKey : INITIAL_FORM_STATE.UniqueKey,
-        DepartmentMasterId: Number(extractedValue) || 0,
-      }));
-      setErrors({});
-      return;
-    }
-
-    if (field === 'JobRoleMasterId') {
-      const selectedRole = jobRolesData.find((role) => String(role.JobRoleId) === extractedValue);
-      setFormData((prev) => ({
-        ...prev,
-        JobRoleMasterId: Number(extractedValue) || 0,
-        JobDescription: selectedRole?.RoleDescription || '',
-        JobResponsibilities: selectedRole?.RoleResponsibility || '',
-        JobRequirement: selectedRole?.JobRequirement || '',
-        JobQualification: selectedRole?.RoleQualification || '',
-        JobSkills: getJobRoleSkillsText(selectedRole?.RoleSkills ?? null),
-        WorkMode: selectedRole?.WorkMode || '',
-        ExperienceYears: Number(selectedRole?.ExperienceYears) || 0,
-        ExperienceMonths: Number(selectedRole?.ExperienceMonths) || 0,
-        NumberOfOpenings: Number(selectedRole?.NumberOfOpenings) || 0,
-        WorkLocation: selectedRole?.WorkLocation || '',
-        EmploymentType: selectedRole?.EmploymentType || '',
-        JobRoleStatus: String(selectedRole?.Status || 'Active').toLowerCase() !== 'inactive',
-      }));
-      setErrors((prev) => ({ ...prev, JobRoleMasterId: '' }));
-      return;
-    }
-
-    handleFieldChange(field, extractedValue);
-  };
-  
-  const handleAddUpdateJobOpening = async (event?: React.FormEvent<HTMLFormElement>) => {
-    event?.preventDefault();
+  const handleAddUpdateJobOpening = async () => {
     setErrors({});
 
     const validation = validateAddJobOpeningForm();
@@ -318,14 +261,12 @@ export const AddUpdateJobOpening: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const payload = pushJobOpeningFormData();
+        const payload = PushJobOpeningFormData();
+
         const response = await JobOpeningService.apiCallAddUpdateJobOpening(payload);
 
         if (E.isRight(response)) {
-          addToast({
-            type: 'success',
-            title: response.right.SuccessMessage?.[0] || (isAddMode ? 'Job opening added successfully' : 'Job opening updated successfully'),
-          });
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] });
           navigate('/jobOpenings');
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -334,98 +275,131 @@ export const AddUpdateJobOpening: React.FC = () => {
         return response;
       },
       undefined,
-      (error: any) => addToast({ type: 'error', title: error.message }),
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
       undefined,
-      isAddMode ? 'Add Job Opening' : 'Update Job Opening'
+      isAddMode ? 'Add Job Opening' : 'Update Job Opening',
     );
   };
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
 
-      <div className="thin-scroll flex-1 space-y-2 overflow-y-auto px-6 py-3">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
         <form onSubmit={handleAddUpdateJobOpening}>
-          <section className="space-y-4 pb-3">
-            <div className="flex flex-col gap-1 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Job Details</h3>
-              {isUpdateMode && (
-                <span className="text-xs font-medium text-gray-400 italic">Role details are locked while editing an existing opening</span>
-              )}
-            </div>
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Job Details</h3>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
               <div>
                 <SinglePageSelection
                   label="Select Department"
                   placeholder="Select Department"
+                  value={formData.DepartmentMasterId ? String(formData.DepartmentMasterId) : ''}
+                  valueKey="id"
+                  onChange={(e) => {
+                    handleFieldChange('DepartmentMasterId', Number(e) || 0);
+                    handleFieldChange('JobRoleMasterId', 0);
+                    handleFieldChange('JobDescription', '');
+                    handleFieldChange('JobResponsibilities', '');
+                    handleFieldChange('JobRequirement', '');
+                    handleFieldChange('JobQualification', '');
+                    handleFieldChange('JobSkills', '');
+                    setDropdownLabels((prev) => ({ ...prev, jobTitleName: '' }));
+                  }}
                   options={departments}
-                  value={formData.DepartmentMasterId || ''}
-                  onChange={(value) => handleDropdownChange('DepartmentMasterId', value)}
                   error={errors.DepartmentMasterId}
-                  disabled={isUpdateMode}
+                  disabled={!isAddMode}
                 />
               </div>
 
               <div>
-                <SinglePageSelection
+                <SingleSelectDropdownWithPagination
+                  key={`job-title-${formData.DepartmentMasterId}`}
                   label="Job Title"
-                  placeholder={formData.DepartmentMasterId ? 'Select Job Title' : 'Select a department first'}
-                  options={jobTitles}
-                  value={formData.JobRoleMasterId || ''}
-                  onChange={(value) => handleDropdownChange('JobRoleMasterId', value)}
+                  title="Select Job Title"
+                  size="lg"
+                  disabled={!isAddMode || !formData.DepartmentMasterId}
+                  dataFetchCallBack={(pageNumber, params) =>
+                    fetchJobOpeningJobTitleDropdown(pageNumber, {
+                      value: params?.value,
+                      departmentId: formData.DepartmentMasterId,
+                    })
+                  }
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange('JobRoleMasterId', 0);
+                      handleFieldChange('JobDescription', '');
+                      handleFieldChange('JobResponsibilities', '');
+                      handleFieldChange('JobRequirement', '');
+                      handleFieldChange('JobQualification', '');
+                      handleFieldChange('JobSkills', '');
+                      setDropdownLabels((prev) => ({ ...prev, jobTitleName: '' }));
+                      return;
+                    }
+
+                    handleFieldChange('JobRoleMasterId', Number(item.value));
+                    handleFieldChange('JobDescription', item.RoleDescription);
+                    handleFieldChange('JobResponsibilities', item.RoleResponsibility);
+                    handleFieldChange('JobRequirement', item.JobRequirement);
+                    handleFieldChange('JobQualification', item.RoleQualification);
+                    handleFieldChange('JobSkills', item.RoleSkills);
+                    setDropdownLabels((prev) => ({ ...prev, jobTitleName: item.label }));
+                  }}
+                  initialValue={createDropdownInitialValue(
+                    formData.JobRoleMasterId,
+                    dropdownLabels.jobTitleName,
+                  )}
                   error={errors.JobRoleMasterId}
-                  disabled={isUpdateMode || !formData.DepartmentMasterId}
                 />
               </div>
 
               <div>
                 <Input
-                  type="text"
                   label="Job Description"
                   placeholder="Pre-filled"
                   value={formData.JobDescription}
-                  onChange={(event) => handleFieldChange('JobDescription', event.target.value)}
-                  disabled={isUpdateMode}
+                  onChange={(e) => handleFieldChange('JobDescription', e.target.value)}
+                  disabled={!isAddMode}
                   error={errors.JobDescription}
                 />
               </div>
 
               <div>
                 <Input
-                  type="text"
                   label="Job Responsibilities"
                   placeholder="Pre-filled"
                   value={formData.JobResponsibilities}
-                  onChange={(event) => handleFieldChange('JobResponsibilities', event.target.value)}
-                  disabled={isUpdateMode}
+                  onChange={(e) => handleFieldChange('JobResponsibilities', e.target.value)}
+                  disabled={!isAddMode}
                   error={errors.JobResponsibilities}
                 />
               </div>
 
               <div>
                 <Input
-                  type="text"
                   label="Job Requirement"
                   placeholder="Pre-filled"
                   value={formData.JobRequirement}
-                  onChange={(event) => handleFieldChange('JobRequirement', event.target.value)}
-                  disabled={isUpdateMode}
+                  onChange={(e) => handleFieldChange('JobRequirement', e.target.value)}
+                  disabled={!isAddMode}
                   error={errors.JobRequirement}
                 />
               </div>
 
               <div>
                 <Input
-                  type="text"
                   label="Qualifications"
                   placeholder="Pre-filled"
                   value={formData.JobQualification}
-                  onChange={(event) => handleFieldChange('JobQualification', event.target.value)}
-                  disabled={isUpdateMode}
+                  onChange={(e) => handleFieldChange('JobQualification', e.target.value)}
+                  disabled={!isAddMode}
                   error={errors.JobQualification}
                 />
               </div>
@@ -435,25 +409,26 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Skills"
                   placeholder="Pre-filled"
                   value={formData.JobSkills}
-                  onChange={(event) => handleFieldChange('JobSkills', event.target.value)}
-                  disabled={isUpdateMode}
+                  onChange={(e) => handleFieldChange('JobSkills', e.target.value)}
+                  disabled={!isAddMode}
                   error={errors.JobSkills}
                 />
               </div>
             </div>
-          </section>
+          </div>
 
-          <section className="space-y-4 pt-5">
-            <h3 className="border-b border-gray-300 pb-2 text-lg font-semibold text-gray-900">Basic Details</h3>
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Details</h3>
 
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
               <div>
                 <SinglePageSelection
                   label="Work Mode"
                   placeholder="Select Work Mode"
-                  options={WORK_MODE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   value={formData.WorkMode}
-                  onChange={(value) => handleDropdownChange('WorkMode', value)}
+                  onChange={(e) => handleFieldChange('WorkMode', String(e))}
+                  options={WORK_MODE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   searchable={false}
                   error={errors.WorkMode}
                 />
@@ -465,20 +440,19 @@ export const AddUpdateJobOpening: React.FC = () => {
                   <div className="flex-1">
                     <SinglePageSelection
                       placeholder="Select Years"
+                      value={formData.ExperienceYears ? String(formData.ExperienceYears) : ''}
+                      onChange={(e) => handleFieldChange('ExperienceYears', Number(e) || 0)}
                       options={EXPERIENCE_YEAR_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                      value={formData.ExperienceYears || ''}
-                      onChange={(value) => handleFieldChange('ExperienceYears', Number(value) || 0)}
                       searchable={false}
                       error={errors.ExperienceYears}
                     />
                   </div>
-
                   <div className="flex-1">
                     <SinglePageSelection
                       placeholder="Select Months"
+                      value={formData.ExperienceMonths ? String(formData.ExperienceMonths) : ''}
+                      onChange={(e) => handleFieldChange('ExperienceMonths', Number(e) || 0)}
                       options={EXPERIENCE_MONTH_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                      value={formData.ExperienceMonths || ''}
-                      onChange={(value) => handleFieldChange('ExperienceMonths', Number(value) || 0)}
                       searchable={false}
                       error={errors.ExperienceMonths}
                     />
@@ -488,11 +462,10 @@ export const AddUpdateJobOpening: React.FC = () => {
 
               <div>
                 <Input
-                  type="text"
                   label="Number Of Openings"
                   placeholder="Enter Number Of Openings"
-                  value={formData.NumberOfOpenings || ''}
-                  onChange={(event) => handleFieldChange('NumberOfOpenings', Number(event.target.value) || 0)}
+                  value={formData.NumberOfOpenings}
+                  onChange={(e) => handleFieldChange('NumberOfOpenings', Number(e.target.value))}
                   error={errors.NumberOfOpenings}
                 />
               </div>
@@ -502,7 +475,7 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Work Location"
                   placeholder="Enter Location"
                   value={formData.WorkLocation}
-                  onChange={(event) => handleFieldChange('WorkLocation', event.target.value)}
+                  onChange={(e) => handleFieldChange('WorkLocation', e.target.value)}
                   error={errors.WorkLocation}
                 />
               </div>
@@ -511,43 +484,39 @@ export const AddUpdateJobOpening: React.FC = () => {
                 <SinglePageSelection
                   label="Employment Type"
                   placeholder="Select Employment Type"
-                  options={EMPLOYMENT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   value={formData.EmploymentType}
-                  onChange={(value) => handleDropdownChange('EmploymentType', value)}
+                  onChange={(e) => handleFieldChange('EmploymentType', String(e))}
+                  options={EMPLOYMENT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   searchable={false}
                   error={errors.EmploymentType}
                 />
               </div>
-
+              
               <div>
                 <SinglePageSelection
                   label="Job Role Status"
                   placeholder="Select Status"
-                  options={ACTIVE_INACTIVE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   value={formData.JobRoleStatus ? 'Active' : 'Inactive'}
-                  onChange={(value) => handleFieldChange('JobRoleStatus', value === 'Active')}
+                  onChange={(e) => handleFieldChange('JobRoleStatus', String(e) === 'Active')}
+                  options={ACTIVE_INACTIVE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   searchable={false}
-                  error={errors.JobRoleStatus}
                 />
               </div>
             </div>
-          </section>
+          </div>
         </form>
       </div>
 
       <BottomActionBar
         cancelText="Cancel"
+        saveText={formData.JobOpeningMasterId ? 'Update' : 'Add'}
         onCancel={() => navigate(-1)}
-        onSave={() => {
-          void handleAddUpdateJobOpening();
-        }}
-        isLoading={isLoading}
         canAction={canAction}
-        saveText={isUpdateMode ? 'Update' : 'Add'}
+        onSave={handleAddUpdateJobOpening}
+        isLoading={isLoading}
       />
     </div>
   );
-  //#endregion
 };
 
 export default AddUpdateJobOpening;

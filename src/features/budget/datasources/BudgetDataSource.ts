@@ -26,6 +26,7 @@ export class BudgetDatasourceImpl implements BudgetDatasource {
             if (params.LevelType) queryParams.append("LevelType", params.LevelType.trim());
             if (params.Uom) queryParams.append("Uom", params.Uom.trim());
             if (params.Flat) queryParams.append("Flat", params.Flat.trim());
+            if (params.ApprovalStatus) queryParams.append("ApprovalStatus", params.ApprovalStatus.trim());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

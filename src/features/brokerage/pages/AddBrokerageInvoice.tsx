@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -51,6 +51,9 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     const [removeUploadInvoiceURLUrls, SetRemoveUploadInvoiceURLUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
 
+    const location = useLocation();
+    const routeState = (location.state as { InvoiceAmount?: number; PaymentAmount?: number, }) || {};
+
     const navigate = useNavigate();
 
     const { listState } = useBookingBrokerageListState();
@@ -61,9 +64,11 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
     const brokerageInvoiceId = BrokerageInvoiceId ? Number(BrokerageInvoiceId) : 0;
 
-    const brokerageAmount = Number(listState.brokerageAmount) || 0;
-
     const isAddMode = brokerageInvoiceId === 0;
+
+    const brokerageAmount = isAddMode
+        ? Number(listState.brokerageAmount) - Number(routeState.InvoiceAmount)
+        : Number(listState.brokerageAmount);
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { projectId } = useProject();
@@ -165,14 +170,19 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     const validateAddBrokerageInvoiceForm = (): {
 
         isValid: boolean
-
         errors: { [key: string]: string }
 
     } => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!formData.InvoiceNumber) {
-            newErrors.InvoiceNumber = 'Invoice Number is required';
+        if (!formData.InvoiceDate) {
+            newErrors.InvoiceDate = 'Invoice Date is required';
+        }
+
+        if (!formData.InvoiceNumber?.trim()) {
+            newErrors.InvoiceNumber = "Invoice Number is required";
+        } else if (formData.InvoiceNumber.trim() === "0") {
+            newErrors.InvoiceNumber = "Invoice Number cannot be 0";
         }
 
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceURLUrls)) {
@@ -217,8 +227,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (formData.InvoiceAmount <= 0) {
             newErrors.InvoiceAmount = "Invoice Amount cannot be zero or negative";
         } else if (Number(formData.InvoiceAmount) > brokerageAmount) {
-            var pendingAmount = Number(brokerageAmount) - Number(listState.invoiceAmount);
-            newErrors.InvoiceAmount = `Invoice amount exceeds the brokerage amount ₹${pendingAmount.toLocaleString('en-IN')}`;
+            newErrors.InvoiceAmount = `Invoice amount exceeds the brokerage amount ${brokerageAmount == 0 ? "" : `₹ ${brokerageAmount}`}`;
         }
 
         return {
@@ -319,12 +328,13 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
                             <FieldItem label="CP Name" value={listState.cpName} />
                             <FieldItem label="CP Company" value={listState.cpCompany} />
-                            <FieldItem label="CP Mobile Number" value={listState.cpMobileNumber} />
+                            <FieldItem label="CP Mobile Number" value={`${listState.channelPartnerMobileNumberCountryCode} ${listState.cpMobileNumber}`} />
                             <FieldItem label="Agreement Value" value={formatCurrency(listState.agreementValue)} />
                             <FieldItem label="Brokerage Amount" value={formatCurrency(listState.brokerageAmount)} />
-                            <FieldItem label="Generated Invoice Amount" value={formatCurrency(listState.invoiceAmount)} />
-                            <FieldItem label="Payment Paid Amount" value={formatCurrency(listState.paymentPaidAmount)} />
+                            <FieldItem label="Generated Invoice Amount" value={formatCurrency(routeState.InvoiceAmount)} />
+                            <FieldItem label="Payment Paid Amount" value={formatCurrency(routeState.PaymentAmount)} />
                             <FieldItem label="Pending Amount" value={formatCurrency(PendingAmount)} />
+
                         </div>
                     </div>
 

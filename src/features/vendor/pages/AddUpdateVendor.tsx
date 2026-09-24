@@ -109,14 +109,21 @@ export const AddUpdateVendor: React.FC = () => {
       ? (statesByCountryId[selectedCountryId] || []).map(s => ({
         label: s.name,
         value: s.id,
+        gSTStateCode: s.gSTStateCode
       }))
       : []
+
+  const selectedState = stateOptions.find(state => Number(state.value) === Number(selectedStateId));
+
+  const selectedGSTStateCode = selectedState?.gSTStateCode || "";
+  const selectedStateName = selectedState?.label || "";
 
   const districtOptions =
     selectedStateId != null
       ? (districtsByStateId[selectedStateId] || []).map(d => ({
         label: d.name,
         value: d.id,
+
       }))
       : []
 
@@ -222,13 +229,13 @@ export const AddUpdateVendor: React.FC = () => {
             setGSTCertificateURL(row.GSTCertificateURL)
             setRemovedGSTCertificateUrls([]);
 
-            
+
             setSelectedCountryId(row.CountryMasterId ?? null);
             setSelectedStateId(row.StateMasterId ?? null);
             setSelectedDistrictId(row.DistrictMasterId ?? null);
             setSelectedCityId(row.CityMasterId ?? null);
           }
-          
+
           if (row.AvailableMaterialList) {
             const materialIds = row.AvailableMaterialList.split(",")
               .map((id) => Number(id.trim()))
@@ -353,9 +360,8 @@ export const AddUpdateVendor: React.FC = () => {
 
     if (!formData.GSTNumber?.trim()) {
       newErrors.GSTNumber = "GST Number is required.";
-    }
-    else if (!isValidGST(formData.GSTNumber?.trim())) {
-      newErrors.GSTNumber = "Enter a valid GST Number.";
+    } else if (!isValidGST(formData.GSTNumber?.trim(), selectedGSTStateCode)) {
+      newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
     if (!formData.PanCardNumber?.trim()) {
@@ -565,7 +571,7 @@ export const AddUpdateVendor: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-        {}
+        { }
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Basic Details
@@ -589,7 +595,7 @@ export const AddUpdateVendor: React.FC = () => {
               placeholder="Enter Vendor Name"
               required
               value={formData.VendorName}
-              maxLength={200}
+              maxLength={50}
               onChange={(e) => handleFieldChange("VendorName", e.target.value)}
               error={errors.VendorName}
             />
@@ -644,106 +650,6 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {}
-        <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-            Government Identifiers
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Input
-              label="Aadhaar Card Number"
-              required
-              value={formData.AadharCardNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
-              placeholder="Enter Aadhaar Card Number"
-              error={errors.AadharCardNumber}
-            />
-
-            <MultiFilePicker
-              label='Aadhaar Card'
-              placeholder="Select Aadhaar Card"
-              required
-              error={errors.AadharCardURL}
-              value={aadharCardURLFiles}
-              onChange={setAadharCardURLFiles}
-              availableFilesURL={aadharCardURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedAadharCardUrls((prev) => [...prev, url])
-              }}
-            />
-
-            <Input
-              label="PAN Card Number"
-              required
-              value={formData.PanCardNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
-              placeholder="Enter PAN Card Number"
-              error={errors.PanCardNumber}
-            />
-            <MultiFilePicker
-              label='PAN Card'
-              placeholder="Select PAN Card"
-              required
-              error={errors.PanCardURL}
-              value={panCardURLFiles}
-              onChange={setPANCardURLFiles}
-              availableFilesURL={panCardURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedPanCardUrls((prev) => [...prev, url])
-              }}
-            />
-            <Input
-              label="GST Number"
-              required
-              value={formData.GSTNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
-              placeholder="Enter GST Number"
-              error={errors.GSTNumber}
-            />
-
-            <MultiFilePicker
-              label='GST Certificate'
-              placeholder="Select GST Certificate"
-              required
-              error={errors.GSTCertificateURL}
-              value={gstGSTCertificateFiles}
-              onChange={setGSTCertificateFiles}
-              availableFilesURL={gSTCertificateURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf",
-                "application/vnd.ms-excel",
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedGSTCertificateUrls((prev) => [...prev, url])
-              }}
-            />
-          </div>
-        </div>
-
-        {}
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Address Details
@@ -823,11 +729,17 @@ export const AddUpdateVendor: React.FC = () => {
                     handleFieldChange("StateMasterId", 0);
                     handleFieldChange("DistrictMasterId", 0);
                     handleFieldChange("CityMasterId", 0);
+                    handleFieldChange("GSTNumber", "");
+
 
                     return;
                   }
 
                   const id = Number(item);
+
+                  const selectedState = stateOptions.find(state => Number(state.value) === id);
+
+                  const gstCode = selectedState?.gSTStateCode || "";
 
                   setSelectedStateId(id);
                   setSelectedDistrictId(null);
@@ -836,11 +748,13 @@ export const AddUpdateVendor: React.FC = () => {
                   handleFieldChange("StateMasterId", id);
                   handleFieldChange("DistrictMasterId", 0);
                   handleFieldChange("CityMasterId", 0);
+
+                  handleFieldChange("GSTNumber", gstCode);
+
                 }}
                 disabled={!selectedCountryId || stateOptions.length === 0}
                 options={stateOptions}
               />
-
 
             </div>
 
@@ -864,6 +778,8 @@ export const AddUpdateVendor: React.FC = () => {
                   }
 
                   const id = Number(item);
+
+
 
                   setSelectedDistrictId(id);
                   setSelectedCityId(null);
@@ -896,6 +812,7 @@ export const AddUpdateVendor: React.FC = () => {
 
                   setSelectedCityId(id);
                   handleFieldChange('CityMasterId', id);
+
                 }}
                 disabled={!selectedDistrictId || cityOptions.length === 0}
                 options={cityOptions}
@@ -905,7 +822,103 @@ export const AddUpdateVendor: React.FC = () => {
           </div>
         </div>
 
-        {}
+        <div className="space-y-4 pb-3">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+            Government Identifiers
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Input
+              label="Aadhaar Card Number"
+              required
+              value={formData.AadharCardNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+              onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
+              placeholder="Enter Aadhaar Card Number"
+              error={errors.AadharCardNumber}
+            />
+
+            <MultiFilePicker
+              label='Aadhaar Card'
+              placeholder="Select Aadhaar Card"
+              required
+              error={errors.AadharCardURL}
+              value={aadharCardURLFiles}
+              onChange={setAadharCardURLFiles}
+              availableFilesURL={aadharCardURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf"
+              ]}
+              maxFiles={5}
+              onRemoveExisting={(url) => {
+                setRemovedAadharCardUrls((prev) => [...prev, url])
+              }}
+            />
+
+            <Input
+              label="PAN Card Number"
+              required
+              value={formData.PanCardNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+              onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
+              placeholder="Enter PAN Card Number"
+              error={errors.PanCardNumber}
+            />
+            <MultiFilePicker
+              label='PAN Card'
+              placeholder="Select PAN Card"
+              required
+              error={errors.PanCardURL}
+              value={panCardURLFiles}
+              onChange={setPANCardURLFiles}
+              availableFilesURL={panCardURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf"
+              ]}
+              maxFiles={5}
+              onRemoveExisting={(url) => {
+                setRemovedPanCardUrls((prev) => [...prev, url])
+              }}
+            />
+
+            <Input
+              label={`GST Number ${selectedStateName && selectedGSTStateCode ? ` (${selectedStateName} GST Code - ${selectedGSTStateCode})` : ""}`}
+              required
+              value={formData.GSTNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+              onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
+              placeholder="Enter GST Number"
+              error={errors.GSTNumber}
+            />
+
+            <MultiFilePicker
+              label='GST Certificate'
+              placeholder="Select GST Certificate"
+              required
+              error={errors.GSTCertificateURL}
+              value={gstGSTCertificateFiles}
+              onChange={setGSTCertificateFiles}
+              availableFilesURL={gSTCertificateURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf"
+              ]}
+              maxFiles={5}
+              onRemoveExisting={(url) => {
+                setRemovedGSTCertificateUrls((prev) => [...prev, url])
+              }}
+            />
+          </div>
+        </div>
+
+
+
+
+
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
             Material and Contract Management
@@ -923,7 +936,7 @@ export const AddUpdateVendor: React.FC = () => {
             isChips
           />
 
-          {}
+          { }
           {activeTab === "material" && (
             <div className="space-y-4">
 

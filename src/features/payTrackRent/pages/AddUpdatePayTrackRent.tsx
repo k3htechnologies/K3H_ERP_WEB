@@ -504,6 +504,7 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     onChange={(e) => handleFieldChange('TransactionChequeDemandDraftNumber', e.target.value)}
                     error={errors.TransactionChequeDemandDraftNumber}
                     placeholder="Enter Transaction / Cheque / Demand Draft Number"
+                    maxLength={25}
                   />
 
                 </div>

@@ -15,11 +15,10 @@ import { FinalizedVendorQuotationTable } from "./FinalizedVendorQuotationTable"
 import NoDataView from "@/ui/components/NoDataView/NoDataView"
 import { computeTaxTotal, computeBaseTotal, computeLinesTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { materialRequisitionQuotationService } from "@/features/materialRequisition/services/MaterialRequisitionQuotationService"
-import type { AddUpdateMaterialRequestQuotation } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel"
 import { Button } from "@/ui/components/forms/Button"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms/Input"
-import { CheckLine, MessageSquareQuote, Scale } from "lucide-react"
+import { CheckLine, ClipboardList, MessageSquareQuote, Scale } from "lucide-react"
 import { handleExportFile } from "@/core/utils/exportFile"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel"
@@ -29,11 +28,17 @@ import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApprov
 import { Loader } from "@/core/utils/loader";
 import { formatCurrency } from "@/core/utils/comman";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog"
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker"
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer"
+import { parseDocumentUrls } from "@/core/utils/documentUtils"
+import type { FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionSummaryOfQuotationData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel"
 
 const DEFAULT_LOGISTICS = [
     { Logistics: "Transportation" },
     { Logistics: "Loading" },
     { Logistics: "Unloading" },
+    { Logistics: "Mathadi" },
+    { Logistics: "Insurance" },
 ]
 
 const resolveLines = (term: any, detailData: any[]): any[] => {
@@ -57,6 +62,10 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     const { detailData } = useMaterialRequisitionListState()
     const [checkedFinalVendor, setCheckedFinalVendor] = useState<number | null>(null)
     const [isQuotationAvailable, setQuotationAvailable] = useState(false)
+
+    const [isSummaryOfQuotationOpen, setIsSummaryOfQuotationOpen] = useState(false)
+    const [summaryOfQuotationData, setSummaryOfQuotationData] = useState<MaterialRequisitionSummaryOfQuotationData[]>([])
+
     const [isLoading, setIsLoading] = useState(false)
     const [loadingMessage, setLoadingMessage] = useState("")
     const [selectedVendorIds, setSelectedVendorIds] = useState<number[]>([])
@@ -75,8 +84,10 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     const { canAction: cangetCompare } = useMenuPermissions('Get Compare');
     const { canAction: cangetQuotation } = useMenuPermissions('Get Quotation');
     const { canAction: canfinalizeVendor } = useMenuPermissions('Finalized Vendor');
-
     const [isFinalizeConfirmationOpen, setIsFinalizeConfirmationOpen] = useState(false);
+
+    const [quotationFiles, setQuotationFiles] = useState<(File | string)[]>([]);
+    const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([]);
 
     useEffect(() => {
         if (!projectId) return
@@ -132,8 +143,11 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
 
                 if (E.isRight(response)) {
+                    const data = response.right.Data ?? [];
 
-                    setMaterialRequisitionVendorSelectedList(response.right.Data)
+                    setMaterialRequisitionVendorSelectedList(data);
+                    setQuotationFiles([]);
+                    setRemovedQuotationUrls([]);
                 }
                 return response
             },
@@ -217,17 +231,30 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
         )
     };
 
-    const buildPayload = (vendor: any, term: any, lines: any[]): AddUpdateMaterialRequestQuotation => ({
-        MaterialRequisitionId: Number(currentMaterialRequisitionId),
-        Uniquekey: term.Uniquekey || currentUniquekey || "",
-        MaterialRequisitionQuotationTermsId: term.MaterialRequisitionQuotationTermsId,
-        ProjectId: Number(projectId),
-        VendorId: vendor.VendorId,
-        ExpectedDeliveryInDays: Number(expectedDeliveryDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedDeliveryInDays ?? 0),
-        ExpectedPaymentInDays: Number(expectedPaymentDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedPaymentInDays ?? 0),
-        Total: computeLinesTotal(lines),
-        MaterialRequisitionQuotationJSON: JSON.stringify(lines),
-    })
+    const buildPayload = (vendor: any, term: any, lines: any[]): FormData => {
+
+        const fd = new FormData();
+
+        fd.append('MaterialRequisitionId', String(currentMaterialRequisitionId ?? 0));
+        fd.append('Uniquekey', term.Uniquekey || currentUniquekey || '');
+        fd.append('MaterialRequisitionQuotationTermsId', String(term.MaterialRequisitionQuotationTermsId ?? 0));
+        fd.append('ProjectId', String(projectId ?? 0));
+        fd.append('VendorId', String(vendor.VendorId ?? 0));
+        fd.append('ExpectedDeliveryInDays', String(expectedDeliveryDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedDeliveryInDays ?? 0));
+        fd.append('ExpectedPaymentInDays', String(expectedPaymentDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedPaymentInDays ?? 0));
+        fd.append('Total', String(computeLinesTotal(lines)));
+        fd.append('MaterialRequisitionQuotationJSON', JSON.stringify(lines));
+
+        quotationFiles.forEach(file => {
+            if (file instanceof File) {
+                fd.append('QuotationURL', file);
+            }
+        });
+
+        fd.append('RemoveQuotationURL', removedQuotationUrls.join(','));
+
+        return fd;
+    };
 
     const saveData = async (vendor: any, term: any, lines: any[]) => {
 
@@ -339,6 +366,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
             'Preparing Export'
         );
     };
+
     const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART')
 
     const finalizeVendor = () => {
@@ -387,11 +415,53 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
         )
     }
 
-
     const finalizedVendor = materialRequisitionVendorSelectedList.find(v => v.IsFinalized);
     const isAnyFinalized = !!finalizedVendor
     const isApprovalAvailable = finalizedVendor?.IsApproval === true
 
+
+    const pullSummaryOfQuotation = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithMaterialRequisitionSummaryOfQuotationRequest = {
+                    MaterialRequisitionId: Number(currentMaterialRequisitionId),
+                    ProjectId: Number(projectId)
+                }
+
+                const response = await materialRequisitionQuotationService.apiCallPullMaterialRequisitionSummaryOfQuotation(params)
+
+                if (E.isRight(response)) {
+
+                    setSummaryOfQuotationData(response.right.Data ?? [])
+
+                } else {
+
+                    setSummaryOfQuotationData([])
+
+                    addToast({ type: "error", title: response.left?.message })
+                }
+
+                return response
+            },
+            undefined,
+            (error: any) => {
+
+                addToast({ type: "error", title: error?.message })
+            },
+            undefined,
+            "Loading Summary Of Quotation"
+        )
+    }
+
+    const handleSummaryOfQuotation = async () => {
+
+        setIsSummaryOfQuotationOpen(true)
+
+        await pullSummaryOfQuotation()
+    }
 
     return (
         <div className="space-y-4">
@@ -412,13 +482,13 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 {!isAnyFinalized && cangetCompare && materialRequisitionVendorSelectedList.length > 1 && (
                     <Button
                         type="button"
-                        size="md"
+                        size="sm"
                         style={{
                             color: '#135BEC',
                             backgroundColor: '#E8F0FF',
                             padding: '4px 8px',
                         }}
-                        leftIcon={<Scale size={20} />}
+                        leftIcon={<Scale size={15} />}
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -432,14 +502,14 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
                     <Button
                         type="button"
-                        size="md"
+                        size="sm"
                         style={{
                             color: '#00A800',
                             backgroundColor: '#E8FBE8',
                             padding: '4px 8px',
                         }}
 
-                        leftIcon={<CheckLine size={20} />}
+                        leftIcon={<CheckLine size={15} />}
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -462,18 +532,28 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                 {!isAnyFinalized && cangetQuotation && (
                     <Button
-                        size="md"
+                        size="sm"
                         style={{
                             color: '#d35400',
                             backgroundColor: '#FDE6D3',
                             padding: '4px 8px',
                         }}
-                        leftIcon={<MessageSquareQuote size={20} />}
+                        leftIcon={<MessageSquareQuote size={15} />}
                         onClick={() => setQuotationAvailable(true)}
                     >
                         Get Quotation
                     </Button>
                 )}
+
+                <Button
+                    size="sm"
+                    color="teal"
+                    leftIcon={<ClipboardList  size={15} />}
+                    onClick={handleSummaryOfQuotation}
+                >
+                    Summary Of Quotation
+                </Button>
+
             </div>
 
             {materialRequisitionVendorSelectedList.length === 0
@@ -506,16 +586,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                     <div className="flex items-center justify-between w-full pb-4 px-1 border-b border-gray-200">
 
                                         <div className="flex items-center gap-3">
-
-                                            {/* <Checkbox
-                                                checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
-                                                disabled={!cangetQuotation || (isAnyFinalized && !vendor.IsFinalized)}
-                                                onChange={() => cangetQuotation && setCheckedFinalVendor(
-                                                    checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
-                                                }
-                                                onClick={(e) => e.stopPropagation()}
-                                                size="md"
-                                            /> */}
 
                                             <Checkbox
                                                 checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
@@ -569,9 +639,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                             </div>
 
                                             <div className="text-lg font-semibold text-gray-900 mt-3">
-                                                {formatCurrency(
-                                                    computeBaseTotal(headerLines)
-                                                )}
+                                                {formatCurrency(computeBaseTotal(headerLines) )}
                                             </div>
                                         </div>
 
@@ -620,6 +688,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                 <div className="p-2 space-y-4">
                                     {(vendor.MaterialRequisitionQuotationTermsData?.length ? vendor.MaterialRequisitionQuotationTermsData : [{}]).map((term: any, idx: number) => {
 
+                                        const quotationKey = `${vendor.VendorId}-${term.MaterialRequisitionQuotationTermsId}`;
                                         const lines = resolveLines(term, detailData)
 
                                         if (!lines?.length) {
@@ -648,6 +717,9 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                         saveData(vendor, term, updatedLines)
                                                     }
                                                     VendorFinalizationApprovalStatus={listState.VendorFinalizationApprovalStatus}
+                                                    VendorGSTNumber={vendor.GSTNumber}
+                                                    CompanyGSTNumber={listState.CompanyGSTNumber}
+
                                                 />
                                                 <div className="flex justify-between text-sm bg-green-100 p-3">
 
@@ -704,6 +776,44 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                     </span>
                                                 </div>
 
+                                                <div className="flex items-center justify-between bg-amber-50 px-4 py-3">
+                                                    <span className="text-sm text-[#34495E]">
+                                                        {editingQuotationKey !== quotationKey ? "View Quotation" : "Upload Quotation"}
+                                                    </span>
+
+                                                    {editingQuotationKey !== quotationKey ? (
+                                                        <div className="inline-flex items-end gap-1 px-2 py-2.5 border border-amber-500 text-amber-600 rounded text-sm font-medium cursor-pointer transition">
+                                                            <p>Quotation</p>
+                                                            <MultiImageViewer
+                                                                images={parseDocumentUrls(term?.QuotationURL ?? "")}
+                                                                title="Quotation"
+                                                                isIcon={false}
+                                                                triggerLabel="-"
+                                                            />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-[250px]">
+                                                            <MultiFilePicker
+                                                                placeholder="Upload Quotation"
+                                                                value={quotationFiles}
+                                                                onChange={setQuotationFiles}
+                                                                availableFilesURL={term?.QuotationURL ?? ""}
+                                                                disabled={false}
+                                                                allowedTypes={[
+                                                                    "image/jpeg",
+                                                                    "image/png",
+                                                                    "image/jpg",
+                                                                    "application/pdf"
+                                                                ]}
+                                                                maxFiles={10}
+                                                                onRemoveExisting={(url) =>
+                                                                    setRemovedQuotationUrls(prev => [...prev, url])
+                                                                }
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+
                                             </div>
                                         )
                                     })}
@@ -751,9 +861,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                     <div className="flex-1 min-h-0 overflow-y-auto divide-y thin-scroll">
 
-                        {materialRequisitionVendorFinalizedList.filter(v =>
-                            v.VendorName?.toLowerCase().includes(searchVendor.toLowerCase())
-                        ).length === 0 ? (
+                        {materialRequisitionVendorFinalizedList.filter(v => v.VendorName?.toLowerCase().includes(searchVendor.toLowerCase())).length === 0 ? (
                             <div className="flex items-center justify-center py-10 text-gray-500">
                                 <NoDataView />
                             </div>
@@ -827,7 +935,131 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 message={`Are you sure you want to finalize '${materialRequisitionVendorSelectedList.find(v => v.VendorId === checkedFinalVendor)?.VendorName ?? "this vendor"}'?`}
             />
 
-        </div>
+            <Modal
+                isOpen={isSummaryOfQuotationOpen}
+                saveText=""
+                onSubmit={() => { }}
+                onClose={() => setIsSummaryOfQuotationOpen(false)}
+                onCancel={() => setIsSummaryOfQuotationOpen(false)}
+                title="Summary Of Quotation"
+                loading={isLoading}
+                size="half-screen"
+            >
+                <div className="flex flex-col">
+
+                    <div className="flex-1 p-4">
+
+                        {summaryOfQuotationData.length === 0 ? (
+
+                            <div className="flex items-center justify-center py-10">
+                                <NoDataView />
+                            </div>
+
+                        ) : (
+
+                            <div className="space-y-3">
+
+                                {summaryOfQuotationData.map((quotation, index) => (
+
+                                    <div  key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
+
+                                        <div className="flex items-center justify-between gap-4 pb-3 border-b border-gray-200">
+
+                                            <div className="min-w-0">
+
+                                                <div className="font-semibold text-gray-900">
+                                                    {quotation.VendorName || "-"}
+                                                </div>
+
+                                                <div className="text-sm text-gray-500 mt-1">
+                                                    {quotation.CompanyName || "-"}
+                                                </div>
+
+                                            </div>
+
+
+                                            
+                                            <div className="px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700">
+                                                {quotation.QuotationLevel || "-"}
+                                            </div>
+
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-4 mt-4">
+
+                                            <div>
+                                                <div className="text-xs uppercase tracking-wide text-gray-400">
+                                                    Quotation Amount
+                                                </div>
+
+                                                <div className="text-lg font-semibold text-blue-700 mt-1">
+                                                    {formatCurrency(quotation.Total ?? 0)}
+                                                </div>
+                                            </div>
+
+
+                                            <div>
+                                                <div className="text-xs uppercase tracking-wide text-gray-400">
+                                                    Expected Delivery
+                                                </div>
+
+                                                <div className="text-sm font-semibold text-gray-800 mt-2">
+                                                    {quotation.ExpectedDeliveryInDays ?? 0} Days
+                                                </div>
+                                            </div>
+
+
+                                            <div>
+                                                <div className="text-xs uppercase tracking-wide text-gray-400">
+                                                    Expected Payment
+                                                </div>
+
+                                                <div className="text-sm font-semibold text-gray-800 mt-2">
+                                                    {quotation.ExpectedPaymentInDays ?? 0} Days
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+                                        {/* Quotation Type */}
+                                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+
+                                            <div className="text-sm text-gray-600">
+                                                <span className="font-medium">
+                                                    Quotation Type:
+                                                </span>{" "}
+                                                {quotation.QuotationType || "-"}
+                                            </div>
+
+
+                                            {quotation.QuotationURL!=="" && (
+
+                                                <MultiImageViewer
+                                                    images={parseDocumentUrls(quotation.QuotationURL)}
+                                                    title="Quotation"
+                                                    isIcon={false}
+                                                    triggerLabel="View Quotation"
+                                                />
+
+                                            )}
+
+                                        </div>
+
+                                    </div>
+
+                                ))}
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+                </div>
+            </Modal>
+
+        </div >
     )
 }
 export default FinalizedVendor;

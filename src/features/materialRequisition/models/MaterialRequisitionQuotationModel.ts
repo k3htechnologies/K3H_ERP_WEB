@@ -8,6 +8,7 @@ export interface MaterialRequisitionQuotationDetailsTermsData {
     ExpectedDeliveryInDays:number;
     ExpectedPaymentInDays:number;
     Total:number;
+    QuotationURL: string | null
     MaterialRequisitionQuotationData:MaterialRequisitionQuotationDetailsData[];
     SystemGeneratedCode:string;
     ProjectName:string;
@@ -31,6 +32,7 @@ export interface MaterialRequisitionQuotationDetailsData {
     MaterialPerUnit:number;
     Logistics:string;
     Amount:number;
+    Installation:number;
     CGST:number;
     SGST:number;
     UGST:number;
@@ -45,6 +47,8 @@ export interface AddUpdateMaterialRequestQuotation {
     ExpectedDeliveryInDays:number;
     ExpectedPaymentInDays:number;
     Total:number;
+    QuotationURL: (File | string)[] | null;
+    RemoveQuotationURL: string | '';
     ProjectId:number;
     MaterialRequisitionQuotationJSON:string;
 }
@@ -56,6 +60,23 @@ export interface DeleteMaterialRequisitionQuotation{
     ProjectId:number;
 }
 
+export interface FilterWithMaterialRequisitionSummaryOfQuotationRequest {
+    MaterialRequisitionId?: number | 0
+    ProjectId: number | 0
+}
+
+export interface MaterialRequisitionSummaryOfQuotationData {
+    VendorName:string;
+    CompanyName:string;
+    ExpectedDeliveryInDays:number;
+    ExpectedPaymentInDays:number;
+    Total:number;
+    QuotationURL: string | null
+    QuotationType:string;
+    QuotationLevel:string;
+}
+
 export type MaterialRequisitionQuotationListResponse = ApiResponse<MaterialRequisitionQuotationDetailsTermsData[]>;
 export type MaterialRequisitionQuotationSaveReponse = ApiResponse<MaterialRequisitionQuotationDetailsTermsData>;
 export type DeletMaterialRequisitionDeleteResponse = ApiResponse<number>;
+export type MaterialRequisitionSummaryOfQuotationListResponse = ApiResponse<MaterialRequisitionSummaryOfQuotationData[]>;

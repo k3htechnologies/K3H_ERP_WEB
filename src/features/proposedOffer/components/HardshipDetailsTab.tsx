@@ -346,7 +346,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
     }
 
     if (!formDataHardshipPaymentStage.UnitSqFtLumsum?.trim()) {
-      newErrors.UnitSqFtLumsum = "Unit / SqFt / Lumsum is required"
+      newErrors.UnitSqFtLumsum = "Unit / SqFt / Lumpsum is required"
     }
 
     return {

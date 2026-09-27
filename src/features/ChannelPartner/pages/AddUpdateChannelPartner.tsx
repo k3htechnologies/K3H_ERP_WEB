@@ -183,8 +183,15 @@ export const AddUpdateChannelPartner: React.FC = () => {
       ? (statesByCountryId[selectedCountryId] || []).map((s) => ({
         label: s.name,
         value: s.id,
+        gSTStateCode:s.gSTStateCode
       }))
       : [];
+
+      
+  const selectedState = stateOptions.find(state => Number(state.value) === Number(selectedStateId));
+
+  const selectedGSTStateCode = selectedState?.gSTStateCode || "";
+  const selectedStateName = selectedState?.label || "";
 
   const districtOptions =
     selectedStateId != null
@@ -463,8 +470,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
       newErrors.GSTNumber = "GST Number is required.";
     }
 
-    if (hasGSTNumber && !isValidGST(formData.GSTNumber.trim())) {
-      newErrors.GSTNumber = "Enter a valid GST Number.";
+    if (hasGSTNumber && !isValidGST(formData.GSTNumber.trim(),selectedGSTStateCode)) {
+      newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
     if (!formData.CountryMasterId) {
@@ -1084,114 +1091,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
           </div>
-          {/* ============================================================= [DOCUMENT DETAILS] ============================================================================================= */}
-
-          <div className="space-y-4 pt-5">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-              Document Details
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div>
-                <Input
-                  type="text"
-                  label="Aadhaar Number"
-                  value={formData.AadharCardNumber ?? ""}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, "");
-                    handleFieldChange(
-                      "AadharCardNumber",
-                      filterAadhaar(digits),
-                    );
-                  }}
-                  placeholder="Enter Aadhaar Number"
-                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                  maxLength={12}
-                  error={errors.AadharCardNumber}
-                />
-              </div>
-              <div>
-                <MultiFilePicker
-                  label=" Upload Aadhaar Card"
-                  placeholder="Select Aadhaar Card"
-                  error={errors.AadharCardURL}
-                  value={aadharCardURLFiles}
-                  onChange={setAadharCardURLFiles}
-                  availableFilesURL={aadharCardURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  onRemoveExisting={(url) => {
-                    setRemoveAadharCardUrls((prev) => [...prev, url]);
-                  }}
-                />
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  label="PAN Number"
-                  value={formData.PanNumber.toUpperCase() ?? ""}
-                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) =>
-                    handleFieldChange(
-                      "PanNumber",
-                      filterPAN(e.target.value).toUpperCase(),
-                    )
-                  }
-                  placeholder="Enter Pan Number"
-                  maxLength={10}
-                  error={errors.PanNumber}
-                />
-              </div>
-
-              <div>
-                <MultiFilePicker
-                  label=" Upload PAN Card"
-                  placeholder="Select PAN Card"
-                  error={errors.PanCardURL}
-                  value={panCardURLFiles}
-                  onChange={setPanCardURLFiles}
-                  availableFilesURL={panCardURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  onRemoveExisting={(url) => {
-                    setRemovePanCardUrls((prev) => [...prev, url]);
-                  }}
-                />
-              </div>
-              <div>
-                <Input
-                  label="GST Number"
-                  type="text"
-                  disabled={isReadOnly}
-                  value={formData.GSTNumber}
-                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-                  error={errors.GSTNumber}
-                  onChange={(e) => {
-                    const gstNumber = filterGST(e.target.value);
-                    handleFieldChange("GSTNumber", gstNumber);
-                  }}
-                  placeholder="Enter Valid GST Number"
-                />
-              </div>
-
-              <div>
-                <MultiFilePicker
-                  label="GST Certificate"
-                  disabled={isReadOnly}
-                  placeholder="Select GST Certificate"
-                  error={errors.GSTCertificateURL}
-                  value={gSTCertificateURLFiles}
-                  onChange={setGSTCertificateURLFiles}
-                  availableFilesURL={gSTCertificateURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  onRemoveExisting={(url) => {
-                    setRemoveGSTCertificateUrls((prev) => [...prev, url]);
-                  }}
-                />
-              </div>
-            </div>
-          </div>
 
           <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
@@ -1380,6 +1279,117 @@ export const AddUpdateChannelPartner: React.FC = () => {
               />
             </div>
           </div>
+
+          {/* ============================================================= [DOCUMENT DETAILS] ============================================================================================= */}
+
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Document Details
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div>
+                <Input
+                  type="text"
+                  label="Aadhaar Number"
+                  value={formData.AadharCardNumber ?? ""}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, "");
+                    handleFieldChange(
+                      "AadharCardNumber",
+                      filterAadhaar(digits),
+                    );
+                  }}
+                  placeholder="Enter Aadhaar Number"
+                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                  maxLength={12}
+                  error={errors.AadharCardNumber}
+                />
+              </div>
+              <div>
+                <MultiFilePicker
+                  label=" Upload Aadhaar Card"
+                  placeholder="Select Aadhaar Card"
+                  error={errors.AadharCardURL}
+                  value={aadharCardURLFiles}
+                  onChange={setAadharCardURLFiles}
+                  availableFilesURL={aadharCardURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  maxFiles={5}
+                  onRemoveExisting={(url) => {
+                    setRemoveAadharCardUrls((prev) => [...prev, url]);
+                  }}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  label="PAN Number"
+                  value={formData.PanNumber.toUpperCase() ?? ""}
+                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "PanNumber",
+                      filterPAN(e.target.value).toUpperCase(),
+                    )
+                  }
+                  placeholder="Enter Pan Number"
+                  maxLength={10}
+                  error={errors.PanNumber}
+                />
+              </div>
+
+              <div>
+                <MultiFilePicker
+                  label=" Upload PAN Card"
+                  placeholder="Select PAN Card"
+                  error={errors.PanCardURL}
+                  value={panCardURLFiles}
+                  onChange={setPanCardURLFiles}
+                  availableFilesURL={panCardURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  maxFiles={5}
+                  onRemoveExisting={(url) => {
+                    setRemovePanCardUrls((prev) => [...prev, url]);
+                  }}
+                />
+              </div>
+              <div>
+                <Input
+                  label={`GST Number ${selectedStateName && selectedGSTStateCode ? ` (${selectedStateName} GST Code - ${selectedGSTStateCode})` : ""}`}
+                  type="text"
+                  disabled={isReadOnly}
+                  value={formData.GSTNumber}
+                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                  error={errors.GSTNumber}
+                  onChange={(e) => {
+                    const gstNumber = filterGST(e.target.value);
+                    handleFieldChange("GSTNumber", gstNumber);
+                  }}
+                  placeholder="Enter Valid GST Number"
+                />
+              </div>
+
+              <div>
+                <MultiFilePicker
+                  label="GST Certificate"
+                  disabled={isReadOnly}
+                  placeholder="Select GST Certificate"
+                  error={errors.GSTCertificateURL}
+                  value={gSTCertificateURLFiles}
+                  onChange={setGSTCertificateURLFiles}
+                  availableFilesURL={gSTCertificateURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  maxFiles={5}
+                  onRemoveExisting={(url) => {
+                    setRemoveGSTCertificateUrls((prev) => [...prev, url]);
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          
 
           <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">

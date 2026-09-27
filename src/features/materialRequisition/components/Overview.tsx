@@ -381,6 +381,11 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                                         triggerLabel="-"
                                     />
                                 </div>
+
+                                
+                                <FieldItem label="GST Number" value={matrialRequisitionData?.CompanyGSTNumber} />
+                                <FieldItem label="PAN Number" value={matrialRequisitionData?.CompanyPANNumber} />
+                                <FieldItem label="Company Name" value={matrialRequisitionData?.CompanyName} />
                             </div>
                         </section>
 
@@ -393,9 +398,9 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
 
                             <div className="p-4">
                                 {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
-                                    <p className="text-gray-900 text-md px-2 py-1.5">-</p>
+                                    <p className="text-gray-900 text-md px-2 py-2.5">-</p>
                                 ) : (
-                                    <div className="inline-flex items-end gap-1 px-2 py-1.5 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                    <div className="inline-flex items-end gap-1 px-2 py-2.5 border border-blue-500 text-blue-600 rounded text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                         <p>Document</p>
                                         <MultiImageViewer
                                             images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL ?? '')}
@@ -414,7 +419,7 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                             <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
 
                                 <h4 className="text-sm font-semibold text-[#C2410C]">
-                                    Vendor & Amount Details
+                                    Vendor & PO Amount Details
                                 </h4>
                                 <span className="inline-flex items-center px-1 py-0.5 rounded-full text-xs font-semibold bg-[#FFEDD5] text-[#C2410C]">
                                     {matrialRequisitionData?.VendorFinalizationApprovalStatus || "-"}
@@ -426,9 +431,23 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                                 <FieldItem label="Vendor Company" value={matrialRequisitionData?.FinalVendorCompanyName} />
                                 <FieldItem label="Mobile Number" value={matrialRequisitionData?.FinalVendorMobileNumber} />
                                 <FieldItem label="GST Number" value={matrialRequisitionData?.FinalVendorGSTNumber} />
+                                <FieldItem label="Email Id" value={matrialRequisitionData?.FinalVendorEmailId} />
+                                <FieldItem label="PAN Number" value={matrialRequisitionData?.FinalVendorPANNumber} />
                                 <FieldItem label="Base Amount (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0) - Number(matrialRequisitionData?.TotalTaxAmount ?? 0))} />
                                 <FieldItem label="Total Tax (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalTaxAmount))} />
                                 <FieldItem label="Grand Total (₹)" value={formatCurrency(Number(matrialRequisitionData?.TotalPoAmount ?? 0))} />
+
+                                <FieldItem label="Expected Delivery (Days)" value={`${matrialRequisitionData?.ExpectedDeliveryInDays ?? 0} days`} />
+                                <FieldItem label="Expected Payment (Days)" value={`${matrialRequisitionData?.ExpectedPaymentInDays ?? 0} days`} />
+                            </div>
+                        </section>
+                        <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                            <div className="bg-[#E6F4FF] px-4 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                     Payment Summary
+                                </h4>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 border-b border-[#135bec2e]">
 
                                 <FieldItem label="Paid Amount (₹)" value={formatCurrency(Number(matrialRequisitionData?.PaidAmount))} />
                                 <FieldItem label="TDS Paid Amount (₹)" value={formatCurrency(Number(matrialRequisitionData?.TDSPaidAmount))} />
@@ -438,14 +457,11 @@ export const Overview: React.FC<OverviewProps> = ({ matrialRequisitionData, matr
                                         Math.max(
                                             0,
                                             (
-                                                Number(matrialRequisitionData?.TotalPoAmount ?? 0)) - Number(matrialRequisitionData?.PaidAmount ?? 0)  - Number(matrialRequisitionData?.TDSPaidAmount ?? 0)
+                                                Number(matrialRequisitionData?.TotalPoAmount ?? 0)) - Number(matrialRequisitionData?.PaidAmount ?? 0) - Number(matrialRequisitionData?.TDSPaidAmount ?? 0)
                                         )
                                     )} />
-                                <FieldItem label="Expected Delivery (Days)" value={`${matrialRequisitionData?.ExpectedDeliveryInDays ?? 0} days`} />
-                                <FieldItem label="Expected Payment (Days)" value={`${matrialRequisitionData?.ExpectedPaymentInDays ?? 0} days`} />
                             </div>
                         </section>
-
                     </div>
 
                     <div className="col-span-12">

@@ -24,6 +24,7 @@ import RadioPill from "@/ui/components/forms/RadioPill";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import type { RevokeFinalizationVendorRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import { vendorFinalizationService } from "../services/VendorFinalizationService";
+import { handleExportFile } from "@/core/utils/exportFile";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -217,10 +218,34 @@ export const ViewMaterialRequisition: React.FC = () => {
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);
 
-
-
     const handleBackToListMaterialRequisition = () => {
         navigate('/materialRequisition');
+    };
+
+    const handleExportMaterialRequisition = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterMaterialRequisitionOverview = {
+
+                    MaterialRequisitionId: Number(currentMaterialRequisitionId) || 0,
+                    ProjectId: Number(projectId) || 0,
+                    ExportType:"MATERIAL REQUISITION PDF"
+                };
+
+                const response = await materialRequisitionService.apiCallPullMaterialRequisitionOverview(params);
+
+                handleExportFile(response, "PDF", 'Material Requisition PDF', addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Export'
+        );
     };
 
     return (
@@ -236,6 +261,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                         cancelText="Cancel"
                         onCancel={() => handleBackToListMaterialRequisition()}
                         EditText="Edit"
+
                         canAction={activeTab === "Overview" &&
                             canMaterialRequisitionView &&
                             !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
@@ -261,7 +287,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                             setIsRevokeFinalizationVendorDialogOpen(true);
                         }}
-                        canActionExtraButtonText={canMaterialRequisitionView && matrialRequisitionData?.IsCopy  && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())}
+                        canActionExtraButtonText={canMaterialRequisitionView && matrialRequisitionData?.IsCopy && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())}
 
                         ExtraExtraButtonText="Closed | Completed"
                         onExtraExtraButton={() => {
@@ -291,10 +317,10 @@ export const ViewMaterialRequisition: React.FC = () => {
                 />
             </div>
 
-            {activeTab === 'Overview' && (<Overview matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData} />)}
-            {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} />}
+            {activeTab === 'Overview' && (<Overview matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData}/>)}
+            {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData}  handleExportMaterialRequisition={handleExportMaterialRequisition}/>}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor onApprovalSuccess={loadMaterialRequisitionOverview} />}
-            {activeTab === 'Purchase Order' && <PurchaseOrder />}
+            {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} />}
             {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onAddGRN={loadMaterialRequisitionOverview} />)}
             {activeTab === 'Invoice' && <Invoice onApprovalSuccess={loadMaterialRequisitionOverview} />}
 

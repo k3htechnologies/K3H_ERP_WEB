@@ -1238,7 +1238,6 @@ export const ViewProjectMaster: React.FC = () => {
                                     </div>
 
                                     <div className="p-5">
-                                        {/* Employee List */}
                                         {item.EmployeeData && item.EmployeeData.length > 0 ? (
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                 {item.EmployeeData.map((member, index) => {
@@ -1254,10 +1253,7 @@ export const ViewProjectMaster: React.FC = () => {
                                                         : "NA";
 
                                                     return (
-                                                        <div
-                                                            key={index}
-                                                            className="border border-gray-200 rounded-lg p-3 hover:shadow transition"
-                                                        >
+                                                        <div key={index} className="border border-gray-200 rounded-lg p-3 hover:shadow transition">
                                                             <div className="flex items-start justify-between gap-2">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-10 h-10 rounded-full bg-[#EDF3FF] text-[#135BEC] flex items-center justify-center text-sm font-semibold">
@@ -1265,7 +1261,7 @@ export const ViewProjectMaster: React.FC = () => {
                                                                     </div>
 
                                                                     <div>
-                                                                        <h5 className="text-md font-semibold text-gray-900 truncate">
+                                                                       <h5 className="text-md font-semibold text-gray-900 break-words">
                                                                             {member.FullName || "-"}
                                                                         </h5>
 

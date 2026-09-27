@@ -26,6 +26,8 @@ import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import { fetchSubMaterialMasterById, fetchSubMaterialMasterDropdown } from "@/features/subMaterialMaster/subMaterialMasterDropdown";
 import type { SubMaterialMasterData } from "@/features/subMaterialMaster/models/SubMaterialMasterModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 const initialFormState = (): AddUpdateSpecificationMaster => ({
     SpecificationMasterId: 0,
@@ -442,6 +444,33 @@ export const SpecificationMaster: React.FC = () => {
             render: value => value || '-'
         },
         {
+            key: 'ModifiedBy',
+            label: 'Last Modified By',
+            width: '33',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
+        },
+        {
+            key: 'ModifiedDate',
+            label: 'Last Modified Date',
+            width: '33',
+            sortable: false,
+            align: 'center',
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy(row.CreatedDate)
+                        : '-'
+        },
+        {
             key: "Actions",
             label: "Actions",
             width: "20",
@@ -588,6 +617,7 @@ export const SpecificationMaster: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+        
         ...(showL4
             ? [
                 {
@@ -624,8 +654,37 @@ export const SpecificationMaster: React.FC = () => {
                 sortable: false,
                 align: "left" as const,
                 render: (value: any) => value || "-"
-            }]
+            },
+        ]
             : []),
+
+            {
+            key: 'ModifiedBy',
+            label: 'Last Modified By',
+            width: '33',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
+        },
+        {
+            key: 'ModifiedDate',
+            label: 'Last Modified Date',
+            width: '33',
+            sortable: false,
+            align: 'center',
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy(row.CreatedDate)
+                        : '-'
+        },
         {
             key: "Actions",
             label: "Actions",

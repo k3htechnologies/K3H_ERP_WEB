@@ -441,12 +441,13 @@ export const AddUpdateGRN = () => {
                             const materialQuantity = row.MaterialQuantity
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-
+                            const isPendingQtyZero=pendingQuantity <=0;
                             return (
                                 <Input
                                     label=""
                                     value={value ?? 0}
                                     maxLength={9}
+                                    disabled={isPendingQtyZero}
                                     onChange={(e) => {
                                         const raw = filterNumbers(e.target.value);
 

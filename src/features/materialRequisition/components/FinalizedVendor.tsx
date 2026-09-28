@@ -146,6 +146,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                     const data = response.right.Data ?? [];
 
                     setMaterialRequisitionVendorSelectedList(data);
+                    setExpectedDeliveryDays({});
+                    setExpectedPaymentDays({});
                     setQuotationFiles([]);
                     setRemovedQuotationUrls([]);
                 }
@@ -839,10 +841,20 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                     <div className="px-2 py-2 shrink-0">
                         <div className="flex items-center gap-3 w-full">
+
                             <Checkbox
-                                checked={selectedVendorIds.length === materialRequisitionVendorFinalizedList.length}
-                                disabled={!cangetQuotation}
-                                onChange={() => cangetQuotation && toggleVendorSelectAllVisible()} />
+                                checked={
+                                    materialRequisitionVendorFinalizedList.length > 0 &&
+                                    selectedVendorIds.length === materialRequisitionVendorFinalizedList.length
+                                }
+                                disabled={!cangetQuotation || materialRequisitionVendorFinalizedList.length === 0}
+                                onChange={() => {
+                                    if (cangetQuotation && materialRequisitionVendorFinalizedList.length > 0) {
+                                        toggleVendorSelectAllVisible();
+                                    }
+                                }}
+                            />
+
 
                             <Input
                                 type="text"

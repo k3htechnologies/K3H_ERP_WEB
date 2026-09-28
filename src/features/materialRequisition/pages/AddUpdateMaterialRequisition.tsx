@@ -86,14 +86,12 @@ export const AddUpdateMaterialRequisition = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "", level1Name: "", level2Name: "", level3Name: "", level4Name: "" });
-
     const [editIndex, setEditIndex] = useState<number | null>(null);
     const navigate = useNavigate();
     const { projectId } = useProject();
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
 
     const hasDirect = materialList.some(item => item.MaterialRequisitionType?.toUpperCase() === "DIRECT");
-
     const hasInDirect = materialList.some(item => item.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT");
 
     const MaterialRequisitionTab = [
@@ -214,6 +212,7 @@ export const AddUpdateMaterialRequisition = () => {
         }
 
         const loadProjectBudget = async () => {
+
             const data = await fetchProjectBudget(Number(projectId), "APPROVED");
             setProjectBudgetList(data);
         };
@@ -265,7 +264,6 @@ export const AddUpdateMaterialRequisition = () => {
 
             if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
                 newErrors.SubMaterialMasterId = "Sub Material is required";
-
         }
 
         if (!materialData.MaterialQuantity) {
@@ -421,7 +419,6 @@ export const AddUpdateMaterialRequisition = () => {
                         ? "This Category, Sub Category, Description and Sub Material is already added."
                         : "This Material and Sub Material is already added."
             });
-
             return;
         }
 
@@ -663,7 +660,6 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const validateMaterialRequisitionForm = (): {
-
         isValid: boolean
         errors: { [key: string]: string }
     } => {
@@ -671,7 +667,7 @@ export const AddUpdateMaterialRequisition = () => {
 
         if (!formData.Remarks) {
             newErrors.Remarks = ' Remarks is required.';
-        } else if (formData.Remarks.split(/\s+/).length < 25) {
+        } else if (formData.Remarks.trim().length < 25) {
             newErrors.Remarks = "Remark must be at least 25 characters";
         }
 
@@ -680,7 +676,6 @@ export const AddUpdateMaterialRequisition = () => {
             errors: newErrors
         };
     };
-
 
     const PushMaterialRequisitionFormData = (): FormData => {
 
@@ -818,9 +813,9 @@ export const AddUpdateMaterialRequisition = () => {
                         <div className="flex items-center justify-between">
                             <TextArea
                                 label="Remark"
+                                required
                                 className="thin-scroll"
                                 value={formData.Remarks}
-                                required
                                 onChange={(e) =>
                                     setFormData(prev => ({
                                         ...prev,

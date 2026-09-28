@@ -416,10 +416,13 @@ export const AddUpdateGRN = () => {
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
 
+                            const isPendingZero = pendingQuantity <= 0;
+
                             return (
                                 <Input
                                     label=""
                                     value={value ?? 0}
+                                    disabled={isPendingZero}
                                     maxLength={9}
                                     onChange={(e) => {
                                         const raw = filterNumbersWithDecimal(e.target.value);

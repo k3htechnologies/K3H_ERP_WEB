@@ -6,7 +6,6 @@ import { stockManagementService } from "@/features/stockManagement/services/Stoc
 import { runApiWithLoader } from "@/core/utils";
 import * as E from 'fp-ts/Either';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Loader } from "@/core/utils/loader";
 import { useStockManagementListState } from "@/features/stockManagement/context/StockManagementListStateContext";
 import { useParams } from "react-router-dom";

@@ -366,7 +366,7 @@ export const StockManagement: React.FC = () => {
 
     if (!formData.Reason?.trim()) {
       newErrors.Reason = "Remark is required.";
-    } else if (formData.Reason.split(/\s+/).length < 25) {
+    } else if (formData.Reason.trim().length < 25) {
       newErrors.Reason = "Remark must be at least 25 characters";
     }
 
@@ -384,13 +384,12 @@ export const StockManagement: React.FC = () => {
     if ((formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") && !formData.PartyName?.trim()) {
       newErrors.PartyName = formData.InwardOutwardType === "INWARD" ? "Sender Name is required." : "Receiver Name is required.";
     } else if (
-      (formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") &&
-      (formData.PartyName?.trim().length ?? 0) < 12
+      (formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") && (formData.PartyName?.trim().length ?? 0) < 5
     ) {
       newErrors.PartyName =
         formData.InwardOutwardType === "INWARD"
-          ? "Sender Name must be at least 12 characters."
-          : "Receiver Name must be at least 12 characters.";
+          ? "Sender Name must be at least 5 characters."
+          : "Receiver Name must be at least 5 characters.";
     }
 
     return {
@@ -613,7 +612,7 @@ export const StockManagement: React.FC = () => {
 
             <div>
               <Input
-                label={isInward ? "Sender Name" : "Receiver Name"}
+                label={isInward ? "Sender Full Name" : "Receiver Full Name"}
                 required
                 type="text"
                 value={formData.PartyName || ""}

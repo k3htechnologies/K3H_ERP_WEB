@@ -108,6 +108,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 const response = await vendorFinalizationService.apiCallpullVendorsForEnquiry(params);
 
                 if (E.isRight(response)) {
+
                     setMaterialRequisitionVendorFinalizedList(response.right.Data)
                 }
                 return response
@@ -133,7 +134,9 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                 if (E.isRight(response)) {
 
-                    setMaterialRequisitionVendorSelectedList(response.right.Data)
+                    setMaterialRequisitionVendorSelectedList(response.right.Data);
+                    setExpectedDeliveryDays({});
+                    setExpectedPaymentDays({});
                 }
                 return response
             },
@@ -201,8 +204,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                     await loadSelectedVendor()
 
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -210,7 +213,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
             'Getting Quotation from Vendors'
@@ -248,10 +251,10 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                 updateListState({ MaterialRequisitionStage: 'Finalized Vendor' });
 
-                addToast({ type: "success", title: response.right.SuccessMessage[0] })
+                addToast({ type: "success", title: response.right.SuccessMessage[0] });
             }
             else {
-                addToast({ type: "error", title: response.left.message })
+                addToast({ type: "error", title: response.left.message });
             }
             return response
         })
@@ -312,7 +315,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     };
 
     const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -338,12 +340,12 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
             'Preparing Export'
         );
     };
+
     const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART')
 
     const finalizeVendor = () => {
 
         if (!checkedFinalVendor) {
-
             addToast({ type: "warning", title: "Select vendor to finalize" })
             return
         }
@@ -605,7 +607,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                         </div>
 
                                     </div>
-
                                 </div>
                             }
                             child={
@@ -721,9 +722,18 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                     <div className="px-2 py-2 shrink-0">
                         <div className="flex items-center gap-3 w-full">
                             <Checkbox
-                                checked={selectedVendorIds.length === materialRequisitionVendorFinalizedList.length}
-                                disabled={!cangetQuotation}
-                                onChange={() => cangetQuotation && toggleVendorSelectAllVisible()} />
+                                checked={
+                                    materialRequisitionVendorFinalizedList.length > 0 &&
+                                    selectedVendorIds.length === materialRequisitionVendorFinalizedList.length
+                                }
+                                disabled={!cangetQuotation || materialRequisitionVendorFinalizedList.length === 0}
+                                onChange={() => {
+                                    if (cangetQuotation && materialRequisitionVendorFinalizedList.length > 0
+                                    ) {
+                                        toggleVendorSelectAllVisible();
+                                    }
+                                }}
+                            />
 
                             <Input
                                 type="text"

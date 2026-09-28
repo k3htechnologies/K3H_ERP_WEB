@@ -653,8 +653,8 @@ const CreateInvoice: React.FC = () => {
                                 }}
                                 placeholder="Enter Invoice Amount"
                                 rightIcon="(₹)"
-                                max={Number(formData.MaterialRequisitionInvoiceId) > 0 ? (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0) + Number(editInvoiceAmount)) 
-                                                                                       : (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
+                                max={Number(formData.MaterialRequisitionInvoiceId) > 0 ? (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0) + Number(editInvoiceAmount))
+                                    : (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
                                 error={errors.InvoiceAmount}
                             />
                         </div>
@@ -682,6 +682,7 @@ const CreateInvoice: React.FC = () => {
                                 onRemoveExisting={(url) => {
                                     SetRemoveUploadInvoiceUrls((prev) => [...prev, url]);
                                 }}
+                                maxFiles={5}
                             />
                         </div>
 
@@ -698,6 +699,8 @@ const CreateInvoice: React.FC = () => {
                                 onRemoveExisting={(url) => {
                                     SetRemovePerformaInvoiceUrls((prev) => [...prev, url]);
                                 }}
+                                maxFiles={5}
+
                             />
                         </div>
 
@@ -712,6 +715,8 @@ const CreateInvoice: React.FC = () => {
                                 onRemoveExisting={(url) => {
                                     SetRemoveMeasurementReportUrls((prev) => [...prev, url]);
                                 }}
+                                maxFiles={5}
+
                             />
                         </div>
                     </div>

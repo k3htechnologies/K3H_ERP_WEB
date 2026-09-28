@@ -40,7 +40,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
-    const isVendorFinalizationApproved =listState.VendorFinalizationApprovalStatus?.trim().toUpperCase() === "APPROVED";
+    const isVendorFinalizationApproved = listState.VendorFinalizationApprovalStatus?.trim().toUpperCase() === "APPROVED";
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())
@@ -54,6 +54,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
 
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteMaterialRequisitionDetailGRNData, setDeleteMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionGRNData | null>(null)
+    const [isPurchaseOrderExists, setIsPurchaseOrderExists] = useState(false);
 
     useEffect(() => {
         if (!projectId) return;
@@ -107,6 +108,12 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
+                    const purchaseOrderNotExists = response.right.WarningMessage?.some(
+
+                        message => message.trim()?.toUpperCase() === "Purchase order is not exists") ?? false;
+
+                    setIsPurchaseOrderExists(!purchaseOrderNotExists);
 
                     const data = response.right.Data;
 
@@ -448,7 +455,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     }, [matrialRequisitionDetailData]);
 
 
-    
+
     return (
         <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
@@ -461,10 +468,10 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction  && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived }
+                isShowAddButton={canAction && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived && isPurchaseOrderExists}
                 addTitle="Add"
                 onAdd={handleAddGRN}
-                isShowAddExtraButton={true}
+                isShowAddExtraButton={true && isPurchaseOrderExists}
                 addExtraTitle='Summary'
                 onAddExtra={() => {
                     setIsViewGRNSummaryModalOpen(true);

@@ -61,8 +61,15 @@ export const JobOpening: React.FC = () => {
           WorkMode: filterParams.WorkMode?.trim() || undefined,
           EmploymentType: filterParams.EmploymentType?.trim() || undefined,
           RoleName: searchtext ?? filterParams.RoleName?.trim() ?? undefined,
-          ExperienceYears:filterParams.ExperienceYears ? Number(filterParams.ExperienceYears) : undefined,
-          JobRoleStatus:filterParams.Status === 'Active'?true:false
+          ExperienceYears: filterParams.ExperienceYears
+            ? Number(filterParams.ExperienceYears)
+            : undefined,
+          JobRoleStatus:
+            filterParams.Status === 'Active'
+              ? true
+              : filterParams.Status === 'Inactive'
+                ? false
+                : undefined,
         };
 
         const response = await JobOpeningService.apiCallPullJobOpening(params);
@@ -269,8 +276,15 @@ export const JobOpening: React.FC = () => {
           EmploymentType: filters.EmploymentType?.trim() || undefined,
           RoleName: searchTerm.trim() || filters.RoleName?.trim() || undefined,
           ExportType: exportType,
-          ExperienceYears:filters.ExperienceYears ? Number(filters.ExperienceYears) : undefined,
-          JobRoleStatus:filters.Status === 'Active'?true:false
+          ExperienceYears: filters.ExperienceYears
+            ? Number(filters.ExperienceYears)
+            : undefined,
+          JobRoleStatus:
+            filters.Status === 'Active'
+              ? true
+              : filters.Status === 'Inactive'
+                ? false
+                : undefined,
         };
 
 
@@ -313,7 +327,7 @@ export const JobOpening: React.FC = () => {
         addTitle="Add"
         onAdd={handleAddJobOpening}
         isShowAddButton={canAction}
-        isShowExportButton={canExport}
+       isShowExportButton={canExport && jobOpeningList.length !== 0}
         onExportExcel={() => handleExportJobOpening('Excel')}
         onExportPdf={() => handleExportJobOpening('PDF')}
         exportLoading={isLoading}

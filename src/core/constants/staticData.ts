@@ -200,6 +200,7 @@ export const MASTER_DATA = {
   ],
 
   experienceMonths: [
+    "0 Month",
     "1 Month",
     "2 Months",
     "3 Months",
@@ -816,7 +817,7 @@ export const EXPERIENCE_YEAR_OPTIONS: Option[] = MASTER_DATA.experienceYears.map
   name,
 }));
 export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.map((name, index) => ({
-  id: String(index + 1),
+  id: String(index),
   name,
 }));
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;

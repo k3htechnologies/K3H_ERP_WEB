@@ -208,10 +208,17 @@ export const JobRoleMaster: React.FC = () => {
   };
 
   const handleDepartmentChange = (tab: TabItem) => {
-    setJobRoleMasterList([]);
+    const nextDepartmentId = Number(tab.id);
+
     setSelectedJobRole(null);
+
+    if (nextDepartmentId === departmentId) {
+      return;
+    }
+
+    setJobRoleMasterList([]);
     updateListState({
-      departmentId: Number(tab.id),
+      departmentId: nextDepartmentId,
       departmentName: tab.label,
     });
   };
@@ -373,7 +380,7 @@ export const JobRoleMaster: React.FC = () => {
           isShowFilterButton={false}
           isShowCustomizeButton={false}
           isShowAddButton={false}
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && jobRoleMasterList.length !== 0}
           onExportExcel={() => handleExportJobRoleMaster('Excel')}
           onExportPdf={() => handleExportJobRoleMaster('PDF')}
       />
@@ -442,7 +449,7 @@ export const JobRoleMaster: React.FC = () => {
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <FieldItem label="Education" value={selectedJobRole.RoleQualification} />
-                              <FieldItem label="Technical" value={selectedJobRole.JobRequirement} />
+                              <FieldItem label="Qualifications" value={selectedJobRole.JobRequirement} />
                             </div>
                           </div>
                         </section>
@@ -479,7 +486,7 @@ export const JobRoleMaster: React.FC = () => {
                         
                             <div className="rounded-lg bg-gray-900 px-4 py-4 text-center text-white">
                               <p className="mb-3 text-xs leading-4 text-gray-400">
-                                Need to duplicate this role for another department?
+                               Need to duplicate this role for another department? as Need to duplicate this role?
                               </p>
                               <Button
                                 onClick={() => setIsDuplicateDialogOpen(true)}

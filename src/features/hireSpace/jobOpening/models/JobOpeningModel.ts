@@ -50,11 +50,11 @@ export interface AddUpdateJobOpeningRequest {
     JobSkills: string
     WorkMode: string
     ExperienceYears: number
-    ExperienceMonths: number
+    ExperienceMonths: number | null
     NumberOfOpenings: number
     WorkLocation: string
     EmploymentType: string
-    JobRoleStatus: boolean
+    JobRoleStatus: boolean | null
 }
 
 export interface DeleteJobOpeningRequest {

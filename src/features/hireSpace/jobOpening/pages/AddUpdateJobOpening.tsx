@@ -40,11 +40,11 @@ const INITIAL_FORM_STATE: AddUpdateJobOpeningRequest = {
   JobSkills: '',
   WorkMode: '',
   ExperienceYears: 0,
-  ExperienceMonths: 0,
+  ExperienceMonths: null,
   NumberOfOpenings: 0,
   WorkLocation: '',
   EmploymentType: '',
-  JobRoleStatus: true,
+  JobRoleStatus: null,
 }
 
 export const AddUpdateJobOpening: React.FC = () => {
@@ -203,12 +203,14 @@ export const AddUpdateJobOpening: React.FC = () => {
       newErrors.ExperienceYears = 'Experience years is required';
     }
 
-    if (!formData.ExperienceMonths) {
+    if (formData.ExperienceMonths === null) {
       newErrors.ExperienceMonths = 'Experience months is required';
     }
 
     if (!formData.NumberOfOpenings) {
       newErrors.NumberOfOpenings = 'Number of openings is required';
+    } else if (formData.NumberOfOpenings > 50) {
+      newErrors.NumberOfOpenings = 'Number of openings cannot exceed 50';
     }
 
     if (!formData.WorkLocation?.trim()) {
@@ -217,6 +219,10 @@ export const AddUpdateJobOpening: React.FC = () => {
 
     if (!formData.EmploymentType?.trim()) {
       newErrors.EmploymentType = 'Employment type is required';
+    }
+
+    if (formData.JobRoleStatus === null) {
+      newErrors.JobRoleStatus = 'Job role status is required';
     }
 
     return {
@@ -239,11 +245,11 @@ export const AddUpdateJobOpening: React.FC = () => {
       JobSkills: formData.JobSkills,
       WorkMode: formData.WorkMode,
       ExperienceYears: formData.ExperienceYears,
-      ExperienceMonths: formData.ExperienceMonths,
+      ExperienceMonths: formData.ExperienceMonths!,
       NumberOfOpenings: formData.NumberOfOpenings,
       WorkLocation: formData.WorkLocation,
       EmploymentType: formData.EmploymentType,
-      JobRoleStatus: formData.JobRoleStatus,
+      JobRoleStatus: formData.JobRoleStatus!,
     };
   };
 
@@ -365,8 +371,9 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Job Description"
                   placeholder="Pre-filled"
                   value={formData.JobDescription}
+                  title={formData.JobDescription}
                   onChange={(e) => handleFieldChange('JobDescription', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobDescription}
                 />
               </div>
@@ -376,8 +383,9 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Job Responsibilities"
                   placeholder="Pre-filled"
                   value={formData.JobResponsibilities}
+                  title={formData.JobResponsibilities}
                   onChange={(e) => handleFieldChange('JobResponsibilities', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobResponsibilities}
                 />
               </div>
@@ -387,8 +395,9 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Job Requirement"
                   placeholder="Pre-filled"
                   value={formData.JobRequirement}
+                  title={formData.JobRequirement}
                   onChange={(e) => handleFieldChange('JobRequirement', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobRequirement}
                 />
               </div>
@@ -398,8 +407,9 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Qualifications"
                   placeholder="Pre-filled"
                   value={formData.JobQualification}
+                  title={formData.JobQualification}
                   onChange={(e) => handleFieldChange('JobQualification', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobQualification}
                 />
               </div>
@@ -409,8 +419,9 @@ export const AddUpdateJobOpening: React.FC = () => {
                   label="Skills"
                   placeholder="Pre-filled"
                   value={formData.JobSkills}
+                  title={formData.JobSkills}
                   onChange={(e) => handleFieldChange('JobSkills', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobSkills}
                 />
               </div>
@@ -430,12 +441,16 @@ export const AddUpdateJobOpening: React.FC = () => {
                   onChange={(e) => handleFieldChange('WorkMode', String(e))}
                   options={WORK_MODE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   searchable={false}
+                  required
                   error={errors.WorkMode}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-[14px] font-medium text-[#00000080]">Experience</label>
+                <label className="mb-1 block text-[14px] font-medium text-[#00000080]">
+                  Experience
+                  <span className="ml-1 text-red-500">*</span>
+                </label>
                 <div className="flex flex-col gap-4 min-[420px]:flex-row min-[420px]:items-center">
                   <div className="flex-1">
                     <SinglePageSelection
@@ -450,8 +465,12 @@ export const AddUpdateJobOpening: React.FC = () => {
                   <div className="flex-1">
                     <SinglePageSelection
                       placeholder="Select Months"
-                      value={formData.ExperienceMonths ? String(formData.ExperienceMonths) : ''}
-                      onChange={(e) => handleFieldChange('ExperienceMonths', Number(e) || 0)}
+                      value={
+                        formData.ExperienceMonths === null
+                          ? ''
+                          : String(formData.ExperienceMonths)
+                      }
+                      onChange={(e) => handleFieldChange('ExperienceMonths', Number(e))}
                       options={EXPERIENCE_MONTH_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                       searchable={false}
                       error={errors.ExperienceMonths}
@@ -464,8 +483,9 @@ export const AddUpdateJobOpening: React.FC = () => {
                 <Input
                   label="Number Of Openings"
                   placeholder="Enter Number Of Openings"
-                  value={formData.NumberOfOpenings}
+                  value={formData.NumberOfOpenings || ''}
                   onChange={(e) => handleFieldChange('NumberOfOpenings', Number(e.target.value))}
+                  required
                   error={errors.NumberOfOpenings}
                 />
               </div>
@@ -476,6 +496,7 @@ export const AddUpdateJobOpening: React.FC = () => {
                   placeholder="Enter Location"
                   value={formData.WorkLocation}
                   onChange={(e) => handleFieldChange('WorkLocation', e.target.value)}
+                  required
                   error={errors.WorkLocation}
                 />
               </div>
@@ -488,6 +509,7 @@ export const AddUpdateJobOpening: React.FC = () => {
                   onChange={(e) => handleFieldChange('EmploymentType', String(e))}
                   options={EMPLOYMENT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   searchable={false}
+                  required
                   error={errors.EmploymentType}
                 />
               </div>
@@ -496,10 +518,18 @@ export const AddUpdateJobOpening: React.FC = () => {
                 <SinglePageSelection
                   label="Job Role Status"
                   placeholder="Select Status"
-                  value={formData.JobRoleStatus ? 'Active' : 'Inactive'}
+                  value={
+                    formData.JobRoleStatus === null
+                      ? ''
+                      : formData.JobRoleStatus
+                        ? 'Active'
+                        : 'Inactive'
+                  }
                   onChange={(e) => handleFieldChange('JobRoleStatus', String(e) === 'Active')}
                   options={ACTIVE_INACTIVE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                   searchable={false}
+                  required
+                  error={errors.JobRoleStatus}
                 />
               </div>
             </div>

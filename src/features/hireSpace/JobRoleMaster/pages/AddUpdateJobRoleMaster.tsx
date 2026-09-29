@@ -255,7 +255,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   value={formData.RoleDescription}
                   onChange={(event) => handleFieldChange('RoleDescription', event.target.value)}
                   error={errors.RoleDescription}
-                  rows={4}
+                  rows={6}
                   required
                 />
               </div>
@@ -267,7 +267,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   value={formData.RoleResponsibility}
                   onChange={(event) => handleFieldChange('RoleResponsibility', event.target.value)}
                   error={errors.RoleResponsibility}
-                  rows={4}
+                  rows={6}
                   required
                 />
               </div>
@@ -279,7 +279,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   value={formData.JobRequirement}
                   onChange={(event) => handleFieldChange('JobRequirement', event.target.value)}
                   error={errors.JobRequirement}
-                  rows={4}
+                  rows={6}
                   required
                 />
               </div>
@@ -291,7 +291,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   value={formData.RoleQualification}
                   onChange={(event) => handleFieldChange('RoleQualification', event.target.value)}
                   error={errors.RoleQualification}
-                  rows={4}
+                  rows={6}
                   required
                 />
               </div>

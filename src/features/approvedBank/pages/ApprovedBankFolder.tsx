@@ -136,7 +136,7 @@ export const ApprovedBankFolder: React.FC = () => {
     };
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions();
+    const { canAction, canExport } = useMenuPermissions();
     //#endregion
 
     //#region APPROVED BANK LIST STATE CONTEXT
@@ -382,7 +382,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
                 return (
                     <div className="flex items-center justify-center gap-2">
-                        {row.NumberOfApprovedBankFile === 0 ? (
+                        {row.NumberOfApprovedBankFile === 0 && canAction ? (
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -400,7 +400,7 @@ export const ApprovedBankFolder: React.FC = () => {
                                 <Trash2 className="h-4 w-4" />
                             </Button>
 
-                        ) : (
+                        ) : row.NumberOfApprovedBankFile > 0 && canExport && (
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();

@@ -545,7 +545,6 @@ export const ApprovedBankFile: React.FC = () => {
             <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
                 <HeaderActionBar
-                    titleText={"Approved Bank Document: "}
                     subTitleText={BankName}
                     cancelText="Cancel"
                     onCancel={() => handleBackToListApprovedBankFolder()}
@@ -615,6 +614,7 @@ export const ApprovedBankFile: React.FC = () => {
                         <div>
                             <MultiFilePicker
                                 label="Files"
+                                required
                                 placeholder='Select Files'
                                 value={approvedBankFiles}
                                 onChange={setApprovedBankFiles}

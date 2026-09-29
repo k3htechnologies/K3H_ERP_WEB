@@ -1,17 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import type { CalendarEvent } from "./CalendarEvent";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+
+export interface RenderDayHourEventsArgs {
+  hour: string;
+  hourEvents: CalendarEvent[];
+  onEventClick?: (ev: CalendarEvent) => void;
+}
 
 interface DayViewProps {
   currentDate: Date;
   events: CalendarEvent[];
   onEventClick?: (ev: CalendarEvent) => void;
+  renderDayHourEvents?: (args: RenderDayHourEventsArgs) => ReactNode;
 }
 
 export default function DayView({
   currentDate,
   events,
-  onEventClick
+  onEventClick,
+  renderDayHourEvents,
 }: DayViewProps) {
 
   const dateStr = currentDate.toISOString().slice(0, 10);
@@ -27,14 +35,11 @@ export default function DayView({
   const dayName = currentDate.toLocaleDateString("en-US", { weekday: "short" });
   const dayNumber = currentDate.getDate();
 
-
-  /* Track current time in minutes */
   const [nowMinutes, setNowMinutes] = useState<number>(() => {
     const n = new Date();
     return n.getHours() * 60 + n.getMinutes();
   });
 
-  /* update every minute */
   useEffect(() => {
     const timer = setInterval(() => {
       const n = new Date();
@@ -44,12 +49,9 @@ export default function DayView({
     return () => clearInterval(timer);
   }, []);
 
-  /*  Show only if currentDate is TODAY */
   const isToday =
     new Date().toISOString().slice(0, 10) === dateStr;
 
-
-  /* ---------- LANE LOGIC (unchanged) ---------- */
   const buildLanes = (evts: CalendarEvent[]) => {
 
     type LaneEvent = CalendarEvent & {
@@ -99,7 +101,6 @@ export default function DayView({
     "bg-blue-400 border-blue-200"
   ];
 
-
   return (
     <div className="flex flex-col h-[80vh]">
 
@@ -127,10 +128,16 @@ export default function DayView({
         <div className="relative">
 
           {hours.map(h => (
-            <div key={h} className="border border-gray-200 h-[60px]" />
+            <div key={h} className="border border-gray-200 h-[60px]">
+              {renderDayHourEvents?.({
+                hour: h,
+                hourEvents: dayEvents.filter(e => e.start.slice(11, 13) === h.slice(0, 2)),
+                onEventClick,
+              })}
+            </div>
           ))}
 
-          {/*  CURRENT-TIME LINE HERE */}
+          {/* CURRENT TIME LINE */}
           {isToday && (
             <div
               className="absolute left-0 right-0 z-50"
@@ -138,16 +145,13 @@ export default function DayView({
                 top: `${nowMinutes}px`,
               }}
             >
-              {/* blue line */}
               <div className="h-[2px] bg-blue-500 w-full" />
-
-              {/* round marker like your screenshot */}
               <div className="w-[10px] h-[10px] bg-blue-500 rounded-full absolute -left-[5px] -top-[4px]" />
             </div>
           )}
 
           {/* EVENTS */}
-          {laneEvents.map(ev => {
+          {!renderDayHourEvents && laneEvents.map(ev => {
 
             const startMin = ev.startMin;
             const endMin = ev.endMin;
@@ -210,11 +214,11 @@ export default function DayView({
                   </span>
 
                   <div className="flex -space-x-2">
-                    {ev.fullname!
+                    {(ev.fullname ?? "")
                       .split(',')
                       .map(name => name.trim())
                       .filter(name => name !== "")
-                      .slice(0, 3)   
+                      .slice(0, 3)
                       .map((name, i) => (
                         <div
                           key={i}
@@ -225,20 +229,16 @@ export default function DayView({
                       ))}
 
                     {/* EXTRA COUNT BADGE */}
-                    {ev.fullname!.split(',').filter(n => n.trim() !== "").length > 3 && (
+                    {(ev.fullname ?? "").split(',').filter(n => n.trim() !== "").length > 3 && (
                       <div className="w-6 h-6 rounded-full bg-purple-400 border-purple-200 text-[10px] flex items-center justify-center text-white">
                         +
                         {
-                          ev.fullname!.split(',').filter(n => n.trim() !== "").length - 3
+                          (ev.fullname ?? "").split(',').filter(n => n.trim() !== "").length - 3
                         }
                       </div>
                     )}
                   </div>
-
-
-
                 </div>
-
               </div>
             );
           })}

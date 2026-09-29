@@ -1,5 +1,5 @@
 export const getPageInfo = (path: string) => {
-    const [first, second, third] = path.split("/").filter(Boolean);
+    const [first, second] = path.split("/").filter(Boolean);
     path = first
 
     switch (path) {
@@ -326,6 +326,12 @@ export const getPageInfo = (path: string) => {
             }
 
         //COMMAN MODULES
+        case 'teamWorkspaceDashboard':
+        case 'eventDashboard':
+            return {
+                title: 'Team Workspace Dashboard',
+                description: 'Manage and organize company departments with complete CRUD operations.',
+            }
         case 'event':
             return {
                 title: 'Event',
@@ -339,6 +345,18 @@ export const getPageInfo = (path: string) => {
             }
 
         case 'task':
+            if (second === 'view') {
+                return {
+                    title: 'Task Details',
+                    description: 'View task overview, sub-tasks, and timeline',
+                }
+            }
+            if (second === 'add') {
+                return {
+                    title: 'Add Task',
+                    description: 'Create and assign a new task',
+                }
+            }
             return {
                 title: 'Task',
                 description: 'Manage and track assigned tasks',
@@ -351,13 +369,13 @@ export const getPageInfo = (path: string) => {
                     description: 'Create and organize a new meeting',
                 }
             }
-            if (second === 'edit') {
+            if (second === 'view') {
                 return {
-                    title: 'Edit Meeting',
-                    description: 'Update the selected meeting details',
+                    title: 'View Meeting',
+                    description: 'Review meeting details and related agenda',
                 }
             }
-            if (third === 'mom') {
+            if (second === 'mom') {
                 return {
                     title: 'Minutes Of Meeting',
                     description: 'Review meeting details and manage the agenda',

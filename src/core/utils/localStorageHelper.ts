@@ -323,27 +323,6 @@ export const LocalStorageHelper = {
     return null;
   },
 
-  storeMeetingTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.MEETING_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error("Error Meeting Columns Details:", error);
-    }
-  },
-
-  getMeetingTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MEETING_SELECTED_COLUMNS);
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.MEETING_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error("Error reading Meeting Columns Details:", error);
-        return null;
-      }
-    }
-    return null;
-  },
-
   storeTaskTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS, columns);
@@ -359,6 +338,27 @@ export const LocalStorageHelper = {
         return localStorage.getItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
       } catch (error) {
         console.error("Error reading Task Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeAgendaTaskTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Agenda Task Columns Details:", error);
+    }
+  },
+
+  getAgendaTaskTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Agenda Task Columns Details:", error);
         return null;
       }
     }

@@ -101,13 +101,16 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/event/pages/Event';
-import Conference from '@/features/event/conference/pages/Conference';
-import AddUpdateConference from '@/features/event/conference/pages/AddUpdateConference';
-import Meeting from '@/features/event/meeting/pages/Meeting';
-import Task from '@/features/event/task/pages/Task';
-import AddUpdateMeeting from '@/features/event/meeting/pages/AddUpdateMeeting';
-import ViewMeeting from '@/features/event/meeting/pages/ViewMeeting';
+import Event from '@/features/teamWorkspaceCalendar/pages/Event';
+import Conference from '@/features/conference/pages/Conference';
+import AddUpdateConference from '@/features/conference/pages/AddUpdateConference';
+import Meeting from '@/features/meeting/pages/Meeting';
+
+import ViewTask from '@/features/task/pages/ViewTask';
+
+import { MeetingListStateProvider } from '@/features/meeting/context/MeetingListStateContext';
+import AddUpdateMeeting from '@/features/meeting/pages/AddUpdateMeeting';
+import ViewMeeting from '@/features/meeting/pages/ViewMeeting';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -216,6 +219,10 @@ import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker
 import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
+import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask';
+import { TaskListStateProvider } from '@/features/task/context/TaskListStateContext';
+import Task from '@/features/task/pages/Task';
+import TeamWorkspaceDashboard from '@/features/teamWorkspaceDashboard/pages/TeamWorkspaceDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -388,23 +395,28 @@ function App() {
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
-            {/* COMMON MOM */}
-            <Route path="event" element={<Event />} />
-            <Route path="conference" element={<Conference />} />
-            <Route path="conference/add" element={<AddUpdateConference />} />
-            <Route path="task" element={<Task />} />
-            <Route path="meeting" element={<Meeting />} />
-            <Route path="meeting/add" element={<AddUpdateMeeting />} />
-            <Route path="meeting/view/:eventId" element={<ViewMeeting />} />
-            <Route path="meeting/edit/:eventId" element={<AddUpdateMeeting />} />
-            <Route path="meeting/:eventId/mom" element={<AddUpdateMeeting />} />
+            {/* COMMON  */}
+            <Route path="ticket" element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
+            <Route path="ticket/view/:ticketId?" element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
+            <Route path="ticket/assignTicketView" element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
+
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
-            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
-            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
-            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
+            {/*MOM*/}
+            <Route path="teamWorkspaceDashboard" element={<TeamWorkspaceDashboard />} />
+            <Route path="calendar" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
+            <Route path="event" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
+            <Route path="conference" element={<Conference />} />
+            <Route path="conference/add" element={<AddUpdateConference />} />
+            <Route path="task" element={<TaskListStateProvider><Task /></TaskListStateProvider>} />
+            <Route path="task/view/:taskId?" element={<TaskListStateProvider><ViewTask /></TaskListStateProvider>} />
+            <Route path="task/add/:taskId?" element={<TaskListStateProvider><AddUpdateTaskOrSubTask /></TaskListStateProvider>} />
+            <Route path="meeting" element={<MeetingListStateProvider><Meeting /></MeetingListStateProvider>} />
+            <Route path="meeting/add/:meetingId?" element={<MeetingListStateProvider><AddUpdateMeeting /></MeetingListStateProvider>} />
+            <Route path="meeting/view" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
+            <Route path="meeting/mom" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
 
             {/* TAX TRACKER */}
             <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
@@ -539,6 +551,8 @@ function App() {
             <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
+
+            
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

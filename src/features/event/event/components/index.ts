@@ -1,5 +1,0 @@
-export { AddUpdateEventModal } from './AddUpdateEventModal'
-export { EventCalendarHeader } from './EventCalendarHeader'
-export { EventModuleTabs } from './EventModuleTabs'
-export { EventCalendarSidebar } from './EventCalendarSidebar'
-export { ViewEventModal } from './ViewEventModal'

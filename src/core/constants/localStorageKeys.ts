@@ -104,8 +104,8 @@ export const LOCAL_STORAGE_KEYS = {
     //TICKET MASTER
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
 
-    MEETING_SELECTED_COLUMNS: 'meeting.selectedColumns',
     TASK_SELECTED_COLUMNS: 'task.selectedColumns',
+    AGENDA_TASK_SELECTED_COLUMNS: 'agendaTask.selectedColumns',
 
     //TAX TRACKER
      NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
@@ -149,5 +149,8 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TICKET: 'ticket.listState',
     TERM_SHEET: 'termSheet.listState',
     TAX_TRACKER: 'taxTracker.listState',
+    TASK: 'task.listState',
+    AGENDA_TASK: 'agendaTask.listState',
+    MEETING: 'meeting.listState',
 
 } as const

@@ -1,19 +1,26 @@
-import { getWeekDays, getHours } from "@/ui/components/Calender/CalendarUtils";
+import type { ReactNode } from "react";
+import { getWeekDays, getHours, toLocalDateKey } from "@/ui/components/Calender/CalendarUtils";
 import type { CalendarEvent } from "./CalendarEvent";
-import { formatDate_yyyy_mm_dd } from "@/core/utils/dateFormat";
+
+export interface RenderWeekSlotEventsArgs {
+    day: Date;
+    slotEvents: CalendarEvent[];
+    onEventClick?: (ev: CalendarEvent) => void;
+}
 
 interface WeekViewProps {
     currentDate: Date;
     events: CalendarEvent[];
     onEventClick?: (ev: CalendarEvent) => void;
+    renderWeekSlotEvents?: (args: RenderWeekSlotEventsArgs) => ReactNode;
 }
 
 export default function WeekView({
     currentDate,
     events,
-    onEventClick
+    onEventClick,
+    renderWeekSlotEvents,
 }: WeekViewProps) {
-
     const days = getWeekDays(currentDate);
     const hours = getHours();
     return (
@@ -22,7 +29,7 @@ export default function WeekView({
             {/* HEADER ROW */}
             <div></div>
             {days.map(day => (
-                <div className="flex flex-col gap-0.5 text-center">
+                <div key={day.toISOString()} className="flex flex-col gap-0.5 text-center">
                     <span className="text-[10px] text-gray-500 font-semibold">
                         {day.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()}
                     </span>
@@ -38,38 +45,41 @@ export default function WeekView({
             {hours.map(h => (
                 <div key={h} className="contents">
                     {/* LEFT TIME LABEL */}
-                    <div className="border border-gray-200 px-2 py-1">{h}</div>
+                    <div className="border border-gray-200 px-2 py-1 text-gray-500">{h}</div>
 
                     {/* CELLS FOR EACH DAY */}
                     {days.map(day => {
-                        const dateStr = formatDate_yyyy_mm_dd(day);
+                        const dateStr = toLocalDateKey(day);
                         const hourStr = h.slice(0, 2);
 
-                        const slotEvents = events.filter(e =>
-                            e.start.slice(0, 10) === dateStr &&
-                            e.start.slice(11, 13) === hourStr
-                        );
+                        const slotEvents = events.filter(e => {
+                            const eDate = e.start.slice(0, 10);
+                            const eHour = e.start.slice(11, 13);
+                            return eDate === dateStr && eHour === hourStr;
+                        });
 
                         return (
                             <div
                                 key={`${dateStr}-${h}`}
-                                className="border border-gray-200 relative"
+                                className="border border-gray-200 relative min-h-[44px]"
                             >
-                                {slotEvents.map(ev => (
-                                    <div
-                                        key={ev.id}
-                                        className={`absolute m-1 p-1 rounded cursor-pointer
-                      ${ev.type?.toUpperCase() === "TASK"
-                                                ? "bg-blue-200 text-blue-900"
-                                                : ev.type?.toUpperCase() === "MEETING"
-                                                    ? "bg-red-200 text-red-900"
-                                                    : "bg-orange-200 text-orange-900"
+                                {renderWeekSlotEvents
+                                    ? renderWeekSlotEvents({ day, slotEvents, onEventClick })
+                                    : slotEvents.map(ev => (
+                                        <div
+                                            key={ev.id}
+                                            className={`absolute m-1 p-1 rounded cursor-pointer ${
+                                                ev.type?.toUpperCase() === "TASK"
+                                                    ? "bg-blue-200 text-blue-900"
+                                                    : ev.type?.toUpperCase() === "MEETING"
+                                                        ? "bg-red-200 text-red-900"
+                                                        : "bg-orange-200 text-orange-900"
                                             }`}
-                                        onClick={() => onEventClick?.(ev)}
-                                    >
-                                        {ev.title}
-                                    </div>
-                                ))}
+                                            onClick={() => onEventClick?.(ev)}
+                                        >
+                                            {ev.title}
+                                        </div>
+                                    ))}
                             </div>
                         );
                     })}

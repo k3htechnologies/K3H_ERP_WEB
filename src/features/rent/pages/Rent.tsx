@@ -83,9 +83,8 @@ export const Rent: React.FC = () => {
     return { label: buildingName || "", value: buildingId };
   }, [projectId, buildingId, buildingName]);
 
-  const fetchBuildingCallback = useCallback(
-    (pageNumber: number, params?: { value?: string }) =>
-      fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
+  const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
+    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
     [projectId],
   );
 
@@ -100,6 +99,7 @@ export const Rent: React.FC = () => {
 
   useEffect(() => {
     if (!projectId || buildingId <= 0) return;
+
     if (!["TAA", "Brokerage"].includes(activeTab)) {
       setTenureTabList([]);
       updateListState({ tenure: "" });
@@ -229,9 +229,7 @@ export const Rent: React.FC = () => {
             .filter((item) => item.Date && item.Date !== "1997-01-01T00:00:00" && item.Date !== "1997-01-02T00:00:00")
             .map((item) => item.Date!),
         ),
-      )
-        .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
-        .map((date) => formatDate_dd_MonthName_yy(date));
+      ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).map((date) => formatDate_dd_MonthName_yy(date));
 
       if (tenantApplicantChargesList.length > 0) {
         sorted.push("Total", "Paid Total");
@@ -281,7 +279,6 @@ export const Rent: React.FC = () => {
 
       const amount = Number(item.Amount || 0);
 
-      // MONTH BASED
       if (isMonthBasedTab && item.Date && item.Date !== "1997-01-01T00:00:00" && item.Date !== "1997-01-02T00:00:00") {
         const key = formatDate_dd_MonthName_yy(item.Date);
         row[key] = amount ? `₹${amount}` : "-";
@@ -289,14 +286,14 @@ export const Rent: React.FC = () => {
 
       // STAGE BASED
       if (isStageBasedTab && item.Stage) {
-        row[item.Stage] = amount;
+        row[item.Stage] = `₹${amount}`;
         row["Total"] += amount;
       }
 
       // ───────── TOTAL INDICATOR ─────────
       if (item.Date === "1997-01-01T00:00:00") {
-        
-        row.Total = amount; // ✅ ONLY HERE
+
+        row.Total = amount;
       }
 
       // ───────── PAID TOTAL INDICATOR ─────────
@@ -368,14 +365,14 @@ export const Rent: React.FC = () => {
 
     const proposedOfferColumn: TableColumn[] = ["TAA", "Brokerage", "Additional TAA"].includes(activeTab)
       ? [
-          {
-            key: "ProposedOfferAmount",
-            label: "Proposed Offer Amount (₹)",
-            width: "20",
-            align: "right",
-            render: (_, row) => `${row.ProposedOfferAmount || 0} ${row.Unit || ""}`,
-          },
-        ]
+        {
+          key: "ProposedOfferAmount",
+          label: "Proposed Offer Amount (₹)",
+          width: "20",
+          align: "right",
+          render: (_, row) => `${row.ProposedOfferAmount || 0} ${row.Unit || ""}`,
+        },
+      ]
       : [];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map((h) => ({
@@ -385,103 +382,102 @@ export const Rent: React.FC = () => {
       align: "right" as const,
     }));
 
-    const actionColumn: TableColumn[] = canAction
-      ? [
-          {
-            key: "Actions",
-            label: "Actions",
-            width: "12",
-            fixed: "right",
-            align: "center",
-            render: (_value, row: PivotRentRow) => {
-              const handleAddPayTrackRent = () => {
-                if (!row.TenantApplicantId || !buildingId) return;
+    const actionColumn: TableColumn[] = [
+      {
+        key: "Actions",
+        label: "Actions",
+        width: "12",
+        fixed: "right",
+        align: "center",
+        render: (_value, row: PivotRentRow) => {
+          const handleAddPayTrackRent = () => {
 
-                const totalAmount = Number(row["Total"].replace("₹", "") || 0);
-                const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
+            if (!row.TenantApplicantId || !buildingId) return;
+            const totalAmount = Number(row["Total"].replace("₹", "") || 0);
+            const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
 
-                setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
-                updateListState({
-                  buildingId,
-                  buildingName,
-                  activeTab,
-                  tenure: activeTenureTab,
-                  tenantId: row.TenantId || 0,
-                  tenantName: row.ApplicantName || "",
-                  tenantApplicantId: row.TenantApplicantId || 0,
-                  flatNumber: row.FlatNumber || "",
-                  applicantName: row.ApplicantName || "",
-                  totalAmount: totalAmount,
-                  paidTotalAmount: paidTotalAmount,
-                  unitType: row.FlatType,
-                  carpetArea: row.FlatCarpetAreaSqFt,
-                });
-                navigate("/rent/pay");
-              };
+            setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || "",
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || "",
+              applicantName: row.ApplicantName || "",
+              totalAmount: totalAmount,
+              paidTotalAmount: paidTotalAmount,
+              unitType: row.FlatType,
+              carpetArea: row.FlatCarpetAreaSqFt,
+            });
+            navigate("/rent/pay");
+          };
 
-              const handleViewPayTrackRent = () => {
-                if (!row.TenantApplicantId || !buildingId) return;
+          const handleViewPayTrackRent = () => {
+            if (!row.TenantApplicantId || !buildingId) return;
 
-                const totalAmount = Number(row["Total"].replace("₹", "") || 0);
-                const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
+            const totalAmount = Number(row["Total"].replace("₹", "") || 0);
+            const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
 
-                setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
+            setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
 
-                updateListState({
-                  buildingId,
-                  buildingName,
-                  activeTab,
-                  tenure: activeTenureTab,
-                  tenantId: row.TenantId || 0,
-                  tenantName: row.ApplicantName || "",
-                  tenantApplicantId: row.TenantApplicantId || 0,
-                  flatNumber: row.FlatNumber || "",
-                  applicantName: row.ApplicantName || "",
-                  totalAmount: totalAmount,
-                  paidTotalAmount: paidTotalAmount,
-                  unitType: row.FlatType,
-                  carpetArea: row.FlatCarpetAreaSqFt,
-                });
-                navigate("/rent/paymentLedger");
-              };
-              return (() => {
-                const total = Number(String(row["Total"] ?? 0).replace(/[₹,]/g, ""));
-                const paidTotal = Number(String(row["Paid Total"] ?? 0).replace(/[₹,]/g, ""));
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || "",
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || "",
+              applicantName: row.ApplicantName || "",
+              totalAmount: totalAmount,
+              paidTotalAmount: paidTotalAmount,
+              unitType: row.FlatType,
+              carpetArea: row.FlatCarpetAreaSqFt,
+            });
+            navigate("/rent/paymentLedger");
+          };
+          return (() => {
+            const total = Number(String(row["Total"] ?? 0).replace(/[₹,]/g, ""));
+            const paidTotal = Number(String(row["Paid Total"] ?? 0).replace(/[₹,]/g, ""));
 
-                const isAddDisabled = total <= 0 || total === paidTotal;
-                const isViewDisabled = total <= 0;
+            const isAddDisabled = total <= 0 || total === paidTotal;
+            const isViewDisabled = total <= 0;
 
-                return (
-                  <div className="flex items-center justify-center gap-2">
-                    <Button
-                      onClick={handleAddPayTrackRent}
-                      disabled={isAddDisabled}
-                      color="blue"
-                      variant="solid"
-                      colorMode="extraLight"
-                      title="Add Pay Track TAA"
-                      style={{ width: "35px", height: "35px" }}
-                      centerIcon={<Plus className="h-4 w-4" />}
-                    />
+            return (
+              <div className="flex items-center justify-center gap-2">
+                {canAction && (
+                  <Button
+                    onClick={handleAddPayTrackRent}
+                    disabled={isAddDisabled}
+                    color="blue"
+                    variant="solid"
+                    colorMode="extraLight"
+                    title="Add Pay Track TAA"
+                    style={{ width: "35px", height: "35px" }}
+                    centerIcon={<Plus className="h-4 w-4" />}
+                  />
+                )}
 
-                    <Button
-                      onClick={handleViewPayTrackRent}
-                      disabled={isViewDisabled}
-                      color="blue"
-                      variant="solid"
-                      colorMode="extraLight"
-                      title="View Pay Track TAA"
-                      style={{ width: "35px", height: "35px" }}
-                      centerIcon={<Eye className="h-4 w-4" />}
-                    />
-                  </div>
-                );
-              })();
-            },
-          },
-        ]
-      : [];
-
+                <Button
+                  onClick={handleViewPayTrackRent}
+                  disabled={isViewDisabled}
+                  color="blue"
+                  variant="solid"
+                  colorMode="extraLight"
+                  title="View Pay Track TAA"
+                  style={{ width: "35px", height: "35px" }}
+                  centerIcon={<Eye className="h-4 w-4" />}
+                />
+              </div>
+            );
+          })();
+        },
+      },
+    ]
     return [...baseColumns, ...proposedOfferColumn, ...dynamicColumns, ...actionColumn];
   }, [
     dynamicHeaders,
@@ -598,7 +594,7 @@ export const Rent: React.FC = () => {
               tabs={rentTabList}
               defaultActive={activeTab}
               onTabChange={(t) => {
-                if (t.id === activeTab) return; 
+                if (t.id === activeTab) return;
                 updateListState({
                   activeTab: t.id,
                   tenure: "",

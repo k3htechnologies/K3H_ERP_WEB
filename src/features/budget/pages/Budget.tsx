@@ -40,6 +40,7 @@ import { LevelTree } from "@/ui/components/DataTable/Leveltree";
 import { fetchPaginatedFlatsDropdown } from "@/features/inventory/PaginatedFlatsDropDown";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
@@ -573,6 +574,33 @@ export const Budget: React.FC = () => {
             render: (value) => (
                 <FieldInfoTooltip value={value} />
             )
+        },
+        {
+            key: 'ModifiedBy',
+            label: 'Last Modified By',
+            width: '33',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
+        },
+        {
+            key: 'ModifiedDate',
+            label: 'Last Modified Date',
+            width: '33',
+            sortable: false,
+            align: 'center',
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy(row.CreatedDate)
+                        : '-'
         },
         {
             key: "Actions",

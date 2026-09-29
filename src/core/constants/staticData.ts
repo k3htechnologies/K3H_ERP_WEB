@@ -56,6 +56,10 @@ export const MASTER_DATA = {
 
   firmsType: ["LLP", "Private Limited Company", "Proprietorship"],
 
+  ownershipType: ["Owner", "Partner"],
+
+  businessType: ["Dealer", "Manufacturer", "Both"],
+
   companyType: ["Existing Company", "New Company"],
 
   projectStatus: ["On-Going", "Up-Coming", "Completed", "On-Hold", "Cancelled", "Planning"],
@@ -804,6 +808,8 @@ export const DAYS_OPTIONS = toOptions(MASTER_DATA.days);
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses);
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups);
 export const FIRMS_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType);
+export const OWNERSHIP_TYPE_OPTIONS= toOptions(MASTER_DATA.ownershipType);
+export const BUSINESS_TYPE_OPTIONS= toOptions(MASTER_DATA.businessType);
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType);
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus);
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory);

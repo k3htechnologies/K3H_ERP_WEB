@@ -696,7 +696,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    
+
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Category</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -936,7 +936,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </>
 
                     )}
-                   
+
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Liasoning Architect</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1392,7 +1392,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <Checkbox
                                 label="Is This Project a Federation?"
                                 checked={formData.IsFederation === true}
-                                onChange={(e) => handleFieldChange('IsFederation', e.target.checked ? true : false)}
+                                onChange={(e) => {
+                                    const checked = e.target.checked ? true : false;
+
+                                    handleFieldChange('IsFederation', checked);
+
+                                    handleFieldChange('FederationAmount', 0);
+                                }}
                             />
                         </h3>
 

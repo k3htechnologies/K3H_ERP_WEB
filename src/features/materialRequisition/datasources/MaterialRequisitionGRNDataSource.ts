@@ -1,10 +1,11 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import type { DeleteMaterialRequisitionGRN, FilterWithGenerateMaterialRequisitionGRNPDF, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, GenerateMaterialRequisitionGRNPDFResponse, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { MaterialRequisitionGRNApi } from "@/features/materialRequisition/api/MaterialRequisitionGRNApi";
 
 export abstract class MaterialRequisitionGRNGRNDatasource {
     abstract pullMaterialRequisitionGRN(params: FilterWithPaginationMaterialRequisitionGRN, signal?: AbortSignal): Promise<MaterialRequisitionGRNListResponse>;
+    abstract generateMaterialRequisitionGRNPDF(params: FilterWithGenerateMaterialRequisitionGRNPDF, signal?: AbortSignal): Promise<GenerateMaterialRequisitionGRNPDFResponse>;
     abstract addUpdateMaterialRequisitionGRN(data: FormData): Promise<MaterialRequisitionGRNSaveResponse>;
     abstract deleteMaterialRequisitionGRN(params: DeleteMaterialRequisitionGRN): Promise<MaterialRequisitionGRNDeleteResponse>;
     abstract pullMaterialRequisitionGRNSummary(params: FilterWithPaginationMaterialRequisitionGRNSummary, signal?: AbortSignal): Promise<MaterialRequisitionGRNSummaryListResponse>;
@@ -38,6 +39,35 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
             if (error instanceof TokenExpiredException) {
 
                 return await this.pullMaterialRequisitionGRN(params);
+            }
+
+            throw error
+        }
+    }
+
+     async generateMaterialRequisitionGRNPDF(params: FilterWithGenerateMaterialRequisitionGRNPDF, signal?: AbortSignal): Promise<GenerateMaterialRequisitionGRNPDFResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            if (params.MaterialRequisitionGRNId) queryParams.append('MaterialRequisitionGRNId', params.MaterialRequisitionGRNId.toString());
+            if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
+            if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
+            if (params.ExportType?.trim()) queryParams.append('ExportType', params.ExportType.trim());
+
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${MaterialRequisitionGRNApi.GENERATE_PDF}?${queryParams.toString()}`, { signal }
+            )
+
+        } catch (error: any) {
+
+            console.error('ERROR: PULL MATERIAL REQUISITION GRN PDF:', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.generateMaterialRequisitionGRNPDF(params);
             }
 
             throw error

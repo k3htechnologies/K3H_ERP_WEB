@@ -440,3 +440,12 @@ export const convert_hh_mm_ss_to_hh_mm = (timeString?: string) => {
     return `${formattedHour}:${minutes} ${period}`;
 };
 
+/**
+ * Format numeric hour (0-23) to 12-hour AM/PM label (e.g. 9 -> "09:00 AM", 13 -> "01:00 PM")
+ */
+
+export const formatHourTo12Hour = (hour: number): string => {
+  const period = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 === 0 ? 12 : hour % 12;
+  return `${String(hour12).padStart(2, '0')}:00 ${period}`;
+};

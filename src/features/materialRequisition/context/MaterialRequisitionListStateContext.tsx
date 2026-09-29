@@ -21,6 +21,7 @@ export type MaterialRequisitionListState = {
     MaterialRequisitionStatus: string;
     VendorFinalizationApprovalStatus: string;
     VendorName:string
+    CompanyGSTNumber: string;
 };
 
 export type MaterialRequisitionDetailItem = {
@@ -60,7 +61,8 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
             MaterialRequisitionStage: "",
             MaterialRequisitionStatus: "",
             VendorFinalizationApprovalStatus: "",
-            VendorName:""
+            VendorName:"",
+            CompanyGSTNumber:""
         };
     }
 
@@ -81,6 +83,7 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
                     MaterialRequisitionStatus: parsed.state.MaterialRequisitionStatus || "",
                     VendorFinalizationApprovalStatus: parsed.state.VendorFinalizationApprovalStatus || "",
                     VendorName:parsed.state.VendorName || "",
+                    CompanyGSTNumber:parsed.state.CompanyGSTNumber || "",
                 };
             }
         }
@@ -103,7 +106,8 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
         MaterialRequisitionStage: "",
         MaterialRequisitionStatus: "",
         VendorFinalizationApprovalStatus: "",
-        VendorName:""
+        VendorName:"",
+        CompanyGSTNumber:""
     };
 }
 
@@ -202,7 +206,9 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             MaterialRequisitionStage: "",
             MaterialRequisitionStatus: "",
             VendorFinalizationApprovalStatus: "",
-            VendorName:""
+            VendorName:"",
+            CompanyGSTNumber:""
+            
         });
     }, [updateListState]);
 

@@ -19,7 +19,7 @@ export interface FilterWithPaginationMaterialRequisition {
 export interface FilterMaterialRequisitionOverview {
     ProjectId: number
     MaterialRequisitionId?: number | 0
-    ExportType?: "PDF" | "Excel"
+    ExportType?: "PDF" | "Excel" | "MATERIAL REQUISITION PDF"
 }
 export interface FilterMaterialRequisitionDetails {
     ProjectId: number
@@ -58,6 +58,8 @@ export interface MaterialRequisitionData {
     FinalVendorCompanyName: string;
     FinalVendorMobileNumber: string;
     FinalVendorGSTNumber: string;
+    FinalVendorEmailId: string;
+    FinalVendorPANNumber: string;
     IsSplit: boolean;
     IsCopy: boolean;
     IsRequisitionAction: boolean;
@@ -82,6 +84,8 @@ export interface MaterialRequisitionData {
     MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
     VendorName: string | null
     CompanyName: string | null
+    CompanyGSTNumber: string | null
+    CompanyPANNumber: string | null
     ExpectedDeliveryInDays: number | 0
     ExpectedPaymentInDays: number | 0
 }

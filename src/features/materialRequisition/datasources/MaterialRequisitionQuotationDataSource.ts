@@ -1,13 +1,14 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import type { AddVendorForEnquiryRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
-import type { AddUpdateMaterialRequestQuotation, DeleteMaterialRequisitionQuotation, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
+import type { DeleteMaterialRequisitionQuotation, FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse, MaterialRequisitionSummaryOfQuotationListResponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { MaterialRequisitionQuotationApi } from "@/features/materialRequisition/api/MaterialRequisitionQuotationApi";
 
 export abstract class MaterialRequisitionQuotationDatasource {
     abstract pullMaterialRequisitionQuotation(params: AddVendorForEnquiryRequest, signal?: AbortSignal): Promise<MaterialRequisitionQuotationListResponse>;
-    abstract addUpdateMaterialRequisitionQuotation(payload: AddUpdateMaterialRequestQuotation): Promise<MaterialRequisitionQuotationSaveReponse>;
+    abstract addUpdateMaterialRequisitionQuotation(FormData: FormData): Promise<MaterialRequisitionQuotationSaveReponse>;
     abstract deleteMaterialRequisitionQuotation(params: DeleteMaterialRequisitionQuotation): Promise<DeleteMaterialRequisitionQuotation>;
+    abstract pullMaterialRequisitionSummaryOfQuotation(params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionSummaryOfQuotationListResponse>;
 }
 
 export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequisitionQuotationDatasource {
@@ -44,22 +45,23 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         }
     }
 
-    async addUpdateMaterialRequisitionQuotation(payload: AddUpdateMaterialRequestQuotation): Promise<MaterialRequisitionQuotationSaveReponse> {
+    async addUpdateMaterialRequisitionQuotation(FormData: FormData): Promise<MaterialRequisitionQuotationSaveReponse> {
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 MaterialRequisitionQuotationApi.ADD,
-                payload
+                FormData
             )
 
-            return response
+            return response;
+
         } catch (error) {
 
             console.error('ERROR: ADD  MATERIAL REQUISITION  QUOTATION:', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateMaterialRequisitionQuotation(payload);
+                return await this.addUpdateMaterialRequisitionQuotation(FormData);
             }
             throw error
         }
@@ -93,4 +95,28 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         }
     }
 
+    async pullMaterialRequisitionSummaryOfQuotation(params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionSummaryOfQuotationListResponse> {
+       
+        try {
+            const queryParams = new URLSearchParams({
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString()
+            })
+
+            if (params.ProjectId) queryParams.append('ProjectId', (params.ProjectId).toString());
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL_SUMMARY_OF_QUITATION}?${queryParams.toString()}`, { signal })
+             
+
+        } catch (error: any) {
+
+            console.error('ERROR: PULL MATERIAL REQUISITION SUMMARY OF QUOTATION :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMaterialRequisitionSummaryOfQuotation(params);
+            }
+
+            throw error
+        }
+    }
 }

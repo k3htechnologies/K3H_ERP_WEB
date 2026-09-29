@@ -41,7 +41,7 @@ export const ErpRoadmap: React.FC = () => {
     const [selectedSubModule, setSelectedSubModule] = useState<SubModule | null>(null);
     const [selectedSubSubModule, setSelectedSubSubModule] = useState<SubSubModule | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const pdfHeight = useViewportHeight(180, 300, 1200);
+    const pdfHeight = useViewportHeight(95, 300, 1200);
 
     const navigate = useNavigate();
 
@@ -153,8 +153,8 @@ export const ErpRoadmap: React.FC = () => {
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6" style={{ height: `${pdfHeight - 180}px` }}>
-            <div className="space-y-4">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 flex flex-col min-h-0"   style={{ height: `${pdfHeight}px` }}>
+          <div className="space-y-4 shrink-0">
                 <TableActionToolbar
                     isShowSearchBar
                     searchPlaceholder="Search By Modules or Sections or Subsections"
@@ -166,7 +166,7 @@ export const ErpRoadmap: React.FC = () => {
                 />
             </div>
 
-            <div className="w-full bg-blue-100 p-2 rounded-lg flex items-center flex-wrap gap-2 border border-gray-300">
+            <div className="w-full bg-blue-100 p-2 rounded-lg flex items-center flex-wrap gap-2 border border-gray-300 shrink-0">
                 <span className="text-sm text-[#4b5563] font-semibold p-1">Navigation Path :</span>
 
                 {selectedModule && (
@@ -206,9 +206,9 @@ export const ErpRoadmap: React.FC = () => {
                 )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-200 mt-4 flex-1 min-h-0">
                 
-                <div className="md:pr-6 flex flex-col min-h-0">
+                <div className="md:pr-6 flex flex-col min-h-0 h-full">
                     <h2 className="font-semibold text-gray-800 text-base mb-4">Modules</h2>
                     <ul className="space-y-1 overflow-y-auto thin-scroll flex-1 min-h-0">
                         {filteredModules.map((mod) => {
@@ -249,7 +249,7 @@ export const ErpRoadmap: React.FC = () => {
                 </div>
 
                 {/* Column 2 */}
-                <div className="md:px-6 pt-4 md:pt-0">
+                 <div className="md:px-6 pt-4 md:pt-0 flex flex-col min-h-0 h-full">
                     <h2 className="font-semibold text-gray-800 text-base">Sections</h2>
                     {selectedModule && (
                         <p className="text-xs uppercase text-gray-400 tracking-wider mb-4 font-medium">
@@ -257,7 +257,7 @@ export const ErpRoadmap: React.FC = () => {
                         </p>
                     )}
 
-                    <ul className="space-y-1 overflow-y-auto thin-scroll flex-1 min-h-0">
+                      <ul className="space-y-1 overflow-y-auto thin-scroll flex-1 min-h-0">
                         {displaySections.length > 0 ? (
                             displaySections.map((sub) => {
                                 const isSelected = selectedSubModule?.SubModulesMasterId === sub.SubModulesMasterId;
@@ -302,7 +302,7 @@ export const ErpRoadmap: React.FC = () => {
                 </div>
 
                 {/* Column 3 */}
-                <div className="md:pl-6 pt-4 md:pt-0">
+                  <div className="md:pl-6 pt-4 md:pt-0 flex flex-col min-h-0 h-full">
                     <h2 className="font-semibold text-gray-800 text-base">Sub-Sections</h2>
                     {selectedSubModule && (
                         <p className="text-xs uppercase text-gray-400 tracking-wider mb-4 font-medium">
@@ -310,7 +310,7 @@ export const ErpRoadmap: React.FC = () => {
                         </p>
                     )}
 
-                    <ul className="space-y-1 overflow-y-auto thin-scroll flex-1 min-h-0">
+                      <ul className="space-y-1 overflow-y-auto thin-scroll flex-1 min-h-0">
                         {displaySubSections.length > 0 ? (
                             displaySubSections.map((subSub) => {
                                 const isSelected =

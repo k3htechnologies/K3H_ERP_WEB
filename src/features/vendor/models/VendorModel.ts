@@ -8,6 +8,9 @@ export interface FilterWithPaginationVendorRequest {
     SystemGeneratedCode?: string
     VendorType?:string | ''
     VendorName?: string
+    OwnershipType?: string
+    VendorBusinessType?: string
+    Specialist?: string
     CompanyName?: string
     CompanyType?: string
     MobileNumber?: string
@@ -28,6 +31,9 @@ export interface VendorData {
     CompanyType: string | ''
     VendorType:string | ''
     VendorName: string | ''
+    OwnershipType?: string
+    VendorBusinessType?: string
+    Specialist?: string
     MobileNumberCountryCode: string | ''
     MobileNumber: string | ''
     EmailId: string | ''
@@ -79,6 +85,8 @@ export interface AddUpdateVendorRequest {
     CompanyType: string | ''
     VendorType:string | ''
     VendorName: string | ''
+    OwnershipType: string
+    VendorBusinessType: string
     MobileNumberCountryCode: string | ''
     MobileNumber: string | ''
     EmailId: string | ''

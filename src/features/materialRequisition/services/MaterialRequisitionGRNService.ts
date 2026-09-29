@@ -1,6 +1,6 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import type { DeleteMaterialRequisitionGRN, FilterWithGenerateMaterialRequisitionGRNPDF, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, GenerateMaterialRequisitionGRNPDFResponse, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { MaterialRequisitionGRNGRNDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionGRNDataSource";
 
 const materialRequisitionGRNDatasource = new MaterialRequisitionGRNGRNDatasourceImpl();
@@ -11,6 +11,18 @@ export const materialRequisitionGRNService = {
         try {
 
             return E.right(await materialRequisitionGRNDatasource.pullMaterialRequisitionGRN(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallGenerateMaterialRequisitionGRNPDF: async (params: FilterWithGenerateMaterialRequisitionGRNPDF, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, GenerateMaterialRequisitionGRNPDFResponse>> => {
+        try {
+
+            return E.right(await materialRequisitionGRNDatasource.generateMaterialRequisitionGRNPDF(params, options?.signal));
 
         } catch (error: any) {
 

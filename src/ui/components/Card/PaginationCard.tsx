@@ -48,226 +48,155 @@ const PaginationCard: React.FC<Props> = ({
 
 
     const renderPagination = () => {
-    if (!pagination) return null;
+        if (!pagination) return null;
 
-    const {
-        currentPage,
-        totalPages,
-        totalRecords,
-        pageSize,
-        onPageChange,
-    } = pagination;
+        const {
+            currentPage,
+            totalPages,
+            totalRecords,
+            pageSize,
+            onPageChange,
+        } = pagination;
 
-    if (totalRecords === 0) return null;
+        if (totalRecords === 0) return null;
 
-    const startRecord = (currentPage - 1) * pageSize + 1;
-    const endRecord = Math.min(
-        currentPage * pageSize,
-        totalRecords
-    );
+        const startRecord = (currentPage - 1) * pageSize + 1;
+        const endRecord = Math.min(
+            currentPage * pageSize,
+            totalRecords
+        );
 
-    const getPageNumbers = () => {
-        const pages: (number | string)[] = [];
+        const getPageNumbers = () => {
+            const pages: (number | string)[] = [];
 
-        // Small number of pages
-        if (totalPages <= 7) {
-            for (let i = 1; i <= totalPages; i++) {
-                pages.push(i);
+            if (totalPages <= 7) {
+                for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                }
+
+                return pages;
             }
 
-            return pages;
-        }
+            // Beginning
+            if (currentPage <= 4) {
+                pages.push(1, 2, 3, 4, 5);
+                pages.push("...");
+                pages.push(totalPages);
 
-        // Beginning
-        if (currentPage <= 4) {
-            pages.push(1, 2, 3, 4, 5);
+                return pages;
+            }
+
+            // End
+            if (currentPage >= totalPages - 3) {
+                pages.push(1);
+                pages.push("...");
+
+                for (
+                    let i = totalPages - 4;
+                    i <= totalPages;
+                    i++
+                ) {
+                    pages.push(i);
+                }
+
+                return pages;
+            }
+
+            // Middle
+            pages.push(1);
+            pages.push("...");
+            pages.push(
+                currentPage - 1,
+                currentPage,
+                currentPage + 1
+            );
             pages.push("...");
             pages.push(totalPages);
 
             return pages;
-        }
+        };
 
-        // End
-        if (currentPage >= totalPages - 3) {
-            pages.push(1);
-            pages.push("...");
+        const pageNumbers = getPageNumbers();
 
-            for (
-                let i = totalPages - 4;
-                i <= totalPages;
-                i++
-            ) {
-                pages.push(i);
-            }
+        return (
+            <div className={`flex flex-col items-center gap-2 px-4 py-1 ${isUsedForOther ? "bg-white" : ""}`}>
 
-            return pages;
-        }
-
-        // Middle
-        pages.push(1);
-        pages.push("...");
-        pages.push(
-            currentPage - 1,
-            currentPage,
-            currentPage + 1
-        );
-        pages.push("...");
-        pages.push(totalPages);
-
-        return pages;
-    };
-
-    const pageNumbers = getPageNumbers();
-
-    return (
-        <div
-            className={`flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 ${
-                isUsedForOther ? "bg-white" : ""
-            }`}
-        >
-            {/* Records information */}
-            <div className="text-sm text-gray-700">
+                <div className="text-sm text-gray-700">
                     Showing {startRecord} to {endRecord} of{" "}
-                    {totalRecords} entries 
+                    {totalRecords} entries
                 </div>
 
-            {/* Pagination */}
-            <div className="flex items-center gap-1">
 
-                {/* Previous */}
-                <button
-                    type="button"
-                    onClick={() =>
-                        onPageChange(currentPage - 1)
-                    }
-                    disabled={currentPage === 1}
-                    className="p-2 border border-gray-200 rounded-md
+                <div className="flex items-center gap-1">
+
+                    {/* Previous */}
+                    <button
+                        type="button"
+                        onClick={() =>
+                            onPageChange(currentPage - 1)
+                        }
+                        disabled={currentPage === 1}
+                        className="p-2 border border-gray-200 rounded-md
                         disabled:opacity-40
                         disabled:cursor-not-allowed
                         hover:bg-gray-100"
-                >
-                    <ChevronLeft size={16} />
-                </button>
+                    >
+                        <ChevronLeft size={16} />
+                    </button>
 
-                {/* Page numbers */}
-                {pageNumbers.map((page, index) => {
+                    {/* Page numbers */}
+                    {pageNumbers.map((page, index) => {
 
-                    if (page === "...") {
+                        if (page === "...") {
+                            return (
+                                <span
+                                    key={`ellipsis-${index}`}
+                                    className="px-2 py-1 text-gray-500"
+                                >
+                                    ...
+                                </span>
+                            );
+                        }
+
                         return (
-                            <span
-                                key={`ellipsis-${index}`}
-                                className="px-2 py-1 text-gray-500"
-                            >
-                                ...
-                            </span>
-                        );
-                    }
-
-                    return (
-                        <button
-                            type="button"
-                            key={page}
-                            onClick={() =>
-                                onPageChange(page as number)
-                            }
-                            className={`min-w-[32px] px-2 py-1 rounded-md text-sm
-                                ${
-                                    currentPage === page
+                            <button
+                                type="button"
+                                key={page}
+                                onClick={() =>
+                                    onPageChange(page as number)
+                                }
+                                className={`min-w-[32px] px-2 py-1 rounded-md text-sm
+                                ${currentPage === page
                                         ? "bg-blue-500 text-white"
                                         : "hover:bg-gray-100 text-gray-700"
-                                }`}
-                        >
-                            {page}
-                        </button>
-                    );
-                })}
+                                    }`}
+                            >
+                                {page}
+                            </button>
+                        );
+                    })}
 
-                {/* Next */}
-                <button
-                    type="button"
-                    onClick={() =>
-                        onPageChange(currentPage + 1)
-                    }
-                    disabled={
-                        currentPage === totalPages ||
-                        totalPages === 0
-                    }
-                    className="p-2 border border-gray-200 rounded-md
+                    {/* Next */}
+                    <button
+                        type="button"
+                        onClick={() =>
+                            onPageChange(currentPage + 1)
+                        }
+                        disabled={
+                            currentPage === totalPages ||
+                            totalPages === 0
+                        }
+                        className="p-2 border border-gray-200 rounded-md
                         disabled:opacity-40
                         disabled:cursor-not-allowed
                         hover:bg-gray-100"
-                >
-                    <ChevronRight size={16} />
-                </button>
+                    >
+                        <ChevronRight size={16} />
+                    </button>
+                </div>
             </div>
-        </div>
-    );
-};
-    // const renderPagination = () => {
-    //     if (!pagination) return null;
-
-    //     const {
-    //         currentPage,
-    //         totalPages,
-    //         totalRecords,
-    //         pageSize,
-    //         onPageChange,
-    //     } = pagination;
-
-    //     const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-
-    //     const endRecord = Math.min(currentPage * pageSize, totalRecords);
-
-    //     return (
-    //         <div className={`flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 ${isUsedForOther && "bg-white"}`}>
-
-    //             <div className="text-sm text-gray-700">
-    //                 Showing {startRecord} to {endRecord} of{" "}
-    //                 {totalRecords} entries 
-    //             </div>
-
-    //             <div className="flex items-center space-x-2">
-
-    //                 <button
-    //                     onClick={() =>
-    //                         onPageChange(currentPage - 1)
-    //                     }
-    //                     disabled={currentPage === 1}
-    //                     className="p-2 border border-gray-200 rounded"
-    //                 >
-    //                     <ChevronLeft size={16} />
-    //                 </button>
-
-    //                 {Array.from({
-    //                     length: totalPages,
-    //                 }).map((_, i) => (
-    //                     <button
-    //                         key={i}
-    //                         onClick={() =>
-    //                             onPageChange(i + 1)
-    //                         }
-    //                         className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "hover:bg-gray-100"}`}
-    //                     >
-    //                         {i + 1}
-    //                     </button>
-    //                 ))}
-
-    //                 <button
-    //                     onClick={() =>
-    //                         onPageChange(currentPage + 1)
-    //                     }
-    //                     disabled={
-    //                         currentPage === totalPages
-    //                     }
-    //                     className="p-2 border border-gray-200 rounded"
-    //                 >
-    //                     <ChevronRight size={16} />
-    //                 </button>
-
-    //             </div>
-    //         </div>
-    //     );
-    // };
+        );
+    };
 
     return (
         <div className={`rounded-lg  flex flex-col ${className}`}>

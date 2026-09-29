@@ -655,7 +655,7 @@ export const TemporaryAlternateAccommodationTab: React.FC<TemporaryAlternateAcco
 
           <div className="flex items-center">
             <Checkbox
-              label="Dou You Want to Pay Temp Alternate Accom"
+              label="Do You Want to Pay Temp Alternate Accom"
               checked={formDataTemporaryAlternateAccommodation.IsPayTAA ?? false}
               onChange={(e) => handleFieldChangeTemporaryAlternateAccommodation('IsPayTAA', e.target.checked)}
               disabled={formDataTemporaryAlternateAccommodation.IsAdditionalTemporaryAlternateAccommodation ?? false}

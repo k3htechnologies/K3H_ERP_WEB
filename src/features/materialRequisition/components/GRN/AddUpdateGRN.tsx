@@ -29,6 +29,8 @@ const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNR
     VehicleNumber: null,
     UploadChallanURL: null,
     RemoveUploadChallanURL: "",
+    ProofOfDocumentURL: null,
+    RemoveProofOfDocumentURL: "",
     MaterialRequisitionDetailGRNJSON: ""
 })
 
@@ -39,9 +41,15 @@ export const AddUpdateGRN = () => {
     const { addToast } = useToast();
     const [materialList, setMaterialList] = useState<MaterialRequisitionDetailGRN[]>([]);
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionGRNRequest>(() => initialFormStateMaterialRequisition())
+
     const [uploadChallanFiles, setUploadChallanFiles] = useState<(File | string)[]>([]);
     const [removedUploadChallanUrls, setRemovedUploadChallanUrls] = useState<string[]>([]);
     const [uploadChallanURL, setuploadChallanURL] = useState<string>();
+
+    const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
+    const [removedProofOfDocumentUrls, setRemovedProofOfDocumentUrls] = useState<string[]>([]);
+    const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
+
     const { canAction } = useMenuPermissions("/materialRequisition");
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const navigate = useNavigate();
@@ -140,13 +148,17 @@ export const AddUpdateGRN = () => {
                                     MaterialRequisitionDetailId: item.MaterialRequisitionDetailId ?? 0,
                                     IsTolerant: Detail?.IsTolerant ?? false,
                                     TolerancePercentage: Detail?.TolerancePercentage ?? 0,
-                                    TotalReceivedQuantityByRequisition:Detail.TotalReceivedQuantityByRequisition ??0
+                                    TotalReceivedQuantityByRequisition: Detail.TotalReceivedQuantityByRequisition ?? 0
                                 };
                             }));
 
                         setuploadChallanURL(e.UploadChallanURL ?? "");
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
+
+                        setProofOfDocumentURL(e.ProofOfDocumentURL ?? "");
+                        setProofOfDocumentFiles([]);
+                        setRemovedProofOfDocumentUrls([]);
                     }
                 } else {
                     addToast({ type: "error", title: response.left.message, });
@@ -176,11 +188,15 @@ export const AddUpdateGRN = () => {
 
         if (!formData.ChallanNumber) {
             newErrors.ChallanNumber = ' Challan Number is required.';
-        } 
+        }
 
         if (!hasAnyDocumentFile(uploadChallanFiles, uploadChallanURL, removedUploadChallanUrls)) {
             newErrors.UploadChallanFiles = "Challan is required.";
         }
+        if (!hasAnyDocumentFile(proofOfDocumentFiles, proofOfDocumentURL, removedProofOfDocumentUrls)) {
+            newErrors.ProofOfDocumentFiles = "Proof of document is required.";
+        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -217,12 +233,20 @@ export const AddUpdateGRN = () => {
         });
 
         form.append('RemoveUploadChallanURL', removedUploadChallanUrls.join(','));
+
+        proofOfDocumentFiles.forEach(file => {
+            if (file instanceof File) {
+                form.append('ProofOfDocumentURL', file);
+            }
+        });
+
+        form.append('RemoveProofOfDocumentURL', removedProofOfDocumentUrls.join(','));
         return form;
     };
 
     const handleSave = async () => {
 
-        
+
         setErrors({});
         const validation = validateMaterialRequisitionGRNForm();
 
@@ -388,7 +412,7 @@ export const AddUpdateGRN = () => {
                         label: "Received Till Date",
                         align: "right",
                         width: "30",
-                       render: (value, row) => {
+                        render: (value, row) => {
                             return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                         }
                     },
@@ -404,7 +428,7 @@ export const AddUpdateGRN = () => {
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pending = materialQuantity - materialReceivedQuantityTillDate
 
-                             return isDirect ? `${pending ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${pending ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                            return isDirect ? `${pending ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${pending ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                         }
                     },
                     {
@@ -417,12 +441,13 @@ export const AddUpdateGRN = () => {
                             const materialQuantity = row.MaterialQuantity
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-
+                            const isPendingQtyZero=pendingQuantity <=0;
                             return (
                                 <Input
                                     label=""
                                     value={value ?? 0}
                                     maxLength={9}
+                                    disabled={isPendingQtyZero}
                                     onChange={(e) => {
                                         const raw = filterNumbers(e.target.value);
 
@@ -439,7 +464,7 @@ export const AddUpdateGRN = () => {
 
                                         setMaterialList(prev =>
                                             prev.map(item =>
-                                                item.MaterialRequisitionDetailId ===  row.MaterialRequisitionDetailId
+                                                item.MaterialRequisitionDetailId === row.MaterialRequisitionDetailId
                                                     ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
                                                     : item
                                             )
@@ -453,35 +478,6 @@ export const AddUpdateGRN = () => {
                 ]
             },
 
-
-            // {
-            //     key: "QualityAnalystRemark",
-            //     label: "Quality Analyst Remark",
-            //     align: "left",
-            //     width: "30",
-            //     render: (value: any, row: MaterialRequisitionDetailGRN) => {
-            //         return (
-            //             <TextArea
-            //                 label=""
-            //                 value={value ?? ""}
-            //                 onChange={(e) => {
-            //                     const remark = e.target.value;
-
-            //                     setMaterialList(prev =>
-            //                         prev.map(item =>
-            //                             item.MaterialRequisitionDetailId ===
-            //                                 row.MaterialRequisitionDetailId
-            //                                 ? {
-            //                                     ...item,
-            //                                     QualityAnalystRemark: remark,
-            //                                 } : item
-            //                         )
-            //                     );
-            //                 }}
-            //             />
-            //         );
-            //     },
-            // }
         );
 
         return columns;
@@ -507,12 +503,12 @@ export const AddUpdateGRN = () => {
                         />
 
                         <div className="flex grid grid-cols-3 gap-4">
-                           
+
 
                             <Input
                                 type="text"
                                 label="Challan Number"
-                                placeholder="Challan Number"
+                                placeholder="Enter Challan Number"
                                 value={formData.ChallanNumber}
                                 onChange={(e) => handleFieldChange("ChallanNumber", filterChallanNumber(e.target.value))}
                                 maxLength={30}
@@ -526,7 +522,7 @@ export const AddUpdateGRN = () => {
                                 value={uploadChallanFiles}
                                 onChange={setUploadChallanFiles}
                                 availableFilesURL={uploadChallanURL ?? ""}
-                               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                 maxFiles={1}
                                 onRemoveExisting={(url) =>
                                     setRemovedUploadChallanUrls(prev => [...prev, url])
@@ -534,7 +530,7 @@ export const AddUpdateGRN = () => {
                                 error={errors.UploadChallanFiles}
                                 required
                             />
-                             <Input
+                            <Input
                                 type="text"
                                 label="Vehicle Number"
                                 placeholder="Enter Vehicle Number"
@@ -542,21 +538,35 @@ export const AddUpdateGRN = () => {
                                 onChange={(e) => handleFieldChange("VehicleNumber", e.target.value)}
                                 maxLength={13}
                                 error={errors.VehicleNumber}
-                                
+
+                            />
+                            <MultiFilePicker
+                                label="Proof Of Document"
+                                placeholder="Upload Proof Of Document"
+                                value={proofOfDocumentFiles}
+                                onChange={setProofOfDocumentFiles}
+                                availableFilesURL={proofOfDocumentURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={10}
+                                onRemoveExisting={(url) =>
+                                    setRemovedProofOfDocumentUrls(prev => [...prev, url])
+                                }
+                                error={errors.ProofOfDocumentFiles}
+                                required
                             />
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
 
                         <div className="flex items-center justify-between">
-                            <TextArea 
+                            <TextArea
                                 label=""
-                                className="thin-scroll" 
+                                className="thin-scroll"
                                 value={formData.Remarks}
                                 onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                                 placeholder="Enter Remark"
                                 error={errors.Remarks}
-                                
+
                             />
                         </div>
 

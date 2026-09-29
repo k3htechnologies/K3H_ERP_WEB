@@ -102,6 +102,7 @@ export const AssetMappingMaster: React.FC = () => {
           AssetMasterMappingId: filterParams.AssetMappingMasterId ? Number(filterParams.AssetMappingMasterId) : undefined,
           AssetName: searchtext ?? filterParams.AssetName?.trim() ?? undefined,
           EmployeeName: filterParams.EmployeeName?.trim() || undefined,
+          AssetCode: filterParams.AssetCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, AssetMappingMasterColumns)
         };
 
@@ -170,6 +171,7 @@ export const AssetMappingMaster: React.FC = () => {
           AssetName: filters.AssetName?.trim() || undefined,
           Status: '',
           SortBy: getSortByParam(sortInfo ?? null, AssetMappingMasterColumns),
+          AssetCode: filters.AssetCode?.trim() || undefined,
           ExportType: exportType
         };
 
@@ -259,6 +261,14 @@ export const AssetMappingMaster: React.FC = () => {
       )
     },
     {
+      key: 'AssetCode',
+      label: 'Asset Code',
+      width: '15',
+      sortable: false,
+      align: 'left',
+      render: (value) => value || ''
+    },
+    {
       key: 'EmployeeName',
       label: 'Employee Name',
       width: '20',
@@ -266,7 +276,7 @@ export const AssetMappingMaster: React.FC = () => {
       align: 'left',
       render: (value) => value || ''
     },
-     {
+    {
       key: 'Department',
       label: 'Department',
       width: '20',
@@ -274,7 +284,7 @@ export const AssetMappingMaster: React.FC = () => {
       align: 'left',
       render: (value) => value || ''
     },
-     {
+    {
       key: 'Designation',
       label: 'Designation',
       width: '20',
@@ -453,7 +463,7 @@ export const AssetMappingMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">
@@ -463,6 +473,13 @@ export const AssetMappingMaster: React.FC = () => {
               value={tempFilters?.AssetName ?? ''}
               onChange={e => handleFilterChange('AssetName', e.target.value)}
               placeholder="Enter Asset Name" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Asset Code'
+              value={tempFilters?.AssetCode ?? ''}
+              onChange={e => handleFilterChange('AssetCode', e.target.value)}
+              placeholder="Enter Asset Code" />
           </div>
           <div className="space-y-4">
             <Input type="text"

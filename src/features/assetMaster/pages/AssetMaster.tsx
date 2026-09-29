@@ -113,6 +113,7 @@ export const AssetMaster: React.FC = () => {
           AssetModel: filterParams.AssetModel?.trim() || undefined,
           SerialNumber: filterParams.SerialNumber?.trim() || undefined,
           EmployeeName :filterParams.EmployeeName?.trim() || undefined,
+          AssetCode: filterParams.AssetCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns)
         };
 
@@ -184,6 +185,7 @@ export const AssetMaster: React.FC = () => {
           AssetModel: filters.AssetModel?.trim() || undefined,
           SerialNumber: filters.SerialNumber?.trim() || undefined,
           EmployeeName :filters.EmployeeName?.trim() || undefined,
+          AssetCode: filters.AssetCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns),
 
           ExportType: exportType
@@ -611,6 +613,13 @@ export const AssetMaster: React.FC = () => {
               value={tempFilters?.AssetName ?? ''}
               onChange={e => handleFilterChange('AssetName', e.target.value)}
               placeholder="Enter Asset Name" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Asset Code'
+              value={tempFilters?.AssetCode ?? ''}
+              onChange={e => handleFilterChange('AssetCode', e.target.value)}
+              placeholder="Enter Asset Code" />
           </div>
           <div>
             <Input type="text"

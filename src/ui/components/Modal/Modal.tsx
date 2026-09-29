@@ -14,7 +14,7 @@ export interface ModalProps {
     resetText?: string
     onreset?: () => void
     loading?: boolean
-    size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
+    size?: 'sm' | 'md' | 'lg' | 'xl' | 'xxl2' | 'xxl' | 'half-screen' | 'small-half' | 'large-half' | 'large75' | 'large80' | 'large90' | 'large100' | 'small25' | 'small30' | 'small35' | 'small40' | 'small45' | 'small50'
     className?: string
 }
 
@@ -40,6 +40,7 @@ export const Modal: React.FC<ModalProps> = ({
         md: 'max-w-md',
         lg: 'max-w-lg',
         xl: 'max-w-xl',
+        xxl2: 'max-w-2xl',
         xxl: 'max-w-6xl',
         'small25': 'w-[25%]',
         'small30': 'w-[30%]',
@@ -70,7 +71,7 @@ export const Modal: React.FC<ModalProps> = ({
                                                 : size === 'small40' ? sizeClasses['small40']
                                                     : size === 'small45' ? sizeClasses['small45']
                                                         : size === 'small50' ? sizeClasses['small50'] : sizeClasses['half-screen'];
-    // Half-screen modal layout
+    
     if (size === 'half-screen' || size === 'small-half' || size === 'large-half' || size === 'large75' || size === 'large80' || size === 'large90' || size === 'large100' || size === 'small25' || size === 'small30' || size === 'small35' || size === 'small40' || size === 'small45' || size === 'small50') {
 
         return (
@@ -160,12 +161,12 @@ export const Modal: React.FC<ModalProps> = ({
         )
     }
 
-    // Regular centered modal layout
+    
     return (
         <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
 
             <div className={`bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${className} max-h-[90vh] flex flex-col`}>
-                {/* Header */}
+               
                 <div className="flex items-center justify-between h-16 border-b border-[#00000080 mx-5">
                     <h3 className="text-lg font-semibold text-[#1D1D1D]-600">
                         {title}
@@ -182,17 +183,17 @@ export const Modal: React.FC<ModalProps> = ({
                     </Button>
                 </div>
 
-                {/* Form Content */}
+                
                 <form onSubmit={onSubmit} className="flex-1 flex flex-col min-h-0">
                     <div className="flex-1 min-h-0 overflow-y-auto thin-scroll p-6 space-y-6">
                         {children}
                     </div>
-                    {/* Footer inside form */}
+                    
                     {saveText !== '' ?
 
                         <div className="flex justify-between items-center h-16 px-6 border-t border-gray-200 bg-white flex-shrink-0 shadow-[0_-2px_8px_rgba(0,0,0,0.05)] z-50">
 
-                            {/* LEFT SIDE — Reset + Cancel */}
+                            
                             <div className="flex items-center space-x-3">
                                 {resetText && (
                                     <Button
@@ -222,7 +223,7 @@ export const Modal: React.FC<ModalProps> = ({
                                 )}
                             </div>
 
-                            {/* RIGHT SIDE — Save */}
+                            
                             <div>
                                 <Button
                                     type="submit"

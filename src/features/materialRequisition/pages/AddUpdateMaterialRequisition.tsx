@@ -817,6 +817,7 @@ export const AddUpdateMaterialRequisition = () => {
                                 availableFilesURL={documentURL}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", ".dwg"]}
                                 error={errors.AttachmentsURL}
+                                maxFiles={5}
                                 onRemoveExisting={(url) =>
                                     setRemoveddocumentFilesURLs((prev) => [...prev, url])
                                 }

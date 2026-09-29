@@ -63,6 +63,7 @@ export interface DeleteMaterialRequisitionQuotation{
 export interface FilterWithMaterialRequisitionSummaryOfQuotationRequest {
     MaterialRequisitionId?: number | 0
     ProjectId: number | 0
+    VendorName?: string | null
 }
 
 export interface MaterialRequisitionSummaryOfQuotationData {

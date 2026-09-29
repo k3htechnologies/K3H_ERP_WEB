@@ -29,10 +29,10 @@ import { handleExportFile } from "@/core/utils/exportFile";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
-    onAddGRN?: () => Promise<void>;
+    onload?: () => Promise<void>;
 }
 
-export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN }) => {
+export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -62,14 +62,14 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     }, [projectId, currentMaterialRequisitionId]);
 
     const handleAddGRN = useCallback(async () => {
-        await onAddGRN?.();
+        await onload?.();
 
         navigate('/materialRequisition/grn/add', {
             state: {
                 matrialRequisitionDetailData,
             },
         });
-    }, [navigate, matrialRequisitionDetailData, onAddGRN]);
+    }, [navigate, matrialRequisitionDetailData, onload]);
 
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
@@ -133,8 +133,13 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
 
     const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() => {
 
-        const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+        // const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
+        const isDirect =
+    GRN?.[0]?.MaterialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType
+        ?.trim()
+        .toUpperCase() === "DIRECT";
+        
         const columns: TableColumn[] = [];
 
         if (isDirect) {
@@ -371,7 +376,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                                         e.preventDefault();
                                         e.stopPropagation();
 
-                                        await onAddGRN?.();
+                                        await onload?.();
 
                                         handleGRNEdit(row);
                                     }}
@@ -429,6 +434,8 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     setDeleteMaterialRequisitionDetailGRNData(null);
 
                     await loadGRNData();
+
+                    await onload?.();
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });

@@ -53,7 +53,7 @@ export default function Alerts() {
                             </div>
 
                             {/* Description */}
-                            <p className="text-[10px] text-orange-700/80 mt-2">
+                            <p className="text-xs text-orange-700/80 mt-2">
                                 {alert.description}
                             </p>
                         </div>

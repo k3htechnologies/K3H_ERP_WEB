@@ -17,12 +17,26 @@ export default function RepaymentOverview() {
             type: "Term Installment",
             amount: "₹2.10 Cr",
         },
+        {
+            bank: "SBI Bank",
+            project: "Project ABC",
+            date: "18 Aug 2026",
+            type: "Term Installment",
+            amount: "₹2.10 Cr",
+        },
+        {
+            bank: "Canara Bank",
+            project: "Project Kailash",
+            date: "18 Aug 2026",
+            type: "Part-payment",
+            amount: "₹2.10 Cr",
+        },
     ];
 
     return (
         <div className="space-y-3 pt-4 sm:pt-5">
             <div
-                className="bg-white rounded-xl p-4 h-[300px] overflow-y-auto thin-scroll border border-gray-100 flex flex-col"
+                className="bg-white rounded-xl p-4 h-[420px] overflow-y-auto thin-scroll border border-gray-100 flex flex-col"
                 style={{
                     boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
                 }}
@@ -89,24 +103,21 @@ export default function RepaymentOverview() {
 
                 {/* Recent Activity Heading */}
                 <div className="text-gray-500 mt-4 mb-2">
-                    <p className="text-slate-400 font-semibold text-xs">
+                    <p className="text-slate-400 font-semibold text-sm">
                         RECENT REPAYMENTS ACTIVITY
                     </p>
                 </div>
 
                 {/* Recent Repayments */}
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[180px] overflow-y-auto thin-scroll pr-1">
 
                     {recentRepayments.map((repayment, index) => (
                         <div
                             key={index}
                             className="border border-slate-100 rounded-xl px-4 py-3 flex items-center justify-between"
                         >
-
                             {/* Left Side */}
                             <div className="flex items-center gap-4">
-
-                                {/* Check Icon */}
                                 <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center">
                                     <Check
                                         size={20}
@@ -115,7 +126,6 @@ export default function RepaymentOverview() {
                                     />
                                 </div>
 
-                                {/* Bank + Project */}
                                 <div>
                                     <p className="text-slate-800 font-medium">
                                         {repayment.bank} · {repayment.project}
@@ -125,14 +135,11 @@ export default function RepaymentOverview() {
                                         {repayment.date} · {repayment.type}
                                     </p>
                                 </div>
-
                             </div>
 
-                            {/* Amount */}
                             <p className="text-emerald-500 font-semibold">
                                 {repayment.amount}
                             </p>
-
                         </div>
                     ))}
 

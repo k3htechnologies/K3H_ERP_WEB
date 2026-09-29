@@ -41,7 +41,7 @@ const FinanceDashboard: React.FC = () => {
                     <DisbursementOverview />
                     <RepaymentOverview />
                 </div>
-                <div className="mt-4">
+                <div>
                     <DsaPaymentTrack />
                 </div>
                 <div className="mt-4">

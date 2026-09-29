@@ -11,8 +11,6 @@ import * as E from 'fp-ts/Either';
 import { Loader } from '@/core/utils/loader';
 import type { Table0, Table1, Table2, Table3, Table4, Table5, Table6, Table7 } from "@/features/settingsDashboard/models/SettingsDashboardModel";
 
-
-
 const SettingsDashboard: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);

@@ -40,7 +40,7 @@ export default function DsaPaymentTrack() {
         <div className="space-y-3 pt-4 sm:pt-5">
 
             <div
-                className="bg-white rounded-xl p-4 h-[300px] overflow-y-auto thin-scroll border border-gray-100"
+                className="bg-white rounded-xl p-4 h-[330px] overflow-y-auto thin-scroll border border-gray-100"
                 style={{
                     boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
                 }}
@@ -61,35 +61,35 @@ export default function DsaPaymentTrack() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
 
                     {/* Total DSA Payable */}
-                    <div className="border border-slate-200 rounded-xl px-3 py-2.5">
-                        <p className="text-sm text-slate-500">
+                    <div className="border border-slate-200 rounded-xl px-3 py-2.5 flex justify-between">
+                        <p className="text-sm text-slate-400 mt-2 font-semibold">
                             Total DSA Payable
                         </p>
 
-                        <p className="text-sm font-semibold text-slate-800 mt-1">
-                            ₹2.89 Cr
+                        <p className="text-sm font-semibold text-slate-800 mt-2">
+                            ₹ 2.89 Cr
                         </p>
                     </div>
 
                     {/* Total Paid */}
-                    <div className="border border-slate-200 rounded-xl px-3 py-2.5">
-                        <p className="text-sm text-emerald-500">
+                    <div className="border border-slate-200 rounded-xl px-3 py-2.5 flex justify-between">
+                        <p className="text-sm text-emerald-500 mt-2 font-semibold">
                             Total Paid
                         </p>
 
-                        <p className="text-sm font-semibold text-emerald-500 mt-1">
-                            ₹1.05 Cr
+                        <p className="text-sm font-semibold text-emerald-500 mt-2">
+                            ₹ 1.05 Cr
                         </p>
                     </div>
 
                     {/* DSA Outstanding */}
-                    <div className="border border-slate-200 rounded-xl px-3 py-2.5">
-                        <p className="text-sm text-orange-500">
+                    <div className="border border-slate-200 rounded-xl px-3 py-2.5 flex justify-between">
+                        <p className="text-sm text-orange-500 mt-2 font-semibold">
                             DSA Outstanding
                         </p>
 
-                        <p className="text-sm font-semibold text-orange-500 mt-1">
-                            ₹1.20 Cr
+                        <p className="text-sm font-semibold text-orange-500 mt-2">
+                            ₹ 1.20 Cr
                         </p>
                     </div>
 
@@ -108,13 +108,13 @@ export default function DsaPaymentTrack() {
                             {/* Bank + Status */}
                             <div className="flex justify-between items-start">
 
-                                <p className="text-xs font-semibold text-slate-800">
+                                <p className="text-sm font-semibold text-slate-800">
                                     {item.bank} · {item.type}
                                 </p>
 
                                 <span
                                     className={`
-                                        text-[10px] px-2 py-1 rounded-md font-medium
+                                        text-xs px-2 py-1 rounded-md font-medium
                                         ${item.statusColor === "orange"
                                             ? "bg-orange-50 text-orange-500"
                                             : item.statusColor === "red"
@@ -131,7 +131,7 @@ export default function DsaPaymentTrack() {
                             {/* Agency */}
                             <div className="mt-3">
 
-                                <p className="text-sm text-slate-500">
+                                <p className="text-sm text-slate-500 font-semibold">
                                     DSA Agent / Agency
                                 </p>
 
@@ -144,14 +144,14 @@ export default function DsaPaymentTrack() {
                             {/* Payout Rate + Total */}
                             <div className="flex justify-between items-center mt-2 pb-2 border-b border-slate-200">
 
-                                <p className="text-[10px] text-slate-500">
+                                <p className="text-xs text-slate-500">
                                     Payout Rate:
                                     <span className="text-slate-700 ml-1">
                                         {item.payoutRate}
                                     </span>
                                 </p>
 
-                                <p className="text-[10px] font-semibold text-slate-700">
+                                <p className="text-xs font-semibold text-slate-700">
                                     {item.total} Total
                                 </p>
 
@@ -161,21 +161,21 @@ export default function DsaPaymentTrack() {
                             <div className="grid grid-cols-2 gap-3 mt-2">
 
                                 <div>
-                                    <p className="text-[10px] text-slate-500">
+                                    <p className="text-sm text-slate-500">
                                         Paid
                                     </p>
 
-                                    <p className="text-xs font-semibold text-emerald-500 mt-1">
+                                    <p className="text-sm font-semibold text-emerald-500 mt-1">
                                         {item.paid}
                                     </p>
                                 </div>
 
                                 <div className="text-right">
-                                    <p className="text-[10px] text-slate-500">
+                                    <p className="text-sm text-slate-500">
                                         Pending
                                     </p>
 
-                                    <p className="text-xs font-semibold text-red-500 mt-1">
+                                    <p className="text-sm font-semibold text-red-500 mt-1">
                                         {item.pending}
                                     </p>
                                 </div>

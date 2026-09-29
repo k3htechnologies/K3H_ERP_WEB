@@ -62,15 +62,15 @@ export default function OverviewCards({ }) {
                     return (
                         <div
                             key={index}
-                            className="bg-white border border-gray-200 rounded-xl p-4 flex items-start justify-between"
+                            className="bg-white border border-gray-200 rounded-xl p-4 flex items-start justify-between shadow-sm"
                         >
                             {/* Left content */}
                             <div>
-                                <h2 className="text-sm   font-medium text-slate-500">
+                                <p className="text-sm   font-medium text-gray-500">
                                     {item.title}
-                                </h2>
+                                </p>
 
-                                <p className="text-xl font-bold text-slate-900 mt-2">
+                                <p className="text-2xl font-bold text-gray-900 mt-2">
                                     {item.value}
                                 </p>
 

@@ -57,7 +57,7 @@ export default function RateOfIntrest() {
                             <div className="text-right">
 
                                 <p
-                                    className={`text-[9px] font-medium ${item.labelColor}`}
+                                    className={`text-xs font-medium ${item.labelColor}`}
                                 >
                                     {item.label}
                                 </p>

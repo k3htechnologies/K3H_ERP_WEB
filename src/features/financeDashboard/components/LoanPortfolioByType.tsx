@@ -18,7 +18,7 @@ export default function LoanPortfolioByType({ }) {
                     Loan Portfolio By Type
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-6">
-                    <div className="relative h-59 w-full flex items-center justify-center -ml-10">
+                    <div className="relative h-59 w-full flex items-center justify-center -ml-7">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
@@ -48,13 +48,13 @@ export default function LoanPortfolioByType({ }) {
 
                     <div className="space-y-2">
                         {statusData.map((item) => (
-                            <div key={item.name} className="flex items-center justify-between  text-xs">
+                            <div key={item.name} className="flex items-center justify-between  text-xs mt-6">
                                 <div className="flex items-center gap-2.5 -ml-15 mt-1">
                                     <span
                                         className="w-2.5 h-2.5 rounded-full shrink-0"
                                         style={{ backgroundColor: item.color }}
                                     />
-                                    <span className="text-slate-600 font-medium text-sm">{item.name}</span>
+                                    <span className="text-slate-600 font-medium text-sm ">{item.name}</span>
                                 </div>
                                 <span className="text-slate-800 font-bold text-sm">
                                     {item.value}

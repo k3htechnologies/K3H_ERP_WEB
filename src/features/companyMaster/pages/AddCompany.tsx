@@ -188,7 +188,7 @@ const AddCompany: React.FC = () => {
       ? (statesByCountryId[selectedCountryId] || []).map(s => ({
         label: s.name,
         value: s.id,
-        gSTStateCode:s.gSTStateCode
+        gSTStateCode: s.gSTStateCode
       }))
       : [];
 
@@ -403,12 +403,12 @@ const AddCompany: React.FC = () => {
     const hasGSTFile = hasAnyFile(gstGSTCertificateFiles, gSTCertificateURL);
 
     // Rule 1 — number present but invalid
-    if (hasGSTNumber &&  !isValidGST(gst,selectedGSTStateCode)) {
+    if (hasGSTNumber && !isValidGST(gst, selectedGSTStateCode)) {
       newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
-    if (hasGSTNumber && !isValidGST(gst,selectedGSTStateCode)) {
-     newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
+    if (hasGSTNumber && !isValidGST(gst, selectedGSTStateCode)) {
+      newErrors.GSTNumber = selectedGSTStateCode ? `Enter a valid GST Number for selected state (${selectedStateName} GST Code - ${selectedGSTStateCode}).` : "Enter a valid GST Number.";
     }
 
     // Rule 2 — number entered but NO document
@@ -799,7 +799,7 @@ const AddCompany: React.FC = () => {
     }
   };
 
-  
+
   //#region ADD UPDATE COMPANY PARTNER DATA
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
@@ -1207,7 +1207,7 @@ const AddCompany: React.FC = () => {
       addFilesWithExisting(fd, prefix, realPartner._photoFiles, 'PhotoURL');
       addFilesWithExisting(fd, prefix, realPartner._panCardFiles, 'PanCardURL');
       addFilesWithExisting(fd, prefix, realPartner._aadharCardFiles, 'AadharCardURL');
-      
+
     });
 
     return fd;
@@ -1332,7 +1332,7 @@ const AddCompany: React.FC = () => {
             </div>
           </div>
         </div>
-        
+
 
         {/* ============================================================= [ADDRESS] ============================================================================================= */}
         <div className="space-y-4 pt-5">
@@ -1512,7 +1512,7 @@ const AddCompany: React.FC = () => {
                 error={errors.GSTCertificateURL}
                 value={gstGSTCertificateFiles}
                 onChange={setGSTCertificateFiles}
-                
+
                 availableFilesURL={gSTCertificateURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
@@ -1589,7 +1589,7 @@ const AddCompany: React.FC = () => {
                 value={cinURLFiles}
                 error={errors.CINURL}
                 onChange={setCINURLFiles}
-                
+
                 availableFilesURL={cinURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1684,7 +1684,7 @@ const AddCompany: React.FC = () => {
                 value={companyLetterHeadFooterFiles}
                 error={errors.CompanyLetterheadFooterURL}
                 onChange={setCompanyLetterHeadFooterFiles}
-                
+
                 availableFilesURL={companyLetterHeadFooterURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",

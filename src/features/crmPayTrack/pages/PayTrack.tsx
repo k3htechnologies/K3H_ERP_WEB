@@ -545,7 +545,7 @@ const PayTrack: React.FC = () => {
 
             <div className="col-span-12 lg:col-span-8">
 
-                <div className="bg-white rounded-2xl h-[calc(100vh-190px)] overflow-y-auto thin-scroll">
+              <div className="bg-white rounded-2xl h-[calc(100vh-190px)] overflow-y-auto thin-scroll">
 
                 <div className="p-6">
 

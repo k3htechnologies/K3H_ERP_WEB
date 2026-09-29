@@ -7,22 +7,22 @@ export default function ProjectWiseFinanceStatus({ }) {
             ProjectName: "Kampa Heights",
             LoanAccounts: 5,
             SanctionedAmount: `₹24.25 Cr`,
-            Disbursed: `₹18.75 Cr`,
+            DisbursedAmount: `₹18.75 Cr`,
             OutstandingBalance: `₹11.70Cr`
         },
         {
             ProjectName: "Ketaki Singh",
             LoanAccounts: 5,
             SanctionedAmount: `₹30.25 Cr`,
-            Disbursed: `₹18.75 Cr`,
+            DisbursedAmount: `₹18.75 Cr`,
             OutstandingBalance: `₹11.70Cr`
         },
         {
             ProjectName: "Beverly Park",
             LoanAccounts: 5,
             SanctionedAmount: `₹24.25 Cr`,
-            Disbursed: `₹68.75 Cr`,
-            OutstandingBalance: `₹11.70Cr`
+            DisbursedAmount: `₹68.75 Cr`,
+            OutstandingBalance: `₹11.70Cr`,
         },
 
     ]

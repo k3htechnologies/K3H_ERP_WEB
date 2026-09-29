@@ -1,5 +1,5 @@
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
-import { CircleDollarSign } from "lucide-react";
+import { CircleDollarSign, TrendingUp, IndianRupee } from "lucide-react";
 
 export default function DebtServiceReserveAccount() {
 
@@ -113,14 +113,14 @@ export default function DebtServiceReserveAccount() {
                         <div className="flex items-center gap-3">
 
                             <div className="w-9 h-9 rounded-full bg-violet-50 flex items-center justify-center">
-                                <CircleDollarSign
+                                <TrendingUp
                                     size={19}
                                     className="text-violet-500"
                                 />
                             </div>
 
                             <div>
-                                <p className="text-xs font-semibold text-slate-800">
+                                <p className="text-sm font-semibold text-slate-800">
                                     Mutual Funds Allocation
                                 </p>
 
@@ -146,14 +146,14 @@ export default function DebtServiceReserveAccount() {
                         <div className="flex items-center gap-3">
 
                             <div className="w-9 h-9 rounded-full bg-cyan-50 flex items-center justify-center">
-                                <CircleDollarSign
+                                <IndianRupee
                                     size={19}
                                     className="text-cyan-500"
                                 />
                             </div>
 
                             <div>
-                                <p className="text-xs font-semibold text-slate-800">
+                                <p className="text-sm font-semibold text-slate-800">
                                     Fixed Deposits (FD)
                                 </p>
 
@@ -181,7 +181,7 @@ export default function DebtServiceReserveAccount() {
                     {/* Mutual Fund Portfolio */}
                     <div>
 
-                        <p className="text-xs font-semibold text-slate-500 uppercase mb-2">
+                        <p className="text-sm font-semibold text-slate-500 uppercase mb-2">
                             MUTUAL FUND PORTFOLIO (DSRA)
                         </p>
 
@@ -194,9 +194,6 @@ export default function DebtServiceReserveAccount() {
                             />
 
                         </div>
-
-
-
                     </div>
 
                     {/* Fixed Deposit Holdings */}
@@ -236,7 +233,7 @@ export default function DebtServiceReserveAccount() {
                                     </span>
 
                                     <span className="text-right">
-                                        <span className="inline-block text-sm text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md">
+                                        <span className="inline-block text-sm text-emerald-500 bg-emerald-50 px-2 py-1 rounded-md ">
                                             {item.status}
                                         </span>
                                     </span>

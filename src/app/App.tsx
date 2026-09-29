@@ -247,6 +247,17 @@ import { StockManagementListStateProvider } from '@/features/stockManagement/con
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
+import TeamWorkspaceDashboard from '@/features/teamWorkspaceDashboard/pages/TeamWorkspaceDashboard';
+import { MeetingListStateProvider } from '@/features/meeting/context/MeetingListStateContext';
+import { TaskListStateProvider } from '@/features/task/context/TaskListStateContext';
+import Conference from '@/features/conference/pages/Conference';
+import AddUpdateConference from '@/features/conference/pages/AddUpdateConference';
+import Task from '@/features/task/pages/Task';
+import ViewTask from '@/features/task/pages/ViewTask';
+import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask';
+import Meeting from '@/features/meeting/pages/Meeting';
+import AddUpdateMeeting from '@/features/meeting/pages/AddUpdateMeeting';
+import ViewMeeting from '@/features/meeting/pages/ViewMeeting';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -590,8 +601,22 @@ function App() {
             <Route path="jobOpenings/JobApplicationDetails" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
             <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
             <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
-         
-          {/* MATERIAL REQUISITION */}
+
+            {/* {TEAM WORK SPACE} */}
+            <Route path="teamWorkspaceDashboard" element={<TeamWorkspaceDashboard />} />
+            <Route path="calendar" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
+            <Route path="event" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
+            <Route path="conference" element={<Conference />} />
+            <Route path="conference/add" element={<AddUpdateConference />} />
+            <Route path="task" element={<TaskListStateProvider><Task /></TaskListStateProvider>} />
+            <Route path="task/view/:taskId?" element={<TaskListStateProvider><ViewTask /></TaskListStateProvider>} />
+            <Route path="task/add/:taskId?" element={<TaskListStateProvider><AddUpdateTaskOrSubTask /></TaskListStateProvider>} />
+            <Route path="meeting" element={<MeetingListStateProvider><Meeting /></MeetingListStateProvider>} />
+            <Route path="meeting/add/:meetingId?" element={<MeetingListStateProvider><AddUpdateMeeting /></MeetingListStateProvider>} />
+            <Route path="meeting/view" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
+            <Route path="meeting/mom" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
+
+            {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
@@ -604,7 +629,7 @@ function App() {
 
             <Route path="purchaseMasterReport" element={<PurchaseMasterReport />} />
 
-            
+
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />

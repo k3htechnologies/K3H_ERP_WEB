@@ -550,10 +550,10 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 <Button
                     size="sm"
                     color="teal"
-                    leftIcon={<ClipboardList  size={15} />}
+                    leftIcon={<ClipboardList size={15} />}
                     onClick={handleSummaryOfQuotation}
                 >
-                    Summary Of Quotation
+                    Summary
                 </Button>
 
             </div>
@@ -641,7 +641,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                             </div>
 
                                             <div className="text-lg font-semibold text-gray-900 mt-3">
-                                                {formatCurrency(computeBaseTotal(headerLines) )}
+                                                {formatCurrency(computeBaseTotal(headerLines))}
                                             </div>
                                         </div>
 
@@ -721,7 +721,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                     VendorFinalizationApprovalStatus={listState.VendorFinalizationApprovalStatus}
                                                     VendorGSTNumber={vendor.GSTNumber}
                                                     CompanyGSTNumber={listState.CompanyGSTNumber}
-
+                                                    addToast={addToast}
                                                 />
                                                 <div className="flex justify-between text-sm bg-green-100 p-3">
 
@@ -973,7 +973,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                                 {summaryOfQuotationData.map((quotation, index) => (
 
-                                    <div  key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
+                                    <div key={index} className="border border-gray-200 rounded-lg p-4 bg-white">
 
                                         <div className="flex items-center justify-between gap-4 pb-3 border-b border-gray-200">
 
@@ -990,7 +990,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                             </div>
 
 
-                                            
+
                                             <div className="px-3 py-1 rounded-md text-sm font-semibold bg-green-100 text-green-700">
                                                 {quotation.QuotationLevel || "-"}
                                             </div>
@@ -1045,7 +1045,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                             </div>
 
 
-                                            {quotation.QuotationURL!=="" && (
+                                            {quotation.QuotationURL !== "" && (
 
                                                 <MultiImageViewer
                                                     images={parseDocumentUrls(quotation.QuotationURL)}

@@ -15,7 +15,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import DataTableExpandable from "@/ui/components/DataTable/DataTableExpandable";
-import { Edit, Trash2 } from "lucide-react";
+import { ClipboardList, Edit, Trash2 } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
@@ -506,6 +506,8 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
+                
+                addExtraButtonIcon={<ClipboardList className="h-4 w-4" />}
 
                 isShowExportButton={filteredGRN.length > 0}
                 onExportPdf={handleExportMaterialRequisitionGRNPdf}

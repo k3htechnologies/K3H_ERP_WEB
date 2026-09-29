@@ -5,6 +5,7 @@ import { computeAmount, computeAmountInstallation, computeGrandTotal } from "@/f
 import { Input } from "@/ui/components/forms/Input"
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation"
 import { formatCurrency } from "@/core/utils/comman"
+import useToast from "@/core/hooks/useToast";
 
 type Row =
     {
@@ -34,6 +35,7 @@ interface Props {
     VendorFinalizationApprovalStatus?: string
     VendorGSTNumber?: string
     CompanyGSTNumber?: string
+    addToast?: ReturnType<typeof useToast>["addToast"]
 }
 
 export const FinalizedVendorQuotationTable: React.FC<Props> = ({
@@ -43,7 +45,8 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     onEditModeChange,
     VendorFinalizationApprovalStatus,
     VendorGSTNumber,
-    CompanyGSTNumber
+    CompanyGSTNumber,
+    addToast
 }) => {
     const [rows, setRows] = useState<Row[]>(data)
     const [stagedRows, setStagedRows] = useState<Row[]>(data)
@@ -61,7 +64,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             (isEditing ? stagedRows : rows).map(r => ({
                 ...r,
                 id: r.id ?? `row-${r.MaterialName}-${r.MaterialQuantity}`,
-                Amount: r.Logistics ? (r.Amount ?? 0)  : computeAmount(r),  // ← key fix
+                Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),  // ← key fix
             })),
         [rows, stagedRows, isEditing]
     )
@@ -89,17 +92,52 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     }, [onChange]);
 
     const handleSave = () => {
-        setRows(stagedRows)
-        onChange?.(stagedRows)
+
+        const invalidPercentageRow = stagedRows.find(row => {
+            const cgst = Number(row.CGST || 0);
+            const sgst = Number(row.SGST || 0);
+            const igst = Number(row.TGST || 0);
+
+            return (
+                cgst >= 100 ||
+                sgst >= 100 ||
+                igst >= 100
+            );
+        });
+
+        if (invalidPercentageRow) {
+            addToast?.({ type: "error", title: "GST percentage must be less than 100%." });
+            return;
+        }
+
+        if (isSameState) {
+            const invalidRow = stagedRows.find(row => {
+                const cgst = Number(row.CGST || 0);
+                const sgst = Number(row.SGST || 0);
+
+                return cgst !== sgst;
+            });
+
+            if (invalidRow) {
+                addToast?.({ type: "error", title: "CGST and SGST percentage must be the same." });
+                return;
+            }
+        }
+
+        setRows(stagedRows);
+        onChange?.(stagedRows);
+
         onSave?.(
             stagedRows.map(r => ({
                 ...r,
                 Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),
             }))
-        )
-        setIsEditing(false)
-        onEditModeChange?.(false)
-    }
+        );
+
+        setIsEditing(false);
+        onEditModeChange?.(false);
+    };
+
 
     const handleCancel = () => {
         setStagedRows(rows)
@@ -109,12 +147,12 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
 
     const GROUPS: EditableColumnGroup[] = [
         { label: "ITEM INFORMATION", keys: ["MaterialOrService", "MaterialQuantity"], background: "#0F2744" },
-        { label: "PRICING", keys: ["MaterialPerUnit","Installation", "Amount", ], background: "#1A3560" },
+        { label: "PRICING", keys: ["MaterialPerUnit", "Installation", "Amount",], background: "#1A3560" },
         { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "TGST"], background: "#1E3A5F", color: "#FDE68A" },
         { label: "SUMMARY", keys: ["Total"], background: "#0F2744" }
     ]
 
-    
+
     const hasAmount = (row: Row) => {
         const amount = computeAmount(row);
 
@@ -244,9 +282,9 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 )
             }
         },
-         {
+        {
             key: "Installation",
-            label: "INSTALLATION (₹)",
+            label: "INSTALL (₹)",
             type: "number",
             editable: isEditing,
             width: 120,
@@ -278,14 +316,14 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
 
                         type="text"
                         value={row?.Installation ?? 0}
-                        
+
                         onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
 
                     />
 
                 )
             }
-            
+
         },
         {
             key: "Amount",
@@ -319,7 +357,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 </span>
             )
         },
-       
+
         {
             key: "CGST",
             label: "CGST (%)",
@@ -453,7 +491,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-green-200 tracking-[1px]",
             cellClassName: "text-green-600 font-semibold"
         }
-    ], [isEditing,isSameState, isDifferentState])
+    ], [isEditing, isSameState, isDifferentState])
 
     return (
         <div className="space-y-4 rounded-xl">

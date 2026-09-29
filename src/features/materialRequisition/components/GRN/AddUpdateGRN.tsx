@@ -508,7 +508,7 @@ export const AddUpdateGRN = () => {
                             <Input
                                 type="text"
                                 label="Challan Number"
-                                placeholder="Challan Number"
+                                placeholder="Enter Challan Number"
                                 value={formData.ChallanNumber}
                                 onChange={(e) => handleFieldChange("ChallanNumber", filterChallanNumber(e.target.value))}
                                 maxLength={30}

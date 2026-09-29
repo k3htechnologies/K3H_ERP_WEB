@@ -456,7 +456,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                             Vendor Details
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Vendor Name"
                                 value={invoiceSummaryData?.FinalVendor}
@@ -484,7 +484,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                             PO Amount Details (₹)
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Total (₹)"
                                 value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)}
@@ -504,10 +504,10 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                     <div>
                         <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
-                            Invoice Details  (₹)
+                            Invoice Details (₹)
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Total (₹)"
                                 value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)}
@@ -518,11 +518,11 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                 value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)}
                             />
 
-                             <FieldItem
+                            <FieldItem
                                 label="TDS Paid (₹)"
                                 value={formatCurrency(invoiceSummaryData?.TotalTDSAmountPaid)}
                             />
-                            
+
 
                             <FieldItem
                                 label="Pending(₹)"
@@ -601,12 +601,72 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                                     return (
 
-                                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                            <div className="flex justify-between items-center">
-                                                <div className="text-sm text-gray-700">
+                                          <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
 
-                                                    <FieldItem label="Invoice Number" value={row.InvoiceNumber || "-"} isRow />
-                                                    <FieldItem label="Invoice Amount" value={formatCurrency(row?.InvoiceAmount)} isRow />
+                                            <div className="mb-5">
+                                                <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">
+                                                    <h3 className="text-md font-semibold text-gray-700">
+                                                        Invoice Details (₹)
+                                                    </h3>
+
+                                                    <div className="flex items-center gap-1">
+                                                        <ApprovalActions
+                                                            approvalStatus={row?.InvoiceStatus}
+                                                            onApprove={() => handleApproveRejectInvoice(row as MaterialRequisitionInvoiceData, "approve")}
+                                                            onReject={() => handleApproveRejectInvoice(row as MaterialRequisitionInvoiceData, "reject")}
+                                                            showApproval={row?.IsApproval}
+                                                            isIcons={true}
+                                                            onHistory={() => handleApprovalLog(row as MaterialRequisitionInvoiceData)}
+                                                        />
+
+                                                        <Button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (!showEdit) return;
+                                                                handleEditInvoice(row as MaterialRequisitionInvoiceData);
+
+                                                            }}
+                                                            color="transparent"
+                                                            isborderRadius
+                                                            disabled={!showEdit}
+                                                            size="sm"
+                                                            style={{
+                                                                color: showEdit ? "" : "#9CA3AF",
+                                                                cursor: showEdit ? "pointer" : "not-allowed",
+                                                                opacity: showEdit ? 1 : 0.5,
+                                                            }}
+                                                            title="Edit">
+                                                            <Edit className="h-4 w-4" />
+                                                        </Button>
+
+                                                        <Button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                if (!showDelete) return;
+                                                                handleConfirmationDialogBoxOpenForInVoice(row);
+                                                            }}
+                                                            color="transparent"
+                                                            isborderRadius
+                                                            disabled={!showDelete}
+                                                            size="sm"
+                                                            style={{
+                                                                color: showDelete ? "red" : "#9CA3AF",
+                                                                cursor: showDelete ? "pointer" : "not-allowed",
+                                                                opacity: showDelete ? 1 : 0.5,
+                                                            }}
+                                                            title="Delete"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <FieldItem label="Invoice Number" value={row.InvoiceNumber || "-"} />
+                                                    <FieldItem label="Invoice Amount" value={formatCurrency(row?.InvoiceAmount)} />
                                                     <FieldItem
                                                         label="Amount Paid Till Date"
                                                         value={
@@ -614,8 +674,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                                 {formatCurrency(row?.InvoiceAmountPaidTillDate)}
                                                             </span>
                                                         }
-                                                        isRow
                                                     />
+
                                                     <FieldItem
                                                         label="TDS Paid Till Date"
                                                         value={
@@ -623,96 +683,39 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                                                 {formatCurrency(row?.InvoiceTDSPaidTillDate)}
                                                             </span>
                                                         }
-                                                        isRow
                                                     />
 
                                                     <FieldItem label=" Amount to be Paid" value={
                                                         <span className="text-red-600 font-semibold">
                                                             {formatCurrency(Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate) - Number(row.InvoiceTDSPaidTillDate))}
                                                         </span>
-                                                    } isRow />
-                                                </div>
-
-                                                <div className="flex items-center gap-2">
-                                                    <ApprovalActions
-                                                        approvalStatus={row?.InvoiceStatus}
-                                                        onApprove={() => handleApproveRejectInvoice(row as MaterialRequisitionInvoiceData, "approve")}
-                                                        onReject={() => handleApproveRejectInvoice(row as MaterialRequisitionInvoiceData, "reject")}
-                                                        showApproval={row?.IsApproval}
-                                                        isIcons={true}
-                                                        onHistory={() => handleApprovalLog(row as MaterialRequisitionInvoiceData)}
-                                                    />
-                                                    <Button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            if (!showEdit) return;
-                                                            handleEditInvoice(row as MaterialRequisitionInvoiceData);
-
-                                                        }}
-                                                        color="transparent"
-                                                        isborderRadius
-                                                        disabled={!showEdit}
-                                                        size="sm"
-                                                        style={{
-                                                            color: showEdit ? "" : "#9CA3AF",
-                                                            cursor: showEdit ? "pointer" : "not-allowed",
-                                                            opacity: showEdit ? 1 : 0.5,
-                                                        }}
-                                                        title="Edit">
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-
-                                                    <Button
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
-                                                            if (!showDelete) return;
-                                                            handleConfirmationDialogBoxOpenForInVoice(row);
-                                                        }}
-                                                        color="transparent"
-                                                        isborderRadius
-                                                        disabled={!showDelete}
-                                                        size="sm"
-                                                        style={{
-                                                            color: showDelete ? "red" : "#9CA3AF",
-                                                            cursor: showDelete ? "pointer" : "not-allowed",
-                                                            opacity: showDelete ? 1 : 0.5,
-                                                        }}
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-
-                                            <div className="grid grid-cols-3 gap-6 text-sm pt-5">
-                                                <div className="space-y-3">
-                                                    <h3 className="font-semibold mb-2">Invoice Details</h3>
-
+                                                    } />
 
                                                     <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row?.InvoiceDate ?? '')} />
                                                     <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(row?.InvoiceDueDate ?? '')} />
-
-                                                    <FieldItem label="Remark" value={row?.Remarks ?? ''} />
+                                                    <FieldInfoTooltip label="Remark" value={row?.Remarks ?? ''} />
                                                 </div>
+                                            </div>
 
-                                                <div className="space-y-3">
-                                                    <h3 className="font-semibold mb-2">Document's Details</h3>
+                                            <div className="mb-5">
+                                                <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                                                    Document's Details
+                                                </h3>
 
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Invoice" urls={row.UploadInvoiceURL} isSetValue={false} isIcon />
-
                                                     <FieldItem label="Performance Report" urls={row.PerformaInvoiceURL} isSetValue={false} isIcon />
                                                     <FieldItem label="Measurement Report" urls={row.MeasurementReportURL} isSetValue={false} isIcon />
-
                                                 </div>
+                                            </div>
 
-                                                <div className="space-y-3">
-                                                    <h3 className="font-semibold mb-2">Action Details</h3>
+                                            <div className="mb-5">
+                                                <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                                                    Action Details
+                                                </h3>
 
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Created By" value={row?.CreatedBy ?? "-"} />
-
                                                     <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")} />
                                                     <FieldItem label="Modified By" value={row?.ModifiedBy ?? "-"} />
                                                     <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")} />

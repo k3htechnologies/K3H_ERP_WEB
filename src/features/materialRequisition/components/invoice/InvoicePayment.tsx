@@ -380,18 +380,13 @@ const InvoicePayment: React.FC = () => {
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                         <FieldItem label="Challan Number" value={materialRequisitionGRNData?.ChallanNumber || '-'} />
                         <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
                         <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
                         <FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks || '-'} />
-                        <FieldItem label="Created By / Date" value={materialRequisitionGRNData?.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(materialRequisitionGRNData?.CreatedDate || '-')} />
 
-                        {materialRequisitionGRNData?.ModifiedBy !== '' ?
-                            <FieldItem label="Modified By / Date" value={materialRequisitionGRNData?.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(materialRequisitionGRNData?.ModifiedDate || '-')} />
-                            :
-                            ''}
                     </div>
                 </div>
 
@@ -406,171 +401,150 @@ const InvoicePayment: React.FC = () => {
             </div>
 
             <div className="space-y-4">
-                <div className="relative bg-gray-50 border border-gray-200 rounded-xl p-4">
-                    <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-700">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-5">
 
-                            <FieldItem label="Invoice Number" value={invoiceData?.InvoiceNumber || "-"} isRow />
-                            <FieldItem label="Invoice Amount" value={formatCurrency(invoiceData?.InvoiceAmount)} isRow />
+                    <div className="mb-4">
+                        <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">
+                            <h3 className="text-md  font-semibold text-gray-700">
+                                Invoice Details (₹)
+                            </h3>
 
-                            
-                                    <FieldItem
-                                        label="Amount Paid Till Date"
-                                        isRow
-                                        value={
-                                            <span className="text-green-600 font-semibold">
-                                                {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
-                                            </span>
+                            <div className="flex items-center gap-2">
+                                <ApprovalActions
+                                    approvalStatus={invoiceData?.InvoiceStatus}
+                                    isIcons={true}
+                                    onHistory={() => handleApprovalLog(invoiceData as MaterialRequisitionInvoiceData)}
+                                />
+
+                                {PendingAmount !== 0 && !materialRequisitionStatus && (
+                                    <Button
+                                        color="green"
+                                        onClick={() =>
+                                            handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)
                                         }
-                                    />
+                                        size="sm"
+                                        style={{
+                                            color: '#FFFFFF',
+                                            padding: '4px 8px',
+                                            background: "#00AC00"
+                                        }}
+                                    >
+                                        Make Payment
+                                    </Button>
+                                )}
 
-                                    <FieldItem
-                                        label="TDS Paid Till Date"
-                                        value={
-                                            <span className="text-green-600 font-semibold">
-                                                {formatCurrency(invoiceData?.InvoiceTDSPaidTillDate)}
-                                            </span>
-                                        }
-                                        isRow
-                                    />
-                               
+                                {PendingAmount === 0 && (
+                                    <div>
+                                        <span className=" bg-[#15803D] text-[#CEFFCE] inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ">Fully Paid</span>
+                                    </div>
+                                )}
+
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <FieldItem label="Invoice Number" value={invoiceData?.InvoiceNumber || "-"} />
+                            <FieldItem label="Invoice Amount" value={formatCurrency(invoiceData?.InvoiceAmount)} />
+
+                            <FieldItem
+                                label="Amount Paid Till Date"
+                                value={
+                                    <span className="text-green-600 font-semibold">
+                                        {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
+                                    </span>
+                                }
+                            />
+
+                            <FieldItem
+                                label="TDS Paid Till Date"
+                                value={
+                                    <span className="text-green-600 font-semibold">
+                                        {formatCurrency(invoiceData?.InvoiceTDSPaidTillDate)}
+                                    </span>
+                                }
+
+                            />
+
                             <FieldItem label=" Amount to be Paid"
-                                isRow
                                 value={
                                     <span className="text-red-600 font-semibold">
                                         {formatCurrency(PendingAmount)}
                                     </span>
                                 } />
 
-                            {PendingAmount === 0 && (
-                                <div>
-                                    <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-2 rounded-md inline-block">Fully Paid</span>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex items-center gap-2">
-                            <ApprovalActions
-                                approvalStatus={invoiceData?.InvoiceStatus}
-                                isIcons={true}
-                                onHistory={() => handleApprovalLog(invoiceData as MaterialRequisitionInvoiceData)}
-                            />
-
+                            <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDate ?? '')} />
+                            <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
+                            <FieldInfoTooltip label="Remark" value={invoiceData?.Remarks ?? ''} />
 
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-6 text-sm pt-5">
-                        <div className="space-y-3">
-                            <h3 className="font-semibold mb-2">Invoice Details</h3>
+                    <div className="mb-4">
+                        <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            Document's Details
+                        </h3>
 
-
-                            <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDate ?? '')} />
-                            <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
-
-                            <FieldItem label="Remark" value={invoiceData?.Remarks ?? ''} />
-                        </div>
-
-                        <div className="space-y-3">
-                            <h3 className="font-semibold mb-2">Document's Details</h3>
-
-
-
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem label="Invoice" urls={invoiceData?.UploadInvoiceURL} isSetValue={false} isIcon />
-
                             <FieldItem label="Performance Report" urls={invoiceData?.PerformaInvoiceURL} isSetValue={false} isIcon />
                             <FieldItem label="Measurement Report" urls={invoiceData?.MeasurementReportURL} isSetValue={false} isIcon />
-
                         </div>
+                    </div>
 
-                        <div className="space-y-3">
-                            <h3 className="font-semibold mb-2">Action Details</h3>
+                    <div className="mb-4">
+                        <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                            Action Details
+                        </h3>
 
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem label="Created By" value={invoiceData?.CreatedBy ?? "-"} />
-
                             <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(invoiceData?.CreatedDate ?? "-")} />
                             <FieldItem label="Modified By" value={invoiceData?.ModifiedBy ?? "-"} />
                             <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(invoiceData?.ModifiedDate ?? "-")} />
                         </div>
                     </div>
-
-                    {PendingAmount !== 0 && !materialRequisitionStatus && (
-                        <div className="absolute bottom-4 right-4">
-                            <Button
-                                color="green"
-                                onClick={() =>
-                                    handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)
-                                }
-                                size="sm"
-                                style={{
-                                    color: '#FFFFFF',
-                                    padding: '4px 8px',
-                                    background: "#00AC00"
-                                }}
-                            >
-                                Make Payment
-                            </Button>
-                        </div>
-                    )}
                 </div>
 
                 {paymentData.map((item, index) => (
+                    <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4 mb-1">
 
+                        <div className="mb-4">
+                            <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">
+                                <h3 className="text-md font-semibold text-gray-700">
+                                    Customer Bank Details
+                                </h3>
 
-                    <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                        <div className="flex justify-between items-center">
-                            <div className="text-sm text-gray-700">
-                                <FieldItem label="Amount Paid (₹)" value={formatCurrency(item.AmountPaid)} isRow isIcon={true} />
-                                <FieldItem label="TDS Amount (₹)" value={formatCurrency(item.TDSAmount)} isRow isIcon={true} />
-                                <FieldItem label="Payment Mode" value={item.PaymentMode || "-"} isRow />
-
+                                <div className="flex items-center gap-1">
+                                    {index === 0 && (
+                                        <Button
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                handleConfirmationDialogBoxOpenForPayment(item);
+                                            }}
+                                            color="transparent"
+                                            isborderRadius
+                                            size="sm"
+                                            style={{
+                                                color: canAction ? "red" : "#9CA3AF",
+                                                cursor: canAction ? "pointer" : "not-allowed",
+                                                opacity: canAction ? 1 : 0.5,
+                                            }}
+                                            title="Delete"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
 
-                            <div className="flex items-center gap-2 pb-8">
-                                {index === 0 && (
-                                    <Button
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            handleConfirmationDialogBoxOpenForPayment(item);
-                                        }}
-                                        color="transparent"
-                                        isborderRadius
-                                        size="sm"
-                                        style={{
-                                            color: canAction ? "red" : "#9CA3AF",
-                                            cursor: canAction ? "pointer" : "not-allowed",
-                                            opacity: canAction ? 1 : 0.5,
-                                        }}
-                                        title="Delete"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
-                                )}
-                            </div>
-
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-6 text-sm pt-5">
-                            <div className="space-y-3">
-                                <h3 className="font-semibold mb-2">Developer Bank Details</h3>
-
-                                <FieldItem label="Account Number" value={item.ProjectAccountNumber || "-"} isRow={false} />
-                                <FieldItem label="Bank Name" value={item.ProjectBankName || "-"} isRow={false} />
-                                <FieldItem label="IFSC Code" value={item.ProjectIFSCCode || "-"} isRow={false} />
-                                <FieldItem label="Nature Of Account" value={item.ProjectNatureOfAccount || "-"} isRow={false} />
-                                <FieldItem label="Account Type" value={item.ProjectAcType || "-"} isRow={false} />
-                            </div>
-
-                            <div className="space-y-3">
-                                <h3 className="font-semibold mb-2">Customer Bank Details</h3>
-
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <FieldItem label="Amount Paid (₹)" value={formatCurrency(item.AmountPaid)} isIcon={true} />
+                                <FieldItem label="TDS Amount (₹)" value={formatCurrency(item.TDSAmount)} isIcon={true} />
+                                <FieldItem label="Payment Mode" value={item.PaymentMode || "-"} />
                                 {item.AccountNumber && (<FieldItem label="Account Number" value={item.AccountNumber || "-"} />)}
-                                {item.IFSCCode && (<FieldItem label="IFSC Code" value={item.IFSCCode || "-"} isRow={false} />)}
-
-                                {item.BankName && (<FieldItem label="Bank" value={item.BankName || "-"} />)}
+                                {item.IFSCCode && (<FieldItem label="IFSC Code" value={item.IFSCCode || "-"} />)}
                                 {item.PaymentType && (<FieldItem label="Payment Type" value={item.PaymentType ?? ''} />)}
-
                                 {item.TransactionNumber && (<FieldItem
                                     label="Transaction Number"
                                     urls={item.TransactionReceiptURL}
@@ -578,16 +552,44 @@ const InvoicePayment: React.FC = () => {
                                     isIcon
                                 />)}
 
+                                {item.BankName && (<FieldItem label="Bank" value={item.BankName || "-"} />)}
+                                {item.IsAdvance && (<FieldItem label="Advance" value={item.IsAdvance === true ? "Yes" : "No"} />)}
 
                             </div>
+                        </div>
 
-                            <div className="space-y-3">
-                                <h3 className="font-semibold mb-2">Action Details</h3>
+                        <div className="mb-4">
+                            <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                                Developer Bank Details
+                            </h3>
 
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <FieldItem label="Account Number" value={item.ProjectAccountNumber || "-"} isRow={false} />
+                                <FieldItem label="Bank Name" value={item.ProjectBankName || "-"} isRow={false} />
+                                <FieldItem label="IFSC Code" value={item.ProjectIFSCCode || "-"} isRow={false} />
+
+                                <div>
+                                    <p className="text-sm font-medium text-[#1D1D1D80] pb-1">
+                                        Nature Of Account
+                                    </p>
+
+                                    <span className="inline-block px-2 py-1 rounded text-sm font-medium bg-[#DBEAFE] text-[#1E40AF]">
+                                        {item.ProjectNatureOfAccount ?? "-"}
+                                    </span>
+                                </div>
+
+                                <FieldItem label="Account Type" value={item.ProjectAcType || "-"} isRow={false} />
+                            </div>
+                        </div>
+
+                        <div className="mb-4">
+                            <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                                Action Details
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <FieldItem label="Created By" value={item?.CreatedBy ?? "-"} />
-
                                 <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(item?.CreatedDate ?? "-")} />
-
                             </div>
                         </div>
                     </div>

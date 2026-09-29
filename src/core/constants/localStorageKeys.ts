@@ -131,6 +131,10 @@ export const LOCAL_STORAGE_KEYS = {
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
 
+    //TEAM WORK SPACE
+    TASK_SELECTED_COLUMNS: 'task.selectedColumns',
+    AGENDA_TASK_SELECTED_COLUMNS: 'agendaTask.selectedColumns',
+
 
 
 
@@ -168,7 +172,9 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     JOB_OPENING: 'jobOpening.listState',
     MATERIAL_REQUISITION: 'materialRequisition.listState',
     STOCK_MANAGEMENT: 'stock.listState',
-
+    TASK: 'task.listState',
+    AGENDA_TASK: 'agendaTask.listState',
+    MEETING: 'meeting.listState',
 
 
 } as const

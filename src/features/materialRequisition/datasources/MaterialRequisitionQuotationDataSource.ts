@@ -99,10 +99,11 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
        
         try {
             const queryParams = new URLSearchParams({
-                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString()
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString()
             })
 
-            if (params.ProjectId) queryParams.append('ProjectId', (params.ProjectId).toString());
+             if (params.VendorName?.trim()) queryParams.append('VendorName', params.VendorName.trim());
 
             return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL_SUMMARY_OF_QUITATION}?${queryParams.toString()}`, { signal })
              

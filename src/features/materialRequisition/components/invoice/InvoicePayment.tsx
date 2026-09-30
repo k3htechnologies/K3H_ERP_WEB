@@ -515,7 +515,8 @@ const InvoicePayment: React.FC = () => {
                                 </h3>
 
                                 <div className="flex items-center gap-1">
-                                    {index === 0 && (
+                                    {index === 0 && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
+                                        
                                         <Button
                                             onClick={(e) => {
                                                 e.preventDefault();

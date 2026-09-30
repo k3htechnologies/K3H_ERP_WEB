@@ -1,6 +1,6 @@
 export const handleExportFile = (
   response: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'Zip',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'ZIP',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string
@@ -21,13 +21,12 @@ export const handleExportFile = (
 
 export const handleBase64Export = (
   fileData: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'Zip' | 'Zip',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'Zip' | 'ZIP',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string,
 ) => {
   try {
-    // Extract base64 data from response
 
     const base64Data = Array.isArray(fileData)
       ? fileData[0]
@@ -49,7 +48,7 @@ export const handleBase64Export = (
               ? 'image/png'
               : exportType === 'Word'
                 ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-                : exportType === 'Zip'
+                : exportType === 'ZIP'
                   ? 'application/zip'
                   : 'application/octet-stream'
       );
@@ -62,13 +61,10 @@ export const handleBase64Export = (
       bytes[i] = binaryString.charCodeAt(i)
     }
 
-    // Create blob from decoded bytes
     const blob = new Blob([bytes], { type: mimeType })
 
-    // Create download URL
     const url = window.URL.createObjectURL(blob)
 
-    // Create download link
     const link = document.createElement('a')
     link.href = url
 
@@ -86,7 +82,7 @@ export const handleBase64Export = (
             ? 'png'
             : exportType === 'Word'
               ? 'docx'
-              : exportType === 'Zip'
+              : exportType === 'ZIP'
                 ? 'zip'
                 : 'bin');
 

@@ -2174,7 +2174,7 @@ const ViewTermSheet: React.FC = () => {
                                                             label="Closing Date"
                                                             value={
                                                                 termSheetViewData.ClosingDate
-                                                                    ? formatDate_dd_MonthName_yy_hh_mm(termSheetViewData.ClosingDate)
+                                                                    ? formatDate_dd_MonthName_yy(termSheetViewData.ClosingDate)
                                                                     : '-'
                                                             }
                                                         />

@@ -107,6 +107,7 @@ export const ApprovedBankFile: React.FC = () => {
                 };
 
                 const response = await approvedBankFileService.apiCallPullApprovedBankFile(params);
+                
                 if (E.isRight(response)) {
                     setApprovedBankFileList(response.right.Data);
                     setPagination({

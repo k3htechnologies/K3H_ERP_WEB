@@ -37,6 +37,7 @@ export class AssetMappingMasterDatasourceImpl implements AssetMappingMasterDatas
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.AssetCode?.trim()) queryParams.append('AssetCode', params.AssetCode.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

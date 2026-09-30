@@ -713,7 +713,7 @@ export const MASTER_DATA = {
 
   termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
-   noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending", "Pending"],
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending", "Pending"],
 
   vendorType: ["Material", "Contractor", "Both"],
 
@@ -777,9 +777,11 @@ export const MASTER_DATA = {
     "JobSkills",
   ],
 
-   materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
+  materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
 
   materialRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
+
+  priorityOptions: ['Critical', 'Non - Critical']
 
 
 } as const;
@@ -799,6 +801,7 @@ export const filterOptions = (options: Option[], searchTerm: string = ""): Optio
 // ============================================================================
 
 export const EMERGENCY_RELATION_OPTIONS = toOptions(MASTER_DATA.emergencyRelations);
+export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 export const EMPLOYEE_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeTypes);
 export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders);
 export const MONTHS_OPTIONS = toOptions(MASTER_DATA.months);
@@ -808,8 +811,8 @@ export const DAYS_OPTIONS = toOptions(MASTER_DATA.days);
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses);
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups);
 export const FIRMS_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType);
-export const OWNERSHIP_TYPE_OPTIONS= toOptions(MASTER_DATA.ownershipType);
-export const BUSINESS_TYPE_OPTIONS= toOptions(MASTER_DATA.businessType);
+export const OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.ownershipType);
+export const BUSINESS_TYPE_OPTIONS = toOptions(MASTER_DATA.businessType);
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType);
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus);
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory);

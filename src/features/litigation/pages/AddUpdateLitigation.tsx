@@ -11,7 +11,7 @@ import * as E from "fp-ts/Either";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { CASE_TYPE_OPTION, COURT_TYPE_OPTION } from "@/core/constants";
+import { CASE_TYPE_OPTION, COURT_TYPE_OPTION, PRIORITY_OPTIONS } from "@/core/constants";
 import { Loader } from "@/core/utils/loader";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
@@ -35,7 +35,8 @@ const initialFormState = (): AddUpdateLitigationRequest => ({
     AssignedRepresentative: '',
     OpposingRepresentative: '',
     Remark: '',
-    CaseBrief: ''
+    CaseBrief: '',
+    Priority: ''
 })
 
 export const AddUpdateLitigation: React.FC = () => {
@@ -114,11 +115,12 @@ export const AddUpdateLitigation: React.FC = () => {
                             AssignedRepresentative: e.AssignedRepresentative ?? prev.AssignedRepresentative,
                             OpposingRepresentative: e.OpposingRepresentative ?? prev.OpposingRepresentative,
                             Remark: e.Remark ?? prev.Remark,
-                            CaseBrief: e.CaseBrief ?? prev.CaseBrief
+                            CaseBrief: e.CaseBrief ?? prev.CaseBrief,
+                            Priority: e.Priority ?? prev.Priority
                         }));
                         setIsLitigationDelete(e.IsDelete ?? 0)
                     }
-                    
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -184,6 +186,9 @@ export const AddUpdateLitigation: React.FC = () => {
         if (!formData.Remark) {
             newErrors.Remark = 'Case Remarks / Comments is required.';
         }
+        if (!formData.Priority) {
+            newErrors.Priority = 'Priority is required.';
+        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -210,6 +215,7 @@ export const AddUpdateLitigation: React.FC = () => {
             OpposingRepresentative: formData.OpposingRepresentative ?? "",
             Remark: formData.Remark ?? "",
             CaseBrief: formData.CaseBrief ?? "",
+            Priority: formData.Priority ?? ""
         };
     }
     //#endregion
@@ -324,7 +330,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     onChange={(val) => handleFieldChange('DateOfFilling', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                     required
                                     error={errors.DateOfFilling}
-                                    disabled={formData.LitigationId > 0 ? !isLitigationDelete :false}
+                                    disabled={formData.LitigationId > 0 ? !isLitigationDelete : false}
                                 />
                             </div>
 
@@ -351,6 +357,22 @@ export const AddUpdateLitigation: React.FC = () => {
                                     maxLength={100}
                                     error={errors.CaseNumber}
                                 />
+                            </div>
+
+                            <div>
+                                <SinglePageSelection
+                                    label="Priority"
+                                    placeholder="Select Priority"
+                                    required
+                                    value={formData.Priority ?? ""}
+                                    onChange={(value) => handleFieldChange("Priority", value)}
+                                    options={PRIORITY_OPTIONS.map((opt) => ({
+                                        label: opt.name,
+                                        value: opt.id,
+                                    }))}
+                                    error={errors.Priority}
+                                />
+
                             </div>
                         </div>
 
@@ -526,11 +548,11 @@ export const AddUpdateLitigation: React.FC = () => {
                             <div key={step.id} className="flex items-start gap-3">
 
                                 <div className={`w-6 h-6 flex-shrink-0 rounded-md flex items-center justify-center border-2 transition-all duration-200 
-                                             ${step.completed ? "bg-blue-600 text-white" : "bg-blue-200 text-transparent" }`}>
-                                              {step.completed && <Check size={14} strokeWidth={3} />}
+                                             ${step.completed ? "bg-blue-600 text-white" : "bg-blue-200 text-transparent"}`}>
+                                    {step.completed && <Check size={14} strokeWidth={3} />}
                                 </div>
 
-                                <span className={`text-md break-words whitespace-normal ${step.completed ? "text-gray-900 font-medium" : "text-gray-500" }`} >
+                                <span className={`text-md break-words whitespace-normal ${step.completed ? "text-gray-900 font-medium" : "text-gray-500"}`} >
 
                                     {step.label}
 

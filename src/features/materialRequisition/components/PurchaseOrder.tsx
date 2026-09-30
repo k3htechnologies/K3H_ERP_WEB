@@ -39,7 +39,11 @@ const InitialFormState = (): AddUpdateMaterialRequisitionPurchaseOrder => ({
     RemovePurchaseOrderURL: ''
 })
 
-export const PurchaseOrder: React.FC = () => {
+interface PurchaseOrderProps {
+    onload?: () => Promise<void>;
+}
+
+export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -153,6 +157,7 @@ export const PurchaseOrder: React.FC = () => {
         }else if (formData.Remarks.trim().length < 25) {
             newErrors.Remarks = "Remark must be at least 25 characters";
         }
+        
         if (!formData.TermsCondition?.trim()) {
             newErrors.TermsCondition = "Terms & Condition is required.";
         }
@@ -197,6 +202,7 @@ export const PurchaseOrder: React.FC = () => {
 
                     loadPurchaseOrder();
 
+                    await onload?.();
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
@@ -244,6 +250,9 @@ export const PurchaseOrder: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
 
                     loadPurchaseOrder();
+
+                    await onload?.();
+
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -291,6 +300,9 @@ export const PurchaseOrder: React.FC = () => {
                     setIsConfirmationDialogBoxOpen(false);
 
                     setDeleteGeneratePurchaseOrderData(null);
+
+                    await onload?.();
+                    
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);

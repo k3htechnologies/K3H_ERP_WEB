@@ -137,6 +137,7 @@ export const MaterialRequisition: React.FC = () => {
             SystemGeneratedCode: row.SystemGeneratedCode ?? "",
             VendorFinalizationApprovalStatus: row.VendorFinalizationApprovalStatus,
             VendorName: row.FinalVendor,
+            CompanyGSTNumber:row.CompanyGSTNumber ?? "",
             Uniquekey: row.Uniquekey ?? ""
         });
         navigate('/materialRequisition/view');
@@ -216,6 +217,14 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
                 );
             }
+        },
+        {
+            key: 'CompanyName',
+            label: 'Company Name',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => (value) || '-'
         },
         {
             key: 'MaterialRequisitionStage',

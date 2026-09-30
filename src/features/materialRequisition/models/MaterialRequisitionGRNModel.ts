@@ -7,6 +7,14 @@ export interface FilterWithPaginationMaterialRequisitionGRN {
     MaterialRequisitionGRNId?: number
 }
 
+export interface FilterWithGenerateMaterialRequisitionGRNPDF {
+    ProjectId?: number
+    Uniquekey?: string
+    MaterialRequisitionId?: number
+    MaterialRequisitionGRNId?: number
+    ExportType?: "PDF" | "Excel" | "MATERIAL REQUISITION GRN PDF"
+}
+
 export interface MaterialRequisitionGRNData {
     MaterialRequisitionGRNId: number | 0
     Uniquekey: string | null
@@ -14,7 +22,7 @@ export interface MaterialRequisitionGRNData {
     ChallanNumber: string | ''
     VehicleNumber: string | null
     UploadChallanURL: string | null
-    RemoveUploadChallanURL: string | ''
+    ProofOfDocumentURL: string | null
     Remarks: string | null
     IsInvoiceCreated :boolean
     IsInvoicePaymentCompleted:boolean
@@ -68,8 +76,10 @@ export interface AddUpdateMaterialRequisitionGRNRequest {
     MaterialRequisitionId: number | 0
     ChallanNumber: string | ''
     VehicleNumber: string | null
-    UploadChallanURL: string | null
+    UploadChallanURL:(File | string)[] | null;
     RemoveUploadChallanURL: string | ''
+    ProofOfDocumentURL: (File | string)[] | null;
+    RemoveProofOfDocumentURL: string | '';
     Remarks: string
     ProjectId: number | 0
     MaterialRequisitionDetailGRNJSON: string
@@ -134,3 +144,4 @@ export type MaterialRequisitionGRNListResponse = ApiResponse<MaterialRequisition
 export type MaterialRequisitionGRNSaveResponse = ApiResponse<MaterialRequisitionGRNData[]>;
 export type MaterialRequisitionGRNDeleteResponse = ApiResponse<number>;
 export type MaterialRequisitionGRNSummaryListResponse = ApiResponse<MaterialRequisitionGRNSummaryData[]>
+export type GenerateMaterialRequisitionGRNPDFResponse = ApiResponse<MaterialRequisitionGRNData[]>;

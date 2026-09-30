@@ -22,9 +22,10 @@ import { DataTableWithHeaderRowDivider, type TableColumn } from "@/ui/components
 interface OverviewProps {
     matrialRequisitionData: MaterialRequisitionData | null;
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+    handleExportMaterialRequisition?: () => Promise<void>;
 }
 
-export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData }) => {
+export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData, handleExportMaterialRequisition }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -330,6 +331,14 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     </h4>
 
                     <div className="flex items-center gap-2">
+                        {handleExportMaterialRequisition && (
+                            <Button
+                                size="sm"
+                                color="blue"
+                                onClick={() => handleExportMaterialRequisition()}>
+                                PDF
+                            </Button>
+                        )}
 
                         {ShowSplitButton && !isSplit && (
 
@@ -344,7 +353,6 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                                 <span>Split</span>
                             </button>
                         )}
-
                     </div>
                 </div>
 
@@ -408,19 +416,19 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </div>
             </section>
 
-             {matrialRequisitionData?.CloseCompletionRemark && (
-                    <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
-                        <div className="bg-[#FBF9F9] px-4 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                                {matrialRequisitionData?.MaterialRequisitionStatus} Remark
-                            </h4>
-                        </div>
+            {matrialRequisitionData?.CloseCompletionRemark && (
+                <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                    <div className="bg-[#FBF9F9] px-4 py-2 border-b border-[#D0D7DE]">
+                        <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                            {matrialRequisitionData?.MaterialRequisitionStatus} Remark
+                        </h4>
+                    </div>
 
-                        <div className="p-4">
-                            <span>{matrialRequisitionData?.CloseCompletionRemark || "-"}</span>
-                        </div>
-                    </section>
-                )}
+                    <div className="p-4">
+                        <span>{matrialRequisitionData?.CloseCompletionRemark || "-"}</span>
+                    </div>
+                </section>
+            )}
 
             <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
                 <div className="bg-[#E1E2E4] px-4 py-2 border-b border-[#D0D7DE]">

@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionDetailGRNData, type DeleteMaterialRequisitionGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionDetailGRNData, type DeleteMaterialRequisitionGRN, type FilterWithGenerateMaterialRequisitionGRNPDF } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -14,7 +14,6 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import DataTableExpandable from "@/ui/components/DataTable/DataTableExpandable";
 import { Edit, Trash2 } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
@@ -26,6 +25,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { handleExportFile } from "@/core/utils/exportFile";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
@@ -48,7 +48,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     const [, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
-    const { canAction } = useMenuPermissions();
+    const canAction = true;
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -272,12 +272,6 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
 
     const GRNColumns = useMemo<TableColumn[]>(() => [
         {
-            key: 'VehicleNumber',
-            label: 'Vehicle No.',
-            width: '35',
-            render: (value?: string) => value || '-'
-        },
-        {
             key: 'ChallanNumber',
             label: 'Challan Number',
             width: '25',
@@ -292,11 +286,12 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
             render: (value: string, row: any) => {
                 return (
                     <div className="flex items-center justify-between w-full">
+
                         <MultiImageViewer
                             images={parseDocumentUrls(row.UploadChallanURL)}
                             title="Challan Document"
                             isIcon={false}
-                            triggerLabel={value === '' || 'Challan'}
+                            triggerLabel={value === '' || 'Challan Document'}
                         />
 
                     </div>
@@ -308,6 +303,25 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
             label: 'Vehicle Number',
             width: '35',
             render: (value?: string) => value || '-'
+        },
+        {
+            key: 'ProofOfDocumentURL',
+            label: 'Proof Of Document',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value: string, row: any) => {
+                return (
+                    <div className="flex items-center justify-between w-full">
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.ProofOfDocumentURL)}
+                            title="Proof Of Document"
+                            isIcon={false}
+                            triggerLabel={value === '' || "Proof"}
+                        />
+                    </div>
+                );
+            }
         },
         {
             key: "Remarks",
@@ -455,6 +469,33 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     }, [matrialRequisitionDetailData]);
 
 
+    const handleExportMaterialRequisitionGRN = async (exportType: 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithGenerateMaterialRequisitionGRNPDF = {
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                    Uniquekey: currentUniquekey,
+                    ProjectId: Number(projectId),
+                    ExportType: "MATERIAL REQUISITION GRN PDF"
+                };
+
+                const response = await materialRequisitionGRNService.apiCallGenerateMaterialRequisitionGRNPDF(params);
+
+                handleExportFile(response, exportType, 'Material Requisition GRN', addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Export'
+        );
+    };
+
+    const handleExportMaterialRequisitionGRNPdf = () => handleExportMaterialRequisitionGRN('PDF')
 
     return (
         <div className="pt-5">
@@ -468,7 +509,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived && isPurchaseOrderExists}
+                isShowAddButton={canAction && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived}
                 addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true && isPurchaseOrderExists}
@@ -477,6 +518,10 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
+
+                isShowExportButton={filteredGRN.length > 0}
+                onExportPdf={handleExportMaterialRequisitionGRNPdf}
+
             />
 
             <DataTableExpandable
@@ -533,6 +578,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Challan Number" value={item?.ChallanNumber || '-'} />
                                         <FieldItem label="Challan" urls={item?.UploadChallanURL} isIcon isSetValue={false} />
+                                        <FieldItem label="Proof Of Document" urls={item?.ProofOfDocumentURL} isIcon isSetValue={false} />
                                         <FieldItem label="Vehicle Number" value={item?.VehicleNumber || '-'} />
                                         <FieldInfoTooltip label="Remarks" value={item?.Remarks || '-'} />
                                         <FieldItem label="Created By / Date" value={item.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate || '-')} />

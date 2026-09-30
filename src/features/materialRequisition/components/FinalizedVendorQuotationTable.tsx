@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { DataTableEditable, type EditableColumnGroup, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable"
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
-import { computeAmount, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
+import { computeAmount, computeAmountInstallation, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { Input } from "@/ui/components/forms/Input"
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation"
 import { formatCurrency } from "@/core/utils/comman"
@@ -18,6 +18,7 @@ type Row =
         IGST: number | string
         TGST?: number | string
         Amount: number
+        Installation: number
         Logistics?: string
     }
 
@@ -31,6 +32,8 @@ interface Props {
     onSave?: (rows: Row[]) => void
     onEditModeChange?: (isEditing: boolean) => void
     VendorFinalizationApprovalStatus?: string
+    VendorGSTNumber?: string
+    CompanyGSTNumber?: string
 }
 
 export const FinalizedVendorQuotationTable: React.FC<Props> = ({
@@ -38,7 +41,9 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     onChange,
     onSave,
     onEditModeChange,
-    VendorFinalizationApprovalStatus
+    VendorFinalizationApprovalStatus,
+    VendorGSTNumber,
+    CompanyGSTNumber
 }) => {
     const [rows, setRows] = useState<Row[]>(data)
     const [stagedRows, setStagedRows] = useState<Row[]>(data)
@@ -56,16 +61,14 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             (isEditing ? stagedRows : rows).map(r => ({
                 ...r,
                 id: r.id ?? `row-${r.MaterialName}-${r.MaterialQuantity}`,
-                Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),  // ← key fix
+                Amount: r.Logistics ? (r.Amount ?? 0)  : computeAmount(r),  // ← key fix
             })),
         [rows, stagedRows, isEditing]
     )
 
     const handleChange = useCallback((newRows: Row[]) => {
         const updatedRows = newRows.map(row => {
-            const amount = row.Logistics
-                ? Number(row.Amount ?? 0)
-                : Number(row.MaterialPerUnit ?? 0);
+            const amount = computeAmount(row);
 
             if (amount <= 0) {
                 return {
@@ -106,20 +109,38 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
 
     const GROUPS: EditableColumnGroup[] = [
         { label: "ITEM INFORMATION", keys: ["MaterialOrService", "MaterialQuantity"], background: "#0F2744" },
-        { label: "PRICING", keys: ["MaterialPerUnit", "Amount"], background: "#1A3560" },
+        { label: "PRICING", keys: ["MaterialPerUnit","Installation", "Amount", ], background: "#1A3560" },
         { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "TGST"], background: "#1E3A5F", color: "#FDE68A" },
         { label: "SUMMARY", keys: ["Total"], background: "#0F2744" }
     ]
 
-    const isServiceRow = (row: Row) => !!row?.Logistics;
-
+    
     const hasAmount = (row: Row) => {
-        const amount = isServiceRow(row)
-            ? Number(row?.Amount ?? 0)
-            : Number(row?.MaterialPerUnit ?? 0);
+        const amount = computeAmount(row);
 
         return amount > 0;
     };
+
+    const getGSTType = () => {
+        const vendorStateCode = VendorGSTNumber?.trim().substring(0, 2);
+        const companyStateCode = CompanyGSTNumber?.trim().substring(0, 2);
+
+        if (!vendorStateCode || !companyStateCode) {
+            return {
+                isSameState: false,
+                isDifferentState: false,
+            };
+        }
+
+        const isSameState = vendorStateCode === companyStateCode;
+
+        return {
+            isSameState,
+            isDifferentState: !isSameState,
+        };
+    };
+
+    const { isSameState, isDifferentState } = getGSTType();
 
     const columns: EditableTableColumn[] = useMemo(() => [
         {
@@ -194,6 +215,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             render: (_value, row) => {
 
                 if (row?.Logistics) return
+
                 <span className="inline-flex items-center justify-center min-w-[70px] px-3 py-1.5 rounded-md bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 text-gray-500 text-xs font-semibold shadow-sm">
                     —
                 </span>
@@ -222,6 +244,49 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 )
             }
         },
+         {
+            key: "Installation",
+            label: "INSTALLATION (₹)",
+            type: "number",
+            editable: isEditing,
+            width: 120,
+            align: "right",
+            prefix: "₹",
+            headerClassName: "bg-[#253E60] text-white tracking-[1px]",
+            render: (_value, row) => {
+
+                if (row?.Logistics) return
+
+                <span className="inline-flex items-center justify-center min-w-[70px] px-3 py-1.5 rounded-md bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 text-gray-500 text-xs font-semibold shadow-sm">
+                    —
+                </span>
+
+                return (
+                    <div className="flex justify-end w-full">
+                        <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
+                            {row?.Installation || '-'}
+                        </span>
+                    </div>
+                )
+            },
+            renderEditor: (_value, onChange, row) => {
+
+                if (row?.Logistics) return <span className=" text-gray-300">-</span>
+
+                return (
+                    <Input
+
+                        type="text"
+                        value={row?.Installation ?? 0}
+                        
+                        onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
+
+                    />
+
+                )
+            }
+            
+        },
         {
             key: "Amount",
             label: "AMOUNT (₹)",
@@ -244,21 +309,22 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 }
                 return (
                     <span className="w-full block text-right pr-1 font-bold text-black-300">
-                        {formatCurrency(computeAmount(row))}
+                        {formatCurrency(computeAmountInstallation(row))}
                     </span>
                 )
             },
             render: (_value, row) => (
                 <span className="w-full block text-right pr-1">
-                    ₹{(row.Logistics ? (row.Amount ?? 0) : computeAmount(row)).toLocaleString()}
+                    ₹{(row.Logistics ? (row.Amount ?? 0) : computeAmountInstallation(row)).toLocaleString()}
                 </span>
             )
         },
+       
         {
             key: "CGST",
             label: "CGST (%)",
             type: "number",
-            editable: isEditing,
+            editable: isEditing && isSameState,
             width: 50,
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
@@ -266,7 +332,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
 
             renderEditor: (_value, onChange, row) => {
 
-                if (!hasAmount(row)) {
+                if (!isSameState || !hasAmount(row)) {
                     return (
                         <span className="text-gray-300 text-right block">
                             -
@@ -299,7 +365,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         {
             key: "SGST",
             label: "SGST (%)",
-            editable: isEditing,
+            editable: isEditing && isSameState,
             type: "number",
             width: 50,
             align: "right",
@@ -307,7 +373,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if (!hasAmount(row)) {
+                if (!isSameState || !hasAmount(row)) {
                     return (
                         <span className="text-gray-300 text-right block">
                             -
@@ -334,48 +400,11 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                     ? "text-yellow-600 font-semibold bg-yellow-50"
                     : "text-gray-400 font-semibold bg-gray-100"
         },
-        {
-            key: "UGST",
-            label: "UGST (%)",
-            editable: isEditing,
-            type: "number",
-            width: 50,
-            align: "right",
-            headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
-            suffix: "%",
-            renderEditor: (_value, onChange, row) => {
 
-                if (!hasAmount(row)) {
-                    return (
-                        <span className="text-gray-300 text-right block">
-                            -
-                        </span>
-                    );
-                }
-                return (
-                    <Input
-                        type="text"
-                        value={row?.UGST ?? ""}
-                        onChange={(e) => {
-                            const val = allowPercentage(e.target.value);
-
-                            if (val !== null) {
-                                onChange(val === "" ? 0 : filterNumbersWithDecimal(val));
-                            }
-                        }}
-                        className="text-right"
-                    />
-                );
-            },
-            cellClassName: (value) =>
-                value !== 0
-                    ? "text-yellow-600 font-semibold bg-yellow-50"
-                    : "text-gray-400 font-semibold bg-gray-100"
-        },
         {
             key: "TGST",
             label: "IGST (%)",
-            editable: isEditing,
+            editable: isEditing && isDifferentState,
             type: "number",
             width: 50,
             align: "right",
@@ -383,7 +412,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if (!hasAmount(row)) {
+                if (!isDifferentState || !hasAmount(row)) {
                     return (
                         <span className="text-gray-300 text-right block">
                             -
@@ -424,7 +453,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-green-200 tracking-[1px]",
             cellClassName: "text-green-600 font-semibold"
         }
-    ], [isEditing])
+    ], [isEditing,isSameState, isDifferentState])
 
     return (
         <div className="space-y-4 rounded-xl">
@@ -432,36 +461,36 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 <div className="text-lg font-semibold text-gray-900">
                     Quotation
                 </div>
-                    {
+                {
                     !VendorFinalizationApprovalStatus?.toUpperCase().includes("APPROVED") && (
                         !isEditing ? (
 
-                        <button
-                            onClick={() => {
-                                setIsEditing(true)
-                                onEditModeChange?.(true)
-                            }}
-                            className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                            Edit
-                        </button>
-                    ) : (
-                    <div className="flex gap-2">
+                            <button
+                                onClick={() => {
+                                    setIsEditing(true)
+                                    onEditModeChange?.(true)
+                                }}
+                                className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                                Edit
+                            </button>
+                        ) : (
+                            <div className="flex gap-2">
 
-                        <button
-                            onClick={handleCancel}
-                            className="px-4 py-2 text-md bg-gray-200 hover:bg-gray-300 rounded-lg">
-                            Cancel
-                        </button>
+                                <button
+                                    onClick={handleCancel}
+                                    className="px-4 py-2 text-md bg-gray-200 hover:bg-gray-300 rounded-lg">
+                                    Cancel
+                                </button>
 
-                        <button
-                            onClick={handleSave}
-                            className="px-4 py-2 text-md bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
-                            Save
-                        </button>
+                                <button
+                                    onClick={handleSave}
+                                    className="px-4 py-2 text-md bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
+                                    Save
+                                </button>
 
-                    </div>
-                    )
-                )}
+                            </div>
+                        )
+                    )}
             </div>
 
             <DataTableEditable

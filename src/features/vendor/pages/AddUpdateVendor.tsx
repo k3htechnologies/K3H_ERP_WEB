@@ -12,7 +12,7 @@ import { technicalService } from "@/features/technical/services/TechnicalService
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
 import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import { FIRMS_TYPE_OPTIONS, VENDOR_TYPE_OPTIONS } from "@/core/constants/staticData";
+import { BUSINESS_TYPE_OPTIONS, FIRMS_TYPE_OPTIONS, OWNERSHIP_TYPE_OPTIONS, VENDOR_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
 import * as E from "fp-ts/Either";
@@ -33,6 +33,8 @@ const initialFormState = (): AddUpdateVendorRequest => ({
   CompanyName: "",
   CompanyType: "",
   VendorName: "",
+  OwnershipType: "",
+  VendorBusinessType: "",
   MobileNumberCountryCode: "+91",
   MobileNumber: "",
   EmailId: "",
@@ -194,6 +196,8 @@ export const AddUpdateVendor: React.FC = () => {
               CompanyName: row.CompanyName ?? prev.CompanyName,
               CompanyType: row.CompanyType ?? prev.CompanyType,
               VendorName: row.VendorName ?? prev.VendorName,
+              OwnershipType: row.OwnershipType ?? prev.OwnershipType,
+              VendorBusinessType: row.VendorBusinessType ?? prev.VendorBusinessType,
               MobileNumberCountryCode: row.MobileNumberCountryCode ?? prev.MobileNumberCountryCode,
               MobileNumber: row.MobileNumber ?? prev.MobileNumber,
               EmailId: row.EmailId ?? prev.EmailId,
@@ -307,6 +311,12 @@ export const AddUpdateVendor: React.FC = () => {
     if (!formData.VendorName?.trim()) {
       newErrors.VendorName = "Vendor name is required";
     }
+    if (!formData.OwnershipType?.trim()) {
+      newErrors.OwnershipType = "Ownership Type is required";
+    }
+    if (!formData.VendorBusinessType?.trim()) {
+      newErrors.VendorBusinessType = "Business Type is required";
+    }
 
     if (!formData.CompanyName?.trim()) {
       newErrors.CompanyName = "Company name is required";
@@ -401,6 +411,8 @@ export const AddUpdateVendor: React.FC = () => {
     fd.append('CompanyName', formData.CompanyName?.trim() || '');
     fd.append('CompanyType', formData.CompanyType?.trim() || '');
     fd.append('VendorName', formData.VendorName?.trim() || '');
+    fd.append('OwnershipType', formData.OwnershipType?.trim() || '');
+    fd.append('VendorBusinessType', formData.VendorBusinessType?.trim() || '');
     fd.append("MobileNumberCountryCode", formData.MobileNumberCountryCode ?? "");
     fd.append('MobileNumber', formData.MobileNumber?.trim() || '');
     fd.append('EmailId', formData.EmailId?.trim() || '');
@@ -646,6 +658,31 @@ export const AddUpdateVendor: React.FC = () => {
                 value: opt.id,
               }))}
               error={errors.CompanyType}
+            />
+            <SinglePageSelection
+              label="Ownership Type"
+              placeholder="Select Ownership Type"
+              required
+              value={formData.OwnershipType}
+              onChange={(val) => handleFieldChange("OwnershipType", String(val))}
+              options={OWNERSHIP_TYPE_OPTIONS.map((opt) => ({
+                label: opt.name,
+                value: opt.id,
+              }))}
+              error={errors.OwnershipType}
+            />
+
+            <SinglePageSelection
+              label="Business Type"
+              placeholder="Select Business Type"
+              required
+              value={formData.VendorBusinessType}
+              onChange={(val) => handleFieldChange("VendorBusinessType", String(val))}
+              options={BUSINESS_TYPE_OPTIONS.map((opt) => ({
+                label: opt.name,
+                value: opt.id,
+              }))}
+              error={errors.VendorBusinessType}
             />
           </div>
         </div>

@@ -243,7 +243,7 @@ export const AddUpdateProjectRedevelopment: React.FC = () => {
             newErrors.PinCode = "Pin Code is required.";
         }
         if (!RedevelopmentformData.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber?.trim()) {
-            newErrors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber = "Plot Number / CTS Number / Survey Number / Subdivision Number is required.";
+            newErrors.PlotNumber_CTSNumber_SurveyNumber_SubdivisionNumber = "Plot / CTS / Survey / Subdivision Number is required.";
         }
         if (!RedevelopmentformData.TotalPlotAreaSqM) {
             newErrors.TotalPlotAreaSqM = "Total Plot Area is required.";

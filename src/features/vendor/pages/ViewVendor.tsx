@@ -20,7 +20,7 @@ export const ViewVendor: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  
+
   const navigate = useNavigate();
   const { listState } = useVendorListState();
   const vendorName = listState.vendorName || '';
@@ -90,6 +90,7 @@ export const ViewVendor: React.FC = () => {
         titleText={'Vendor Details : '}
         subTitleText={vendorName}
         subSubTitleText={editVendorMasterData?.SystemGeneratedCode || ''}
+        subSubSubTitleText={editVendorMasterData?.OwnershipType || ''}
         cancelText="Cancel"
         EditText="Edit"
         onCancel={() => navigateBackToList()}
@@ -133,10 +134,29 @@ export const ViewVendor: React.FC = () => {
                         <h1 className="text-2xl font-bold text-slate-800">
                           {editVendorMasterData?.VendorName}
                         </h1>
+
+                        {editVendorMasterData?.OwnershipType && (
+                          <span
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium"
+                            style={{
+                              backgroundColor: "#E0E7FF",
+                              color: "#4338CA",
+                            }}
+                          >
+                            <Circle
+                              size={8}
+                              fill="#4338CA"
+                              color="#4338CA"
+                              strokeWidth={1}
+                            />
+                            {editVendorMasterData?.OwnershipType || "-"}
+                          </span>
+                        )}
+
                         <span
                           className={`inline-flex items-center gap-1 px-2 py-1.5 rounded text-xs font-medium  ${editVendorMasterData.VerifiedNonVerified === "Verified"
-                              ? "bg-green-50 text-green-700 border-green-200"
-                              : "bg-red-50 text-red-700 border-red-200"
+                            ? "bg-green-50 text-green-700 border-green-200"
+                            : "bg-red-50 text-red-700 border-red-200"
                             }`}
                         >
                           <Circle
@@ -158,8 +178,7 @@ export const ViewVendor: React.FC = () => {
                             style={{
                               backgroundColor: "#FFEDD5",
                               color: " #C2410C",
-                            }}
-                          >
+                            }}>
                             <Circle
                               size={8}
                               fill={"#C2410C"}
@@ -208,6 +227,7 @@ export const ViewVendor: React.FC = () => {
                 <FieldItem label="Company Type" value={editVendorMasterData?.CompanyType ?? '-'} />
                 <FieldItem label="Mobile Number" value={editVendorMasterData?.MobileNumber ? `${editVendorMasterData?.MobileNumberCountryCode || "+91"} ${editVendorMasterData.MobileNumber}` : "-"} />
                 <FieldItem label="E-Mail ID" value={editVendorMasterData?.EmailId ?? '-'} />
+                <FieldItem label="Business Type" value={editVendorMasterData?.VendorBusinessType ?? '-'} />
 
               </div>
 
@@ -277,7 +297,7 @@ export const ViewVendor: React.FC = () => {
             </div>
 
 
-            {}
+            { }
             <div className="xl:col-span-2 bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
 
               <div className="flex items-center gap-3 mb-5">

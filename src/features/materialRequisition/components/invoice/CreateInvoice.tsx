@@ -12,7 +12,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Input } from "@/ui/components/forms";
-import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -496,11 +496,11 @@ const CreateInvoice: React.FC = () => {
                 <div className="lg:col-span-5 pb-3">
 
                     <div className="mb-5">
-                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                        <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
                             Vendor Details
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Vendor Name"
                                 value={invoiceSummaryData?.FinalVendor}
@@ -524,11 +524,11 @@ const CreateInvoice: React.FC = () => {
                     </div>
 
                     <div className="mb-5">
-                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                        <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
                             PO Amount Details (₹)
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Total (₹)"
                                 value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)}
@@ -547,11 +547,11 @@ const CreateInvoice: React.FC = () => {
                     </div>
 
                     <div>
-                        <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                        <h3 className="text-md font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
                             Invoice Details  (₹)
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Total (₹)"
                                 value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)}
@@ -574,19 +574,12 @@ const CreateInvoice: React.FC = () => {
 
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                         <FieldItem label="Challan Number" value={materialRequisitionGRNData?.ChallanNumber || '-'} />
                         <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
                         <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
                         <FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks || '-'} />
-                        <FieldItem label="Created By / Date" value={materialRequisitionGRNData?.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(materialRequisitionGRNData?.CreatedDate || '-')} />
-
-                        {materialRequisitionGRNData?.ModifiedBy !== '' ?
-                            <FieldItem label="Modified By / Date" value={materialRequisitionGRNData?.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(materialRequisitionGRNData?.ModifiedDate || '-')} />
-                            :
-                            ''}
-
                     </div>
                 </div>
 

@@ -10,6 +10,7 @@ export type VendorListState = {
   sortInfo: SortInfo | undefined;
   vendorId: number;
   vendorName: string;
+  OwnershipType: string;
   pageName: string;
 };
 
@@ -18,13 +19,14 @@ const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR;
 const getInitialState = (): VendorListState => {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
       const parsed = JSON.parse(stored) as VendorListState;
       return {
         ...parsed,
         vendorId: parsed.vendorId || 0,
         vendorName: parsed.vendorName || "",
+        OwnershipType: parsed.OwnershipType || "",
       };
     }
   } catch (error) {
@@ -39,6 +41,7 @@ const getInitialState = (): VendorListState => {
     sortInfo: undefined,
     vendorId: 0,
     vendorName: "",
+    OwnershipType: "",
     pageName: "",
   };
 };
@@ -48,7 +51,7 @@ type VendorListStateContextType = {
   updateListState: (updates: Partial<VendorListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setVendorContext: (vendorId: number, vendorName: string) => void;
+  setVendorContext: (vendorId: number, vendorName: string, OwnershipType: string) => void;
   clearVendorContext: () => void;
 };
 
@@ -65,7 +68,7 @@ export const VendorListStateProvider = ({ children }: { children: ReactNode }) =
     }
   }, [listState]);
 
-  
+
   const updateListState = useCallback((updates: Partial<VendorListState>) => {
     setListState((prev) => ({ ...prev, ...updates }));
   }, []);
@@ -90,26 +93,29 @@ export const VendorListStateProvider = ({ children }: { children: ReactNode }) =
       sortInfo: undefined,
       vendorId: 0,
       vendorName: "",
+      OwnershipType: "",
       pageName: "",
     };
     setListState(defaultState);
   }, []);
 
 
-  const setVendorContext = useCallback((vendorId: number, vendorName: string) => {
+  const setVendorContext = useCallback((vendorId: number, vendorName: string, OwnershipType: string) => {
     setListState((prev) => ({
       ...prev,
       vendorId,
       vendorName,
+      OwnershipType,
     }));
   }, []);
 
-  
+
   const clearVendorContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,
       vendorId: 0,
       vendorName: "",
+      OwnershipType: "",
     }));
   }, []);
 

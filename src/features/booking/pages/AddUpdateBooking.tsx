@@ -1235,7 +1235,7 @@ export const AddUpdateBooking: React.FC = () => {
       newErrors.CommunicationAddress = "Communication Address must be at least 25 characters";
     }
 
-    if (!formData.AgreementValue || formData.AgreementValue === 0) {
+    if (!formData.AgreementValue || Number(formData.AgreementValue) <= 0) {
       newErrors.AgreementValue = "Agreement Value is required";
     }
 

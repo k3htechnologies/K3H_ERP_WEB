@@ -101,6 +101,9 @@ export const Vendor: React.FC = () => {
           VendorName: searchtext ?? filterParams.VendorName?.trim() ?? undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
           CompanyType: filterParams.CompanyType?.trim() || undefined,
+          OwnershipType: filterParams.OwnershipType?.trim() || undefined,
+          VendorBusinessType: filterParams.VendorBusinessType?.trim() || undefined,
+          Specialist: filterParams.Specialist?.trim() || undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           GSTNumber: filterParams.GSTNumber?.trim() || undefined,
@@ -176,6 +179,9 @@ export const Vendor: React.FC = () => {
           VendorName: filters.VendorName?.trim() || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
           CompanyType: filters.CompanyType?.trim() || undefined,
+          OwnershipType: filters.OwnershipType?.trim() || undefined,
+          VendorBusinessType: filters.VendorBusinessType?.trim() || undefined,
+          Specialist: filters.Specialist?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
           CityName: filters.CityName?.trim() || undefined,
           GSTNumber: filters.GSTNumber?.trim() || undefined,
@@ -205,10 +211,6 @@ export const Vendor: React.FC = () => {
   const handleExportVendorExcel = () => handleExportVendors('Excel')
   const handleExportVendorPdf = () => handleExportVendors('PDF')
 
-  
-
-  
-
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
   }, [sortInfo, updateListState]);
@@ -232,7 +234,7 @@ export const Vendor: React.FC = () => {
   const vendorListForTable = useMemo(() => vendorList, [vendorList]);
 
   const handleViewVendorDetails = useCallback((row: VendorData) => {
-    updateListState({ vendorId: row.VendorId, vendorName: row.VendorName });
+    updateListState({ vendorId: row.VendorId, vendorName: row.VendorName,OwnershipType:row.OwnershipType });
     navigate('/vendor/view');
   }, [navigate, updateListState]);
 
@@ -347,6 +349,30 @@ export const Vendor: React.FC = () => {
       {
         key: 'CompanyType',
         label: 'Company Type',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'OwnershipType',
+        label: 'Ownership Type',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'VendorBusinessType',
+        label: 'Business Type',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'Specialist',
+        label: 'Specialist',
         width: '15',
         sortable: false,
         align: 'left',
@@ -883,6 +909,36 @@ export const Vendor: React.FC = () => {
                 value={tempFilters.CompanyType || ''}
                 onChange={(e) => handleFilterChange('CompanyType', e.target.value)}
                 placeholder="Enter Company Type"
+              />
+            </div>
+             <div>
+
+              <Input
+                label='Ownership Type'
+                type="text"
+                value={tempFilters.OwnershipType || ''}
+                onChange={(e) => handleFilterChange('OwnershipType', e.target.value)}
+                placeholder="Enter Ownership Type"
+              />
+            </div>
+             <div>
+
+              <Input
+                label='Business Type'
+                type="text"
+                value={tempFilters.VendorBusinessType || ''}
+                onChange={(e) => handleFilterChange('VendorBusinessType', e.target.value)}
+                placeholder="Enter Business Type"
+              />
+            </div>
+             <div>
+
+              <Input
+                label='Specialist'
+                type="text"
+                value={tempFilters.Specialist || ''}
+                onChange={(e) => handleFilterChange('Specialist', e.target.value)}
+                placeholder="Enter Specialist"
               />
             </div>
             <div>

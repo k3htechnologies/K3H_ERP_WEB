@@ -29,6 +29,8 @@ const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNR
     VehicleNumber: null,
     UploadChallanURL: null,
     RemoveUploadChallanURL: "",
+    ProofOfDocumentURL: null,
+    RemoveProofOfDocumentURL: "",
     MaterialRequisitionDetailGRNJSON: ""
 })
 
@@ -39,9 +41,15 @@ export const AddUpdateGRN = () => {
     const { addToast } = useToast();
     const [materialList, setMaterialList] = useState<MaterialRequisitionDetailGRN[]>([]);
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionGRNRequest>(() => initialFormStateMaterialRequisition())
+
     const [uploadChallanFiles, setUploadChallanFiles] = useState<(File | string)[]>([]);
     const [removedUploadChallanUrls, setRemovedUploadChallanUrls] = useState<string[]>([]);
     const [uploadChallanURL, setuploadChallanURL] = useState<string>();
+
+    const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
+    const [removedProofOfDocumentUrls, setRemovedProofOfDocumentUrls] = useState<string[]>([]);
+    const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
+
     const { canAction } = useMenuPermissions("/materialRequisition");
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const navigate = useNavigate();
@@ -146,6 +154,10 @@ export const AddUpdateGRN = () => {
                         setuploadChallanURL(e.UploadChallanURL ?? "");
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
+
+                        setProofOfDocumentURL(e.ProofOfDocumentURL ?? "");
+                        setProofOfDocumentFiles([]);
+                        setRemovedProofOfDocumentUrls([]);
                     }
                 } else {
                     addToast({ type: "error", title: response.left.message, });
@@ -180,6 +192,10 @@ export const AddUpdateGRN = () => {
         if (!hasAnyDocumentFile(uploadChallanFiles, uploadChallanURL, removedUploadChallanUrls)) {
             newErrors.UploadChallanFiles = "Challan is required.";
         }
+        if (!hasAnyDocumentFile(proofOfDocumentFiles, proofOfDocumentURL, removedProofOfDocumentUrls)) {
+            newErrors.ProofOfDocumentFiles = "Proof of document is required.";
+        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -216,10 +232,19 @@ export const AddUpdateGRN = () => {
         });
 
         form.append('RemoveUploadChallanURL', removedUploadChallanUrls.join(','));
+
+        proofOfDocumentFiles.forEach(file => {
+            if (file instanceof File) {
+                form.append('ProofOfDocumentURL', file);
+            }
+        });
+
+        form.append('RemoveProofOfDocumentURL', removedProofOfDocumentUrls.join(','));
         return form;
     };
 
     const handleSave = async () => {
+
 
         setErrors({});
         const validation = validateMaterialRequisitionGRNForm();
@@ -415,15 +440,13 @@ export const AddUpdateGRN = () => {
                             const materialQuantity = row.MaterialQuantity
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-
-                            const isPendingZero = pendingQuantity <= 0;
-
+                            const isPendingQtyZero=pendingQuantity <=0;
                             return (
                                 <Input
                                     label=""
                                     value={value ?? 0}
-                                    disabled={isPendingZero}
                                     maxLength={9}
+                                    disabled={isPendingQtyZero}
                                     onChange={(e) => {
                                         const raw = filterNumbersWithDecimal(e.target.value);
 
@@ -453,34 +476,7 @@ export const AddUpdateGRN = () => {
                     },
                 ]
             },
-            // {
-            //     key: "QualityAnalystRemark",
-            //     label: "Quality Analyst Remark",
-            //     align: "left",
-            //     width: "30",
-            //     render: (value: any, row: MaterialRequisitionDetailGRN) => {
-            //         return (
-            //             <TextArea
-            //                 label=""
-            //                 value={value ?? ""}
-            //                 onChange={(e) => {
-            //                     const remark = e.target.value;
 
-            //                     setMaterialList(prev =>
-            //                         prev.map(item =>
-            //                             item.MaterialRequisitionDetailId ===
-            //                                 row.MaterialRequisitionDetailId
-            //                                 ? {
-            //                                     ...item,
-            //                                     QualityAnalystRemark: remark,
-            //                                 } : item
-            //                         )
-            //                     );
-            //                 }}
-            //             />
-            //         );
-            //     },
-            // }
         );
 
         return columns;
@@ -531,7 +527,6 @@ export const AddUpdateGRN = () => {
                                 error={errors.UploadChallanFiles}
                                 required
                             />
-
                             <Input
                                 type="text"
                                 label="Vehicle Number"
@@ -541,6 +536,20 @@ export const AddUpdateGRN = () => {
                                 maxLength={13}
                                 error={errors.VehicleNumber}
 
+                            />
+                            <MultiFilePicker
+                                label="Proof Of Document"
+                                placeholder="Upload Proof Of Document"
+                                value={proofOfDocumentFiles}
+                                onChange={setProofOfDocumentFiles}
+                                availableFilesURL={proofOfDocumentURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={10}
+                                onRemoveExisting={(url) =>
+                                    setRemovedProofOfDocumentUrls(prev => [...prev, url])
+                                }
+                                error={errors.ProofOfDocumentFiles}
+                                required
                             />
                         </div>
 

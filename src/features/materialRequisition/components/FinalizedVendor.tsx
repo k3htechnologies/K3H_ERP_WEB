@@ -18,7 +18,7 @@ import { materialRequisitionQuotationService } from "@/features/materialRequisit
 import { Button } from "@/ui/components/forms/Button"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms/Input"
-import { CheckLine, ClipboardList, MessageSquareQuote, Scale, Search } from "lucide-react"
+import { ArrowLeft, CheckLine, ClipboardList, MessageSquareQuote, Scale, Search } from "lucide-react"
 import { handleExportFile } from "@/core/utils/exportFile"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel"
@@ -89,6 +89,9 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
     const [quotationFiles, setQuotationFiles] = useState<(File | string)[]>([]);
     const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([]);
+
+    const [isExpandableOpen, setExpandableOpen] = useState(false);
+
 
     useEffect(() => {
         if (!projectId) return
@@ -483,61 +486,100 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
         <div className="space-y-4">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
-            <div className="flex justify-end gap-2">
+            {isAnyFinalized && (
+                <ApprovalLogModal
+                    isOpen={isApprovalLogModalOpen}
+                    titleText={finalizedVendor?.VendorName}
+                    title="Finalized Vendor"
+                    onClose={() => setIsApprovalLogModalOpen(false)}
+                    request={approvalLogRequest}
+                />
+            )}
 
-                {isAnyFinalized &&
-                    <ApprovalLogModal
-                        isOpen={isApprovalLogModalOpen}
-                        titleText={finalizedVendor?.VendorName}
-                        title='Finalized Vendor'
-                        onClose={() => setIsApprovalLogModalOpen(false)}
-                        request={approvalLogRequest}
-                    />
-                }
+            <div className="flex justify-end items-center gap-2 h-[30px]">
+                <button
+                    type="button"
+                    onClick={() => setExpandableOpen(prev => !prev)}
+                    className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-[#135BEC30] text-blue-600 transition-all duration-[1000ms] ease-in-out hover:bg-[#135BEC50]"
+                    aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}>
+                    <span className={`inline-flex transition-transform duration-[1000ms] ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"}`}>
+                        <ArrowLeft className="h-5 w-5" />
+                    </span>
+                </button>
 
-                {!isAnyFinalized && cangetCompare && materialRequisitionVendorSelectedList.length > 1 && (
+                <div
+                    className={`flex gap-2 overflow-hidden transition-all duration-[1000ms] ease-in-out ${isExpandableOpen
+                        ? "max-w-[1000px] opacity-100 translate-x-0"
+                        : "max-w-0 opacity-0 translate-x-4 pointer-events-none"
+                        }`}>
+
+                    {!isAnyFinalized && cangetCompare && materialRequisitionVendorSelectedList.length > 1 && (
+                        <Button
+                            type="button"
+                            size="sm"
+                            style={{
+                                color: '#135BEC',
+                                backgroundColor: '#E8F0FF',
+                                padding: '4px 8px',
+                            }}
+                            leftIcon={<Scale size={15} />}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleExportCompareVendorExcel();
+                            }}
+                        >
+                            Compare
+                        </Button>
+                    )}
+
+                    {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
+                        <Button
+                            type="button"
+                            size="sm"
+                            style={{
+                                color: '#00A800',
+                                backgroundColor: '#E8FBE8',
+                                padding: '4px 8px',
+                            }}
+                            leftIcon={<CheckLine size={15} />}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                finalizeVendor();
+                            }}
+                        >
+                            Finalize Vendor
+                        </Button>
+                    )}
+
+                    {!isAnyFinalized && cangetQuotation && (
+                        <Button
+                            size="sm"
+                            style={{
+                                color: '#d35400',
+                                backgroundColor: '#FDE6D3',
+                                padding: '4px 8px',
+                            }}
+                            leftIcon={<MessageSquareQuote size={15} />}
+                            onClick={() => setQuotationAvailable(true)}
+                        >
+                            Get Quotation
+                        </Button>
+                    )}
+
                     <Button
-                        type="button"
                         size="sm"
-                        style={{
-                            color: '#135BEC',
-                            backgroundColor: '#E8F0FF',
-                            padding: '4px 8px',
-                        }}
-                        leftIcon={<Scale size={15} />}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleExportCompareVendorExcel();
-                        }}
+                        color="teal"
+                        leftIcon={<ClipboardList size={15} />}
+                        onClick={handleSummaryOfQuotation}
                     >
-                        Compare
+                        Summary Of Quotation
                     </Button>
-                )}
-
-                {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
-                    <Button
-                        type="button"
-                        size="sm"
-                        style={{
-                            color: '#00A800',
-                            backgroundColor: '#E8FBE8',
-                            padding: '4px 8px',
-                        }}
-
-                        leftIcon={<CheckLine size={15} />}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            finalizeVendor();
-                        }}
-                    >
-                        Finalize Vendor
-                    </Button>
-                )}
+                </div>
 
                 <ApprovalActionModal
-                    title='Finalize Vendor'
+                    title="Finalize Vendor"
                     isOpen={isApprovalActionModalOpen}
                     onClose={() => setIsApprovalActionModalOpen(false)}
                     actionType={approvalActionType}
@@ -545,32 +587,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                     onSubmit={handleApprovalSubmit}
                     loading={isLoading}
                 />
-
-                {!isAnyFinalized && cangetQuotation && (
-                    <Button
-                        size="sm"
-                        style={{
-                            color: '#d35400',
-                            backgroundColor: '#FDE6D3',
-                            padding: '4px 8px',
-                        }}
-                        leftIcon={<MessageSquareQuote size={15} />}
-                        onClick={() => setQuotationAvailable(true)}
-                    >
-                        Get Quotation
-                    </Button>
-                )}
-
-                <Button
-                    size="sm"
-                    color="teal"
-                    leftIcon={<ClipboardList size={15} />}
-                    onClick={handleSummaryOfQuotation}
-                >
-                    Summary
-                </Button>
-
             </div>
+
 
             {materialRequisitionVendorSelectedList.length === 0
                 ? <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">

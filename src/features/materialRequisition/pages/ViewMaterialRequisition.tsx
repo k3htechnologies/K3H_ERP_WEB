@@ -25,6 +25,7 @@ import type { RevokeFinalizationVendorRequest } from "@/features/materialRequisi
 import { vendorFinalizationService } from "../services/VendorFinalizationService";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Button } from "@/ui/components/forms";
+import { GetQuotation } from "../components/GetQuotation";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -60,10 +61,11 @@ export const ViewMaterialRequisition: React.FC = () => {
 
         { id: "Overview", label: "Overview" },
         { id: "Details", label: "Details" },
+        { id: "Get Quotation", label: "Get Quotation" },
         canFinalizedVendorView ? { id: "Finalize Vendor", label: "Finalize Vendor" } : null,
         canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
         { id: "GRN", label: "GRN" },
-        canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
+        canAddInvoice ? { id: "Invoice", label: "Invoice" } : null,
 
     ].filter(Boolean) as { id: string; label: string }[];
 
@@ -251,8 +253,9 @@ export const ViewMaterialRequisition: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="flex justify-between gap-2">
+
                 <div className="flex-1">
-                        <HeaderActionBar
+                    <HeaderActionBar
                         subTitleText={systemGeneratedCode ?? "-"}
                         subSubTitleText={materialRequisitionStatus ?? ''}
                         subSubSubTitleText={listState.VendorName ?? ''}
@@ -274,10 +277,9 @@ export const ViewMaterialRequisition: React.FC = () => {
                             }
                         }}
                     />
-
                 </div>
 
-                  <div className="flex justify-end gap-2">
+                <div className="flex justify-end gap-2">
                     {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && (
                         <Button
                             size="sm"
@@ -364,6 +366,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             {activeTab === 'Overview' && (<Overview matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData} />)}
             {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} handleExportMaterialRequisition={handleExportMaterialRequisition} />}
+            {activeTab === 'Get Quotation' && <GetQuotation matrialRequisitionDetailData={matrialRequisitionDetailData} />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor onApprovalSuccess={loadMaterialRequisitionOverview} />}
             {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} />}
             {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onload={loadMaterialRequisitionOverview} />)}
@@ -393,9 +396,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                         required
                         className="thin-scroll"
                         error={closeCompletedRemarkError}
-                        value={
-                            selectedMaterialRequisitionItem?.CloseCompletionRemark ?? ""
-                        }
+                        value={selectedMaterialRequisitionItem?.CloseCompletionRemark ?? ""}
                         onChange={(e) =>
                             setSelectedMaterialRequisitionItem(prev =>
                                 prev
@@ -452,6 +453,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 cancelText="Cancel"
                 loading={isLoading}
             />
+
         </div>
     );
 };

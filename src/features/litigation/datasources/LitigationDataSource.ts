@@ -9,6 +9,7 @@ import type {
     AddUpdateLitigationRequest,
     UpdateLitigationReopenRequest,
     LitigationReopenSaveResponse,
+    AddUpdatePriorityRequest,
 
 } from '@/features/litigation/models/LitigationModel'
 import { LitigationApi } from "@/features/litigation/api/LitigationApi";
@@ -37,9 +38,9 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
             if (params.Title?.trim()) queryParams.append('Title', params.Title.trim());
             if (params.CourtName?.trim()) queryParams.append('CourtName', params.CourtName.trim());
             if (params.ProjectName?.trim()) queryParams.append('ProjectName', params.ProjectName.trim());
+            if (params.Priority?.trim()) queryParams.append('Priority', params.Priority.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
-
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${LitigationApi.PULL}?${queryParams.toString()}`, { signal }
@@ -51,7 +52,7 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.pullLitigation(params);
+                return await this.pullLitigation(params);
             }
             throw error
         }
@@ -72,7 +73,28 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.addUpadateLitigation(params);
+                return await this.addUpadateLitigation(params);
+            }
+            throw error
+        }
+    }
+    async addUpadatePriorityLitigation(params: AddUpdatePriorityRequest): Promise<LitigationSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                LitigationApi.PRIORITY_UPDATE,
+                params
+            )
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR : ADD UPDATE PRIORITY LITIGATION :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpadatePriorityLitigation(params);
             }
             throw error
         }
@@ -94,12 +116,12 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.UpadateLitigationReopen(params);
+                return await this.UpadateLitigationReopen(params);
             }
             throw error
         }
     }
-    
+
     async deleteLitigation(params: DeleteLitigationRequest): Promise<LitigationDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
@@ -120,7 +142,7 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.deleteLitigation(params);
+                return await this.deleteLitigation(params);
             }
 
             throw error

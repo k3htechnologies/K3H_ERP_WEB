@@ -15,7 +15,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import DataTableExpandable from "@/ui/components/DataTable/DataTableExpandable";
-import { ClipboardList, Edit, Trash2 } from "lucide-react";
+import { ArrowLeft, ClipboardList, Edit, Plus, Trash2 } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
@@ -55,6 +55,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteMaterialRequisitionDetailGRNData, setDeleteMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionGRNData | null>(null)
     const [isPurchaseOrderExists, setIsPurchaseOrderExists] = useState(false);
+    const [isExpandableOpen, setExpandableOpen] = useState(false);
 
     useEffect(() => {
         if (!projectId) return;
@@ -244,7 +245,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                 label: 'Received Quantity',
                 width: '10',
                 sortable: false,
-                align: "left",
+                align: 'left',
                 render: (value, row) => {
                     return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                 }
@@ -363,11 +364,12 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
                 const isFirstRow = String(row.MaterialRequisitionGRNId) === firstGRNId;
 
-                const approvalStatus = row.InvoiceStatus?.trim().toUpperCase();
 
                 const canEditDelete =
-                    canAction && !materialRequisitionStatus &&
-                    isFirstRow && approvalStatus !== "APPROVED";
+                    canAction &&
+                    !materialRequisitionStatus &&
+                    isFirstRow &&
+                    !row.IsInvoiceCreated;;
 
                 return (
                     <div className="flex items-center justify-center gap-1">
@@ -505,29 +507,93 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
         <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
-            <TableActionToolbar
-                isShowSearchBar
-                searchTerm={searchTerm}
-                searchPlaceholder="Search By Challan Number"
-                onSearchChange={v => {
-                    setSearchTerm(v);
-                }}
-                onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived}
-                addTitle="Add"
-                onAdd={handleAddGRN}
-                isShowAddExtraButton={true && isPurchaseOrderExists}
-                addExtraTitle='Summary'
-                onAddExtra={() => {
-                    setIsViewGRNSummaryModalOpen(true);
-                    loadGRNData();
-                }}
+            <div className="flex justify-between">
+                <TableActionToolbar
+                    isShowSearchBar
+                    searchTerm={searchTerm}
+                    searchPlaceholder="Search By Challan Number"
+                    onSearchChange={v => {
+                        setSearchTerm(v);
+                    }}
+                    onClearSearch={clearSearchGRN}
+                />
 
-                addExtraButtonIcon={<ClipboardList className="h-4 w-4" />}
-                isShowExportButton={filteredGRN.length > 0}
-                onExportPdf={handleExportMaterialRequisitionGRNPdf}
+                <div className="flex justify-end items-center gap-2 h-[40px]">
+                    <button
+                        type="button"
+                        onClick={() => setExpandableOpen(prev => !prev)}
+                        className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-[#135BEC30] text-blue-600 transition-all duration-[1000ms] ease-in-out hover:bg-[#135BEC50]"
+                        aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}>
+                        <span className={`inline-flex transition-transform duration-[1000ms] ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"}`}>
+                            <ArrowLeft className="h-5 w-5" />
+                        </span>
+                    </button>
 
-            />
+                    <div
+                        className={`flex gap-2 overflow-hidden transition-all duration-[1000ms] ease-in-out ${isExpandableOpen
+                            ? "max-w-[1000px] opacity-100 translate-x-0"
+                            : "max-w-0 opacity-0 translate-x-4 pointer-events-none"
+                            }`}>
+
+                        {filteredGRN.length > 0 && (
+                            <Button
+                                type="button"
+                                color="blue"
+                                size="mxs"
+                                variant="solid"
+                                colorMode="gradient_light"
+                                defineWidth
+                                style={{ width: '95px' }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleExportMaterialRequisitionGRNPdf();
+                                }}
+                            >
+                                Export
+                            </Button>
+                        )}
+
+                        {canAction && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived && (
+                            <Button
+                                type="button"
+                                color="blue"
+                                size="mxs"
+                                variant="solid"
+                                colorMode="gradient_dark"
+                                defineWidth
+                                style={{ width: '95px' }}
+                                leftIcon={<Plus className="h-4 w-4" />}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleAddGRN();
+                                }}
+                            >
+                                Add
+                            </Button>
+                        )}
+
+                        {isPurchaseOrderExists && (
+                            <Button
+                                type="button"
+                                color="teal"
+                                size="mxs"
+                                defineWidth
+                                style={{ width: '95px' }}
+                                leftIcon={<ClipboardList className="h-4 w-4" />}
+                                onClick={() => {
+                                    setIsViewGRNSummaryModalOpen(true);
+                                    loadGRNData();
+                                }}
+                            >
+                                Summary
+                            </Button>
+                        )}
+                    </div>
+                </div>
+
+            </div>
 
             <DataTableExpandable
                 data={filteredGRN}

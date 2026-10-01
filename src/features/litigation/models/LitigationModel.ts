@@ -10,6 +10,7 @@ export interface FilterWithPaginationLitigationRequest {
     CourtName?: string
     ProjectName?: string
     SortBy?: string
+    Priority?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
@@ -33,6 +34,7 @@ export interface LitigationData {
     AssignedRepresentative: string | ''
     OpposingRepresentative: string | ''
     Remark: string | ''
+    Priority: string | ''
     CaseBrief: string | ''
     AddUpdateLitigationDocuments: string | ''
     IsDelete: boolean | false
@@ -57,12 +59,20 @@ export interface AddUpdateLitigationRequest {
     CourtName: string | ''
     CourtLocation: string | ''
     CourtType: string | ''
+    Priority: string | ''
     Plantiff: string | ''
     Defendant: string | ''
     AssignedRepresentative: string | ''
     OpposingRepresentative: string | ''
     Remark: string | ''
     CaseBrief: string | ''
+}
+
+export interface AddUpdatePriorityRequest {
+    LitigationId: number | 0
+    Uniquekey: string | null
+    ProjectId: number | 0
+    Priority: string | ''
 }
 
 export interface LitigationReopenData {

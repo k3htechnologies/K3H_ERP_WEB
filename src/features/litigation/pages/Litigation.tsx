@@ -34,6 +34,10 @@ import { getLitigationStatuscolor } from "./Status";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { useLitigationListState } from "@/features/litigation/context/LitigationListStateContext";
+import StatusBadgeDropdown from "@/ui/components/StatusBadgeDropdown/StatusBadgeDropdown";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { PRIORITY_OPTIONS } from "@/core/constants";
+import { LitigationPriorityStatusConfig } from "@/features/litigation/utils/LitigationPriorityStatusConfig";
 
 export const Litigation: React.FC = () => {
 
@@ -75,20 +79,20 @@ export const Litigation: React.FC = () => {
 
   const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
 
-      let filterParams: FilterInfo = {};
+    let filterParams: FilterInfo = {};
 
-      if (value.trim() === "") {
+    if (value.trim() === "") {
 
-        updateListState({ searchTerm: "", filters: {}, page: 1 });
+      updateListState({ searchTerm: "", filters: {}, page: 1 });
 
-        return;
-      }
-      if (isSerach) {
-        
-        filterParams = { Title: value.trim() };
-      }
-      updateListState({ searchTerm: value, filters: filterParams, page: 1 });
-    },
+      return;
+    }
+    if (isSerach) {
+
+      filterParams = { Title: value.trim() };
+    }
+    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+  },
     350,
   );
 
@@ -107,6 +111,7 @@ export const Litigation: React.FC = () => {
           CaseNumber: filterParams.CaseNumber ?? undefined,
           CourtName: filterParams.CourtName ?? undefined,
           ProjectName: filterParams.ProjectName ?? undefined,
+          Priority: filterParams.Priority ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, LitigationColumns)
         };
 
@@ -122,7 +127,7 @@ export const Litigation: React.FC = () => {
             totalPages: Math.ceil(
               response.right.TotalNumberOfRecord / pagination.pageSize,
             ),
-            
+
           });
 
         } else {
@@ -243,6 +248,30 @@ export const Litigation: React.FC = () => {
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
+  const handleUpdatePriority = useCallback(async (row: LitigationData, priority: string): Promise<boolean> => {
+
+    const params = {
+      LitigationId: row.LitigationId ?? 0,
+      Uniquekey: row.Uniquekey ?? null,
+      ProjectId: row.ProjectId ?? 0,
+      Priority: priority,
+    };
+
+    const response = await litigationService.apiCallAddUpdatePriorityLitigation(params);
+
+    if (E.isRight(response)) {
+
+      addToast({ type: "success", title: response.right.SuccessMessage?.[0] ?? "Priority updated successfully" });
+
+      return true;
+    }
+
+    addToast({ type: "error", title: response.left.message });
+
+    return false;
+
+  }, [addToast]);
+
   const LitigationColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -270,12 +299,53 @@ export const Litigation: React.FC = () => {
         ),
       },
       {
+        key: "Priority",
+        label: "Priority",
+        width: "15",
+        sortable: true,
+        align: "left",
+        render(_value, row) {
+          return (
+
+            <StatusBadgeDropdown
+
+              disabled={row.Status == "Closed" || !canAction}
+              initialValue={row.Priority}
+              itemConfig={LitigationPriorityStatusConfig}
+              onSelect={(value) => handleUpdatePriority(row, value)}
+            />
+          );
+        },
+      },
+       {
+        key: "Status",
+        label: "Status",
+        width: "14",
+        sortable: false,
+        align: "center",
+        render: (value) => {
+          const { bg, text } = getLitigationStatuscolor(value);
+
+          return (
+            <span
+              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+              style={{
+                backgroundColor: bg,
+                color: text,
+              }}
+            >
+              {value || "-"}
+            </span>
+          );
+        },
+      },
+      {
         key: "CaseNumber",
         label: "Case / Petition / Dispute Number",
         width: "16",
         sortable: false,
         align: "left",
-         render: (value) => (
+        render: (value) => (
           <TooltipText
             text={value || "-"}
             maxWidth="250px"
@@ -289,7 +359,7 @@ export const Litigation: React.FC = () => {
         width: "15",
         sortable: true,
         align: "left",
-         render: (value) => (
+        render: (value) => (
           <TooltipText
             text={value || "-"}
             maxWidth="250px"
@@ -324,35 +394,14 @@ export const Litigation: React.FC = () => {
         render: (value?: string) =>
           value ? formatDate_dd_MonthName_yy(value) : "-",
       },
-      {
-        key: "Status",
-        label: "Status",
-        width: "14",
-        sortable: false,
-        align: "center",
-        render: (value) => {
-          const { bg, text } = getLitigationStatuscolor(value);
-
-          return (
-            <span
-              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-              style={{
-                backgroundColor: bg,
-                color: text,
-              }}
-            >
-              {value || "-"}
-            </span>
-          );
-        },
-      },
+     
       {
         key: "CourtName",
         label: "Court Name",
         width: "15",
         sortable: true,
         align: "left",
-         render: (value) => (
+        render: (value) => (
           <TooltipText
             text={value || "-"}
             maxWidth="250px"
@@ -366,7 +415,7 @@ export const Litigation: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-         render: (value) => (
+        render: (value) => (
           <TooltipText
             text={value || "-"}
             maxWidth="250px"
@@ -503,6 +552,7 @@ export const Litigation: React.FC = () => {
       handleViewLitigationDetails,
       handleViewLitigationDocument,
       handleConfirmationDialogBoxOpen,
+      handleUpdatePriority,
     ],
   );
   //#endregion
@@ -756,10 +806,22 @@ export const Litigation: React.FC = () => {
               placeholder="Enter Court Name"
             />
           </div>
+          <div>
+            <SinglePageSelection
+              label="Priority"
+              placeholder="Select Priority"
+              value={tempFilters.Priority || ''}
+              onChange={e => handleFilterChange('Priority', String(e))}
+              options={PRIORITY_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
+          </div>
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION LITIGATION MODAL */}
+     
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {

@@ -420,7 +420,7 @@ export const AddUpdateGRN = () => {
                         label: 'Pending',
                         width: '10',
                         sortable: false,
-                        align: "left",
+                        align: 'left',
                         render: (_value, row) => {
 
                             const materialQuantity = row.MaterialQuantity

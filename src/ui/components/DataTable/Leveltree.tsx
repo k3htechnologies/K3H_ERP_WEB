@@ -3,6 +3,7 @@ import { ChevronRight, ChevronDown, AlertTriangle, CheckCircle2 } from 'lucide-r
 import { isDevelopment } from '@/core/config'
 import type { TableColumn } from '@/ui/components/DataTable/DataTable'
 import NoDataView from '../NoDataView/NoDataView'
+import { useViewportHeight } from '@/core/utils/useViewportHeight'
 
 export interface LevelFieldPair {
   idKey: string
@@ -502,7 +503,8 @@ interface LevelTreeProps<T extends AnyRow> {
   onSelectionChange?: (selectedIds: RowId[]) => void
   onSave?: (selectedIds: RowId[]) => Promise<void>
   loading?: boolean
-  emptyMessage?: string
+  emptyMessage?: string,
+  maxHeight?: string | number
 }
 
 export const LevelTree = <T extends AnyRow>({
@@ -517,7 +519,9 @@ export const LevelTree = <T extends AnyRow>({
   onSelectionChange,
   onSave,
   loading = false,
-  emptyMessage = 'No data available'
+  emptyMessage = 'No data available',
+  maxHeight = useViewportHeight(285, 350, 900),
+  
 }: LevelTreeProps<T>) => {
   const rows = response ?? []
   const isDevelopmentMode = isDevelopment()
@@ -678,9 +682,10 @@ export const LevelTree = <T extends AnyRow>({
       )}
 
       <div className="overflow-auto flex-1 thin-scroll"
-        style={{
-          maxHeight: 'calc(10 * 2.5rem + 2.5rem)'
-        }}
+      style={{maxHeight}}
+        // style={{
+        //   maxHeight: 'calc(10 * 2.5rem + 2.5rem)'
+        // }}
       >
         <table className="border-collapse text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
           <thead>

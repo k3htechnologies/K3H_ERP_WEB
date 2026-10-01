@@ -388,8 +388,8 @@ export const JobRoleMaster: React.FC = () => {
         {departmentTabList.length === 0 && !isLoading ? (
           <NoDataView message="No Departments Found" />
         ) : (
-        <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-4">
-          <div className="min-w-0 lg:col-span-1">
+        <div className=" grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-4">
+          <div className="bg-white min-w-0 lg:col-span-1">
             <aside className="flex flex-col rounded-lg border border-gray-200 p-4">
               <h2 className="shrink-0 pb-3 text-base font-semibold text-gray-900">Department</h2>
               <Tabs
@@ -506,7 +506,7 @@ export const JobRoleMaster: React.FC = () => {
                   </div>
               </>
             ) : (
-              <>
+              <div className="bg-white  p-5 rounded-md border border-gray-200">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div className="min-w-0">
                     {
@@ -534,7 +534,7 @@ export const JobRoleMaster: React.FC = () => {
                 </div>
              {   jobRoleMasterList.length === 0 && !isLoading ? (
                   <NoDataView message="No Job Roles Found" />
-                ) :    <div
+                ) : <div
                   className="thin-scroll min-h-0 space-y-3 overflow-y-auto pr-1"
                   onScroll={handleJobRoleMasterListScroll}
                   style={{ maxHeight: '65vh' }}
@@ -587,7 +587,7 @@ export const JobRoleMaster: React.FC = () => {
                     <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
                   )}
                 </div>}
-              </>
+              </div>
             )}
           </div>
         </div>

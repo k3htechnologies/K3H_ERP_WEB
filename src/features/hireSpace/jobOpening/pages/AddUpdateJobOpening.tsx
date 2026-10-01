@@ -451,6 +451,7 @@ export const AddUpdateJobOpening: React.FC = () => {
                   Experience
                   <span className="ml-1 text-red-500">*</span>
                 </label>
+                
                 <div className="flex flex-col gap-4 min-[420px]:flex-row min-[420px]:items-center">
                   <div className="flex-1">
                     <SinglePageSelection

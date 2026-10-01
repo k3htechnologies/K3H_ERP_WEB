@@ -1,7 +1,7 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import { LitigationDatasourceImpl } from '@/features/litigation/datasources/LitigationDataSource';
 import type {
-    
+
     FilterWithPaginationLitigationRequest,
     LitigationListResponse,
     LitigationSaveResponse,
@@ -10,6 +10,7 @@ import type {
     AddUpdateLitigationRequest,
     UpdateLitigationReopenRequest,
     LitigationReopenSaveResponse,
+    AddUpdatePriorityRequest,
 
 } from '@/features/litigation/models/LitigationModel'
 
@@ -36,6 +37,17 @@ export const litigationService = {
         try {
 
             return E.right(await LitigationDataSource.addUpadateLitigation(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
+    apiCallAddUpdatePriorityLitigation: async (params: AddUpdatePriorityRequest): Promise<E.Either<Failure, LitigationSaveResponse>> => {
+
+        try {
+
+            return E.right(await LitigationDataSource.addUpadatePriorityLitigation(params));
 
         } catch (error: any) {
 

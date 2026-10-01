@@ -401,7 +401,7 @@ export const AddUpdateGRN = () => {
                     {
                         key: "MaterialQuantity",
                         label: "Total",
-                        align: "right",
+                        align: "left",
                         width: "30",
                         render: (value, row) => {
                             return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
@@ -410,7 +410,7 @@ export const AddUpdateGRN = () => {
                     {
                         key: "MaterialReceivedQuantityTillDate",
                         label: "Received Till Date",
-                        align: "right",
+                        align: "left",
                         width: "30",
                         render: (value, row) => {
                             return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
@@ -421,7 +421,7 @@ export const AddUpdateGRN = () => {
                         label: 'Pending',
                         width: '10',
                         sortable: false,
-                        align: 'right',
+                        align: 'left',
                         render: (_value, row) => {
 
                             const materialQuantity = row.MaterialQuantity

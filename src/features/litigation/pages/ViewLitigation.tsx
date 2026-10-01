@@ -684,11 +684,28 @@ const ViewLitigation: React.FC = () => {
                     value={litigationData?.DateOfFilling ? formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""}
                   />
                   <FieldItem label="Case Type" value={litigationData?.CaseType} />
+
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-2 gap-4 pt-5">
 
                   <FieldItem label="Case / Petition / Dispute Number" value={litigationData?.CaseNumber} />
+                  <FieldItem
+                    label="Priority"
+                    value={
+                      litigationData?.Priority === "Critical" ? (
+                        <span className="px-2 py-1 rounded text-red-700 text-sm font-medium bg-[#FDF2F2]">
+                          Critical
+                        </span>
+                      ) : litigationData?.Priority === "Non - Critical" ? (
+                        <span className="px-2 py-1 rounded text-sm font-medium text-slate-800 bg-[#F1F5F9]">
+                          Non - Critical
+                        </span>
+                      ) : (
+                        "-"
+                      )
+                    }
+                  />
                 </div>
               </section>
 
@@ -990,12 +1007,12 @@ const ViewLitigation: React.FC = () => {
                   value={closureURLFiles}
                   onChange={setClosureURLFiles}
                   availableFilesURL={closureURL ?? ""}
-                  allowedTypes={["image/jpeg", 
-                                 "image/png",
-                                 "image/jpg",
-                                 "application/pdf",
-                                 "application/vnd.ms-excel",
-                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
+                  allowedTypes={["image/jpeg",
+                    "image/png",
+                    "image/jpg",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                   onRemoveExisting={(url) => {
                     SetRemoveClosureAttachementUrls((prev) => [...prev, url]);
                   }}
@@ -1067,12 +1084,12 @@ const ViewLitigation: React.FC = () => {
                   value={hearingURLFiles}
                   onChange={setHearingURLFiles}
                   availableFilesURL={hearingURL ?? ""}
-                  allowedTypes={["image/jpeg", 
-                                 "image/png",
-                                 "image/jpg",
-                                 "application/pdf",
-                                 "application/vnd.ms-excel",
-                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
+                  allowedTypes={["image/jpeg",
+                    "image/png",
+                    "image/jpg",
+                    "application/pdf",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                   onRemoveExisting={(url) => {
                     SetRemoveHearingAttachementUrls((prev) => [...prev, url]);
                   }}

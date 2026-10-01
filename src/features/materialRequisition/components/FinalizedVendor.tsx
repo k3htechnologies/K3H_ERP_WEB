@@ -81,7 +81,9 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
     const [expectedDeliveryDays, setExpectedDeliveryDays] = useState<Record<number, string>>({});
     const [expectedPaymentDays, setExpectedPaymentDays] = useState<Record<number, string>>({});
+
     const [editingQuotationKey, setEditingQuotationKey] = useState<string | null>(null);
+
     const { canAction: cangetCompare } = useMenuPermissions('Get Compare');
     const { canAction: cangetQuotation } = useMenuPermissions('Get Quotation');
     const { canAction: canfinalizeVendor } = useMenuPermissions('Finalized Vendor');
@@ -91,6 +93,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([]);
 
     const [isExpandableOpen, setExpandableOpen] = useState(false);
+    const [editingVendorIds, setEditingVendorIds] = useState<number[]>([]);
+
 
 
     useEffect(() => {
@@ -609,7 +613,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                         <ExpandableCard
                             key={vendor.VendorId}
                             showline
-                            height={150}
+                            height={200}
                             expandedheight={900}
                             bgColor="bg-white"
                             isShadow={false}
@@ -617,33 +621,52 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                             title={
                                 <div className="flex flex-col w-full" onClick={(e) => e.stopPropagation()}>
 
-                                    <div className="flex items-center justify-between w-full pb-4 px-1 border-b border-gray-200">
+                                    <div className="flex items-start justify-between w-full pb-4 px-1 border-b border-gray-200">
 
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex flex-col min-w-0">
 
-                                            <Checkbox
-                                                checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
-                                                disabled={!canfinalizeVendor || (isAnyFinalized && !vendor.IsFinalized)}
-                                                onChange={() => {
-                                                    if (isAnyFinalized) return
+                                            <div className="flex items-center gap-3">
+                                                <Checkbox
+                                                    checked={vendor.IsFinalized || checkedFinalVendor === vendor.VendorId}
+                                                    disabled={!canfinalizeVendor || (isAnyFinalized && !vendor.IsFinalized)}
+                                                    onChange={() => {
+                                                        if (isAnyFinalized) return;
 
-                                                    canfinalizeVendor && setCheckedFinalVendor(
-                                                        checkedFinalVendor === vendor.VendorId ? null : vendor.VendorId)
-                                                }}
-                                                onClick={(e) => e.stopPropagation()}
-                                                size="md"
-                                            />
+                                                        if (canfinalizeVendor) {
+                                                            const isCurrentlyChecked = checkedFinalVendor === vendor.VendorId;
 
-                                            <div className="font-medium text-gray-900 text-base">
-                                                {vendor.VendorName || "-"}
+                                                            setCheckedFinalVendor(
+                                                                isCurrentlyChecked ? null : vendor.VendorId
+                                                            );
+
+                                                            if (!isCurrentlyChecked) {
+                                                                setExpandableOpen(true);
+                                                            }
+                                                        }
+                                                    }}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    size="md"
+                                                />
+
+
+                                                <div className="font-medium text-gray-900 text-base">
+                                                    {vendor.VendorName || "-"}
+                                                </div>
+
+                                                <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium whitespace-nowrap">
+                                                    {vendor.GSTNumber || "-"}
+                                                </div>
                                             </div>
 
-                                            <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium">
-                                                {vendor.CompanyName || "-"}
-                                            </div>
 
-                                            <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium">
-                                                {vendor.GSTNumber || "-"}
+                                            <div className="flex items-center gap-3 mt-3  flex-wrap">
+
+                                                <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium break-words">
+                                                    {vendor.CompanyName || "-"}
+                                                </div>
+
+
+
                                             </div>
 
                                         </div>
@@ -736,10 +759,16 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                     data={lines}
                                                     isEditable={editingQuotationKey === quotationKey}
                                                     onEditModeChange={(editing) => {
-                                                        setEditingQuotationKey(
-                                                            editing ? quotationKey : null
-                                                        )
+
+                                                        setEditingQuotationKey(editing ? quotationKey : null);
+
+                                                         setEditingVendorIds(prev =>
+                                                            editing
+                                                                ? [...new Set([...prev, vendor.VendorId])]
+                                                                : prev.filter(id => id !== vendor.VendorId)
+                                                        );
                                                     }}
+
 
                                                     onChange={(updatedLines) => {
                                                         setLiveQuotationLines(prev => ({
@@ -759,7 +788,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                                                     <span>Expected Delivery (Days)</span>
                                                     <span>
-                                                        {editingQuotationKey === quotationKey ? (
+                                                         {editingVendorIds.includes(vendor.VendorId) ? (
+
                                                             <Input
                                                                 type="text"
                                                                 rightIcon="Days"
@@ -786,7 +816,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                 <div className="flex justify-between text-sm bg-gray-100 p-3">
                                                     <span>Expected Payment (Days)</span>
                                                     <span>
-                                                        {editingQuotationKey === quotationKey ? (
+                                                        {editingVendorIds.includes(vendor.VendorId) ? (
+
                                                             <Input
                                                                 type="text"
                                                                 rightIcon="Days"
@@ -815,7 +846,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                         {editingQuotationKey !== quotationKey ? "View Quotation" : "Upload Quotation"}
                                                     </span>
 
-                                                    {editingQuotationKey !== quotationKey ? (
+                                                        {!editingVendorIds.includes(vendor.VendorId) ? (
+
                                                         <div className="inline-flex items-end gap-1 px-2 py-2.5 border border-amber-500 text-amber-600 rounded text-sm font-medium cursor-pointer transition">
                                                             <p>Quotation</p>
                                                             <MultiImageViewer

@@ -18,7 +18,7 @@ import { materialRequisitionQuotationService } from "@/features/materialRequisit
 import { Button } from "@/ui/components/forms/Button"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms/Input"
-import { ArrowLeft, CheckLine, ClipboardList, MessageSquareQuote, Scale } from "lucide-react"
+import { ArrowLeft, CheckLine, ClipboardList, MessageSquareQuote, Scale, Search } from "lucide-react"
 import { handleExportFile } from "@/core/utils/exportFile"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel"
@@ -32,6 +32,7 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker"
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer"
 import { parseDocumentUrls } from "@/core/utils/documentUtils"
 import type { FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionSummaryOfQuotationData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel"
+import useDebouncedCallback from "@/core/hooks/useDebouncedCallback"
 
 const DEFAULT_LOGISTICS = [
     { Logistics: "Transportation" },
@@ -88,9 +89,11 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
     const [quotationFiles, setQuotationFiles] = useState<(File | string)[]>([]);
     const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([]);
-    const [isExpandableOpen, setExpandableOpen] = useState(false);
 
-    useEffect(() => {   
+    const [isExpandableOpen, setExpandableOpen] = useState(false);
+    const [editingVendorIds, setEditingVendorIds] = useState<number[]>([]);
+
+    useEffect(() => {
         if (!projectId) return
 
         loadSelectedVendor();
@@ -419,8 +422,18 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     const isAnyFinalized = !!finalizedVendor
     const isApprovalAvailable = finalizedVendor?.IsApproval === true
 
+    // VENDOR SEARCH SUMMARY================================================================================================
+    const [searchVendorName, setSearchVendorName] = useState('');
+    const debouncedVendorSearch = useDebouncedCallback((value: string) => {
+        pullSummaryOfQuotation(value);
+    }, 350);
 
-    const pullSummaryOfQuotation = async () => {
+    const handleVendorSearch = (value: string) => {
+        setSearchVendorName(value);
+        debouncedVendorSearch(value);
+    };
+
+    const pullSummaryOfQuotation = async (vendorName: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -428,7 +441,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
                 const params: FilterWithMaterialRequisitionSummaryOfQuotationRequest = {
                     MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(projectId),
+                    VendorName: vendorName
                 }
 
                 const response = await materialRequisitionQuotationService.apiCallPullMaterialRequisitionSummaryOfQuotation(params)
@@ -458,9 +472,11 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
     const handleSummaryOfQuotation = async () => {
 
-        setIsSummaryOfQuotationOpen(true)
+        setIsSummaryOfQuotationOpen(true);
 
-        await pullSummaryOfQuotation()
+        setSearchVendorName("");
+
+        await pullSummaryOfQuotation("");
     }
 
     return (
@@ -482,12 +498,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                     type="button"
                     onClick={() => setExpandableOpen(prev => !prev)}
                     className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-[#135BEC30] text-blue-600 transition-all duration-[1000ms] ease-in-out hover:bg-[#135BEC50]"
-                    aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}
-                >
-                    <span
-                        className={`inline-flex transition-transform duration-[1000ms] ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"
-                            }`}
-                    >
+                    aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}>
+                    <span className={`inline-flex transition-transform duration-[1000ms] ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"}`}>
                         <ArrowLeft className="h-5 w-5" />
                     </span>
                 </button>
@@ -496,8 +508,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                     className={`flex gap-2 overflow-hidden transition-all duration-[1000ms] ease-in-out ${isExpandableOpen
                         ? "max-w-[1000px] opacity-100 translate-x-0"
                         : "max-w-0 opacity-0 translate-x-4 pointer-events-none"
-                        }`}
-                >
+                        }`}>
 
                     {!isAnyFinalized && cangetCompare && materialRequisitionVendorSelectedList.length > 1 && (
                         <Button
@@ -575,6 +586,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                 />
             </div>
 
+
             {materialRequisitionVendorSelectedList.length === 0
                 ? <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
                     <NoDataView message='No Finalize Vendor data found' />
@@ -643,7 +655,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                         </div>
 
                                         {isAnyFinalized && canfinalizeVendor && checkedFinalVendor === vendor.VendorId && (
-
                                             <div className="flex items-center">
                                                 <ApprovalActions
                                                     approvalStatus={finalizedVendor?.VendorFinalizationApproval}
@@ -655,7 +666,6 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                 />
                                             </div>
                                         )}
-
                                     </div>
 
                                     <div className="grid grid-cols-4 mt-4 px-1">
@@ -725,9 +735,13 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                     data={lines}
                                                     isEditable={editingQuotationKey === quotationKey}
                                                     onEditModeChange={(editing) => {
-                                                        setEditingQuotationKey(
-                                                            editing ? quotationKey : null
-                                                        )
+                                                        setEditingQuotationKey(editing ? quotationKey : null);
+
+                                                        setEditingVendorIds(prev =>
+                                                            editing
+                                                                ? [...new Set([...prev, vendor.VendorId])]
+                                                                : prev.filter(id => id !== vendor.VendorId)
+                                                        );
                                                     }}
 
                                                     onChange={(updatedLines) => {
@@ -742,13 +756,14 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                     VendorFinalizationApprovalStatus={listState.VendorFinalizationApprovalStatus}
                                                     VendorGSTNumber={vendor.GSTNumber}
                                                     CompanyGSTNumber={listState.CompanyGSTNumber}
+                                                    addToast={addToast}
                                                 />
-                                                
+
                                                 <div className="flex justify-between text-sm bg-green-100 p-3">
 
                                                     <span>Expected Delivery (Days)</span>
                                                     <span>
-                                                        {editingQuotationKey === quotationKey ? (
+                                                        {editingVendorIds.includes(vendor.VendorId) ? (
                                                             <Input
                                                                 type="text"
                                                                 rightIcon="Days"
@@ -765,6 +780,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                                         [term.MaterialRequisitionQuotationTermsId]: value
                                                                     }));
                                                                 }}
+
                                                             />
                                                         ) : (
                                                             <span>{`${term?.ExpectedDeliveryInDays ?? 0} Days`}</span>
@@ -775,7 +791,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                 <div className="flex justify-between text-sm bg-gray-100 p-3">
                                                     <span>Expected Payment (Days)</span>
                                                     <span>
-                                                        {editingQuotationKey === quotationKey ? (
+                                                        {editingVendorIds.includes(vendor.VendorId) ? (
                                                             <Input
                                                                 type="text"
                                                                 rightIcon="Days"
@@ -804,7 +820,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                                         {editingQuotationKey !== quotationKey ? "View Quotation" : "Upload Quotation"}
                                                     </span>
 
-                                                    {editingQuotationKey !== quotationKey ? (
+                                                    {!editingVendorIds.includes(vendor.VendorId) ? (
                                                         <div className="inline-flex items-end gap-1 px-2 py-2.5 border border-amber-500 text-amber-600 rounded text-sm font-medium cursor-pointer transition">
                                                             <p>Quotation</p>
                                                             <MultiImageViewer
@@ -978,13 +994,23 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
             >
                 <div className="flex flex-col">
 
-                    <div className="flex-1 p-4">
+                    <div className="relative min-w-0 w-[526px]">
+                        <Input
+                            type="text"
+                            value={searchVendorName}
+                            onChange={(e) => handleVendorSearch(e.target.value)}
+                            placeholder="Search By Vendor Name"
+                            leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                        />
+                    </div>
+
+                    <div className="flex-1 pt-5">
 
                         {summaryOfQuotationData.length === 0 ? (
 
-                            <div className="flex items-center justify-center py-10">
-                                <NoDataView />
-                            </div>
+                            <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Vendor available" />
+                            </section>
 
                         ) : (
 
@@ -1057,10 +1083,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
                                         <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
 
                                             <div className="text-sm text-gray-600">
-                                                <span className="font-medium">
-                                                    Quotation Type:
-                                                </span>{" "}
-                                                {quotation.QuotationType || "-"}
+                                                <span className="font-medium">  Quotation Type: </span>{" "}  {quotation.QuotationType || "-"}
                                             </div>
 
 

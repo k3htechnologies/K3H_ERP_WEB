@@ -15,7 +15,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import DataTableExpandable from "@/ui/components/DataTable/DataTableExpandable";
-import { Edit, Trash2 } from "lucide-react";
+import { ClipboardList, Edit, Trash2 } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
@@ -29,10 +29,10 @@ import { handleExportFile } from "@/core/utils/exportFile";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
-    onAddGRN?: () => Promise<void>;
+    onload?: () => Promise<void>;
 }
 
-export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN }) => {
+export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -62,14 +62,14 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
     }, [projectId, currentMaterialRequisitionId]);
 
     const handleAddGRN = useCallback(async () => {
-        await onAddGRN?.();
+        await onload?.();
 
         navigate('/materialRequisition/grn/add', {
             state: {
                 matrialRequisitionDetailData,
             },
         });
-    }, [navigate, matrialRequisitionDetailData, onAddGRN]);
+    }, [navigate, matrialRequisitionDetailData, onload]);
 
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
@@ -137,7 +137,10 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
 
     const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() => {
 
-        const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+        // const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
+
+        const isDirect = GRN?.[0]?.MaterialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType
+            ?.trim().toUpperCase() === "DIRECT";
 
         const columns: TableColumn[] = [];
 
@@ -222,7 +225,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
             {
                 key: "RequiredDate",
                 label: "Required Date",
-                align: "center",
+                align: "left",
                 width: "30",
                 render: (value) =>
                     value ? formatDate_dd_MonthName_yy(value) : "-"
@@ -230,7 +233,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
             {
                 key: "MaterialQuantity",
                 label: "Quantity",
-                align: "right",
+                align: "left",
                 width: "30",
                 render: (value, row) => {
                     return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
@@ -241,7 +244,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                 label: 'Received Quantity',
                 width: '10',
                 sortable: false,
-                align: 'right',
+                align: "left",
                 render: (value, row) => {
                     return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                 }
@@ -382,7 +385,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                                         e.preventDefault();
                                         e.stopPropagation();
 
-                                        await onAddGRN?.();
+                                        await onload?.();
 
                                         handleGRNEdit(row);
                                     }}
@@ -442,6 +445,8 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
 
                     await loadGRNData();
 
+                    await onload?.();
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -467,7 +472,6 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
             return receivedQuantity >= requiredQuantity;
         });
     }, [matrialRequisitionDetailData]);
-
 
     const handleExportMaterialRequisitionGRN = async (exportType: 'PDF') => {
         await runApiWithLoader(
@@ -519,6 +523,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onAddGRN
                     loadGRNData();
                 }}
 
+                addExtraButtonIcon={<ClipboardList className="h-4 w-4" />}
                 isShowExportButton={filteredGRN.length > 0}
                 onExportPdf={handleExportMaterialRequisitionGRNPdf}
 

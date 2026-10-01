@@ -31,6 +31,7 @@ export interface TableActionToolbarProps {
   /** ADD EXTRA BUTTON */
   isShowAddExtraButton?: boolean
   addExtraTitle?: string
+  addExtraButtonIcon?: React.ReactNode
   onAddExtra?: () => void
 
   /** IMPORT BUTTON */
@@ -86,10 +87,8 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
   // EXTRA ADD
   isShowAddExtraButton = true,
   addExtraTitle = 'Add',
-  onAddExtra,
-  addExtraIcon,
-  addExtraWidth,
-
+  addExtraButtonIcon,
+  onAddExtra
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)
@@ -431,15 +430,21 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                     onAddExtra()
 
                   }}
-                  color="blue"
+
+                  {...(addExtraButtonIcon
+                    ? { color: "teal" }
+                    : {
+                      color: "blue",
+                      variant: "solid",
+                      colorMode: "gradient_dark",
+                    })}
+
                   size="mxs"
-                  variant="solid"
-                  colorMode="gradient_dark"
                   defineWidth
                   title={addExtraTitle}
                   aria-label={addExtraTitle}
-                  style={{ width: addExtraWidth || '95px' }}
-                  leftIcon={addExtraIcon}
+                  style={{ width: '95px' }}
+                  leftIcon={addExtraButtonIcon || <Share2Icon className="h-4 w-4" />}
                 >
                   <span>{addExtraTitle}</span>
                 </Button>

@@ -252,7 +252,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             <div className="flex justify-between gap-2">
                 <div className="flex-1">
-                    <HeaderActionBar
+                        <HeaderActionBar
                         subTitleText={systemGeneratedCode ?? "-"}
                         subSubTitleText={materialRequisitionStatus ?? ''}
                         subSubSubTitleText={listState.VendorName ?? ''}
@@ -274,10 +274,11 @@ export const ViewMaterialRequisition: React.FC = () => {
                             }
                         }}
                     />
+
                 </div>
 
-                <div className="flex justify-end gap-2">
-                    {matrialRequisitionData?.IsCopy && (
+                  <div className="flex justify-end gap-2">
+                    {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && (
                         <Button
                             size="sm"
                             style={{
@@ -365,7 +366,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} handleExportMaterialRequisition={handleExportMaterialRequisition} />}
             {activeTab === 'Finalize Vendor' && <FinalizedVendor onApprovalSuccess={loadMaterialRequisitionOverview} />}
             {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} />}
-            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onAddGRN={loadMaterialRequisitionOverview} />)}
+            {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onload={loadMaterialRequisitionOverview} />)}
             {activeTab === 'Invoice' && <Invoice onApprovalSuccess={loadMaterialRequisitionOverview} />}
 
             <Modal
@@ -377,7 +378,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                 title={selectedMaterialRequisitionItem?.Type === "Completed"
                     ? "Complete Requisition"
                     : "Close Requisition"}
-
                 onSubmit={handleCloseRequisition}
                 saveText={selectedMaterialRequisitionItem?.Type === "Completed"
                     ? "Complete Requisition"

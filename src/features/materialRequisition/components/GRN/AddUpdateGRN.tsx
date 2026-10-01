@@ -400,7 +400,7 @@ export const AddUpdateGRN = () => {
                     {
                         key: "MaterialQuantity",
                         label: "Total",
-                        align: "right",
+                        align: "left",
                         width: "30",
                         render: (value, row) => {
                             return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
@@ -409,7 +409,7 @@ export const AddUpdateGRN = () => {
                     {
                         key: "MaterialReceivedQuantityTillDate",
                         label: "Received Till Date",
-                        align: "right",
+                        align: "left",
                         width: "30",
                         render: (value, row) => {
                             return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
@@ -420,7 +420,7 @@ export const AddUpdateGRN = () => {
                         label: 'Pending',
                         width: '10',
                         sortable: false,
-                        align: 'right',
+                        align: "left",
                         render: (_value, row) => {
 
                             const materialQuantity = row.MaterialQuantity
@@ -440,7 +440,7 @@ export const AddUpdateGRN = () => {
                             const materialQuantity = row.MaterialQuantity
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-                            const isPendingQtyZero=pendingQuantity <=0;
+                            const isPendingQtyZero = pendingQuantity <= 0;
                             return (
                                 <Input
                                     label=""
@@ -501,11 +501,10 @@ export const AddUpdateGRN = () => {
 
                         <div className="flex grid grid-cols-3 gap-4">
 
-
                             <Input
                                 type="text"
                                 label="Challan Number"
-                                placeholder="Challan Number"
+                                placeholder="Enter Challan Number"
                                 value={formData.ChallanNumber}
                                 onChange={(e) => handleFieldChange("ChallanNumber", filterChallanNumber(e.target.value))}
                                 maxLength={30}
@@ -527,6 +526,7 @@ export const AddUpdateGRN = () => {
                                 error={errors.UploadChallanFiles}
                                 required
                             />
+
                             <Input
                                 type="text"
                                 label="Vehicle Number"
@@ -537,6 +537,7 @@ export const AddUpdateGRN = () => {
                                 error={errors.VehicleNumber}
 
                             />
+
                             <MultiFilePicker
                                 label="Proof Of Document"
                                 placeholder="Upload Proof Of Document"
@@ -563,7 +564,6 @@ export const AddUpdateGRN = () => {
                                 onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                                 placeholder="Enter Remark"
                                 error={errors.Remarks}
-
                             />
                         </div>
 

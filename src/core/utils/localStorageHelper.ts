@@ -1640,7 +1640,7 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
-   //#region STORE STOCK MANAGEMENT COLUMNS
+  //#region STORE STOCK MANAGEMENT COLUMNS
   storeStockManagementTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS, columns);
@@ -1663,7 +1663,50 @@ export const LocalStorageHelper = {
     return null
   },
   //#endregion
-  
+
+// TEAM WORK SPACE
+   storeTaskTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Task Columns Details:", error);
+    }
+  },
+
+  getTaskTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Task Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeAgendaTaskTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Agenda Task Columns Details:", error);
+    }
+  },
+
+  getAgendaTaskTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Agenda Task Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
 
   clearLocalStorageData: (): void => {
     try {
@@ -1768,6 +1811,9 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
 
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
+
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1799,6 +1845,10 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.STOCK_MANAGEMENT);
+
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TASK);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.AGENDA_TASK);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MEETING);
 
 
     } catch (error) {

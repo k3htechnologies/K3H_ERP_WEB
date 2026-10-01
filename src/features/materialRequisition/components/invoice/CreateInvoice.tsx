@@ -75,11 +75,11 @@ const CreateInvoice: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const materialRequisitionInvoiceId = MaterialRequisitionInvoiceId ? Number(MaterialRequisitionInvoiceId) : 0;
     const isAddMode = materialRequisitionInvoiceId === 0;
-
     const [editInvoiceAmount, setEditInvoiceAmount] = useState<number>();
 
     useEffect(() => {
         if (!projectId) return;
+
         loadMaterialRequisitionGRNData();
         loadmaterialRequisitionInvoiceSummary();
 
@@ -455,6 +455,7 @@ const CreateInvoice: React.FC = () => {
                     navigate("/materialRequisition/view", {
                         state: { activeTab: "Invoice" }
                     });
+
                     setEditInvoiceAmount(0);
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
@@ -630,6 +631,7 @@ const CreateInvoice: React.FC = () => {
                                 label="Invoice Amount (₹)"
                                 value={formData.InvoiceAmount ?? ""}
                                 onChange={(e) => {
+
                                     const value = filterNumbersWithDecimal(e.target.value);
 
                                     const totalRequisitionAmount = Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0);
@@ -672,28 +674,27 @@ const CreateInvoice: React.FC = () => {
                                 onChange={setUploadInvoiceURLFiles}
                                 availableFilesURL={uploadInvoiceURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={5}
                                 onRemoveExisting={(url) => {
                                     SetRemoveUploadInvoiceUrls((prev) => [...prev, url]);
                                 }}
-                                maxFiles={5}
                             />
                         </div>
 
                         <div>
                             <MultiFilePicker
-                                label="Performance Report"
-                                placeholder="Select Performance Report"
+                                label="Performa Invoice"
+                                placeholder="Select Performa Invoice"
                                 required={!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceUrls)}
                                 error={errors.PerformaInvoiceURL}
                                 value={performaInvoiceURLFiles}
                                 onChange={setPerformaInvoiceURLFiles}
                                 availableFilesURL={performaInvoiceURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={5}
                                 onRemoveExisting={(url) => {
                                     SetRemovePerformaInvoiceUrls((prev) => [...prev, url]);
                                 }}
-                                maxFiles={5}
-
                             />
                         </div>
 
@@ -705,18 +706,16 @@ const CreateInvoice: React.FC = () => {
                                 onChange={setMeasurementReportURLFiles}
                                 availableFilesURL={measurementReportURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={5}
                                 onRemoveExisting={(url) => {
                                     SetRemoveMeasurementReportUrls((prev) => [...prev, url]);
                                 }}
-                                maxFiles={5}
-
                             />
                         </div>
                     </div>
 
                     <div>
                         <TextArea
-
                             label='Remarks'
                             value={formData.Remarks ?? ""}
                             onChange={(e) => handleFieldChange("Remarks", e.target.value)}

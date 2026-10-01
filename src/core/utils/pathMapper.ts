@@ -150,6 +150,13 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //STORE STOCK MANAGEMENT
         '/stock':'/stock',
+
+        //TEAM WORK SPACE
+        '/eventdashboard': '/teamWorkspaceDashboard',
+        '/teamworkspacedashboard': '/teamWorkspaceDashboard',
+        '/conference': '/conference',
+        '/meeting': '/meeting',
+        '/task': '/task',
     }
 
 

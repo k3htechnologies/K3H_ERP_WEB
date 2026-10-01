@@ -107,6 +107,7 @@ export const ApprovedBankFile: React.FC = () => {
                 };
 
                 const response = await approvedBankFileService.apiCallPullApprovedBankFile(params);
+                
                 if (E.isRight(response)) {
                     setApprovedBankFileList(response.right.Data);
                     setPagination({
@@ -545,16 +546,13 @@ export const ApprovedBankFile: React.FC = () => {
             <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
                 <HeaderActionBar
-                    titleText={"Approved Bank Document: "}
-                    subTitleText={BankName}
+                    titleText={BankName}
                     cancelText="Cancel"
                     onCancel={() => handleBackToListApprovedBankFolder()}
                     canAction={false}
                     isLoading={isLoading}
                 />
             </div>
-
-            {/* DATA TABLE APPROVED BANK FILE*/}
 
             <DataTable
                 columns={ApprovedBankFileColumns}
@@ -622,6 +620,7 @@ export const ApprovedBankFile: React.FC = () => {
                                 error={errors.ApprovedBankFileURL}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                 maxFiles={5}
+                                required
                                 onRemoveExisting={(url) => {
                                     setRemoveApprovedBankFileUrls((prev) => [...prev, url])
                                 }}
@@ -633,7 +632,6 @@ export const ApprovedBankFile: React.FC = () => {
 
             </Modal>
 
-            {/* DELETE CONFIRMATION MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}

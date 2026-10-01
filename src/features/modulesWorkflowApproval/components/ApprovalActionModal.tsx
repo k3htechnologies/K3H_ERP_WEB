@@ -72,7 +72,7 @@ const ApprovalActionModal: React.FC<Props> = ({
       onSubmit={handleSubmit}
       title={modalTitle}
       saveText={actionType === "approve" ? "Approve" : actionType === "reopen" ? "Re - Open" : "Reject"}
-      size="lg"
+      size="xxl2"
       loading={loading}>
       
       <div className="space-y-6 p-6 bg-blue-100">

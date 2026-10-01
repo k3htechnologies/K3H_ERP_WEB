@@ -597,7 +597,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                     const showDelete = canAddInvoice && !row.InvoiceStatus?.toUpperCase().includes("APPROVED") ? true : false;
 
                                     return (
-                                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+
+                                          <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
 
                                             <div className="mb-5">
                                                 <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">

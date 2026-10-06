@@ -223,7 +223,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
             {
                 key: "RequiredDate",
                 label: "Required Date",
-                align: "center",
+                align: "left",
                 width: "30",
                 render: (value) =>
                     value ? formatDate_dd_MonthName_yy(value) : "-"
@@ -231,7 +231,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
             {
                 key: "MaterialQuantity",
                 label: "Quantity",
-                align: "right",
+                align: "left",
                 width: "30",
                 render: (value, row) => {
                     return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
@@ -242,7 +242,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                 label: 'Received Quantity',
                 width: '10',
                 sortable: false,
-                align: 'right',
+                align: 'left',
                 render: (value, row) => {
                     return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
                 }
@@ -352,13 +352,12 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
                 const isFirstRow = String(row.MaterialRequisitionGRNId) === firstGRNId;
 
-                const approvalStatus = row.InvoiceStatus?.trim().toUpperCase();
 
                 const canEditDelete =
                     canAction &&
                     !materialRequisitionStatus &&
                     isFirstRow &&
-                    approvalStatus !== "APPROVED";
+                    !row.IsInvoiceCreated;;
 
                 return (
                     <div className="flex items-center justify-center gap-1">

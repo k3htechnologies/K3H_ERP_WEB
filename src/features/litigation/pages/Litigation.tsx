@@ -34,10 +34,6 @@ import { getLitigationStatuscolor } from "./Status";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { useLitigationListState } from "@/features/litigation/context/LitigationListStateContext";
-import StatusBadgeDropdown from "@/ui/components/StatusBadgeDropdown/StatusBadgeDropdown";
-import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { PRIORITY_OPTIONS } from "@/core/constants";
-import { LitigationPriorityStatusConfig } from "@/features/litigation/utils/LitigationPriorityStatusConfig";
 
 export const Litigation: React.FC = () => {
 
@@ -318,6 +314,28 @@ export const Litigation: React.FC = () => {
         },
       },
       {
+        key: "Status",
+        label: "Status",
+        width: "14",
+        sortable: false,
+        align: "center",
+        render: (value) => {
+          const { bg, text } = getLitigationStatuscolor(value);
+
+          return (
+            <span
+              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+              style={{
+                backgroundColor: bg,
+                color: text,
+              }}
+            >
+              {value || "-"}
+            </span>
+          );
+        },
+      },
+      {
         key: "CaseNumber",
         label: "Case / Petition / Dispute Number",
         width: "16",
@@ -372,28 +390,7 @@ export const Litigation: React.FC = () => {
         render: (value?: string) =>
           value ? formatDate_dd_MonthName_yy(value) : "-",
       },
-      {
-        key: "Status",
-        label: "Status",
-        width: "14",
-        sortable: false,
-        align: "center",
-        render: (value) => {
-          const { bg, text } = getLitigationStatuscolor(value);
 
-          return (
-            <span
-              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-              style={{
-                backgroundColor: bg,
-                color: text,
-              }}
-            >
-              {value || "-"}
-            </span>
-          );
-        },
-      },
       {
         key: "CourtName",
         label: "Court Name",
@@ -820,7 +817,7 @@ export const Litigation: React.FC = () => {
         </div>
       </Modal>
 
-      {/* DELETE CONFIRMATION LITIGATION MODAL */}
+
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {

@@ -54,6 +54,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/siteprogress': '/siteProgress',
         '/building': '/building',
         '/tenant': '/tenant',
+        '/tenantbooking': '/tenantBooking',
         '/proposedoffer': '/proposedOffer',
         '/proposedplan': '/proposedPlan',
         '/rent': '/rent',
@@ -95,7 +96,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/target': '/target',
         '/incentivereport': '/incentiveReport',
         '/paymentschedulereport': '/paymentScheduleReport',
-        '/paymentschedule': '/paymentSchedule',
+        '/paymentschedules': '/paymentSchedules',
         '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
 

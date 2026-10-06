@@ -31,6 +31,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { copyToClipboard } from "@/core/utils/comman";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
+import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext";
 
 export const Tenant: React.FC = () => {
 
@@ -49,6 +50,7 @@ export const Tenant: React.FC = () => {
   const [isShowCustomizeTenantColumnsModal, setIsShowCustomizeTenantColumnsModal] = useState(false);
 
   const [showImportModal, setShowImportModal] = useState(false);
+  const [isTenantAllotemnt, setIsTenantAllotemnt] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
 
@@ -60,6 +62,7 @@ export const Tenant: React.FC = () => {
 
   const { listState, updateListState, resetFilters, setBuildingContext } = useTenantListState();
   const { page, filters, sortInfo, searchTerm, buildingId, buildingName } = listState;
+  const { updateTenantListState } = useTenantBookingListState();
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTenants(value);
@@ -751,18 +754,71 @@ export const Tenant: React.FC = () => {
             },
             render: (value) => value || "-",
           },
+          {
+            key: "BookingStatus",
+            label: "Status",
+            width: "10",
+            sortable: false,
+            align: "center",
+            theadStyle: {
+              backgroundColor: "#FFF",
+              color: "#64748B",
+            },
+            render: (_value, row) => {
+              const bookingId = Number(row.BookingId ?? 0);
+
+              if (bookingId <= 0) {
+                return "-";
+              }
+
+
+              return (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+
+                    updateTenantListState({
+                      bookingId: row.BookingId,
+                      bookingName: row.OwnerName || "",
+                    });
+
+
+                    navigate(
+                      "/tenantBooking/view"
+                      ,
+                      {
+                        state: {
+                          sourcePage: "tenant",
+                        },
+                      }
+                    );
+                  }}
+                  className="text-blue-600 hover:underline font-medium cursor-pointer"
+                >
+                  Booking Done
+                </button>
+              );
+            },
+          },
         ]
       },
-
       {
         key: "actions",
         label: "Actions",
         width: "12",
         fixed: "right",
         align: "center",
-        render: (_value, row) =>
-          canAction ? (
+        render: (_value, row) => {
+
+          const isDeleteDisabled = !canAction || Number(row.BookingId ?? 0) > 0;
+
+          return canAction ? (
+            
             <div className="flex items-center justify-center gap-2">
+
               <Button
                 onClick={(e) => {
                   e.preventDefault();
@@ -776,8 +832,7 @@ export const Tenant: React.FC = () => {
                   color: "green",
                   padding: "4px 8px",
                 }}
-                title="Tenant Document"
-              >
+                title="Tenant Document">
                 <FileText className="h-4 w-4" />
               </Button>
 
@@ -785,22 +840,30 @@ export const Tenant: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+
+                  if (isDeleteDisabled) return;
+
                   handleConfirmationDialogBoxOpen(row);
                 }}
                 color="transparent"
                 isborderRadius
+                disabled={isDeleteDisabled}
                 size="sm"
                 style={{
-                  color: "red",
+                  color: isDeleteDisabled ? "#9CA3AF" : "red",
                   padding: "4px 8px",
+                  cursor: isDeleteDisabled ? "not-allowed" : "pointer",
+                  opacity: isDeleteDisabled ? 0.5 : 1,
                 }}
-                title="Delete Tenant"
+                title={Number(row.BookingId ?? 0) > 0   ? "Tenant cannot be deleted because Booking exists" : "Delete Tenant"}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
+
             </div>
-          ) : null,
-      },
+          ) : null;
+        },
+      }
     ],
     [handleViewTenantDetails, handleViewTenantDocument, handleConfirmationDialogBoxOpen, canAction],
   );
@@ -831,7 +894,6 @@ export const Tenant: React.FC = () => {
         return withRequired.filter((k) => allTenantColumnKeys.includes(k));
       }
     } catch {
-      // ignore
     }
     return allTenantColumnKeys;
   });
@@ -899,7 +961,7 @@ export const Tenant: React.FC = () => {
 
   const handleDownloadExcelSampleTenant = () => downloadExcelSampleTenant();
 
-  const uploadExcel = async (file: File, mergeExisting: string) => {
+  const uploadExcel = async (file: File, mergeExisting: string, isTenantAllotemnt: boolean) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -911,13 +973,12 @@ export const Tenant: React.FC = () => {
         fd.append("TableName", "Tenant");
         fd.append("ProjectId", String(projectId));
         fd.append("BuildingId", String(buildingId));
+        fd.append("IsTenantAlloted", String(isTenantAllotemnt || false));
 
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
           addToast({ type: "success", title: "Excel imported sucessfully" });
-
-          // Reload tenants with current state
           if (buildingId && buildingId > 0) {
             if (searchTerm && searchTerm.trim()) {
               loadTenants(page, { FlatNumber: searchTerm.trim() }, buildingId);
@@ -1030,24 +1091,29 @@ export const Tenant: React.FC = () => {
         }}
         isShowCustomizeButton={Number(buildingId) > 0 ? true : false}
         onCustomize={() => setIsShowCustomizeTenantColumnsModal(true)}
-        // ADD
         isShowAddButton={canAction && Number(buildingId) > 0 ? true : false}
         addTitle="Add"
         onAdd={handleAddTenantModal}
-        // IMPORT
         isShowImportButton={canAction && Number(buildingId) > 0 ? true : false}
-        onUploadExcel={() => setShowImportModal(true)}
+        onUploadExcel={() => {
+          setIsTenantAllotemnt(false);
+          setShowImportModal(true);
+        }}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
-        // EXPORT
         isShowExportButton={canExport && Number(buildingId) > 0 && tenantsForTable.length > 0 ? true : false}
         onExportExcel={handleExportTenantExcel}
         onExportPdf={handleExportTenantPdf}
+
+        onUploadTenantAllotedExcel={() => {
+          setIsTenantAllotemnt(true);
+          setShowImportModal(true);
+        }}
         exportLoading={isLoading}
       />
 
       <div className="pb-5 flex">
         <div className="relative min-w-0 w-[526px]">
-          
+
           <SingleSelectDropdownWithPagination
             key={projectId}
             label="Building"
@@ -1087,7 +1153,6 @@ export const Tenant: React.FC = () => {
           try {
             LocalStorageHelper.storeTenantTableColumns?.(JSON.stringify(withRequired));
           } catch {
-            // ignore
           }
         }}
         columns={tenantColumns}
@@ -1207,10 +1272,11 @@ export const Tenant: React.FC = () => {
 
       <ExportImport
         open={showImportModal}
+        isTenantAllotemnt={isTenantAllotemnt}
         onClose={() => setShowImportModal(false)}
         onUpload={(file, mergeExisting) => {
           setShowImportModal(false);
-          uploadExcel(file, mergeExisting);
+          uploadExcel(file, mergeExisting, isTenantAllotemnt);
         }}
       />
 

@@ -355,6 +355,12 @@ export const getPageInfo = (path: string) => {
         description: "Proposed Plan",
       };
 
+      case "tenantBooking":
+      return {
+        title: "Tenant Booking",
+        description: "Manage tenant bookings efficiently with clear visibility and control",
+      };
+
     //COMMAN MODULES
     case "event":
       return {
@@ -462,9 +468,9 @@ export const getPageInfo = (path: string) => {
         title: "Other Charges",
         description: "Clear Breakdown of All Extra Charges",
       };
-    case "paymentSchedule":
+    case "paymentSchedules":
       return {
-        title: "Payment Schedule",
+        title: "Payment Schedules",
         description: "Structured Payment Schedules for Smooth Cash Flow",
       };
     case "paymentScheduleScheme":

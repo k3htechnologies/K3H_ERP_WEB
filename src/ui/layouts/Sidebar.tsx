@@ -203,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     } else {
       if (item.path) {
-
+       
         const route = mapPathToRoute(item.path)
 
         const navigateTo = route || item.path;

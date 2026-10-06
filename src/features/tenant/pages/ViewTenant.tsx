@@ -36,8 +36,6 @@ export const ViewTenant: React.FC = () => {
     const debouncedSearchForTenantDocument = useDebouncedCallback((value: string) => {
         searchTenantDocument(value)
     }, 350)
-
-    //#region TENANT LIST STATE CONTEXT
     const { listState } = useTenantListState();
     const { tenantId, buildingId, applicantName, buildingName } = listState;
 
@@ -200,13 +198,16 @@ export const ViewTenant: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
-                canAction={canAction}
+                canAction={canAction && !(activeTab === "Overview" && Number(editTenantData?.BookingId ?? 0) > 0)}
                 onEdit={() => {
-                    if (activeTab === "Overview") {
-                        if (editTenantData) handleEditTenant(editTenantData);
-                    }
 
-                    else if (activeTab === "Document") {
+                    if (activeTab === "Overview") {
+                        if (Number(editTenantData?.BookingId ?? 0) > 0) return;
+
+                        if (editTenantData) {
+                            handleEditTenant(editTenantData);
+                        }
+                    } else if (activeTab === "Document") {
                         handleViewTenantDocument();
                     }
                 }}
@@ -448,10 +449,10 @@ export const ViewTenant: React.FC = () => {
                     <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
 
                         <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                                <h4 className="text-sm font-semibold text-[#13367A]">
-                                    New Unit Details
-                                </h4>
-                            </div>
+                            <h4 className="text-sm font-semibold text-[#13367A]">
+                                New Unit Details
+                            </h4>
+                        </div>
                         <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 

@@ -78,7 +78,12 @@ export interface InventoryFlatData {
     BookingId: number;
     BookingCreatedById: number;
     BookingCreatedBy: string;
-    BookingCreatedDate: Date | null;
+    BookingCreatedDate: string | null
+
+    TenantId?: number;   
+    TenantSystemGeneratedCode?:string;
+    TenantBuildingId?: number;
+    TenantBuildingName?: string;
 }
 
 export interface InventoryFlatSpecificationData {

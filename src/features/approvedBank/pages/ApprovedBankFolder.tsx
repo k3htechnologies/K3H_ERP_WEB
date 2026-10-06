@@ -228,7 +228,7 @@ export const ApprovedBankFolder: React.FC = () => {
                 const params: FilterWithPaginationApprovedBankFileRequest = {
 
                     PageNumber: 1,
-                    PageSize: pagination.totalRecords,
+                    PageSize: row.NumberOfApprovedBankFile || 0,
                     ProjectId: Number(projectId) || 0,
                     ApprovedBankFolderId: row.ApprovedBankFolderId,
                     ExportType: exportType,

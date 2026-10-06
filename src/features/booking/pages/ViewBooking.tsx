@@ -109,6 +109,7 @@ export const ViewBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
+                    BookingSearchKey:"SALE BOOKING",
                     IsCheckPermission: sourcePage === 'inventory' ? false : true
                 };
 
@@ -150,6 +151,7 @@ export const ViewBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
+                    BookingSearchKey:"SALE BOOKING",
                     ExportType: exportType
                 };
 

@@ -159,6 +159,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     CHANNEL_PARTNER_UNIVERSE: 'channelPartnerUniverse.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
+    TENANT_BOOKING: 'tenantBooking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
     PAY_TRACK_REPORT: 'payTrackReport.listState',
     INWARD_OUTWARD: 'inwardOutward.listState',

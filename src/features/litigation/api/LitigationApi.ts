@@ -6,9 +6,6 @@ export const LitigationApi = {
     UPDATE_REOPEN: '/Litigation/UpdateLitigationReopen',
     PRIORITY_UPDATE: '/Litigation/AddUpdateLitigationPriority'
 
-    // LITIGATION PRIORITY API
-    PRIORITY_UPDATE: '/Litigation/AddUpdateLitigationPriority'
-
 } as const
 
 export type LitigationApiKeys = keyof typeof LitigationApi

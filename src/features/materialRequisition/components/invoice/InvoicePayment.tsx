@@ -308,7 +308,7 @@ const InvoicePayment: React.FC = () => {
 
     const tdsPaid = invoiceData?.InvoiceTDSPaidTillDate ? Number(invoiceData.InvoiceTDSPaidTillDate) : 0;
 
-    const PendingAmount = Math.max(InvoiceAmount - amountPaid - tdsPaid);
+    const PendingAmount = Math.max(0, InvoiceAmount - amountPaid - tdsPaid);
 
     const handleConfirmationDialogBoxOpenForPayment = useCallback((row: MaterialRequisitionPaymentData) => {
         setDeletePaymentData(row)

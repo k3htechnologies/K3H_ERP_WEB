@@ -246,7 +246,9 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     const TotalPoAmount = Number(matrialRequisitionData?.TotalPoAmount ?? 0);
     const PaidAmount = Number(matrialRequisitionData?.PaidAmount ?? 0);
-    const PendingAmount = TotalPoAmount - PaidAmount;
+    const TDSPaidAmount = Number(matrialRequisitionData?.TDSPaidAmount ?? 0);
+
+    const PendingAmount = Math.max(0, TotalPoAmount - (PaidAmount + TDSPaidAmount));
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">

@@ -16,6 +16,7 @@ import { Button } from "@/ui/components/forms/Button";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Input } from "@/ui/components/forms";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 
 interface MaterialUsageForm {
     unusedQuantity: string;
@@ -61,17 +62,18 @@ export const MaterialOut: React.FC = () => {
     }, []);
 
     const validateUsageForm = (): boolean => {
+        
         const errors: MaterialUsageFormErrors = {};
         const quantity = Number(usageForm.unusedQuantity ?? '');
 
         if (usageForm.unusedQuantity.trim() === '') {
-            errors.unusedQuantity = ' Scrap Quantity is required';
+            errors.unusedQuantity = 'Scrap Quantity is required';
         } else if (Number.isNaN(quantity)) {
             errors.unusedQuantity = 'Enter a valid number';
-        } else if (quantity < 0) {
-            errors.unusedQuantity = 'Unused quantity cannot be negative';
+        } else if (quantity <= 0) {
+            errors.unusedQuantity = 'Scrap Quantity must be greater than 0';
         } else if (quantity > totalQty) {
-            errors.unusedQuantity = 'Unused quantity cannot exceed total quantity';
+            errors.unusedQuantity = 'Scrap Quantity cannot exceed total quantity';
         }
 
         setUsageErrors(errors);
@@ -160,7 +162,7 @@ export const MaterialOut: React.FC = () => {
                 width: '10',
                 sortable: false,
                 align: 'left',
-                 render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+                render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
             },
             {
                 key: 'UnUsedMaterial',
@@ -168,7 +170,7 @@ export const MaterialOut: React.FC = () => {
                 width: '10',
                 sortable: false,
                 align: 'left',
-                 render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+                render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
             },
             {
                 key: 'Reason',
@@ -178,8 +180,8 @@ export const MaterialOut: React.FC = () => {
                 fixed: 'left',
                 align: 'left',
                 render: (value) => (
-                <FieldInfoTooltip value={value} />
-            )
+                    <FieldInfoTooltip value={value} />
+                )
             },
             {
                 key: 'CreatedBy',
@@ -337,7 +339,7 @@ export const MaterialOut: React.FC = () => {
                                     placeholder="Enter Scrap Quantity "
                                     value={usageForm.unusedQuantity}
                                     onChange={(e) => {
-                                        const value = e.target.value;
+                                        const value = filterNumbersWithDecimal(e.target.value);
 
                                         if (value === "") {
                                             setUsageForm({
@@ -349,7 +351,7 @@ export const MaterialOut: React.FC = () => {
                                         const quantity = Number(value);
 
                                         if (quantity > Number(totalQty)) {
-                                            
+
                                             return;
                                         }
 

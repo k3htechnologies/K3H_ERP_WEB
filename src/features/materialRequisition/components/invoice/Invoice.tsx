@@ -598,7 +598,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                                     return (
 
-                                          <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
 
                                             <div className="mb-5">
                                                 <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">
@@ -684,7 +684,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                                                     <FieldItem label=" Amount to be Paid" value={
                                                         <span className="text-red-600 font-semibold">
-                                                            {formatCurrency(Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate) - Number(row.InvoiceTDSPaidTillDate))}
+                                                            {formatCurrency(Math.max(0, Number(row.InvoiceAmount) - Number(row.InvoiceAmountPaidTillDate) - Number(row.InvoiceTDSPaidTillDate)))}
                                                         </span>
                                                     } />
 

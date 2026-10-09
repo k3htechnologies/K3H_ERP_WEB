@@ -81,27 +81,24 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
 
     const [expectedDeliveryDays, setExpectedDeliveryDays] = useState<Record<number, string>>({});
     const [expectedPaymentDays, setExpectedPaymentDays] = useState<Record<number, string>>({});
-
     const [editingQuotationKey, setEditingQuotationKey] = useState<string | null>(null);
 
     const { canAction: cangetCompare } = useMenuPermissions('Get Compare');
     const { canAction: cangetQuotation } = useMenuPermissions('Get Quotation');
     const { canAction: canfinalizeVendor } = useMenuPermissions('Finalized Vendor');
     const [isFinalizeConfirmationOpen, setIsFinalizeConfirmationOpen] = useState(false);
-
     const [quotationFiles, setQuotationFiles] = useState<(File | string)[]>([]);
     const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([]);
-
     const [isExpandableOpen, setExpandableOpen] = useState(false);
     const [editingVendorIds, setEditingVendorIds] = useState<number[]>([]);
 
 
     useEffect(() => {
+
         if (!projectId) return
 
         loadSelectedVendor();
         pullVendorsForEnquiry();
-
     }, [projectId])
 
     useEffect(() => {
@@ -142,15 +139,19 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
+
             async () => {
+
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                     MaterialRequisitionId: Number(currentMaterialRequisitionId),
                     Uniquekey: currentUniquekey ?? '',
                     ProjectId: Number(projectId),
                 }
+
                 const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data ?? [];
 
                     setMaterialRequisitionVendorSelectedList(data);
@@ -269,6 +270,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     const saveData = async (vendor: any, term: any, lines: any[]) => {
 
         if (computeLinesTotal(lines) === 0) {
+
             addToast({ type: "error", title: "Please add price at least one quotation item." });
             return;
         }

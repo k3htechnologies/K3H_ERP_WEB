@@ -1,67 +1,67 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
 import { VendorFinalizationDatasourceImpl } from "@/features/materialRequisition/datasources/VendorFinalizationDataSource";
-import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, RevokeFinalizationVendorRequest, RevokeFinalizationVendorResponse, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, AddVendorForEnquirysaveResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, RevokeFinalizationVendorRequest, RevokeFinalizationVendorResponse, SelectedVendorListResponse, VendorForEnquiryListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 const VendorFinalizationDatasource = new VendorFinalizationDatasourceImpl
 
 export const vendorFinalizationService = {
-   
-    apiCallpullVendorsForEnquiry: async (params: FilterWithPaginationVendorForEnquiryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, VendorListResponse>> => {
+
+    apiCallpullVendorsForEnquiry: async (params: FilterWithPaginationVendorForEnquiryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, VendorForEnquiryListResponse>> => {
         try {
-    
+
             return E.right(await VendorFinalizationDatasource.pullVendorsForEnquiry(params, options?.signal));
-    
+
         } catch (error: any) {
-    
+
             return E.left({ message: error.message, code: error.code });
-    
+
         }
     },
-    
-    apiCallToAddVendorForEnquiry: async (payload: AddVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
+
+    apiCallToAddVendorForEnquiry: async (payload: AddVendorForEnquiryRequest): Promise<E.Either<Failure, AddVendorForEnquirysaveResponse>> => {
         try {
-    
+
             return E.right(await VendorFinalizationDatasource.addVendorForEnquiry(payload));
-    
+
         } catch (error: any) {
-    
+
             return E.left({ message: error.message, code: error.code });
-    
+
         }
     },
-    
-    apiCallPullSelectedVendorForEnquiry: async (params:FilterWithPaginationVendorForSelectedEnquiryRequest ): Promise<E.Either<Failure, SelectedVendorListResponse>> => {
+
+    apiCallPullSelectedVendorForEnquiry: async (params: FilterWithPaginationVendorForSelectedEnquiryRequest): Promise<E.Either<Failure, SelectedVendorListResponse>> => {
         try {
-    
+
             return E.right(await VendorFinalizationDatasource.pullSelectedVendorForEnquiry(params));
-    
+
         } catch (error: any) {
-    
+
             return E.left({ message: error.message, code: error.code });
-    
-        }  
+
+        }
     },
-        
+
     apiCallAddFinalizedVendor: async (payload: AddVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
         try {
-    
+
             return E.right(await VendorFinalizationDatasource.addFinalizedVendor(payload));
 
         } catch (error: any) {
-            
+
             return E.left({ message: error.message, code: error.code });
         }
     },
 
     apiCallPullFinalizedVendor: async (params: FilterWithPaginationVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
         try {
-    
+
             return E.right(await VendorFinalizationDatasource.pullFinalizedVendor(params));
 
         } catch (error: any) {
-            
+
             return E.left({ message: error.message, code: error.code });
 
         }
@@ -69,13 +69,13 @@ export const vendorFinalizationService = {
 
     apiCallRevokeFinalizationVendor: async (params: RevokeFinalizationVendorRequest): Promise<E.Either<Failure, RevokeFinalizationVendorResponse>> => {
         try {
-    
+
             return E.right(await VendorFinalizationDatasource.revokeFinalizationVendor(params));
 
         } catch (error: any) {
-            
+
             return E.left({ message: error.message, code: error.code });
 
         }
-    }  
+    }
 }

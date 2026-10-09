@@ -6,7 +6,7 @@ import type {
 } from "@/features/stockManagement/models/StockManagementModel";
 import { runApiWithLoader } from "@/core/utils";
 import usePagination from "@/core/hooks/usePagination";
-import {  type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import { stockManagementService } from "@/features/stockManagement/services/StockManagementService";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
@@ -221,32 +221,32 @@ export const StockManagement: React.FC = () => {
             label: "Total",
             width: "20",
             sortable: false,
-            align: "right",
-            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            align: "left",
+            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
           },
           {
             key: "AvailableMaterial",
             label: "Available",
             width: "20",
             sortable: false,
-            align: "right",
-            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            align: "left",
+            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
           },
           {
             key: "UsedQuantity",
             label: "Used",
             width: "20",
             sortable: false,
-            align: "right",
-            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            align: "left",
+            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
           },
           {
             key: "ScrapQuantity",
             label: "Scrap",
             width: "20",
             sortable: false,
-            align: "right",
-            render: (value :any, row :any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            align: "left",
+            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
           },
         ],
       },
@@ -306,7 +306,7 @@ export const StockManagement: React.FC = () => {
                 colorMode="extraLight"
                 style={{ width: "30px", height: "30px" }}
                 centerIcon={<Minus className="h-4 w-4" />}
-                title="Remove Stocks"
+                title="Remove Stock"
               ></Button>
             </div>
           );
@@ -474,7 +474,7 @@ export const StockManagement: React.FC = () => {
 
         return withRequired.filter((k) => allStockManagementColumnKeys.includes(k));
       }
-    } catch {}
+    } catch { }
     return allStockManagementColumnKeys;
   });
 
@@ -537,7 +537,7 @@ export const StockManagement: React.FC = () => {
 
           try {
             LocalStorageHelper.storeStockManagementTableColumns?.(JSON.stringify(withRequired));
-          } catch {}
+          } catch { }
         }}
         columns={StockManagementColumn}
         selectedKeys={selectedStockManagementColumnKeys}
@@ -594,9 +594,9 @@ export const StockManagement: React.FC = () => {
           setTransferNoteFiles([]);
           setTransferNoteURL("");
         }}
-        title={isInward ? "Add Stock" : "Remove Stocks"}
+        title={isInward ? "Add Stock" : "Remove Stock"}
         onSubmit={handleAddRemoveStocks}
-        saveText={isInward ? "Add Stock" : "Remove Stocks"}
+        saveText={isInward ? "Add Stock" : "Remove Stock"}
         loading={isLoading}
         size="xl"
       >
@@ -612,14 +612,14 @@ export const StockManagement: React.FC = () => {
 
             <div>
               <Input
-                label={isInward ? "Sender Full Name" : "Receiver Full Name"}
+                label={isInward ? "Sender's Full Name" : "Receiver's Full Name"}
                 required
                 type="text"
                 value={formData.PartyName || ""}
                 onChange={(e) => handleFieldChange("PartyName", e.target.value)}
                 error={errors.PartyName}
-                maxLength={250}
-                placeholder={isInward ? "Enter Sender Name" : "Enter Receiver Name"}
+                maxLength={50}
+                placeholder={isInward ? "Enter Sender's Full Name" : "Enter Receiver's Full Name"}
               />
             </div>
 

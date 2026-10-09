@@ -5,13 +5,14 @@ export interface FilterWithPaginationVendorForEnquiryRequest {
     MaterialRequisitionId?: number | 0
     Uniquekey?: string
     ProjectId: number | 0
+    SubMaterialMasterId?: string
 }
 
 export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
     MaterialRequisitionId?: number
     Uniquekey?: string
     ProjectId: number | 0
-    ExportType?:'Excel' | 'PDF' | 'VENDOR COMPARISON CHART'
+    ExportType?: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART'
 }
 
 export interface SelectedVendorData {
@@ -59,8 +60,33 @@ export interface SelectedVendorData {
 export interface AddVendorForEnquiryRequest {
     MaterialRequisitionId: number;
     Uniquekey: string;
-    VendorId: string | null;
     ProjectId: number | 0;
+}
+
+export interface VendorForEnquiryData {
+    MaterialRequisitionType: string | null
+    MaterialMasterId: number | 0;
+    MaterialCode: string | null;
+    MaterialName: string | null;
+    SubMaterialName: string | null;
+    SubMaterialMasterId: number | 0;
+    UomMasterId: number | 0;
+    UomCode: string | null;
+    Uom: string | null;
+    MaterialQuantity: number;
+    RequiredDate: string;
+    VendorDetailsJSON: VendorDetails[];
+}
+
+export interface VendorDetails {
+    VendorId: number | 0,
+    VendorName: string | null,
+    CompanyName: string | null,
+    MobileNumber: string | null
+    MobileNumberCountryCode: string | null
+    EmailId: string | null
+    GSTNumber: string | null
+    Address: string | null
 }
 
 export interface RevokeFinalizationVendorRequest {
@@ -71,4 +97,6 @@ export interface RevokeFinalizationVendorRequest {
 
 export type SelectedVendorListResponse = ApiResponse<SelectedVendorData[]>;
 export type AddVendorForEnquiryRequestResponse = ApiResponse<SelectedVendorData>;
+export type VendorForEnquiryListResponse = ApiResponse<VendorForEnquiryData[]>;
+export type AddVendorForEnquirysaveResponse = ApiResponse<VendorForEnquiryData[]>;
 export type RevokeFinalizationVendorResponse = ApiResponse<number>;

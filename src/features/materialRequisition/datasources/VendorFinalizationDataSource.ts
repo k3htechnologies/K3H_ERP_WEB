@@ -1,13 +1,13 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, RevokeFinalizationVendorRequest, RevokeFinalizationVendorResponse, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, AddVendorForEnquirysaveResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, RevokeFinalizationVendorRequest, RevokeFinalizationVendorResponse, SelectedVendorListResponse, VendorForEnquiryListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import { VendorFinalizationApi } from "@/features/materialRequisition/api/VendorFinalizationApi";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 
 export abstract class VendorFinalizationDatasource {
-    abstract pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
-    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
+    abstract pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorForEnquiryListResponse>;
+    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<AddVendorForEnquirysaveResponse>;
     abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest, signal?: AbortSignal): Promise<SelectedVendorListResponse>;
     abstract addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
     abstract pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
@@ -20,13 +20,15 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
         return baseClient;
     }
 
-    async pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse> {
+    async pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorForEnquiryListResponse> {
         try {
             const queryParams = new URLSearchParams({
-                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
-                Uniquekey: (params.Uniquekey ?? null)?.toString() || '',
                 ProjectId: (params.ProjectId ?? 0).toString(),
             })
+
+            if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
+            if (params.SubMaterialMasterId) queryParams.append('SubMaterialMasterId', params.SubMaterialMasterId.toString());
+            if (params.Uniquekey) queryParams.append('Uniquekey', params.Uniquekey.trim());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${VendorFinalizationApi.PULL}?${queryParams.toString()}`, { signal }
@@ -45,7 +47,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
         }
     }
 
-    async addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse> {
+    async addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<AddVendorForEnquirysaveResponse> {
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

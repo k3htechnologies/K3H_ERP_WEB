@@ -1,5 +1,5 @@
 export const FinanceDashboardApi = {
-    PULL: '/Finance/PullFinanceDashboard'
+    PULL: '/FinanceDashboard/PullFinanceDashboard'
 } as const
 
 export type FinanceDashboardApiKeys = keyof typeof FinanceDashboardApi

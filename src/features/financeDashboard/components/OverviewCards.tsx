@@ -1,11 +1,18 @@
+import { formatToKLCr } from "@/core/utils/comman";
 import { Landmark, ShieldCheck, ArrowUpRight, Hourglass, CircleCheckBig, CircleAlert } from "lucide-react"
 
-export default function OverviewCards({ }) {
+interface Props {
+    overviewData: any;
+}
 
-    const overviewCards = [
+export default function OverviewCards(
+    {overviewData}: Props) {
+        const data = overviewData?.[0] ?? {};
+
+   const overviewCards = [
         {
             title: "TOTAL LOAN ACCOUNTS",
-            value: 31,
+            value: `₹ ${formatToKLCr(data.TotalLoanAccounts ?? 0)}`,
             subtitle: "Active Across Projects",
             icon: Landmark,
             iconBg: "bg-sky-50",
@@ -13,7 +20,7 @@ export default function OverviewCards({ }) {
         },
         {
             title: "TOTAL SANCTIONED",
-            value: "₹129.30 Cr",
+            value: `₹ ${formatToKLCr(data.TotalSanctioned ?? 0)}`,
             subtitle: "Across 31 Accounts",
             icon: ShieldCheck,
             iconBg: "bg-purple-50",
@@ -21,7 +28,7 @@ export default function OverviewCards({ }) {
         },
         {
             title: "TOTAL DISBURSED",
-            value: "₹49.75 Cr",
+            value: `₹ ${formatToKLCr(data.TotalDisbursed ?? 0)} `,
             subtitle: "38.5% Utilized Overall",
             icon: ArrowUpRight,
             iconBg: "bg-cyan-50",
@@ -29,7 +36,7 @@ export default function OverviewCards({ }) {
         },
         {
             title: "BALANCE DISBURSEMENT",
-            value: "₹79.55 Cr",
+            value: `₹ ${formatToKLCr(data.BalanceDisbursement ?? 0)}`,
             subtitle: "Remaining Limit",
             icon: Hourglass,
             iconBg: "bg-orange-50",
@@ -37,7 +44,7 @@ export default function OverviewCards({ }) {
         },
         {
             title: "TOTAL REPAYMENT",
-            value: "₹23.85 Cr",
+            value: `₹ ${formatToKLCr(data.TotalRepayment ?? 0)}`,
             subtitle: "Repayment Done",
             icon: CircleCheckBig,
             iconBg: "bg-emerald-50",
@@ -45,13 +52,13 @@ export default function OverviewCards({ }) {
         },
         {
             title: "OUTSTANDING BALANCE",
-            value: "₹25.90 Cr",
+            value: `₹ ${formatToKLCr(data.OutstandingBalance ?? 0)}`,
             subtitle: "Current Outstanding",
             icon: CircleAlert,
             iconBg: "bg-red-50",
             iconColor: "text-red-500",
         },
-    ]
+    ];
 
     return (
         <div className="space-y-3 pt-5">

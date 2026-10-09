@@ -944,7 +944,6 @@ export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.m
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
-export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 
 
 // ============================================================================

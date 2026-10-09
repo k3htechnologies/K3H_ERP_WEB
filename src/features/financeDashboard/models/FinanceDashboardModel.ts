@@ -7,6 +7,10 @@ export interface FinanceDashboardModelDataset {
     Table3: any[];
     Table4: any[];
     Table5: any[];
+    Table6: any[];
+    Table7: any[];
+    Table8: any[];
+    Table9: any[];
 }
 
 export type FinanceDashboardDatasetResponse = ApiResponse<FinanceDashboardModelDataset>;

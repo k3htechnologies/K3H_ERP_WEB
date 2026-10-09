@@ -1,7 +1,13 @@
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
-import { CircleDollarSign, TrendingUp, IndianRupee } from "lucide-react";
+import { TrendingUp, IndianRupee } from "lucide-react";
 
-export default function DebtServiceReserveAccount() {
+interface Props {
+    debtServiceReserveAccountData?: any[];
+}
+
+export default function DebtServiceReserveAccount({ debtServiceReserveAccountData }: Props) {
+
+    console.log("Debt Service Reserve Account Data:", debtServiceReserveAccountData);
 
     const mutualFunds = [
         {

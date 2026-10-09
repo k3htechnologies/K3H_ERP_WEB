@@ -1,5 +1,6 @@
 import { TriangleAlert } from "lucide-react";
 
+
 export default function Alerts() {
 
     const alerts = [
@@ -11,13 +12,17 @@ export default function Alerts() {
             title: "DSA Partially Paid",
             description: "₹0.40 Cr remains payable against 2 DSA accounts",
         },
+        {
+            title: "DSA Partially Paid",
+            description: "₹0.40 Cr remains payable against 2 DSA accounts",
+        },
     ];
 
     return (
         <div className="space-y-3 pt-4 sm:pt-5">
 
             <div
-                className="bg-white rounded-xl p-4 border border-gray-100 h-[250px]"
+                className="bg-white rounded-xl p-4 border border-gray-100 h-[300px]"
                 style={{
                     boxShadow: "0px 1px 2px rgba(0,0,0,0.05)",
                 }}

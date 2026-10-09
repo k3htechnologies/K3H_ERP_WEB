@@ -1,31 +1,15 @@
+import { formatToKLCr } from "@/core/utils/comman";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider"
 
-export default function ProjectWiseFinanceStatus({ }) {
+interface Props {
+    projectWiseFiananceStatusData: any[];
+}
 
-    const data = [
-        {
-            ProjectName: "Kampa Heights",
-            LoanAccounts: 5,
-            SanctionedAmount: `₹24.25 Cr`,
-            DisbursedAmount: `₹18.75 Cr`,
-            OutstandingBalance: `₹11.70Cr`
-        },
-        {
-            ProjectName: "Ketaki Singh",
-            LoanAccounts: 5,
-            SanctionedAmount: `₹30.25 Cr`,
-            DisbursedAmount: `₹18.75 Cr`,
-            OutstandingBalance: `₹11.70Cr`
-        },
-        {
-            ProjectName: "Beverly Park",
-            LoanAccounts: 5,
-            SanctionedAmount: `₹24.25 Cr`,
-            DisbursedAmount: `₹68.75 Cr`,
-            OutstandingBalance: `₹11.70Cr`,
-        },
+export default function ProjectWiseFinanceStatus({projectWiseFiananceStatusData }: Props) {
+    
+     const data = projectWiseFiananceStatusData || [];
 
-    ]
+     console.log("Project Wise Finance Status Data:", data);
 
     const columns = [
         {
@@ -43,9 +27,9 @@ export default function ProjectWiseFinanceStatus({ }) {
             key: "LoanAccounts",
             label: "Loan Accounts",
             align: "left" as any,
-            render: (value: string) => (
+            render: (value: number) => (
                 <span className="text-[14px] text-gray-600">
-                    {value || ''}
+                   {value || ''}
                 </span>
             ),
         },
@@ -53,9 +37,9 @@ export default function ProjectWiseFinanceStatus({ }) {
             key: "SanctionedAmount",
             label: "Sanction Amount",
             align: "left" as any,
-            render: (value: string) => (
+            render: (value: number) => (
                 <span className="text-[14px] text-gray-600">
-                    {value || ''}
+                     ₹{formatToKLCr(value)}
                 </span>
             ),
         },
@@ -63,9 +47,9 @@ export default function ProjectWiseFinanceStatus({ }) {
             key: "DisbursedAmount",
             label: "Disbursed Amount",
             align: "left" as any,
-            render: (value: string) => (
+            render: (value: number) => (
                 <span className="text-[14px] text-gray-600">
-                    {value || ''}
+                     ₹{formatToKLCr(value)}
                 </span>
             ),
         },
@@ -73,9 +57,9 @@ export default function ProjectWiseFinanceStatus({ }) {
             key: "OutstandingBalance",
             label: "Outstanding Balance",
             align: "right" as any,
-            render: (value: string) => (
+            render: (value: number) => (
                 <span className="text-[14px] text-red-600">
-                    {value || ''}
+                    ₹{formatToKLCr(value)}
                 </span>
             ),
         },
@@ -87,7 +71,7 @@ export default function ProjectWiseFinanceStatus({ }) {
             <div className="bg-white rounded-xl p-4 h-[300px] overflow-y-auto thin-scroll border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 {/* Section Header */}
                 <p className="text-sm font-semibold text-slate-500 uppercase">
-                    RECENTLY ADDED NOTICES{" "}
+                    PROJECT - WISE FINANCE STATUS{" "}
                     <span className="text-[12px] font-semibold text-gray-400">( Last 7 Days )</span>
                 </p>
                 <div className="min-w-[500px] sm:min-w-full flex-1 flex flex-col mt-3">

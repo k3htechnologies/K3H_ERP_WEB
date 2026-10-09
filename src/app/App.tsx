@@ -262,6 +262,7 @@ import TenantBooking from '@/features/tenantBooking/pages/TenantBooking';
 import { TenantBookingListStateProvider } from '@/features/tenantBooking/context/TenantBookingListStateContext';
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
 import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking';
+import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -592,6 +593,7 @@ function App() {
 
             {/* VISITOR MANAGEMENT */}
             <Route path='gatePass' element={<GatePass />} />
+            <Route path='visitorManagementDashboard' element={<VisitorManagementDashboard />} />
 
             {/* PROJECT LAND */}
             <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider><ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />

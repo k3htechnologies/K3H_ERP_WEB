@@ -324,7 +324,7 @@ export const CollectionReport: React.FC = () => {
 
             {
                 key: 'AmountGroup',
-                label: 'Amount Details',
+                label: 'Agreement Amount Details',
                 align: 'center',
                 theadStyle: {
                     backgroundColor: '#F0FDF4',
@@ -422,7 +422,210 @@ export const CollectionReport: React.FC = () => {
                         )
                     }
                 ]
+            },
+            {
+                key: 'GSTAmountGroup',
+                label: 'GST Amount Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#F0FDF4',
+                    color: '#60D669'
+                },
+                children: [
+                    {
+                        key: 'TotalGSTValue',
+                        label: 'GST',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    
+                    {
+                        key: 'GSTReceivedAmount',
+                        label: 'Received',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'GSTBalanceAmount',
+                        label: 'Balance',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    
+                ]
+            },
+            {
+                key: 'TDSAmountGroup',
+                label: 'TDS Amount Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#F0FDF4',
+                    color: '#60D669'
+                },
+                children: [
+                    {
+                        key: 'TotalTDSValue',
+                        label: 'TDS',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    
+                    {
+                        key: 'TDSReceivedAmount',
+                        label: 'Received',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'TDSBalanceAmount',
+                        label: 'Balance',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    
+                ]
+            },
+             {
+                key: 'StampDutyAmountGroup',
+                label: 'Stamp Duty Amount Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#F0FDF4',
+                    color: '#60D669'
+                },
+                children: [
+                    {
+                        key: 'TotalStampDutyValue',
+                        label: 'Stamp Duty',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    
+                    {
+                        key: 'StampDutyReceivedAmount',
+                        label: 'Received',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'StampDutyBalanceAmount',
+                        label: 'Balance',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    
+                ]
             }
+
+
         ];
     }, [])
 

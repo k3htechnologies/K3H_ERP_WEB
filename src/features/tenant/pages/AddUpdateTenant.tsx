@@ -180,6 +180,7 @@ const AddUpdateTenant: React.FC = () => {
 
 
   const [inventoryFlatData, setInventoryFlatData] = useState<InventoryFlatData | null>(null);
+  const [selectFlatValues, setSelectFlatValues] = useState<string  | null>(null);
 
   const handleFieldChange = (field: keyof AddUpdateTenantRequest, value: any) => {
 
@@ -247,6 +248,7 @@ const AddUpdateTenant: React.FC = () => {
               InventoryFlatId: tenant.InventoryFlatId ?? prev.InventoryFlatId
             }));
 
+            setSelectFlatValues(String(tenant.InventoryFlatId || null));
 
             const applicantsWithFiles = (tenant?.TenantApplicantData || []).map(a => ({
               ...a,
@@ -276,7 +278,7 @@ const AddUpdateTenant: React.FC = () => {
         } else {
 
           addToast({ type: 'error', title: response.left.message });
-
+setSelectFlatValues("");
         }
 
         return response
@@ -317,6 +319,14 @@ const AddUpdateTenant: React.FC = () => {
 
     if (!formData.UnitFacing?.trim()) {
       newErrors.UnitFacing = 'Unit Facing is required'
+    }
+
+    if (inventoryFlatData) {
+      if (!inventoryFlatData.FlatType?.trim()) {
+        newErrors.InventoryFlatId = 'Flat Type is required to allot the unit';
+      } else if (!inventoryFlatData.RERACarpetAreaSqFt || inventoryFlatData.RERACarpetAreaSqFt <= 0) {
+        newErrors.InventoryFlatId = 'RERA Carpet Area is required to allot the unit';
+      }
     }
 
     return {
@@ -1211,10 +1221,13 @@ const AddUpdateTenant: React.FC = () => {
       return fetchPaginatedInventoryFlatDropdown(pageNumber, {
         projectId: Number(projectId),
         flat: params?.value,
-        flatStatus: "Available",
+        flatStatus: "Available,Alloted",
+        approvalStatus: "Approved",
+        isAllotedBookingDone: true,
+        displayInventoryFlatId:selectFlatValues || ""
       });
     },
-    [projectId],
+    [projectId,selectFlatValues],
   );
 
   return (
@@ -1546,7 +1559,6 @@ const AddUpdateTenant: React.FC = () => {
               <SingleSelectDropdownWithPagination
 
                 label="Unit Number"
-                required
                 title="Select Unit Number"
                 size="lg"
                 dataFetchCallBack={fetchInventoryFlats}
@@ -1554,10 +1566,12 @@ const AddUpdateTenant: React.FC = () => {
                   if (!item) {
                     handleFieldChange("InventoryFlatId", 0);
                     setInventoryFlatData(null);
+                    setSelectFlatValues(null);
                     return;
                   }
                   setInventoryFlatData(item as unknown as InventoryFlatData);
                   handleFieldChange("InventoryFlatId", Number(item.value));
+                  setSelectFlatValues(String(item.value));
                 }}
                 initialValue={createDropdownInitialValue(formData.InventoryFlatId, dropdownLabels.Flat)}
                 error={errors.InventoryFlatId}
@@ -1570,12 +1584,13 @@ const AddUpdateTenant: React.FC = () => {
                   <FieldItem label="Building" value={inventoryFlatData?.BuildingNumber || "-"} />
                   <FieldItem label="Wing" value={inventoryFlatData?.Wing || "-"} />
                   <FieldItem label="Floor" value={inventoryFlatData?.Floor || "-"} />
-                  <FieldItem label="Flat Number" value={inventoryFlatData?.Flat || "-"} />
+                  <FieldItem label="Unit Number" value={inventoryFlatData?.Flat || "-"} />
                   <FieldItem label="Carpet Area (SqFt)" value={inventoryFlatData?.RERACarpetAreaSqFt || "-"} />
-                  <FieldItem label="Flat Type" value={inventoryFlatData?.FlatType || "-"} />
-                  <FieldItem label="Configuration" value={inventoryFlatData?.FlatConfiguration || "-"} />
-                  <FieldItem label="Facing" value={inventoryFlatData?.FlatFacing || "-"} />
+                  <FieldItem label="Unit Type" value={inventoryFlatData?.FlatType || "-"} />
+                  <FieldItem label="Unit Configuration" value={inventoryFlatData?.FlatConfiguration || "-"} />
+                  <FieldItem label="Unit Facing" value={inventoryFlatData?.FlatFacing || "-"} />
                   <FieldItem label="Status" value={inventoryFlatData?.FlatStatus || "-"} />
+                  
                 </div>
               </div>
             )}

@@ -29,7 +29,7 @@ import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApprov
 import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
 import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
-import { copyToClipboard } from '@/core/utils/comman';
+import { copyToClipboard, formatCurrency } from '@/core/utils/comman';
 import { Copy, Trash2 } from 'lucide-react';
 import { useTenantBookingListState } from '@/features/tenantBooking/context/TenantBookingListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
@@ -337,6 +337,14 @@ export const TenantBooking: React.FC = () => {
                     );
                 }
             },
+             {
+                key: 'TenantBuildingName',
+                label: 'Building Name',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
             {
                 key: 'ApplicantName',
                 label: 'Applicant Name',
@@ -358,6 +366,7 @@ export const TenantBooking: React.FC = () => {
                     </div>
                 )
             },
+           
             {
                 key: 'ApplicantMobileNumber',
                 label: 'Applicant Mobile Number',
@@ -367,6 +376,7 @@ export const TenantBooking: React.FC = () => {
                 render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
 
             },
+            
 
             {
                 key: 'BookingType',
@@ -376,11 +386,12 @@ export const TenantBooking: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
+           
             {
-                key: 'Flat',
-                label: 'Flat',
-                width: '12',
-                sortable: true,
+                key: 'BuildingNumber',
+                label: 'Building',
+                width: '10',
+                sortable: false,
                 align: 'left',
                 render: value => value || '-'
             },
@@ -400,13 +411,21 @@ export const TenantBooking: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
+             {
+                key: 'Flat',
+                label: 'Flat',
+                width: '12',
+                sortable: true,
+                align: 'left',
+                render: value => value || '-'
+            },
             {
                 key: 'AgreementValue',
                 label: 'Agreement Value (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
-                render: value => value ? `₹${Number(value).toLocaleString('en-IN')}` : '-'
+                render: value => value ? formatCurrency(value) : '0'
             },
             {
                 key: 'CreatedDate',

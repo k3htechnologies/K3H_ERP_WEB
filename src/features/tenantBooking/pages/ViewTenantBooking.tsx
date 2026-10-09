@@ -16,7 +16,7 @@ import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { handleExportFile } from '@/core/utils/exportFile';
-import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import {  type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import { FileText } from 'lucide-react';
 import type { FilterWithPaginationTenantRequest, TenantData } from '@/features/tenant/models/TenantModel';
@@ -220,25 +220,14 @@ export const ViewTenantBooking: React.FC = () => {
         const boldIfTotal = (row: any) => row.isTotal ? "font-bold text-gray-500" : "";
 
         return [
-            {
-                key: "Type",
-                label: "Type",
-                sortable: false,
-                width: "20",
-                align: "left",
-                render: (value, row) => {
-                    if (row.isTotal) return <span className={boldIfTotal(row)}></span>;
-
-                    return value || "-";
-                },
-            },
+            
             {
                 key: "Date",
                 label: "Date / Stage (Milestone)",
                 sortable: false,
 
-                width: "30",
-                align: "center",
+                width: "20",
+                align: "left",
                 render: (_value, row) => {
                     if (row.isTotal) return <span className={boldIfTotal(row)}>TOTAL</span>;
 
@@ -259,7 +248,7 @@ export const ViewTenantBooking: React.FC = () => {
                 sortable: false,
 
                 width: "20",
-                align: "right",
+                align: "left",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {value || "-"}
@@ -272,7 +261,7 @@ export const ViewTenantBooking: React.FC = () => {
                 sortable: false,
 
                 width: "20",
-                align: "right",
+                align: "left",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {formatCurrency(value) || "0"}
@@ -285,7 +274,7 @@ export const ViewTenantBooking: React.FC = () => {
 
                 width: "20",
                 sortable: false,
-                align: "right",
+                align: "left",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {formatCurrency(value) || "0"}
@@ -297,7 +286,7 @@ export const ViewTenantBooking: React.FC = () => {
                 label: "TDS Amount (₹)",
                 width: "20",
                 sortable: false,
-                align: "right",
+                align: "left",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {formatCurrency(value) || "0"}
@@ -310,7 +299,7 @@ export const ViewTenantBooking: React.FC = () => {
                 label: "Total Amount With TDS (₹)",
                 sortable: false,
                 width: "20",
-                align: "right",
+                align: "left",
                 render: (_, row) =>
                     <span className={boldIfTotal(row)}>
                         {formatCurrency(
@@ -634,7 +623,7 @@ export const ViewTenantBooking: React.FC = () => {
 
                                         <div className="divide-y divide-[#135bec2e]">
 
-                                            <div className="py-4">
+                                            <div className="py-1">
                                                 <FieldItem label="Booking From" value={bookingData.CarpetAreaPurchasedSqFt} isRow />
                                             </div>
 
@@ -853,10 +842,11 @@ export const ViewTenantBooking: React.FC = () => {
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
                                         <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
                                         <FieldItem label="Final Registration Completed" value={getSafeString(bookingData.IsFinalRegistrationCompleted === true ? 'Yes' : 'No')} urls={bookingData.FinalRegistrationURL} isIcon />
-                                        <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
+                                        
 
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+                                        <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
                                         <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
                                         <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
                                     </div>
@@ -890,7 +880,7 @@ export const ViewTenantBooking: React.FC = () => {
                                         Other Charges
                                     </h4>
                                 </div>
-                                <div className="p-4 bg-white">
+                                <div className="bg-white">
 
                                     <DataTableWithHeaderRowDivider
                                         data={otherChargesDataWithTotal}
@@ -914,7 +904,7 @@ export const ViewTenantBooking: React.FC = () => {
                                         </span>
                                     </h4>
                                 </div>
-                                <div className="p-4 bg-white">
+                                <div className="bg-white">
 
                                     <DataTableWithHeaderRowDivider
                                         data={paymentScheduleDataWithTotal}
@@ -1048,14 +1038,19 @@ export const ViewTenantBooking: React.FC = () => {
                 {
                     activeTab === 'Applicants' && (
                         <div>
-                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Applicant Details
-                                </h4>
-                                <div className="space-y-5">
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#C2410C]">
+                                        Applicant Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                    <div className="space-y-5">
                                     {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
                                         bookingData.BookingApplicantData.map((applicant, i) => (
-                                            <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                            <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
@@ -1083,6 +1078,7 @@ export const ViewTenantBooking: React.FC = () => {
                                         </div>
                                     )}
                                 </div>
+                                </div>
                             </section>
                         </div>
                     )
@@ -1091,26 +1087,26 @@ export const ViewTenantBooking: React.FC = () => {
                 {
                     activeTab === 'Charges' && (
                         <div className="space-y-4">
-                            <DataTable
+                            <DataTableWithHeaderRowDivider
                                 data={otherChargesDataWithTotal || []}
                                 columns={otherChargesColumns}
                                 emptyMessage="No Other Charges Found"
-                                fixedHeight={false}
+                                fixedHeight={true}
                                 recordsPerPage={20}
-                                className="min-w-full" />
+                                className="flex-1" />
                         </div>
                     )
                 }
 
                 {activeTab === 'Payment' && (
                     <div className="space-y-4">
-                        <DataTable
+                        <DataTableWithHeaderRowDivider
                             data={paymentScheduleDataWithTotal || []}
                             columns={paymentScheduleColumns}
                             emptyMessage="No Payment Schedule Found"
-                            fixedHeight={false}
+                            fixedHeight={true}
                             recordsPerPage={20}
-                            className="min-w-full" />
+                            className="flex-1" />
 
                     </div>
                 )

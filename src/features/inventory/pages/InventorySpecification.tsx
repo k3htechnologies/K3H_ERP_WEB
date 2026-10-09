@@ -690,27 +690,29 @@ const InventorySpecification: React.FC = () => {
             </div>
           </div>
 
-          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex-1 border-b border-gray-300 pb-2">
-              <h3 className="text-lg font-semibold text-gray-900">{flatData?.FlatStatus === "Booked" ? "Sales Booking Details" : "Tenant Booking Details"}</h3>
-            </div>
+          {(flatData?.FlatStatus === "Alloted" || flatData?.FlatStatus === "Booked") && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex-1 border-b border-gray-300 pb-2">
+                <h3 className="text-lg font-semibold text-gray-900">{flatData?.FlatStatus === "Booked" ? "Sales Booking Details" : "Tenant Booking Details"}</h3>
+              </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
-              <FieldItem label="Owner Name" value={flatData?.OwnerName || "-"} />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
+                <FieldItem label="Owner Name" value={flatData?.OwnerName || "-"} />
 
-              {flatData?.FlatStatus === "Alloted" && (
-                <>
-                  <FieldItem label="Tenant Building Name" value={flatData?.TenantBuildingName || "-"} />
-                  <FieldItem label="Tenant Code" value={flatData?.TenantSystemGeneratedCode || "-"} />
-                </>
-              )}
-              <FieldItem label="Created By" value={flatData?.BookingCreatedBy ?? '-'} />
-              <FieldItem
-                label="Created Date"
-                value={formatDate_dd_MonthName_yy_hh_mm(flatData?.BookingCreatedDate ?? '-')}
-              />
+                {flatData?.FlatStatus === "Alloted" && (
+                  <>
+                    <FieldItem label="Tenant Building Name" value={flatData?.TenantBuildingName || "-"} />
+                    <FieldItem label="Tenant Code" value={flatData?.TenantSystemGeneratedCode || "-"} />
+                  </>
+                )}
+                <FieldItem label="Created By" value={flatData?.BookingCreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(flatData?.BookingCreatedDate ?? '-')}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="pt-5">

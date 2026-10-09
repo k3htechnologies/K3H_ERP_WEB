@@ -233,6 +233,7 @@ export interface FilterPaginatedFlatsRequest {
     FlatStatus?: string
     DisplayInventoryFlatId?: string
     IsAcessOnlyLienToSociety?:boolean
+    IsAllotedBookingDone?: boolean
     ApprovalStatus?: string
 }
 

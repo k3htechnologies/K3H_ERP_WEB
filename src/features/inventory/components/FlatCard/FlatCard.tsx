@@ -219,11 +219,10 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
-                <p
-                    className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline break-words whitespace-normal"
-                    onClick={handleOwnerNameClick}
-                    title="Click to view booking details"
-                >
+                
+                <p className={`text-center font-medium text-sm break-words whitespace-normal ${Number(flat.BookingId) > 0 ? "text-[#135BEC] cursor-pointer hover:underline" : "text-gray-700"}`}
+                    onClick={Number(flat.BookingId) > 0 ? handleOwnerNameClick : undefined}
+                    title={Number(flat.BookingId) > 0 ? "Click to view booking details" : undefined}>
                     {getOwnerLabel()}{flat.OwnerName}
                 </p>
             ) : flat.FlatStatus === "Blocked" || flat.FlatStatus === "Hold" ? (

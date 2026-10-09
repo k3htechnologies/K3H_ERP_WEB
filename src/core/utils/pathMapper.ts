@@ -139,6 +139,7 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //VISITOR MANAGEMENT
         '/gatepass': '/gatePass',
+        '/visitormanagementdashboard': '/visitorManagementDashboard',
 
         //PROJECT LAND
         '/projectlead': '/projectLead',

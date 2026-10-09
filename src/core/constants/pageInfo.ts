@@ -630,6 +630,13 @@ export const getPageInfo = (path: string) => {
         description: "Gate Pass",
       };
 
+      case "visitorManagementDashboard":
+      return {
+        title: "Visitor Management Dashboard",
+        description: "Dashboard for managing visitor access and entries",
+      };
+      
+
     //PROJECT LEAD
     case "projectLead":
       return {

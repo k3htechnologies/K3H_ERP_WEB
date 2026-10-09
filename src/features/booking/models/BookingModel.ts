@@ -287,7 +287,7 @@ export interface AddUpdateBookingRequest {
     TransferBookingId: number | null;
     TenantId: number | null;
     TenantBuildingId?: number | null; 
-    CarpetAreaPurchasedSqFt:string | null;   
+    CarpetAreaPurchasedSqFt?:string | null;   
     OTP?: string | null;
 }
 

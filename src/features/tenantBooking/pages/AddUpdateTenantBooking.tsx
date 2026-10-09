@@ -404,6 +404,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
           PageNumber: 1,
           PageSize: 1,
           BookingId: bookingId,
+          BookingSearchKey: "TENANT BOOKING",
           ProjectId: Number(projectId),
         };
 
@@ -757,8 +758,15 @@ export const AddUpdateTenantBooking: React.FC = () => {
     if (!formData.ProjectId || formData.ProjectId === 0) {
       newErrors.ProjectId = "Project is required";
     }
+    if (!formData.TenantBuildingId || formData.TenantBuildingId === 0) {
+      newErrors.TenantBuildingId = "Building is required";
+    }
     if (!formData.TenantId || formData.TenantId === 0) {
       newErrors.TenantId = "Tenant Code is required";
+    }
+
+    if (Number(tenantList?.InventoryFlatId) > 0 && formData.InventoryFlatId !== tenantList?.InventoryFlatId) {
+      newErrors.TenantId = "The allotted unit does not match the unit selected in the tenant booking";
     }
 
     if (!formData.PermanentAddress) {
@@ -818,7 +826,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
       newErrors.TermsAndConditionsDescription = "Terms and Conditions Description is required";
     }
 
-    if (Number(formData.AgreementValue)<0 && paymentSchedules.length === 0) {
+    if (Number(formData.AgreementValue) < 0 && paymentSchedules.length === 0) {
       addToast({ type: "error", title: "Payment schedule is required" });
       return { isValid: false, errors: newErrors };
     }
@@ -1126,6 +1134,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
                 title="Select Building"
                 isShowClearSelection={false}
                 size="lg"
+                error={errors.TenantBuildingId}
                 initialValue={createDropdownInitialValue(formData.TenantBuildingId, dropdownLabels.tenantBuildingName)}
                 dataFetchCallBack={fetchBuildingCallback}
                 onSelected={(item) => {
@@ -1167,7 +1176,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
                   setTenantId(0);
 
                 }}
-                placeholder="Search By Tenant Unique Code"
+                placeholder="Search By Tenant Code"
                 leftIcon={<Search className="h-4 w-4 text-gray-400" />}
                 error={errors.TenantId}
               />

@@ -16,6 +16,7 @@ export interface ApprovedBankFolderData {
     ApprovedBankFolderId: number
     BankListMasterId: string | null 
     BankName: string | null
+    NumberOfApprovedBankFile: number | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

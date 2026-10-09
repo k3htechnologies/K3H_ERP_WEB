@@ -7,6 +7,7 @@ import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import FieldInfoTooltip from '@/ui/components/forms/FieldInfoTooltip';
+import { useTenantBookingListState } from '@/features/tenantBooking/context/TenantBookingListStateContext';
 
 interface FlatCardProps {
     flat: InventoryFlatData;
@@ -17,13 +18,16 @@ interface FlatCardProps {
     buildingNumber?: string;
     canAction?: boolean;
     canBookingAction?: boolean;
+    canTenantBookingAction?: boolean;
     approvalStatus?: string;
 }
 
-export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber, canAction, canBookingAction, approvalStatus }: FlatCardProps) => {
+export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber, canAction, canBookingAction, canTenantBookingAction, approvalStatus }: FlatCardProps) => {
     const navigate = useNavigate();
 
     const { updateListState } = useBookingListState();
+
+    const { updateTenantListState } = useTenantBookingListState();
 
     const hexToRgba = (hex: string, alpha: number = 0.12) => {
         const cleanHex = hex.replace('#', '');
@@ -66,7 +70,14 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
             bookingName: ""
         });
 
-        navigate('/booking/add', {
+        updateTenantListState({
+            bookingId: 0,
+            bookingName: ""
+        });
+
+        const isTenantBooking = flat.FlatStatus === "Alloted";
+
+        navigate(isTenantBooking ? '/tenantBooking/add' : '/booking/add', {
 
             state: {
                 flatData: {
@@ -82,7 +93,11 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     InventoryFlatFloorBasementPodiumWingId: flat.InventoryFlatFloorBasementPodiumWingId,
                     InventoryBuildingId: flat.InventoryBuildingId,
                     bookingId: 0,
-                    bookingName: ""
+                    bookingName: "",
+                    tenantId: flat.TenantId,
+                    tenantSystemGeneratedCode: flat.TenantSystemGeneratedCode,
+                    tenantBuildingId: flat.TenantBuildingId,
+                    tenantBuildingName: flat.TenantBuildingName
                 }
             }
         });
@@ -99,14 +114,29 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
         if (flat.BookingId && flat.BookingId > 0) {
 
-            updateListState({
-                bookingId: flat.BookingId,
-                bookingName: flat.OwnerName || '',
-            });
+            const isTenantBooking = flat.FlatStatus === "Alloted";
 
-            navigate('/booking/view', {
-                state: { sourcePage: 'inventory' }
-            });
+            const isBookingIdZero = Number(flat.BookingId);
+
+            if (isTenantBooking) {
+                updateTenantListState({
+                    bookingId: flat.BookingId,
+                    bookingName: flat.OwnerName || '',
+                });
+            }
+            else {
+                updateListState({
+                    bookingId: flat.BookingId,
+                    bookingName: flat.OwnerName || '',
+                });
+            }
+
+            if (isBookingIdZero > 0) {
+
+                navigate(isTenantBooking ? '/tenantBooking/view' : '/booking/view', {
+                    state: { sourcePage: 'inventory' }
+                });
+            }
 
         }
     };
@@ -174,13 +204,25 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                 </div>
             )}
 
+            {flat.FlatStatus === "Alloted" && approvalStatus?.toUpperCase() === "APPROVED" && Number(flat.BookingId) === 0 && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && canTenantBookingAction && (
+                <div className="flex items-center justify-center mt-2">
+                    <Button
+                        onClick={handleBook}
+                        color="blue"
+                        size="sm"
+                        className="w-full"
+                    >
+                        Book
+                    </Button>
+                </div>
+            )}
+
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
-                <p
-                    className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline break-words whitespace-normal"
-                    onClick={handleOwnerNameClick}
-                    title="Click to view booking details"
-                >
+                
+                <p className={`text-center font-medium text-sm break-words whitespace-normal ${Number(flat.BookingId) > 0 ? "text-[#135BEC] cursor-pointer hover:underline" : "text-gray-700"}`}
+                    onClick={Number(flat.BookingId) > 0 ? handleOwnerNameClick : undefined}
+                    title={Number(flat.BookingId) > 0 ? "Click to view booking details" : undefined}>
                     {getOwnerLabel()}{flat.OwnerName}
                 </p>
             ) : flat.FlatStatus === "Blocked" || flat.FlatStatus === "Hold" ? (

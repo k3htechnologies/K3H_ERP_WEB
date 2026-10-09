@@ -29,6 +29,9 @@ import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
+import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "@/features/inventory/InventoryFlatDropdown";
+import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -55,6 +58,7 @@ const initialFormState = (): AddUpdateTenantRequest => ({
   ExistingTerraceAreaSqFt: 0,
   AreaAgainstTerraceSqFt: 0,
   Remark: "",
+  InventoryFlatId: 0
 });
 
 const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
@@ -68,50 +72,32 @@ const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
   ApplicantMobileNumberCountryCode: "+91",
   ApplicantMobileNumber: '',
   ApplicantEmailId: '',
-
-  // Photo
   PhotoURL: null,
   RemovePhotoURL: '',
-
-  // Aadhar
   AadharCardNumber: '',
   AadharCardURL: null,
   RemoveAadharCardURL: '',
-
-  // PAN
   PanNumber: '',
   PanCardURL: null,
   RemovePanCardURL: '',
-
-  // Passport
   PassportNumber: '',
   PassportURL: null,
   RemovePassportURL: '',
-
-  // Driving License
   DrivingLicenseNumber: '',
   DrivingLicenseURL: null,
   RemoveDrivingLicenseURL: '',
-
-  // Voting ID
   VotingIdNumber: '',
   VotingIdURL: null,
   RemoveVotingIdURL: '',
-
-  // GST
   GSTNumber: '',
   GSTNumberURL: null,
   RemoveGSTNumberURL: '',
-
-  // Bank Details
   BankListMasterId: 0,
   AccountNumber: '',
   IFSCCode: '',
   ChequeURL: null,
   RemoveChequeURL: ''
 });
-
-
 
 type TenantApplicantWithFiles = TenantApplicant & {
   _photoFiles?: (File | string)[];
@@ -131,7 +117,6 @@ type TenantApplicantWithFiles = TenantApplicant & {
   RemoveGSTNumberURL?: string;
   RemoveChequeURL?: string;
 };
-
 
 const AddUpdateTenant: React.FC = () => {
 
@@ -159,6 +144,7 @@ const AddUpdateTenant: React.FC = () => {
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     bankName?: string;
+    Flat?: string;
   }>({});
 
   const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateTenantApplicant>(() => initialFormStateApplicantDetails());
@@ -166,37 +152,20 @@ const AddUpdateTenant: React.FC = () => {
   const [editingApplicantData, setEditingApplicantData] = useState<{ row: TenantApplicantWithFiles; index: number } | null>(null);
 
   const [isAddUpdateApplicantModalOpen, setIsAddUpdateApplicantModalOpen] = useState(false)
-
-
-  // ================= PHOTO =================
   const [applicantPhotoFiles, setApplicantPhotoFiles] = useState<(File | string)[]>([]);
   const [removedApplicantPhotoURLs, setRemovedApplicantPhotoURLs] = useState<string[]>([]);
-
-  // ================= AADHAR =================
   const [aadharCardFiles, setAadharCardFiles] = useState<(File | string)[]>([]);
   const [removedAadharCardURLs, setRemovedAadharCardURLs] = useState<string[]>([]);
-
-  // ================= PAN =================
   const [panCardFiles, setPanCardFiles] = useState<(File | string)[]>([]);
   const [removedPanCardURLs, setRemovedPanCardURLs] = useState<string[]>([]);
-
-  // ================= PASSPORT =================
   const [passportFiles, setPassportFiles] = useState<(File | string)[]>([]);
   const [removedPassportURLs, setRemovedPassportURLs] = useState<string[]>([]);
-
-  // ================= DRIVING LICENSE =================
   const [drivingLicenseFiles, setDrivingLicenseFiles] = useState<(File | string)[]>([]);
   const [removedDrivingLicenseURLs, setRemovedDrivingLicenseURLs] = useState<string[]>([]);
-
-  // ================= VOTING ID =================
   const [votingIdFiles, setVotingIdFiles] = useState<(File | string)[]>([]);
   const [removedVotingIdURLs, setRemovedVotingIdURLs] = useState<string[]>([]);
-
-  // ================= GST =================
   const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
   const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
-
-  // ================= CHEQUE =================
   const [chequeFiles, setChequeFiles] = useState<(File | string)[]>([]);
   const [removedChequeURLs, setRemovedChequeURLs] = useState<string[]>([]);
 
@@ -208,6 +177,10 @@ const AddUpdateTenant: React.FC = () => {
   const [deleteTenantApplicantData, setDeleteTenantApplicantData] = useState<{ row: TenantApplicantWithFiles; index: number } | null>(null);
 
   const { canAction } = useMenuPermissions('/tenant');
+
+
+  const [inventoryFlatData, setInventoryFlatData] = useState<InventoryFlatData | null>(null);
+  const [selectFlatValues, setSelectFlatValues] = useState<string  | null>(null);
 
   const handleFieldChange = (field: keyof AddUpdateTenantRequest, value: any) => {
 
@@ -272,12 +245,13 @@ const AddUpdateTenant: React.FC = () => {
               AreaAgainstTerraceSqFt: tenant.AreaAgainstTerraceSqFt ?? prev.AreaAgainstTerraceSqFt,
               TotalNewRERACarpetAreaWithDeckSqFt: tenant.TotalNewRERACarpetAreaWithDeckSqFt ?? prev.TotalNewRERACarpetAreaWithDeckSqFt,
               Remark: tenant.Remark ?? prev.Remark,
+              InventoryFlatId: tenant.InventoryFlatId ?? prev.InventoryFlatId
             }));
 
+            setSelectFlatValues(String(tenant.InventoryFlatId || null));
 
             const applicantsWithFiles = (tenant?.TenantApplicantData || []).map(a => ({
               ...a,
-              // parseDocumentUrls returns array of filenames/URLs (strings)
               _photoFiles: parseDocumentUrls(a.PhotoURL ?? ''),
               _aadharFiles: parseDocumentUrls(a.AadharCardURL ?? ''),
               _panFiles: parseDocumentUrls(a.PanCardURL ?? ''),
@@ -291,12 +265,20 @@ const AddUpdateTenant: React.FC = () => {
             setApplicantList(applicantsWithFiles);
             setDropdownLabels({
               bankName: tenant?.TenantApplicantData[0].BankName || "",
+              Flat: tenant?.Flat || ""
             });
+
+            if (tenant.InventoryFlatId) {
+              await fetchInventoryFlatDetails(Number(tenant.ProjectId), tenant.InventoryFlatId).then((flat) => {
+                if (!flat) return;
+                setInventoryFlatData(flat);
+              });
+            }
           }
         } else {
 
           addToast({ type: 'error', title: response.left.message });
-
+setSelectFlatValues("");
         }
 
         return response
@@ -310,7 +292,6 @@ const AddUpdateTenant: React.FC = () => {
     )
   }
 
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddTenantForm = (): {
 
     isValid: boolean
@@ -338,6 +319,14 @@ const AddUpdateTenant: React.FC = () => {
 
     if (!formData.UnitFacing?.trim()) {
       newErrors.UnitFacing = 'Unit Facing is required'
+    }
+
+    if (inventoryFlatData) {
+      if (!inventoryFlatData.FlatType?.trim()) {
+        newErrors.InventoryFlatId = 'Flat Type is required to allot the unit';
+      } else if (!inventoryFlatData.RERACarpetAreaSqFt || inventoryFlatData.RERACarpetAreaSqFt <= 0) {
+        newErrors.InventoryFlatId = 'RERA Carpet Area is required to allot the unit';
+      }
     }
 
     return {
@@ -463,36 +452,20 @@ const AddUpdateTenant: React.FC = () => {
 
     setEditingApplicantData({ row, index });
     setFormDataForApplicant(applicantData);
-
-    // PHOTO
     setApplicantPhotoFiles(row._photoFiles ?? []);
     setRemovedApplicantPhotoURLs([]);
-
-    // AADHAR
     setAadharCardFiles(row._aadharFiles ?? []);
     setRemovedAadharCardURLs([]);
-
-    // PAN
     setPanCardFiles(row._panFiles ?? []);
     setRemovedPanCardURLs([]);
-
-    // PASSPORT
     setPassportFiles(row._passportFiles ?? []);
     setRemovedPassportURLs([]);
-
-    // DL
     setDrivingLicenseFiles(row._drivingFiles ?? []);
     setRemovedDrivingLicenseURLs([]);
-
-    // VOTER
     setVotingIdFiles(row._votingFiles ?? []);
     setRemovedVotingIdURLs([]);
-
-    // GST
     setGstFiles(row._gstFiles ?? []);
     setRemovedGstURLs([]);
-
-    // CHEQUE
     setChequeFiles(row._chequeFiles ?? []);
     setRemovedChequeURLs([]);
 
@@ -751,7 +724,6 @@ const AddUpdateTenant: React.FC = () => {
     }
   };
 
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddApplicantForm = (): {
 
     isValid: boolean
@@ -761,13 +733,13 @@ const AddUpdateTenant: React.FC = () => {
   } => {
     const newErrorsTenantApplicant: { [key: string]: string } = {}
 
-    const otherApplicants = editingApplicantData?applicantList.filter((_, index) => index !== editingApplicantData.index): applicantList;
+    const otherApplicants = editingApplicantData ? applicantList.filter((_, index) => index !== editingApplicantData.index) : applicantList;
 
-    const existingApplicantCount = otherApplicants.filter(a => String(a.ApplicantType ?? '').trim() .toUpperCase() === 'APPLICANT' ).length;
+    const existingApplicantCount = otherApplicants.filter(a => String(a.ApplicantType ?? '').trim().toUpperCase() === 'APPLICANT').length;
 
-    const currentIsApplicant =  String(formDataForApplicant.ApplicantType ?? '') .trim().toUpperCase() === 'APPLICANT';
+    const currentIsApplicant = String(formDataForApplicant.ApplicantType ?? '').trim().toUpperCase() === 'APPLICANT';
 
-    const finalApplicantCount =  existingApplicantCount +(currentIsApplicant ? 1 : 0);
+    const finalApplicantCount = existingApplicantCount + (currentIsApplicant ? 1 : 0);
 
     if (finalApplicantCount === 0) {
       newErrorsTenantApplicant.ApplicantType = 'One Applicant is required';
@@ -789,7 +761,6 @@ const AddUpdateTenant: React.FC = () => {
       newErrorsTenantApplicant.ApplicantMobileNumber = "Enter a valid Mobile Number";
     }
 
-
     if (formDataForApplicant.ApplicantEmailId?.trim() && !isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
       newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid E-Mail ID';
     }
@@ -797,25 +768,22 @@ const AddUpdateTenant: React.FC = () => {
     const mergedAadharFiles = editingApplicantData
       ? calculateMergedFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, removedAadharCardURLs)
       : aadharCardFiles.slice();
+
     const AadharCardNumber = formDataForApplicant.AadharCardNumber?.trim() || "";
+
     const hasAadharCardNumber = AadharCardNumber !== "";
+
     const hasAadharCardNumberFile = mergedAadharFiles.length > 0;
 
-    // 🔹 Rule 1 — If number present, validate number
     if (hasAadharCardNumber && !isValidAadhaar(AadharCardNumber)) {
       newErrorsTenantApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
     }
-
-    // 🔹 Rule 2 — If number present, file is required
     if (hasAadharCardNumber && !hasAadharCardNumberFile) {
       newErrorsTenantApplicant.AadharCardURL = "Aadhaar document is required";
     }
-
-    // 🔹 Rule 3 — If file present, number is required
     if (hasAadharCardNumberFile && !hasAadharCardNumber) {
       newErrorsTenantApplicant.AadharCardNumber = "Aadhaar Card Number is required";
     }
-
 
     const mergedPanFiles = editingApplicantData
       ? calculateMergedFiles(editingApplicantData.row._panFiles, panCardFiles, removedPanCardURLs)
@@ -824,18 +792,12 @@ const AddUpdateTenant: React.FC = () => {
     const PanNumber = formDataForApplicant.PanNumber?.trim() || "";
     const hasPanNumber = PanNumber !== "";
     const hasPanFile = mergedPanFiles.length > 0;
-
-    // Rule 1
     if (hasPanNumber && !isValidPAN(PanNumber)) {
       newErrorsTenantApplicant.PanNumber = "Enter a valid PAN Card Number";
     }
-
-    // Rule 2
     if (hasPanNumber && !hasPanFile) {
       newErrorsTenantApplicant.PanCardURL = "PAN document is required";
     }
-
-    // Rule 3
     if (hasPanFile && !hasPanNumber) {
       newErrorsTenantApplicant.PanNumber = "PAN Card Number is required";
     }
@@ -847,18 +809,12 @@ const AddUpdateTenant: React.FC = () => {
     const PassportNumber = formDataForApplicant.PassportNumber?.trim() || "";
     const hasPassportNumber = PassportNumber !== "";
     const hasPassportFile = mergedPassportFiles.length > 0;
-
-    // Rule 1
     if (hasPassportNumber && !isValidPassportNumber(PassportNumber)) {
       newErrorsTenantApplicant.PassportNumber = "Enter a valid Passport Number";
     }
-
-    // Rule 2
     if (hasPassportNumber && !hasPassportFile) {
       newErrorsTenantApplicant.PassportURL = "Passport document is required";
     }
-
-    // Rule 3
     if (hasPassportFile && !hasPassportNumber) {
       newErrorsTenantApplicant.PassportNumber = "Passport Number is required";
     }
@@ -870,18 +826,12 @@ const AddUpdateTenant: React.FC = () => {
     const DLNumber = formDataForApplicant.DrivingLicenseNumber?.trim() || "";
     const hasDLNumber = DLNumber !== "";
     const hasDLFile = mergedDrivingFiles.length > 0;
-
-    // Rule 1
     if (hasDLNumber && !isValidDrivingLicenseNumber(DLNumber)) {
       newErrorsTenantApplicant.DrivingLicenseNumber = "Enter a valid Driving License Number";
     }
-
-    // Rule 2
     if (hasDLNumber && !hasDLFile) {
       newErrorsTenantApplicant.DrivingLicenseURL = "Driving License document is required";
     }
-
-    // Rule 3
     if (hasDLFile && !hasDLNumber) {
       newErrorsTenantApplicant.DrivingLicenseNumber = "Driving License Number is required";
     }
@@ -895,18 +845,12 @@ const AddUpdateTenant: React.FC = () => {
     const VotingIdNumber = formDataForApplicant.VotingIdNumber?.trim() || "";
     const hasVotingIdNumber = VotingIdNumber !== "";
     const hasVotingFile = mergedVotingFiles.length > 0;
-
-    // Rule 1
     if (hasVotingIdNumber && !isValidVoterId(VotingIdNumber)) {
       newErrorsTenantApplicant.VotingIdNumber = "Enter a valid Voting Id Number";
     }
-
-    // Rule 2
     if (hasVotingIdNumber && !hasVotingFile) {
       newErrorsTenantApplicant.VotingIdURL = "Voting ID document is required";
     }
-
-    // Rule 3
     if (hasVotingFile && !hasVotingIdNumber) {
       newErrorsTenantApplicant.VotingIdNumber = "Voting ID Number is required";
     }
@@ -918,23 +862,15 @@ const AddUpdateTenant: React.FC = () => {
     const GSTNumber = formDataForApplicant.GSTNumber?.trim() || "";
     const hasGSTNumber = GSTNumber !== "";
     const hasGSTFile = mergedGstFiles.length > 0;
-
-    // Rule 1
     if (hasGSTNumber && !isValidGST(GSTNumber)) {
       newErrorsTenantApplicant.GSTNumber = "Enter a valid GST Number";
     }
-
-    // Rule 2
     if (hasGSTNumber && !hasGSTFile) {
       newErrorsTenantApplicant.GSTNumberURL = "GST document is required";
     }
-
-    // Rule 3
     if (hasGSTFile && !hasGSTNumber) {
       newErrorsTenantApplicant.GSTNumber = "GST Number is required";
     }
-
-    // ================= BANK VALIDATION =================
     const mergedChequeFiles = editingApplicantData
       ? calculateMergedFiles(editingApplicantData.row._chequeFiles, chequeFiles, removedChequeURLs)
       : chequeFiles.slice();
@@ -943,8 +879,6 @@ const AddUpdateTenant: React.FC = () => {
     const ifsc = (formDataForApplicant.IFSCCode || "").trim();
 
     const hasChequeFile = mergedChequeFiles.length > 0;
-
-    // 👉 If ANY bank info exists → ALL become required
     const hasAnyBankInfo =
       bankId > 0 ||
       account !== "" ||
@@ -1025,8 +959,6 @@ const AddUpdateTenant: React.FC = () => {
     const finalRemovedChequeURLs = editingApplicantData
       ? calculateRemovedFiles(editingApplicantData.row._chequeFiles, chequeFiles, removedChequeURLs)
       : removedChequeURLs;
-
-    // Merge files for each document type (using final removed URLs)
     const mergedPhotoFiles = editingApplicantData
       ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, finalRemovedPhotoURLs)
       : applicantPhotoFiles.slice();
@@ -1210,6 +1142,7 @@ const AddUpdateTenant: React.FC = () => {
     fd.append('AreaAgainstTerraceSqFt', String(formData.AreaAgainstTerraceSqFt ?? 0));
     fd.append('TotalNewRERACarpetAreaWithDeckSqFt', String(formData.TotalNewRERACarpetAreaWithDeckSqFt ?? 0));
     fd.append('Remark', String(formData.Remark ?? ''));
+    fd.append('InventoryFlatId', String(formData.InventoryFlatId ?? 0));
 
     const addFilesWithExisting = (
       fdLocal: FormData,
@@ -1249,8 +1182,6 @@ const AddUpdateTenant: React.FC = () => {
       fd.append(`${prefix}.ApplicantMobileNumberCountryCode`, app.ApplicantMobileNumberCountryCode ?? "");
       fd.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? '');
       fd.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? '');
-
-      // non-file fields
       fd.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? '');
       fd.append(`${prefix}.PanNumber`, app.PanNumber ?? '');
       fd.append(`${prefix}.PassportNumber`, app.PassportNumber ?? '');
@@ -1284,7 +1215,20 @@ const AddUpdateTenant: React.FC = () => {
     return fd;
   };
 
-  //#endregion
+  const fetchInventoryFlats = useCallback(
+    async (pageNumber: number, params?: { value?: string }) => {
+
+      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
+        projectId: Number(projectId),
+        flat: params?.value,
+        flatStatus: "Available,Alloted",
+        approvalStatus: "Approved",
+        isAllotedBookingDone: true,
+        displayInventoryFlatId:selectFlatValues || ""
+      });
+    },
+    [projectId,selectFlatValues],
+  );
 
   return (
 
@@ -1607,6 +1551,49 @@ const AddUpdateTenant: React.FC = () => {
               />
             </div>
 
+          </div>
+
+          <div className="space-y-4  pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">New Unit Details</h3>
+            <div>
+              <SingleSelectDropdownWithPagination
+
+                label="Unit Number"
+                title="Select Unit Number"
+                size="lg"
+                dataFetchCallBack={fetchInventoryFlats}
+                onSelected={(item) => {
+                  if (!item) {
+                    handleFieldChange("InventoryFlatId", 0);
+                    setInventoryFlatData(null);
+                    setSelectFlatValues(null);
+                    return;
+                  }
+                  setInventoryFlatData(item as unknown as InventoryFlatData);
+                  handleFieldChange("InventoryFlatId", Number(item.value));
+                  setSelectFlatValues(String(item.value));
+                }}
+                initialValue={createDropdownInitialValue(formData.InventoryFlatId, dropdownLabels.Flat)}
+                error={errors.InventoryFlatId}
+              />
+            </div>
+
+            {Number(formData.InventoryFlatId) != 0 && Number(formData.InventoryFlatId) != 0 && (
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <FieldItem label="Building" value={inventoryFlatData?.BuildingNumber || "-"} />
+                  <FieldItem label="Wing" value={inventoryFlatData?.Wing || "-"} />
+                  <FieldItem label="Floor" value={inventoryFlatData?.Floor || "-"} />
+                  <FieldItem label="Unit Number" value={inventoryFlatData?.Flat || "-"} />
+                  <FieldItem label="Carpet Area (SqFt)" value={inventoryFlatData?.RERACarpetAreaSqFt || "-"} />
+                  <FieldItem label="Unit Type" value={inventoryFlatData?.FlatType || "-"} />
+                  <FieldItem label="Unit Configuration" value={inventoryFlatData?.FlatConfiguration || "-"} />
+                  <FieldItem label="Unit Facing" value={inventoryFlatData?.FlatFacing || "-"} />
+                  <FieldItem label="Status" value={inventoryFlatData?.FlatStatus || "-"} />
+                  
+                </div>
+              </div>
+            )}
           </div>
         </form>
       </div >

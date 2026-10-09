@@ -54,6 +54,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/siteprogress': '/siteProgress',
         '/building': '/building',
         '/tenant': '/tenant',
+        '/tenantbooking': '/tenantBooking',
         '/proposedoffer': '/proposedOffer',
         '/proposedplan': '/proposedPlan',
         '/rent': '/rent',
@@ -91,7 +92,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/ibmobmreport': '/ibmObmReport',
         '/classificationparameter': '/classificationParameter',
         '/paymentschedulereport': '/paymentScheduleReport',
-        '/paymentschedule': '/paymentSchedule',
+        '/paymentschedules': '/paymentSchedules',
         '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
 
@@ -134,6 +135,7 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //VISITOR MANAGEMENT
         '/gatepass': '/gatePass',
+        '/visitormanagementdashboard': '/visitorManagementDashboard',
 
         //PROJECT LAND
         '/projectlead': '/projectLead',

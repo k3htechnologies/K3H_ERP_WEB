@@ -504,6 +504,7 @@ export const AddUpdateBooking: React.FC = () => {
           PageSize: 1,
           BookingId: bookingId,
           ProjectId: Number(projectId),
+          BookingSearchKey:"SALE BOOKING",
         };
 
         const response = await bookingService.apiCallPullBooking(params);
@@ -1265,10 +1266,14 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!formData.FlatAlterationRemark?.trim()) {
       newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
+    }else if (formData.FlatAlterationRemark.trim().length < 25) {
+      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark must be at least 25 characters";
     }
 
     if (!formData.PaymentRemark?.trim()) {
       newErrors.PaymentRemark = "Payment Related Remark is required";
+    }else if (formData.PaymentRemark.trim().length < 25) {
+      newErrors.PaymentRemark = "Payment Related Remark must be at least 25 characters";
     }
 
     if (!formData.TermsAndConditionsDescription?.trim()) {

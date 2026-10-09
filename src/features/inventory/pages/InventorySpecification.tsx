@@ -31,6 +31,7 @@ import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 interface FormDataInventoryFlat {
   InventoryFlatId: number;
@@ -656,7 +657,7 @@ const InventorySpecification: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-4 pb-5">
+          <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex-1 border-b border-gray-300 pb-2">
                 <h3 className="text-lg font-semibold text-gray-900">Unit Layout Form</h3>
@@ -688,21 +689,47 @@ const InventorySpecification: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {(flatData?.FlatStatus === "Alloted" || flatData?.FlatStatus === "Booked") && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex-1 border-b border-gray-300 pb-2">
+                <h3 className="text-lg font-semibold text-gray-900">{flatData?.FlatStatus === "Booked" ? "Sales Booking Details" : "Tenant Booking Details"}</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
+                <FieldItem label="Owner Name" value={flatData?.OwnerName || "-"} />
+
+                {flatData?.FlatStatus === "Alloted" && (
+                  <>
+                    <FieldItem label="Tenant Building Name" value={flatData?.TenantBuildingName || "-"} />
+                    <FieldItem label="Tenant Code" value={flatData?.TenantSystemGeneratedCode || "-"} />
+                  </>
+                )}
+                <FieldItem label="Created By" value={flatData?.BookingCreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(flatData?.BookingCreatedDate ?? '-')}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
-        <BottomActionBar
-          cancelText="Cancel"
-          saveText={formDataInventoryFlat.InventoryFlatId && formDataInventoryFlat.InventoryFlatId > 0 ? "Update" : "Add"}
-          onCancel={() => {
-            setFormDataInventoryFlat(initialFormStateInventoryFlat(flatData));
-            setSpecifications(flatData?.InventoryFlatSpecificationData || []);
-            setErrorsInventoryFlat({});
-            navigate(-1);
-          }}
-          canAction={canFullEdit || canStatusEditOnly}
-          onSave={handleSave}
-          isLoading={isLoading}
-        />
+        <div className="pt-5">
+          <BottomActionBar
+            cancelText="Cancel"
+            saveText={formDataInventoryFlat.InventoryFlatId && formDataInventoryFlat.InventoryFlatId > 0 ? "Update" : "Add"}
+            onCancel={() => {
+              setFormDataInventoryFlat(initialFormStateInventoryFlat(flatData));
+              setSpecifications(flatData?.InventoryFlatSpecificationData || []);
+              setErrorsInventoryFlat({});
+              navigate(-1);
+            }}
+            canAction={canFullEdit || canStatusEditOnly}
+            onSave={handleSave}
+            isLoading={isLoading}
+          />
+        </div>
       </div>
 
       <Modal

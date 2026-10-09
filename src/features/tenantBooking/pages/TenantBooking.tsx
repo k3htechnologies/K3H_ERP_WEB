@@ -4,7 +4,7 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { BookingData, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
+import type { BookingData, DeleteBookingRequest, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
 import { bookingService } from '@/features/booking/services/BookingService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -23,53 +23,41 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
-import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from '@/core/constants';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
 import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
 import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
 import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
 import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
-import { copyToClipboard } from '@/core/utils/comman';
-import { Copy } from 'lucide-react';
+import { copyToClipboard, formatCurrency } from '@/core/utils/comman';
+import { Copy, Trash2 } from 'lucide-react';
+import { useTenantBookingListState } from '@/features/tenantBooking/context/TenantBookingListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 
-export const Booking: React.FC = () => {
-    //#region STATE
+export const TenantBooking: React.FC = () => {
+
     const [bookingList, setBookingList] = useState<BookingData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
-
     const { pagination, setPagination } = usePagination(20);
-
     const { addToast } = useToast();
-
     const [showFilterPopup, setShowFilterPopup] = useState(false);
-
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
     const [isShowCustomizeBookingColumnsModal, setIsShowCustomizeBookingColumnsModal] = useState(false);
-
     const { canAction, canExport } = useMenuPermissions();
-
-    // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [ownerName, setOwnerName] = useState<string | null>("");
     const [wing, setwing] = useState<string | null>("");
     const [unitNumber, setUnitNumber] = useState<string | null>("");
-
-    // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
-
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+    const [deleteBookingData, setDeleteBookingData] = useState<BookingData | null>(null);
     const { projectId } = useProject()
-
-    const { listState, updateListState, resetFilters, clearBookingContext } = useBookingListState();
-
+    const { listState, updateTenantListState, resetFilters, clearTenantBookingContext } = useTenantBookingListState();
     const { page, filters, sortInfo, searchTerm } = listState;
 
     const loadBookings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
@@ -95,7 +83,7 @@ export const Booking: React.FC = () => {
                     SubSubSource: filterParams.SubSubSource || undefined,
                     AgreementValue: filterParams.AgreementValue ? Number(filterParams.AgreementValue) : undefined,
                     BookingType: filterParams.BookingType?.trim() || undefined,
-                    BookingSearchKey:"SALE BOOKING",
+                    BookingSearchKey: "TENANT BOOKING",
                     SortBy: getSortByParam(sortInfo ?? null, bookingColumns)
                 };
 
@@ -122,7 +110,7 @@ export const Booking: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Booking'
+            'Loading Tenant Booking'
         );
     };
 
@@ -131,7 +119,7 @@ export const Booking: React.FC = () => {
 
         if (!projectId) return;
 
-        clearBookingContext();
+        clearTenantBookingContext();
 
         if (searchTerm && searchTerm.trim()) {
 
@@ -142,7 +130,7 @@ export const Booking: React.FC = () => {
             loadBookings(page, filters, sortInfo);
 
         }
-    }, [projectId, page, filters, sortInfo, searchTerm, clearBookingContext]);
+    }, [projectId, page, filters, sortInfo, searchTerm, clearTenantBookingContext]);
 
 
     useEffect(() => {
@@ -158,7 +146,7 @@ export const Booking: React.FC = () => {
 
         if (value.trim() === '') {
 
-            updateListState({ searchTerm: '', filters: {}, page: 1 });
+            updateTenantListState({ searchTerm: '', filters: {}, page: 1 });
 
             return;
         }
@@ -168,13 +156,13 @@ export const Booking: React.FC = () => {
             filterParams = { ApplicantName: value.trim() };
         }
 
-        updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+        updateTenantListState({ searchTerm: value, filters: filterParams, page: 1 });
 
     }, 350);
 
     const searchBookings = (searchValue: string) => {
 
-        updateListState({ searchTerm: searchValue });
+        updateTenantListState({ searchTerm: searchValue });
 
         debouncedSearch(searchValue, false);
     };
@@ -186,7 +174,7 @@ export const Booking: React.FC = () => {
     };
 
     const applyFilters = () => {
-        updateListState({ filters: tempFilters, page: 1 });
+        updateTenantListState({ filters: tempFilters, page: 1 });
         loadBookings(1, tempFilters, sortInfo);
         setShowFilterPopup(false);
     };
@@ -215,14 +203,13 @@ export const Booking: React.FC = () => {
                     AgreementValue: tempFilters.AgreementValue ? Number(tempFilters.AgreementValue) : undefined,
                     BookingType: tempFilters.BookingType?.trim() || undefined,
                     SortBy: getSortByParam(null, bookingColumns),
-                    BookingSearchKey:"SALE BOOKING",
+                    BookingSearchKey: "TENANT BOOKING",
                     ExportType: exportType
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
 
                 if (exportType === 'BOOKING FORM PDF') {
-                    // Handle PDF export differently if needed
                     handleExportFile(response, 'PDF', 'Booking Form', addToast);
                 } else {
                     handleExportFile(response, exportType, 'Booking Master', addToast);
@@ -243,14 +230,14 @@ export const Booking: React.FC = () => {
     const handleExportBookingPdf = () => handleExportBookings('PDF');
 
     const handlePageChange = useCallback((newPage: number) => {
-        updateListState({ page: newPage });
-    }, [updateListState]);
+        updateTenantListState({ page: newPage });
+    }, [updateTenantListState]);
 
     const handleSortColumn = useCallback(
         (sort: SortInfo) => {
-            updateListState({ sortInfo: sort, page: 1 });
+            updateTenantListState({ sortInfo: sort, page: 1 });
         },
-        [filters, updateListState, searchTerm],
+        [filters, updateTenantListState, searchTerm],
     );
 
     const bookingPaginationInfo: PaginationInfo = useMemo(
@@ -267,16 +254,16 @@ export const Booking: React.FC = () => {
     const bookingsForTable = useMemo(() => bookingList, [bookingList]);
 
     const handleViewBookingDetails = useCallback((row: BookingData) => {
-        updateListState({
+        updateTenantListState({
             bookingId: row.BookingId ?? 0,
             bookingName: row.ApplicantName ?? '',
         });
-        navigate('/booking/view');
-    }, [navigate, updateListState]);
+        navigate('/tenantBooking/view');
+    }, [navigate, updateTenantListState]);
 
     const handleApprovalLog = (row: BookingData) => {
         const request: ModulesApprovalStatusRequest = {
-            ModuleName: "BOOKING APPROVAL",
+            ModuleName: "TENANT BOOKING APPROVAL",
             Id: row.BookingId ?? 0,
             ProjectId: row.ProjectId ?? 0,
         };
@@ -299,11 +286,16 @@ export const Booking: React.FC = () => {
 
     };
 
+    const handleConfirmationDialogBoxOpen = useCallback((row: BookingData) => {
+        setDeleteBookingData(row)
+        setIsConfirmationDialogBoxOpen(true)
+    }, [])
+
     const bookingColumns = useMemo<TableColumn[]>(
         () => [
             {
                 key: 'SystemGeneratedCode',
-                label: 'Enquiry Code',
+                label: 'Tenant Code',
                 width: '20',
                 sortable: false,
                 fixed: 'left',
@@ -345,6 +337,14 @@ export const Booking: React.FC = () => {
                     );
                 }
             },
+             {
+                key: 'TenantBuildingName',
+                label: 'Building Name',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
             {
                 key: 'ApplicantName',
                 label: 'Applicant Name',
@@ -366,6 +366,7 @@ export const Booking: React.FC = () => {
                     </div>
                 )
             },
+           
             {
                 key: 'ApplicantMobileNumber',
                 label: 'Applicant Mobile Number',
@@ -375,14 +376,8 @@ export const Booking: React.FC = () => {
                 render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
 
             },
-            {
-                key: 'Source',
-                label: 'Source',
-                width: '10',
-                sortable: false,
-                align: 'left',
-                render: value => value || '-'
-            },
+            
+
             {
                 key: 'BookingType',
                 label: 'Booking Type',
@@ -391,11 +386,12 @@ export const Booking: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
+           
             {
-                key: 'Flat',
-                label: 'Flat',
-                width: '12',
-                sortable: true,
+                key: 'BuildingNumber',
+                label: 'Building',
+                width: '10',
+                sortable: false,
                 align: 'left',
                 render: value => value || '-'
             },
@@ -415,13 +411,21 @@ export const Booking: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
+             {
+                key: 'Flat',
+                label: 'Flat',
+                width: '12',
+                sortable: true,
+                align: 'left',
+                render: value => value || '-'
+            },
             {
                 key: 'AgreementValue',
                 label: 'Agreement Value (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
-                render: value => value ? `₹${Number(value).toLocaleString('en-IN')}` : '-'
+                render: value => value ? formatCurrency(value) : '0'
             },
             {
                 key: 'CreatedDate',
@@ -467,9 +471,41 @@ export const Booking: React.FC = () => {
 
                 )
             },
+            {
+                key: 'actions',
+                label: 'Actions',
+                width: '12',
+                fixed: 'right',
+                align: 'center',
+                render: (_value, row) => (
+                    canAction && (row.ApprovalStatus).toUpperCase() === "PENDING" ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleConfirmationDialogBoxOpen(row)
+                                }}
+                                color='transparent'
+                                isborderRadius
+                                size='sm'
+                                style={{
+                                    color: 'red',
+                                    padding: '4px 8px'
+                                }}
+                                title="Delete Booking"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : null
+
+
+                )
+            }
 
         ],
-        [canAction, handleViewBookingDetails, handleApprovalLog, handleApproveRejectDocument]
+        [canAction, handleViewBookingDetails, handleApprovalLog, handleApproveRejectDocument, handleConfirmationDialogBoxOpen]
     );
 
     const requiredBookingColumnKeys: string[] = ['ApplicantName', 'Actions'];
@@ -485,7 +521,6 @@ export const Booking: React.FC = () => {
                 return withRequired.filter(k => allBookingColumnKeys.includes(k));
             }
         } catch {
-            // ignore
         }
         return allBookingColumnKeys;
     });
@@ -514,7 +549,7 @@ export const Booking: React.FC = () => {
         if (!approvalRowData) return;
 
         const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "BOOKING APPROVAL",
+            ModuleName: "TENANT BOOKING APPROVAL",
             Id: approvalRowData.BookingId ?? 0,
             ProjectId: approvalRowData.ProjectId ?? 0,
             IsApproved: approvalActionType === "approve",
@@ -549,10 +584,79 @@ export const Booking: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+            approvalActionType === "approve" ? "Approving Tenant Booking" : "Rejecting Tenant Booking"
         );
     };
 
+    const handleDeleteBooking = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+
+        if (!deleteBookingData) return
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: DeleteBookingRequest = {
+                    BookingId: deleteBookingData.BookingId ?? 0,
+                    Uniquekey: deleteBookingData.Uniquekey ?? "",
+                    ProjectId: Number(projectId),
+                    InventoryFlatId: deleteBookingData.InventoryFlatId ?? 0,
+                    ParkingId: deleteBookingData.ParkingId ?? ""
+                }
+
+                const response = await bookingService.apiCallDeleteBooking(params);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (bookingList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+
+                    await loadBookings(pageToShow, filters, sortInfo);
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteBookingData(null);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                }
+
+                return response
+            },
+            undefined,
+            (error: unknown) => {
+                const err = error as { message?: string };
+                addToast({ type: 'error', title: err.message || 'An error occurred' })
+            },
+            undefined,
+            'Delete Booking'
+        )
+    }
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -574,10 +678,7 @@ export const Booking: React.FC = () => {
                 }}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeBookingColumnsModal(true)}
-                // IMPORT
                 isShowImportButton={false}
-
-                // EXPORT
                 isShowExportButton={canExport && bookingsForTable.length > 0}
                 onExportExcel={handleExportBookingExcel}
                 onExportPdf={handleExportBookingPdf}
@@ -588,7 +689,7 @@ export const Booking: React.FC = () => {
                 data={bookingsForTable}
                 columns={visibleBookingColumns}
                 pagination={bookingPaginationInfo}
-                emptyMessage="No Booking Data Found"
+                emptyMessage="No TenantBooking Data Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"
@@ -605,7 +706,6 @@ export const Booking: React.FC = () => {
                     try {
                         LocalStorageHelper.storeBookingTableColumns?.(JSON.stringify(withRequired));
                     } catch {
-                        // ignore
                     }
                 }}
                 columns={bookingColumns}
@@ -617,7 +717,7 @@ export const Booking: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Booking"
+                title="Filter - Tenant Booking"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -704,68 +804,6 @@ export const Booking: React.FC = () => {
                         </div>
 
                         <div>
-                            <SinglePageSelection
-                                label="Source"
-                                placeholder="Select Source"
-                                value={tempFilters.Source || ''}
-                                onChange={e => handleFilterChange('Source', String(e))}
-                                options={SOURCE_TYPE_OPTIONS.map(opt => ({
-                                    label: opt.name,
-                                    value: opt.id
-                                }))}
-                            />
-
-                        </div>
-                        {/* SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walkin' && (
-                            <div>
-                                <SinglePageSelection
-                                    label="Sub Source"
-                                    placeholder="Select Sub Source"
-                                    value={tempFilters.SubSource || ''}
-                                    onChange={e => handleFilterChange('SubSource', String(e))}
-                                    options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
-                                />
-                            </div>
-                        )}
-
-                        {/* SUB SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walkin' &&
-                            tempFilters.SubSource === 'Advertisement' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Sub Sub Source"
-                                        placeholder="Select Sub Sub Source"
-                                        value={tempFilters.SubSubSource || ''}
-                                        onChange={e => handleFilterChange('SubSubSource', String(e))}
-                                        options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
-                                            label: opt.name,
-                                            value: opt.id
-                                        }))}
-                                    />
-                                </div>
-                            )}
-
-                        {/* CHANNEL PARTNER SUB SOURCE */}
-                        {tempFilters.Source === 'Channel Partner' && (
-                            <div>
-                                <SinglePageSelection
-                                    label="Sub Source"
-                                    placeholder="Select Sub Source"
-                                    value={tempFilters.SubSource || ''}
-                                    onChange={e => handleFilterChange('SubSource', String(e))}
-                                    options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
-                                />
-                            </div>
-                        )}
-
-                        <div>
                             <Input
                                 label='Agreement Value'
                                 value={tempFilters.AgreementValue || ''}
@@ -794,9 +832,20 @@ export const Booking: React.FC = () => {
             </Modal>
 
 
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false)
+                    setDeleteBookingData(null)
+                }}
+                onConfirm={handleDeleteBooking}
+                loading={isLoading}
+                pageName='booking'
+            />
+
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                title='Booking'
+                title='Tenant Booking'
                 titleText={ownerName ?? ""}
                 subTitleText={wing ?? ""}
                 subSubTitleText={unitNumber ?? ""}
@@ -804,7 +853,7 @@ export const Booking: React.FC = () => {
                 request={approvalLogRequest} />
 
             <ApprovalActionModal
-                title="Booking"
+                title="Tenant Booking"
                 isOpen={isApprovalActionModalOpen}
                 onClose={() => setIsApprovalActionModalOpen(false)}
                 actionType={approvalActionType}
@@ -818,5 +867,5 @@ export const Booking: React.FC = () => {
     );
 };
 
-export default Booking;
+export default TenantBooking;
 

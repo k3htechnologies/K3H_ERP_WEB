@@ -160,8 +160,7 @@ export interface AddUpdateTenantRequest {
   ExistingTerraceAreaSqFt: number;
   AreaAgainstTerraceSqFt: number;
   Remark: string | null;
-
-
+  InventoryFlatId: number | null;
 }
 
 export interface AddUpdateTenantApplicant {

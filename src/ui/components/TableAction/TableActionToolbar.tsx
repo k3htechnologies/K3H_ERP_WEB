@@ -45,6 +45,10 @@ export interface TableActionToolbarProps {
   onExportExcel?: () => void
   onExportPdf?: () => void
   exportLoading?: boolean
+
+  //TENANT ALLOTED EXCEL BUTTON//
+  isShowTenantAllotedExcel?: boolean
+  onUploadTenantAllotedExcel?: () => void
 }
 
 export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
@@ -88,7 +92,10 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
   isShowAddExtraButton = true,
   addExtraTitle = 'Add',
   addExtraButtonIcon,
-  onAddExtra
+  onAddExtra,
+
+  //TENANT ALLOTED EXCEL BUTTON//
+  onUploadTenantAllotedExcel
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)
@@ -381,6 +388,26 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                           style={{ justifyContent: "left" }}
                         >
                           Sample Excel
+                        </Button>
+                      )}
+
+                      {onUploadTenantAllotedExcel && (
+                        <Button
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            onUploadTenantAllotedExcel()
+                            setIsImportOpen(false)
+                          }}
+                          disabled={exportLoading}
+                          color="transparent"
+                          fullWidth
+                          isborderRadius
+                          size="sm"
+                          title="Tenant Alloted Upload Excel"
+                          style={{ justifyContent: "left" }}
+                        >
+                          Tenant Alloted
                         </Button>
                       )}
                     </div>

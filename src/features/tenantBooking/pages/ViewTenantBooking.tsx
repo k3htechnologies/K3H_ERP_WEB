@@ -1,33 +1,32 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
-import type { BookingData, FilterWithPaginationBookingRequest } from '../models/BookingModel';
+import type { BookingData, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import { bookingService } from '../services/BookingService';
+import { bookingService } from '@/features/booking/services/BookingService';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
+import { useTenantBookingListState } from '@/features/tenantBooking/context/TenantBookingListStateContext';
 import Tabs from '@/ui/components/Tab/Tab';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import type { EnquiryData, FilterWithPaginationEnquiryRequest } from '@/features/enquiry/models/EnquiryModel';
-import { EnquiryService } from '@/features/enquiry/services/EnquiryServices';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { handleExportFile } from '@/core/utils/exportFile';
-import { type TableColumn } from '@/ui/components/DataTable/DataTable';
+import {  type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import { FileText } from 'lucide-react';
+import type { FilterWithPaginationTenantRequest, TenantData } from '@/features/tenant/models/TenantModel';
+import { tenantService } from '@/features/tenant/services/TenantService';
 import { DataTableWithHeaderRowDivider } from '@/ui/components/DataTable/DataTableWithHeaderRowDivider';
 
-export const ViewBooking: React.FC = () => {
+export const ViewTenantBooking: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
-    const [editEnquiryData, setEditEnquiryData] = useState<EnquiryData | null>(null);
+    const [tenantList, setTenantList] = useState<TenantData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions();
@@ -38,7 +37,7 @@ export const ViewBooking: React.FC = () => {
 
     const sourcePage = (location.state as any)?.sourcePage || 'booking';
 
-    const { listState } = useBookingListState();
+    const { listState } = useTenantBookingListState();
     const { bookingId, bookingName } = listState;
 
     const bookingTabList = [
@@ -58,29 +57,32 @@ export const ViewBooking: React.FC = () => {
 
     }, [projectId, bookingId]);
 
-    const fetchEnquiryDetails = async (enquiryIdToFetch: number) => {
+    const fetchTenantDetails = async (tenantIdToFetch: number, buildingId: number) => {
 
-        if (!enquiryIdToFetch || enquiryIdToFetch === 0) return;
+        if (!tenantIdToFetch || tenantIdToFetch === 0) return;
 
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const params: FilterWithPaginationEnquiryRequest = {
+
+                const params: FilterWithPaginationTenantRequest = {
                     PageNumber: 1,
                     PageSize: 1,
-                    EnquiryId: enquiryIdToFetch,
+                    TenantId: tenantIdToFetch,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true
+                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    BuildingId: buildingId,
                 };
 
-                const response = await EnquiryService.apiCallPullEnquiry(params);
+                const response = await tenantService.apiCallPullTenant(params);;
 
                 if (E.isRight(response)) {
 
-                    const enquiryList = response.right.Data?.[0] ?? null;;
+                    const tenantList = response.right.Data?.[0] ?? null;;
 
-                    setEditEnquiryData(enquiryList);
+                    setTenantList(tenantList);
+
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -93,7 +95,7 @@ export const ViewBooking: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Enquiry Details'
+            'Loading Tenant Details'
         );
     };
 
@@ -110,8 +112,8 @@ export const ViewBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
-                    BookingSearchKey: "SALE BOOKING",
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true
+                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    BookingSearchKey:"TENANT BOOKING",
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
@@ -121,10 +123,9 @@ export const ViewBooking: React.FC = () => {
 
                     setBookingData(booking);
 
-                    if (booking?.EnquiryId && booking.EnquiryId > 0) {
+                    if (booking?.TenantId && booking.TenantId > 0) {
 
-                        await fetchEnquiryDetails(booking.EnquiryId);
-
+                        await fetchTenantDetails(Number(booking.TenantId), Number(booking.TenantBuildingId) || 0);
                     }
 
                 } else {
@@ -138,7 +139,7 @@ export const ViewBooking: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Booking Data'
+            'Loading Tenant Booking Data'
         );
     };
 
@@ -153,8 +154,8 @@ export const ViewBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
-                    BookingSearchKey: "SALE BOOKING",
-                    ExportType: exportType
+                    ExportType: exportType,
+                    BookingSearchKey:"TENANT BOOKING",
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
@@ -179,11 +180,6 @@ export const ViewBooking: React.FC = () => {
             'Preparing Export PDF'
         );
     };
-
-
-    //#endregion
-
-    //#endregion
 
     const paymentScheduleDataWithTotal = useMemo(() => {
         const data = bookingData?.BookingPaymentScheduleData || [];
@@ -384,7 +380,7 @@ export const ViewBooking: React.FC = () => {
                 key: "Value",
                 label: "Value (₹)",
                 sortable: false,
-                align: "left",
+                align: "right",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {formatCurrency(value) || "0"}
@@ -395,7 +391,7 @@ export const ViewBooking: React.FC = () => {
                 key: "GSTPercentage",
                 label: "GST (%)",
                 sortable: false,
-                align: "left",
+                align: "right",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {`${value || 0} %`}
@@ -406,7 +402,7 @@ export const ViewBooking: React.FC = () => {
                 key: "GSTValue",
                 label: "GST Value (₹)",
                 sortable: false,
-                align: "left",
+                align: "right",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
                         {formatCurrency(value) || "0"}
@@ -420,7 +416,7 @@ export const ViewBooking: React.FC = () => {
         return (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
                 <Loader loading={isLoading} title={loadingMessage}>
-                    <div>No booking data found</div>
+                    <div>No tenant booking data found</div>
                 </Loader>
             </div>
         );
@@ -433,7 +429,7 @@ export const ViewBooking: React.FC = () => {
             </Loader>
 
             <HeaderActionBar
-                titleText={`Booking Details : ${bookingData.ApplicantName ?? bookingName}`}
+                titleText={`Tenant Booking Details : ${bookingData.ApplicantName ?? bookingName}`}
                 subTitleText={bookingData.BookingType ?? ""}
                 subSubTitleText={bookingData.Flat ?? ""}
                 subSubSubTitleText={bookingData.ApprovalStatus ?? ""}
@@ -445,12 +441,15 @@ export const ViewBooking: React.FC = () => {
                         navigate('/inventory');
                     } else if (sourcePage === 'parking') {
                         navigate('/parking');
-                    } else {
-                        navigate('/booking');
+                    } else if (sourcePage === 'tenant') {
+                        navigate('/tenant');
+                    } 
+                    else {
+                        navigate('/tenantBooking');
                     }
                 }}
                 canAction={canAction && bookingData.ApprovalStatus?.toUpperCase().includes("PENDING") && sourcePage === 'booking' ? true : false}
-                onEdit={() => navigate('/booking/add')}
+                onEdit={() => navigate('/tenantBooking/add')}
 
                 ExtraButtontitleText="PDF"
                 ExtraButtontitleTextIcon={FileText}
@@ -477,295 +476,142 @@ export const ViewBooking: React.FC = () => {
 
             <div className="pt-5">
                 {activeTab === 'Overview' && (
-                    <>
-                        {/* ===================== ENQUIRY DETAILS ===================== */}
-                        {editEnquiryData && (
 
-                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-                                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#13367A]">
-                                        Enquiry Details
-                                    </h4>
-                                </div>
-                                <div className="p-4 bg-white">
-                                    <div className="bg-blue-50 rounded-lg p-4">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
 
-                                            <FieldItem label="Enquiry Code" value={editEnquiryData?.SystemGeneratedCode || '-'} />
+                    <div>
 
-                                            <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
-                                            <FieldItem label="E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
-
-                                            <FieldItem label="Mobile Number" value={getSafeString(editEnquiryData?.MobileNumber) ? `${editEnquiryData?.MobileNumberCountryCode || "+91"} ${editEnquiryData?.MobileNumber}` : '-'} />
-
-                                            <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
-
-                                            <FieldItem label="Sub Source" value={editEnquiryData?.SubSource || '-'} />
-
-                                            {editEnquiryData?.Source?.toUpperCase() !== 'CHANNEL PARTNER' && !!editEnquiryData?.SubSubSource?.trim() && (
-                                                <FieldItem label="Sub Sub Source" value={editEnquiryData?.SubSubSource || '-'} />
-                                            )}
-
-                                        </div>
-
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-3">
-                                            <FieldItem label="Sales Advisor" value={editEnquiryData?.SalesAdvisor ?? '-'} />
-                                            <FieldItem label="Sourcing Manager" value={editEnquiryData?.SourcingManager ?? '-'} />
-
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-3">
-                                            <FieldItem label="Current Location" value={editEnquiryData?.CurrentLocation || '-'} />
-                                        </div>
-
-                                    </div>
-                                    {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                                    {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg pt-5">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-
-                                                <FieldItem label="Referral Unit Owner" value={editEnquiryData?.ReferralUnitOwnerName || '-'} />
-                                                <FieldItem label="Referral Project" value={editEnquiryData?.ReferralProjectName || '-'} />
-                                                <FieldItem label="Referral Unit No" value={editEnquiryData?.ReferralUnitNumber || '-'} />
-
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                                    {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg pt-5">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-
-                                                <FieldItem label="Existing Project" value={editEnquiryData?.LoyaltyExistingProjectName || '-'} />
-                                                <FieldItem label="Existing Unit No" value={editEnquiryData?.LoyaltyExistingUnitNumber || '-'} />
-                                                <FieldItem label="Existing Unit Owner" value={editEnquiryData?.LoyaltyExistingUnitOwnerName || '-'} />
-
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                                    {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg pt-5">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-
-                                                <FieldItem label="Employee Name" value={editEnquiryData?.EmployeeReferenceName || '-'} />
-                                                <FieldItem label="Employee Mobile" value={editEnquiryData?.EmployeeReferenceMobileNumber ? `+91 ${editEnquiryData?.EmployeeReferenceMobileNumber}` : '-'} />
-
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
-                                    {editEnquiryData?.Source?.toUpperCase() === 'CHANNEL PARTNER' && (
-                                        <div className="mt-4 p-4 bg-blue-50 rounded-lg pt-5">
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-
-                                                <FieldItem label="CP Code" value={editEnquiryData?.ChannelPartnerCode || '-'} />
-                                                <FieldItem label="CP Name" value={editEnquiryData?.ChannelPartnerName || '-'} />
-                                                <FieldItem label="CP Mobile Number" value={editEnquiryData?.ChannelPartnerMobileNumber ? `${editEnquiryData?.ChannelPartnerMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
-                                                <FieldItem label="CP E-Mail ID" value={editEnquiryData?.ChannelPartnerEmailId || '-'} />
-                                                <FieldItem label="CP Team Member Name" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
-                                                <FieldItem label="CP Team Mobile Number" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber ? `${editEnquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerTeamMemberMobileNumber}` : '-'} />
-                                                <FieldItem label="CP  Team E-Mail ID" value={editEnquiryData?.ChannelPartnerTeamMemberEmailId || '-'} />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </section>
-                        )}
-
-                        <div className="pt-5">
-                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-
-                                <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#C2410C]">
-                                        Applicant Details
-                                    </h4>
-                                </div>
-                                <div className="p-4 bg-white">
-
-                                    <div className="space-y-5">
-                                        {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
-                                            bookingData.BookingApplicantData.map((applicant, i) => (
-                                                <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                        <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
-                                                        <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-
-                                                        <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
-                                                        <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
-                                                        <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                                        <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                                        <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
-                                                        <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                                        <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
-                                                        <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
-                                                        <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
-                                                        <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
-                                                        <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
-                                                        <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
-                                                        <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
-                                                        <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                                        <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
-
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className="py-6 text-center text-gray-500 text-sm">
-                                                <NoDataView message="No Applicant Data Found" />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
-
-                        <div className="pt-5">
-                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-
-                                <div className="bg-[#D0D7DE] px-3 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#12A3DD]">
-                                        Address Details
-                                    </h4>
-                                </div>
-                                <div className="p-4 bg-white">
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-
-                                        <FieldItem label="Communication Address" value={getSafeString(bookingData.CommunicationAddress)} />
-                                        <FieldItem label="Permanent Address" value={getSafeString(bookingData.PermanentAddress)} />
-                                    </div>
-                                </div>
-                            </section>
-                        </div>
-
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
-                            
                             <div className="lg:col-span-2 space-y-6">
 
-                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-                                    <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                                        <h4 className="text-sm font-semibold text-[#13367A]">
-                                            Project Details
-                                        </h4>
-                                    </div>
-                                    <div className="p-4 bg-white">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                            <FieldItem label="Project Name" value={getSafeString(bookingData.ProjectName)} />
-                                            <FieldItem label="Booking Type" value={getSafeString(bookingData.BookingType)} />
+                                {tenantList && (
 
-                                            {bookingData.BookingType?.toUpperCase() === "FLAT" && (
+                                    <>
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                <FieldItem label="Unit No" value={getSafeString(bookingData.Flat)} />)}
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                                            <FieldItem label="Wing" value={getSafeString(bookingData.Wing)} />
-                                            <FieldItem label="Floor" value={getSafeString(bookingData.Floor)} />
-                                            <FieldItem label="Building" value={getSafeString(bookingData.BuildingNumber)} />
-                                        </div>
-
-                                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${bookingData.ParkingNumber !== "" ? "border-b border-[#135bec2e] pb-4" : ""} `} >
-                                            <FieldItem label="Flat Type" value={getSafeString(bookingData.FlatType)} />
-                                            <FieldItem label="Flat Configuration" value={getSafeString(bookingData.FlatConfiguration)} />
-                                            <FieldItem label="RERA Carpet Area (SqFt)" value={getSafeString(bookingData.RERACarpetAreaSqFt)} />
-                                        </div>
-
-                                        {bookingData.ParkingNumber !== "" && (
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
-                                                <FieldItem label="Parking Number" value={getSafeString(bookingData.ParkingNumber)} />
+                                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                                    Exisiting Unit Details
+                                                </h4>
                                             </div>
-                                        )}
-                                    </div>
-                                </section>
+                                            <div className="p-4 bg-white">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                               
-                                {bookingData.ParkingData && bookingData.ParkingData.length > 0 && (
-                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
-                                        <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                                            <h4 className="text-sm font-semibold text-[#13367A]">
-                                                Parking Details
-                                            </h4>
-                                        </div>
-                                        <div className="p-4 bg-white">
-
-                                            {bookingData.ParkingData.map((parking, index) => {
-
-                                                const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
-
-                                                return (
-                                                    <div key={parking.ParkingId || index} className="pt-4">
-                                                        <h3 className="text-sm font-semibold text-gray-500">
-                                                            Parking {index + 1}
-                                                        </h3>
-                                                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
-                                                            <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
-                                                            <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
-                                                            <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
-                                                        </div>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                                                            <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
-                                                            <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
-                                                            <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
-                                                        </div>
-                                                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
-                                                            <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
-                                                            <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
-                                                            <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="Tenant Code" value={tenantList?.SystemGeneratedCode} />
+                                                            <FieldItem label="Unit / Annexure / Survey Number" value={tenantList?.UnitAnnexureSurveyNumber} />
+                                                            <FieldItem label="Unit Type" value={tenantList?.UnitType} />
                                                         </div>
                                                     </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </section>
+
+                                                    <div className="lg:col-span-3 pt-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            {tenantList?.UnitType?.toUpperCase() !== "GYM"
+                                                                ?
+                                                                <FieldItem label="Unit Configuration" value={tenantList?.UnitConfiguration} />
+                                                                : <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
+                                                            }
+
+                                                            {tenantList?.UnitType?.toUpperCase() !== "GYM"
+                                                                ?
+                                                                <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
+                                                                : ""
+                                                            }
+                                                            <FieldItem label="Unit Facing" value={tenantList?.UnitFacing} />
+
+                                                        </div>
+                                                    </div>
+
+
+                                                </div>
+
+                                            </div>
+                                        </section>
+
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                            <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                                <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                                    Eligibility Details in Carpet Area (SqFt)
+                                                </h4>
+                                            </div>
+                                            <div className="p-4 bg-white">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="Extra Free Carpet Area Offered (%)" value={tenantList?.ExtraFreeCarpetAreaOfferedPercent} />
+                                                            <FieldItem label="Free MOFA Carpet Area (SqFt)" value={tenantList?.FreeMOFACarpetAreaSqFt} />
+
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="Existing Terrace Area (SqFt)" value={tenantList?.ExistingTerraceAreaSqFt} />
+                                                            <FieldItem label="New Eligibility MOFA Carpet Area (SqFt)" value={tenantList?.NewEligibilityMOFACarpetAreaSqFt} />
+                                                            <FieldItem label="New Eligibility RERA Carpet Area (SqFt)" value={tenantList?.NewEligibilityRERACarpetAreaSqFt} />
+
+
+                                                        </div>
+                                                    </div>
+
+
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="(A) Area Against Terrace (SqFt)" value={tenantList?.AreaAgainstTerraceSqFt} />
+                                                            <FieldItem label="MOFA Carpet Area Purchased (SqFt)" value={tenantList?.MOFACarpetAreaPurchasedSqFt} />
+                                                            <FieldItem label="RERA Carpet Area Purchased (SqFt)" value={tenantList?.RERACarpetAreaPurchasedSqFt} />
+
+
+                                                        </div>
+                                                    </div>
+                                                    <div className="lg:col-span-3 pt-3 pb-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="(B) Deck Area (SqFt)" value={tenantList?.DeckAreaSqFt} />
+                                                            <FieldItem label="Total New MOFA Carpet Area (SqFt)" value={tenantList?.TotalNewMOFACarpetAreaSqFt} />
+                                                            <FieldItem label="(C) Total New Rera Carpet Area (SqFt)" value={tenantList?.TotalNewRERACarpetAreaSqFt} />
+
+
+
+                                                        </div>
+                                                    </div>
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                        <div className='flex'>
+                                                            <FieldItem
+                                                                label="Area Against Terrace + Deck Area + Total New RERA Carpet Area (SqFt) (A + B + C)"
+                                                                value={(
+                                                                    (Number(tenantList?.TotalNewRERACarpetAreaSqFt) || 0) +
+                                                                    (Number(tenantList?.DeckAreaSqFt) || 0) +
+                                                                    (Number(tenantList?.AreaAgainstTerraceSqFt) || 0)
+                                                                ).toFixed(2)}
+                                                            />
+                                                        </div>
+
+                                                    </div>
+
+                                                    <div className="lg:col-span-3 pt-3">
+                                                        <div className='flex'>
+                                                            <FieldItem label="Remark" value={tenantList?.Remark} />
+                                                        </div>
+
+                                                    </div>
+
+
+                                                </div>
+                                            </div>
+
+                                        </section>
+                                    </>
                                 )}
 
-                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
-
-                                    <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
-                                        <h4 className="text-sm font-semibold text-[#12A3DD]">
-                                            Booking Details
-                                        </h4>
-                                    </div>
-                                    <div className="p-4 bg-white">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                            <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
-                                            <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
-                                            <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
-
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
-                                            <FieldItem label="Final Registration Completed" value={getSafeString(bookingData.IsFinalRegistrationCompleted === true ? 'Yes' : 'No')} urls={bookingData.FinalRegistrationURL} isIcon />
-                                            <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
-                                            <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
-
-                                    <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
-                                        <h4 className="text-sm font-semibold text-[#7B6B28]">
-                                            Payment Details
-                                        </h4>
-                                    </div>
-                                    <div className="p-4 bg-white">
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                                            <FieldItem label="Cheque / RTGS No." value={getSafeString(bookingData.ChequeRTGSNumber)} />
-                                            <FieldItem label="Cheque / RTGS Date" value={bookingData.ChequeRTGSDate ? formatDate_dd_MonthName_yy(bookingData.ChequeRTGSDate) : '-'} />
-                                            <FieldItem label="Bank Name" value={getSafeString(bookingData.BankName)} />
-                                        </div>
-                                    </div>
-                                </section>
 
                             </div>
 
                             <div className="lg:col-span-1 space-y-6">
+
                                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
                                     <div className="bg-[#F3F0FE] px-3 py-2 border-b border-[#D0D7DE]">
@@ -778,6 +624,19 @@ export const ViewBooking: React.FC = () => {
                                         <div className="divide-y divide-[#135bec2e]">
 
                                             <div className="py-1">
+                                                <FieldItem label="Booking From" value={bookingData.CarpetAreaPurchasedSqFt} isRow />
+                                            </div>
+
+                                            <div className="py-4">
+                                                {bookingData.CarpetAreaPurchasedSqFt==="MOFA" ? (
+                                                    <FieldItem label="Carpet Area Purchased" value={`${tenantList?.MOFACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
+                                                ) : (
+                                                    <FieldItem label="Carpet Area Purchased" value={`${tenantList?.RERACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
+                                                )}
+                                            </div>
+                                                
+
+                                            <div className="py-4">
                                                 <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
                                             </div>
 
@@ -816,57 +675,201 @@ export const ViewBooking: React.FC = () => {
                                             <div className="py-4">
                                                 <FieldItem label="Booking Amount (₹)" value={formatCurrency(bookingData.BookingAmount)} isRow />
                                             </div>
-                                            {editEnquiryData?.Source?.toUpperCase() === 'CHANNEL PARTNER' && (
-                                                <>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Brokerage (%)" value={getSafeString(bookingData.BrokeragePercentage)} isRow />
-                                                    </div>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(bookingData.BrokerageAmount)} isRow />
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
-                                                <>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Referral (%)" value={getSafeString(bookingData.ReferralAmount)} isRow />
-                                                    </div>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Referral Amount (₹)" value={formatCurrency(bookingData.ReferralAmount)} isRow />
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
-                                                <>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Loyalty (%)" value={getSafeString(bookingData.LoyaltyPercentage)} isRow />
-                                                    </div>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Loyalty Amount (₹)" value={formatCurrency(bookingData.LoyaltyAmount)} isRow />
-                                                    </div>
-                                                </>
-                                            )}
-
-                                            {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
-                                                <>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Employee Reference (%)" value={getSafeString(bookingData.EmployeeReferencePercentage)} isRow />
-                                                    </div>
-                                                    <div className="py-4">
-                                                        <FieldItem label="Employee Reference Amount (₹)" value={formatCurrency(bookingData.EmployeeReferenceAmount)} isRow />
-                                                    </div>
-                                                </>
-                                            )}
 
 
                                         </div>
                                     </div>
                                 </section>
 
+
+
                             </div>
 
+                        </div>
+
+                        <div className="pt-5">
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#C2410C]">
+                                        Applicant Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                    <div className="space-y-5">
+                                        {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
+                                            bookingData.BookingApplicantData.map((applicant, i) => (
+                                                <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                        <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                                        <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                                        <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
+                                                        <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
+                                                        <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                                        <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                                        <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
+                                                        <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                                        <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                                        <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                        <FieldItem label="Cancelled Cheque" value="" isSetValue={false} urls={applicant?.CancelledChequeURL} isIcon />
+                                                        <FieldItem label="POA (if NRI Execution)" isSetValue={false} value="" urls={applicant?.POAURL} isIcon />
+                                                        <FieldItem label="Income Docs (Form 16 / ITR)" isSetValue={false} urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                                        <FieldItem label="NRE / NRO Bank Details" isSetValue={false} value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                        <FieldItem label="Nominee Form" value="" isSetValue={false} urls={applicant?.NomineeFormURL} isIcon />
+                                                        <FieldItem label="Statement of Source of Funds" isSetValue={false} value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                        <FieldItem label="Payment Proof" value="" isSetValue={false} urls={applicant?.PaymentProofURL} isIcon />
+
+                                                    </div>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-6 text-center text-gray-500 text-sm">
+                                                <NoDataView message="No Applicant Data Found" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                <div className="bg-[#D0D7DE] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                        Address Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                        <FieldItem label="Communication Address" value={getSafeString(bookingData.CommunicationAddress)} />
+                                        <FieldItem label="Permanent Address" value={getSafeString(bookingData.PermanentAddress)} />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#13367A]">
+                                        Project Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                        <FieldItem label="Project Name" value={getSafeString(bookingData.ProjectName)} />
+                                        <FieldItem label="Booking Type" value={getSafeString(bookingData.BookingType)} />
+
+                                        {bookingData.BookingType?.toUpperCase() === "FLAT" && (
+
+                                            <FieldItem label="Unit No" value={getSafeString(bookingData.Flat)} />)}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                                        <FieldItem label="Wing" value={getSafeString(bookingData.Wing)} />
+                                        <FieldItem label="Floor" value={getSafeString(bookingData.Floor)} />
+                                        <FieldItem label="Building Number" value={getSafeString(bookingData.BuildingNumber)} />
+                                    </div>
+
+                                    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${bookingData.ParkingNumber !== "" ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                                        <FieldItem label="Flat Type" value={getSafeString(bookingData.FlatType)} />
+                                        <FieldItem label="Flat Configuration" value={getSafeString(bookingData.FlatConfiguration)} />
+                                        <FieldItem label="RERA Carpet Area (SqFt)" value={getSafeString(bookingData.RERACarpetAreaSqFt)} />
+                                    </div>
+
+                                    {bookingData.ParkingNumber !== "" && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+                                            <FieldItem label="Parking Number" value={getSafeString(bookingData.ParkingNumber)} />
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
+
+                            {bookingData.ParkingData && bookingData.ParkingData.length > 0 && (
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                    <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#13367A]">
+                                            Parking Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+
+
+                                        {bookingData.ParkingData.map((parking, index) => {
+
+                                            const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
+
+                                            return (
+                                                <div key={parking.ParkingId || index} className="pt-4">
+                                                    <h3 className="text-sm font-semibold text-gray-500">
+                                                        Parking {index + 1}
+                                                    </h3>
+                                                    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                                                        <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
+                                                        <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
+                                                        <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                                                        <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
+                                                        <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
+                                                        <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
+                                                    </div>
+                                                    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                                                        <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
+                                                        <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
+                                                        <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </section>
+                            )}
+
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                        Booking Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                        <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
+                                        <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
+                                        <FieldItem label="Final Registration Completed" value={getSafeString(bookingData.IsFinalRegistrationCompleted === true ? 'Yes' : 'No')} urls={bookingData.FinalRegistrationURL} isIcon />
+                                        
+
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+                                        <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
+                                        <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
+                                        <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                        Payment Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <FieldItem label="Cheque / RTGS No." value={getSafeString(bookingData.ChequeRTGSNumber)} />
+                                        <FieldItem label="Cheque / RTGS Date" value={bookingData.ChequeRTGSDate ? formatDate_dd_MonthName_yy(bookingData.ChequeRTGSDate) : '-'} />
+                                        <FieldItem label="Bank Name" value={getSafeString(bookingData.BankName)} />
+                                    </div>
+                                </div>
+                            </section>
                         </div>
 
                         <div className="pt-5">
@@ -878,8 +881,9 @@ export const ViewBooking: React.FC = () => {
                                     </h4>
                                 </div>
                                 <div className="bg-white">
+
                                     <DataTableWithHeaderRowDivider
-                                        data={otherChargesDataWithTotal || []}
+                                        data={otherChargesDataWithTotal}
                                         columns={otherChargesColumns}
                                         emptyMessage="No Other Charges Found"
                                         fixedHeight={true}
@@ -901,8 +905,9 @@ export const ViewBooking: React.FC = () => {
                                     </h4>
                                 </div>
                                 <div className="bg-white">
+
                                     <DataTableWithHeaderRowDivider
-                                        data={paymentScheduleDataWithTotal || []}
+                                        data={paymentScheduleDataWithTotal}
                                         columns={paymentScheduleColumns}
                                         emptyMessage="No Payment Schedule Found"
                                         fixedHeight={true}
@@ -912,7 +917,6 @@ export const ViewBooking: React.FC = () => {
                                 </div>
                             </section>
                         </div>
-
 
                         <div className="pt-5">
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
@@ -930,7 +934,6 @@ export const ViewBooking: React.FC = () => {
                                 </div>
                             </section>
                         </div>
-
                         <div className="pt-5">
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
@@ -947,7 +950,6 @@ export const ViewBooking: React.FC = () => {
                                 </div>
                             </section>
                         </div>
-
                         <div className="pt-5">
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
@@ -983,6 +985,8 @@ export const ViewBooking: React.FC = () => {
                                 </div>
                             </section>
                         </div>
+
+
 
                         <div className='pt-5'>
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
@@ -1025,8 +1029,9 @@ export const ViewBooking: React.FC = () => {
                                 </div>
                             </section>
                         </div>
+                    </div>
 
-                    </>
+
                 )
                 }
 
@@ -1043,36 +1048,36 @@ export const ViewBooking: React.FC = () => {
                                 <div className="p-4 bg-white">
 
                                     <div className="space-y-5">
-                                        {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
-                                            bookingData.BookingApplicantData.map((applicant, i) => (
-                                                <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                        <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
-                                                        <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                        <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
-                                                        <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
-                                                        <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                                        <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                                        <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
-                                                        <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                                        <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
-                                                        <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
-                                                        <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
-                                                        <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
-                                                        <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
-                                                        <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
-                                                        <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
-                                                        <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                                        <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
-                                                    </div>
+                                    {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
+                                        bookingData.BookingApplicantData.map((applicant, i) => (
+                                            <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                                    <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                                    <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
+                                                    <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
+                                                    <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                                    <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                                    <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
+                                                    <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                                    <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                                    <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                    <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
+                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
+                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                                    <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                    <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
+                                                    <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                    <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
                                                 </div>
-                                            ))
-                                        ) : (
-                                            <div className="py-6 text-center text-gray-500 text-sm">
-                                                <NoDataView message="No Applicant Data Found" />
                                             </div>
-                                        )}
-                                    </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-6 text-center text-gray-500 text-sm">
+                                            <NoDataView message="No Applicant Data Found" />
+                                        </div>
+                                    )}
+                                </div>
                                 </div>
                             </section>
                         </div>
@@ -1126,7 +1131,7 @@ export const ViewBooking: React.FC = () => {
     //#endregion
 };
 
-export default ViewBooking;
+export default ViewTenantBooking;
 
 
 

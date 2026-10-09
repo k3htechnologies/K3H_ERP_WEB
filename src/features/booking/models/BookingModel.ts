@@ -22,6 +22,7 @@ export interface FilterWithPaginationBookingRequest {
     SubSubSource?: string;
     AgreementValue?: number;
     BookingType?: string;
+    BookingSearchKey?: string;
     SortBy?: string;
     ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL' | "" | "WELCOME MESSAGE ON MAIL" | "WELCOME MESSAGE";
 }
@@ -153,14 +154,16 @@ export interface BookingData {
     FlatAlterationRequestApprovalStatus: string | null;
 
     ParkingModificationRequestIsApproval: boolean;
-    ParkingModificationRequestApprovalStatus: string | null
-    ;
+    ParkingModificationRequestApprovalStatus: string | null;
     BookingApplicantModificationRequestIsApproval: boolean;
     BookingApplicantModificationRequestApprovalStatus: string | null;
 
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
+    TenantBuildingId: number | null; 
+    TenantBuildingName: string | null;
+    CarpetAreaPurchasedSqFt:string | null; 
     IsApplicableOtherCharge:boolean | null;
 }
 
@@ -283,6 +286,8 @@ export interface AddUpdateBookingRequest {
     BankListMasterId: number | null;
     TransferBookingId: number | null;
     TenantId: number | null;
+    TenantBuildingId?: number | null; 
+    CarpetAreaPurchasedSqFt?:string | null;   
     OTP?: string | null;
 }
 
@@ -376,6 +381,15 @@ export interface PaymentScheduleStagesData {
     Stages: string | null;
     Message?: string | null;
     TotalRecords?: number | null;
+}
+
+
+export interface DeleteBookingRequest {
+    BookingId: number | null;
+    Uniquekey: string | null;
+    ProjectId: number | null;
+    InventoryFlatId: number | null;
+    ParkingId: string | null;
 }
 
 

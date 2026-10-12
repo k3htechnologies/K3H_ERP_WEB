@@ -158,35 +158,35 @@ export const CollectionReport: React.FC = () => {
             },
 
             {
-                key: 'TotalUnitDetailsGroup',
-                label: 'Total Unit Details',
+                key: 'AreaGroup',
+                label: 'Alloted / Booked Details',
                 align: 'center',
                 theadStyle: {
-                    backgroundColor: '#EEF5FF',
-                    color: '#135BEC'
+                    backgroundColor: '#FBF5FF',
+                    color: '#8A38F5'
                 },
-
                 children: [
                     {
-                        key: 'TotalUnit',
-                        label: 'Units',
+                        key: 'BookingCount',
+                        label: 'Count',
                         width: '14',
-                        align: 'right',
+                        align: 'center',
                         theadStyle: {
                             backgroundColor: '#FFF',
                             color: '#64748B'
                         },
                         tdStyle: {
-                            backgroundColor: '#EEF5FF'
+                            backgroundColor: '#FBF5FF'
                         },
+
                         render: (value) => (
-                            <span className="text-blue-600">
-                                {value ?? '-'}
+                            <span className="text-violet-600">
+                                {value === '-' ? '-' : `${value}`}
                             </span>
                         )
                     },
                     {
-                        key: 'TotalUnitRERACarpetAreaSqFt',
+                        key: 'TotalRERACarpetAreaSqFt',
                         label: 'RERA Carpet Area (SqFt)',
                         width: '14',
                         align: 'right',
@@ -195,14 +195,15 @@ export const CollectionReport: React.FC = () => {
                             color: '#64748B'
                         },
                         tdStyle: {
-                            backgroundColor: '#EEF5FF'
+                            backgroundColor: '#FBF5FF'
                         },
+
                         render: (value) => (
-                            <span className="text-blue-600">
-                                {value ?? '-'}
+                            <span className="text-violet-600">
+                                {value === '-' ? '-' : `${value}`}
                             </span>
                         )
-                    },
+                    }
                 ]
             },
 
@@ -252,74 +253,6 @@ export const CollectionReport: React.FC = () => {
                             </span>
                         )
                     },
-                    {
-                        key: 'TotalCount',
-                        label: 'Count',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#FFF1D6'
-                        },
-                        render: (value) => (
-                            <span className="text-amber-800">
-                                {value ?? '-'}
-                            </span>
-                        )
-                    }
-                ]
-            },
-
-            {
-                key: 'AreaGroup',
-                label: 'Alloted / Booked Details',
-                align: 'center',
-                theadStyle: {
-                    backgroundColor: '#FBF5FF',
-                    color: '#8A38F5'
-                },
-                children: [
-                    {
-                        key: 'BookingCount',
-                        label: 'Count',
-                        width: '14',
-                        align: 'center',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#FBF5FF'
-                        },
-
-                        render: (value) => (
-                            <span className="text-violet-600">
-                                {value === '-' ? '-' : `${value}`}
-                            </span>
-                        )
-                    },
-                    {
-                        key: 'TotalRERACarpetAreaSqFt',
-                        label: 'RERA Carpet Area (SqFt)',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#FBF5FF'
-                        },
-
-                        render: (value) => (
-                            <span className="text-violet-600">
-                                {value === '-' ? '-' : `${value}`}
-                            </span>
-                        )
-                    }
                 ]
             },
 

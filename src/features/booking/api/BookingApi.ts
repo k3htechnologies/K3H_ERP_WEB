@@ -1,6 +1,7 @@
 export const BookingApi = {
     PULL: '/Booking/PullBooking',
     ADD_UPDATE: '/Booking/AddUpdateBooking',
+    DELETE: '/Booking/DeleteBooking',
     CANCEL: '/Booking/CancelBooking',
     PULL_CHANNEL_PARTNER_BOOKING: '/Booking/PullChannelPartnerBooking',
     PULL_PAYMENT_SCHEDULE_STAGES: '/Booking/PullPaymentScheduleStages',

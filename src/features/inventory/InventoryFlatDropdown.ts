@@ -2,7 +2,7 @@ import * as E from "fp-ts/Either";
 import { inventoryService } from "@/features/inventory/services/InventoryServices";
 import type { InventoryFlatData } from "./models/InventoryMasterModel";
 
-export const fetchPaginatedInventoryFlatDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number; flat?: string; flatStatus?: string }) => {
+export const fetchPaginatedInventoryFlatDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number; flat?: string; flatStatus?: string,approvalStatus?: string,isAllotedBookingDone?: boolean ,displayInventoryFlatId?: string }) => {
   try {
     const responseEither = await inventoryService.apiCallPullPaginatedFlats({
       PageSize: 40,
@@ -10,6 +10,10 @@ export const fetchPaginatedInventoryFlatDropdown = async (pageNumber: number, pa
       ProjectId: Number(params?.projectId),
       Flat: params?.flat?.trim() || "",
       FlatStatus: params?.flatStatus || "",
+      ApprovalStatus: params?.approvalStatus || "",
+      IsAllotedBookingDone: params?.isAllotedBookingDone || false,
+      DisplayInventoryFlatId: params?.displayInventoryFlatId || "",
+
     });
 
     if (E.isLeft(responseEither)) {

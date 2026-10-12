@@ -1,0 +1,871 @@
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { usePagination } from '@/core/hooks/usePagination';
+import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { runApiWithLoader } from '@/core/utils';
+import * as E from 'fp-ts/Either';
+import { useToast } from '@/core/hooks/useToast';
+import type { BookingData, DeleteBookingRequest, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
+import { bookingService } from '@/features/booking/services/BookingService';
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { handleExportFile } from '@/core/utils/exportFile';
+import { Loader } from '@/core/utils/loader';
+import { Modal } from '@/ui/components/Modal/Modal';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { useNavigate } from 'react-router-dom';
+import { Button, Input } from '@/ui/components/forms';
+import { updateFilter } from '@/core/utils/filterHelper';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DatePickerInput } from '@/ui/components/forms/Datepicker';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
+import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
+import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
+import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
+import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import { copyToClipboard, formatCurrency } from '@/core/utils/comman';
+import { Copy, Trash2 } from 'lucide-react';
+import { useTenantBookingListState } from '@/features/tenantBooking/context/TenantBookingListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+
+export const TenantBooking: React.FC = () => {
+
+    const [bookingList, setBookingList] = useState<BookingData[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
+    const navigate = useNavigate();
+    const { pagination, setPagination } = usePagination(20);
+    const { addToast } = useToast();
+    const [showFilterPopup, setShowFilterPopup] = useState(false);
+    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+    const [isShowCustomizeBookingColumnsModal, setIsShowCustomizeBookingColumnsModal] = useState(false);
+    const { canAction, canExport } = useMenuPermissions();
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [ownerName, setOwnerName] = useState<string | null>("");
+    const [wing, setwing] = useState<string | null>("");
+    const [unitNumber, setUnitNumber] = useState<string | null>("");
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+    const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+    const [deleteBookingData, setDeleteBookingData] = useState<BookingData | null>(null);
+    const { projectId } = useProject()
+    const { listState, updateTenantListState, resetFilters, clearTenantBookingContext } = useTenantBookingListState();
+    const { page, filters, sortInfo, searchTerm } = listState;
+
+    const loadBookings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBookingRequest = {
+                    PageNumber: pageNum,
+                    PageSize: pagination.pageSize,
+                    BookingId: filterParams.BookingId ? Number(filterParams.BookingId) : undefined,
+                    ProjectId: projectId ?? undefined,
+                    ApplicantMobileNumber: filterParams.ApplicantMobileNumber?.trim() || undefined,
+                    ApplicantName: filterParams.ApplicantName?.trim() || undefined,
+                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) : undefined,
+                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) : undefined,
+                    Wing: filterParams.Wing?.trim() || undefined,
+                    Flat: filterParams.Flat?.trim() || undefined,
+                    Floor: filterParams.Floor?.trim() || undefined,
+                    Source: filterParams.Source || undefined,
+                    SubSource: filterParams.SubSource || undefined,
+                    SubSubSource: filterParams.SubSubSource || undefined,
+                    AgreementValue: filterParams.AgreementValue ? Number(filterParams.AgreementValue) : undefined,
+                    BookingType: filterParams.BookingType?.trim() || undefined,
+                    BookingSearchKey: "TENANT BOOKING",
+                    SortBy: getSortByParam(sortInfo ?? null, bookingColumns)
+                };
+
+                const response = await bookingService.apiCallPullBooking(params);
+
+                if (E.isRight(response)) {
+
+                    setBookingList(response.right.Data);
+
+                    setPagination({
+                        currentPage: pageNum,
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
+                    });
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Tenant Booking'
+        );
+    };
+
+
+    useEffect(() => {
+
+        if (!projectId) return;
+
+        clearTenantBookingContext();
+
+        if (searchTerm && searchTerm.trim()) {
+
+            loadBookings(page, { ApplicantName: searchTerm.trim() }, sortInfo);
+
+        } else {
+
+            loadBookings(page, filters, sortInfo);
+
+        }
+    }, [projectId, page, filters, sortInfo, searchTerm, clearTenantBookingContext]);
+
+
+    useEffect(() => {
+
+        setPagination({ currentPage: page });
+
+    }, [page]);
+
+
+    const debouncedSearch = useDebouncedCallback((value: string, isSearch: boolean = true) => {
+
+        let filterParams: FilterInfo = {};
+
+        if (value.trim() === '') {
+
+            updateTenantListState({ searchTerm: '', filters: {}, page: 1 });
+
+            return;
+        }
+
+        if (isSearch) {
+
+            filterParams = { ApplicantName: value.trim() };
+        }
+
+        updateTenantListState({ searchTerm: value, filters: filterParams, page: 1 });
+
+    }, 350);
+
+    const searchBookings = (searchValue: string) => {
+
+        updateTenantListState({ searchTerm: searchValue });
+
+        debouncedSearch(searchValue, false);
+    };
+
+    const clearSearchBookings = () => {
+        debouncedSearch.cancel?.();
+        resetFilters();
+        setTempFilters({});
+    };
+
+    const applyFilters = () => {
+        updateTenantListState({ filters: tempFilters, page: 1 });
+        loadBookings(1, tempFilters, sortInfo);
+        setShowFilterPopup(false);
+    };
+
+    const handleExportBookings = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+
+                const params: FilterWithPaginationBookingRequest = {
+                    PageNumber: 1,
+                    PageSize: pagination.totalRecords,
+                    ProjectId: projectId ?? undefined,
+                    ApplicantMobileNumber: tempFilters.ApplicantMobileNumber?.trim() || undefined,
+                    ApplicantName: tempFilters.ApplicantName?.trim() || undefined,
+                    FromDate: tempFilters.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(tempFilters.FromDate) : undefined,
+                    ToDate: tempFilters.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(tempFilters.ToDate) : undefined,
+                    Wing: tempFilters.Wing?.trim() || undefined,
+                    Flat: tempFilters.Flat?.trim() || undefined,
+                    Floor: tempFilters.Floor?.trim() || undefined,
+                    Source: tempFilters.Source || undefined,
+                    SubSource: tempFilters.SubSource || undefined,
+                    SubSubSource: tempFilters.SubSubSource || undefined,
+                    AgreementValue: tempFilters.AgreementValue ? Number(tempFilters.AgreementValue) : undefined,
+                    BookingType: tempFilters.BookingType?.trim() || undefined,
+                    SortBy: getSortByParam(null, bookingColumns),
+                    BookingSearchKey: "TENANT BOOKING",
+                    ExportType: exportType
+                };
+
+                const response = await bookingService.apiCallPullBooking(params);
+
+                if (exportType === 'BOOKING FORM PDF') {
+                    handleExportFile(response, 'PDF', 'Booking Form', addToast);
+                } else {
+                    handleExportFile(response, exportType, 'Booking Master', addToast);
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message || 'Export failed' });
+            },
+            undefined,
+            'Preparing Export'
+        );
+    };
+
+    const handleExportBookingExcel = () => handleExportBookings('Excel');
+    const handleExportBookingPdf = () => handleExportBookings('PDF');
+
+    const handlePageChange = useCallback((newPage: number) => {
+        updateTenantListState({ page: newPage });
+    }, [updateTenantListState]);
+
+    const handleSortColumn = useCallback(
+        (sort: SortInfo) => {
+            updateTenantListState({ sortInfo: sort, page: 1 });
+        },
+        [filters, updateTenantListState, searchTerm],
+    );
+
+    const bookingPaginationInfo: PaginationInfo = useMemo(
+        () => ({
+            currentPage: pagination.currentPage,
+            totalPages: pagination.totalPages,
+            totalRecords: pagination.totalRecords,
+            pageSize: pagination.pageSize,
+            onPageChange: handlePageChange
+        }),
+        [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
+    );
+
+    const bookingsForTable = useMemo(() => bookingList, [bookingList]);
+
+    const handleViewBookingDetails = useCallback((row: BookingData) => {
+        updateTenantListState({
+            bookingId: row.BookingId ?? 0,
+            bookingName: row.ApplicantName ?? '',
+        });
+        navigate('/tenantBooking/view');
+    }, [navigate, updateTenantListState]);
+
+    const handleApprovalLog = (row: BookingData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "TENANT BOOKING APPROVAL",
+            Id: row.BookingId ?? 0,
+            ProjectId: row.ProjectId ?? 0,
+        };
+        setOwnerName(row.ApplicantName);
+        setwing(row?.Wing)
+        setUnitNumber(row?.Flat);
+
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
+    const handleApproveRejectDocument = (row: BookingData, approvalType: "approve" | "reject") => {
+
+        setApprovalRowData(row);
+        setOwnerName(row.ApplicantName);
+        setwing(row?.Wing)
+        setUnitNumber(row?.Flat);
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+
+    };
+
+    const handleConfirmationDialogBoxOpen = useCallback((row: BookingData) => {
+        setDeleteBookingData(row)
+        setIsConfirmationDialogBoxOpen(true)
+    }, [])
+
+    const bookingColumns = useMemo<TableColumn[]>(
+        () => [
+            {
+                key: 'SystemGeneratedCode',
+                label: 'Tenant Code',
+                width: '20',
+                sortable: false,
+                fixed: 'left',
+                align: 'left',
+                render: (value) => {
+                    return (
+                        <div className="flex items-center gap-2">
+
+                            <TooltipText
+                                text={value || '-'}
+                                maxWidth="150px"
+                                tooltipThreshold={20}
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+
+                            {value && (
+                                <Button
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const success = await copyToClipboard(value);
+                                        if (success) {
+                                            addToast({ type: 'success', title: `${value} Copied!` });
+                                        }
+                                    }}
+                                    color="transparent"
+                                    size="sm"
+                                    style={{
+                                        padding: '2px 6px',
+                                        color: '#6B7280',
+                                        cursor: 'pointer'
+                                    }}
+                                    title="Copy"
+                                >
+                                    <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                            )}
+                        </div>
+                    );
+                }
+            },
+             {
+                key: 'TenantBuildingName',
+                label: 'Building Name',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
+                key: 'ApplicantName',
+                label: 'Applicant Name',
+                width: '20',
+                sortable: true,
+                align: 'left',
+                render: (value, row) => (
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                            <div className="min-w-0">
+                                <TooltipText
+                                    text={value || '-'}
+                                    maxWidth="260px"
+                                    tooltipThreshold={26}
+                                    onClick={() => handleViewBookingDetails(row)}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )
+            },
+           
+            {
+                key: 'ApplicantMobileNumber',
+                label: 'Applicant Mobile Number',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
+
+            },
+            
+
+            {
+                key: 'BookingType',
+                label: 'Booking Type',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+           
+            {
+                key: 'BuildingNumber',
+                label: 'Building',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
+                key: 'Wing',
+                label: 'Wing',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
+                key: 'Floor',
+                label: 'Floor',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+             {
+                key: 'Flat',
+                label: 'Flat',
+                width: '12',
+                sortable: true,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
+                key: 'AgreementValue',
+                label: 'Agreement Value (₹)',
+                width: '18',
+                sortable: false,
+                align: 'right',
+                render: value => value ? formatCurrency(value) : '0'
+            },
+            {
+                key: 'CreatedDate',
+                label: 'Created Date',
+                width: '12',
+                sortable: false,
+                align: 'center',
+                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            },
+            {
+                key: 'CreatedBy',
+                label: 'Created By',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+
+            {
+                key: 'RegistrationDate',
+                label: 'Expected Registration Date',
+                width: '16',
+                sortable: false,
+                align: 'center',
+                render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
+            },
+            {
+                key: "ApprovalStatus",
+                label: "Approval Status",
+                width: "18",
+                sortable: false,
+                align: "center",
+                render: (value, row) => (
+
+                    <ApprovalActions
+                        approvalStatus={value || "-"}
+                        showApproval={row.IsApproval}
+                        isIcons={true}
+                        onHistory={() => handleApprovalLog(row)}
+                        onApprove={() => handleApproveRejectDocument(row, "approve")}
+                        onReject={() => handleApproveRejectDocument(row, "reject")}
+                    />
+
+                )
+            },
+            {
+                key: 'actions',
+                label: 'Actions',
+                width: '12',
+                fixed: 'right',
+                align: 'center',
+                render: (_value, row) => (
+                    canAction && (row.ApprovalStatus).toUpperCase() === "PENDING" ? (
+                        <div className="flex items-center justify-center gap-2">
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    handleConfirmationDialogBoxOpen(row)
+                                }}
+                                color='transparent'
+                                isborderRadius
+                                size='sm'
+                                style={{
+                                    color: 'red',
+                                    padding: '4px 8px'
+                                }}
+                                title="Delete Booking"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    ) : null
+
+
+                )
+            }
+
+        ],
+        [canAction, handleViewBookingDetails, handleApprovalLog, handleApproveRejectDocument, handleConfirmationDialogBoxOpen]
+    );
+
+    const requiredBookingColumnKeys: string[] = ['ApplicantName', 'Actions'];
+
+    const allBookingColumnKeys: string[] = bookingColumns.map(c => c.key);
+
+    const [selectedBookingColumnKeys, setSelectedBookingColumnKeys] = useState<string[]>(() => {
+        try {
+            const saved = LocalStorageHelper.getBookingTableColumns?.();
+            if (saved) {
+                const parsed = JSON.parse(saved) as string[];
+                const withRequired = Array.from(new Set([...parsed, ...requiredBookingColumnKeys]));
+                return withRequired.filter(k => allBookingColumnKeys.includes(k));
+            }
+        } catch {
+        }
+        return allBookingColumnKeys;
+    });
+
+    useEffect(() => {
+        setSelectedBookingColumnKeys(prev =>
+            Array.from(new Set([...prev, ...requiredBookingColumnKeys])).filter(k =>
+                allBookingColumnKeys.includes(k)
+            )
+        );
+
+    }, [bookingColumns.length]);
+
+    const visibleBookingColumns = useMemo(
+        () => bookingColumns.filter(col => selectedBookingColumnKeys.includes(col.key)),
+        [bookingColumns, selectedBookingColumnKeys]
+    );
+
+    const handleFilterChange = (key: string, value: string) => {
+        setTempFilters(prev => updateFilter(prev, key, value));
+    };
+
+
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (!approvalRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "TENANT BOOKING APPROVAL",
+            Id: approvalRowData.BookingId ?? 0,
+            ProjectId: approvalRowData.ProjectId ?? 0,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await loadBookings(page, filters, sortInfo);
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Tenant Booking" : "Rejecting Tenant Booking"
+        );
+    };
+
+    const handleDeleteBooking = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+
+        if (!deleteBookingData) return
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: DeleteBookingRequest = {
+                    BookingId: deleteBookingData.BookingId ?? 0,
+                    Uniquekey: deleteBookingData.Uniquekey ?? "",
+                    ProjectId: Number(projectId),
+                    InventoryFlatId: deleteBookingData.InventoryFlatId ?? 0,
+                    ParkingId: deleteBookingData.ParkingId ?? ""
+                }
+
+                const response = await bookingService.apiCallDeleteBooking(params);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (bookingList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+
+                    await loadBookings(pageToShow, filters, sortInfo);
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteBookingData(null);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                }
+
+                return response
+            },
+            undefined,
+            (error: unknown) => {
+                const err = error as { message?: string };
+                addToast({ type: 'error', title: err.message || 'An error occurred' })
+            },
+            undefined,
+            'Delete Booking'
+        )
+    }
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+            <Loader loading={isLoading} title={loadingMessage}>
+                <div></div>
+            </Loader>
+
+            <TableActionToolbar
+                isShowSearchBar
+                searchTerm={searchTerm}
+                searchPlaceholder="Search By Applicant Name"
+                onSearchChange={searchBookings}
+                onClearSearch={clearSearchBookings}
+                isShowFilterButton
+                filters={filters}
+                onOpenFilter={() => {
+                    setTempFilters(filters || {});
+                    setShowFilterPopup(true);
+                }}
+                isShowCustomizeButton
+                onCustomize={() => setIsShowCustomizeBookingColumnsModal(true)}
+                isShowImportButton={false}
+                isShowExportButton={canExport && bookingsForTable.length > 0}
+                onExportExcel={handleExportBookingExcel}
+                onExportPdf={handleExportBookingPdf}
+                exportLoading={isLoading}
+            />
+
+            <DataTable
+                data={bookingsForTable}
+                columns={visibleBookingColumns}
+                pagination={bookingPaginationInfo}
+                emptyMessage="No TenantBooking Data Found"
+                fixedHeight
+                recordsPerPage={20}
+                className="flex-1"
+                sortInfo={undefined}
+                onSort={handleSortColumn}
+            />
+
+            <CustomizeColumnsModal
+                isOpen={isShowCustomizeBookingColumnsModal}
+                onClose={() => setIsShowCustomizeBookingColumnsModal(false)}
+                onApply={keys => {
+                    const withRequired = Array.from(new Set([...keys, ...requiredBookingColumnKeys]));
+                    setSelectedBookingColumnKeys(withRequired);
+                    try {
+                        LocalStorageHelper.storeBookingTableColumns?.(JSON.stringify(withRequired));
+                    } catch {
+                    }
+                }}
+                columns={bookingColumns}
+                selectedKeys={selectedBookingColumnKeys}
+                requiredKeys={requiredBookingColumnKeys}
+                title="Customize Table Columns"
+            />
+
+            <Modal
+                isOpen={showFilterPopup}
+                onClose={() => setShowFilterPopup(false)}
+                title="Filter - Tenant Booking"
+                onSubmit={e => {
+                    e.preventDefault();
+                    applyFilters();
+                }}
+                saveText="Apply "
+                cancelText="Clear"
+                onCancel={() => {
+                    setTempFilters({});
+                    resetFilters();
+                }}
+
+
+                size="small-half"
+            >
+                <div className="space-y-6">
+                    <div className="space-y-4">
+                        <div>
+                            <Input
+                                label='Applicant Name'
+                                type="text"
+                                value={tempFilters.ApplicantName || ''}
+                                onChange={e => handleFilterChange('ApplicantName', e.target.value)}
+                                placeholder="Enter Applicant name"
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Applicant Mobile Number'
+                                type="text"
+                                value={tempFilters.ApplicantMobileNumber || ''}
+                                onChange={e => handleFilterChange('ApplicantMobileNumber', filterNumbers(e.target.value))}
+                                placeholder="Enter Mobile Number"
+                                maxLength={13}
+                            />
+                        </div>
+
+                        <div>
+                            <DatePickerInput
+                                label='From Date'
+                                value={tempFilters.FromDate || ''}
+                                onChange={value => handleFilterChange('FromDate', value || '')}
+                                placeholder="Select From Date"
+                            />
+                        </div>
+
+                        <div>
+                            <DatePickerInput
+                                label='To Date'
+                                value={tempFilters.ToDate || ''}
+                                onChange={value => handleFilterChange('ToDate', value || '')}
+                                placeholder="Select To Date"
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Wing'
+                                type="text"
+                                value={tempFilters.Wing || ''}
+                                onChange={e => handleFilterChange('Wing', e.target.value)}
+                                placeholder="Enter Wing"
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Flat'
+                                type="text"
+                                value={tempFilters.Flat || ''}
+                                onChange={e => handleFilterChange('Flat', e.target.value)}
+                                placeholder="Enter Flat"
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Floor'
+                                type="text"
+                                value={tempFilters.Floor || ''}
+                                onChange={e => handleFilterChange('Floor', e.target.value)}
+                                placeholder="Enter Floor"
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Agreement Value'
+                                value={tempFilters.AgreementValue || ''}
+                                onChange={(e) => {
+                                    const value = filterNumbersWithDecimal(e.target.value);
+                                    handleFilterChange('AgreementValue', value)
+                                }
+                                }
+
+                                placeholder="Enter Agreement Value"
+                                maxLength={9}
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label='Booking Type'
+                                type="text"
+                                value={tempFilters.BookingType || ''}
+                                onChange={e => handleFilterChange('BookingType', e.target.value)}
+                                placeholder="Enter Booking Type"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+
+
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false)
+                    setDeleteBookingData(null)
+                }}
+                onConfirm={handleDeleteBooking}
+                loading={isLoading}
+                pageName='booking'
+            />
+
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Tenant Booking'
+                titleText={ownerName ?? ""}
+                subTitleText={wing ?? ""}
+                subSubTitleText={unitNumber ?? ""}
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest} />
+
+            <ApprovalActionModal
+                title="Tenant Booking"
+                isOpen={isApprovalActionModalOpen}
+                onClose={() => setIsApprovalActionModalOpen(false)}
+                actionType={approvalActionType}
+                titleText={ownerName ?? ""}
+                subTitleText={wing ?? ""}
+                subSubTitleText={unitNumber ?? ""}
+                onSubmit={handleApprovalSubmit}
+                loading={isLoading}
+            />
+        </div >
+    );
+};
+
+export default TenantBooking;
+

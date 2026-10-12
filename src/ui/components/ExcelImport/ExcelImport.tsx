@@ -5,10 +5,12 @@ import RadioPill from "../forms/RadioPill";
 
 export default function ExportImport({
   open,
+  isTenantAllotemnt,
   onClose,
   onUpload
 }: {
   open: boolean;
+  isTenantAllotemnt?: boolean;
   onClose: () => void;
   onUpload: (file: File, mergeExisting: string) => void;
 }) {
@@ -91,30 +93,33 @@ export default function ExportImport({
           maxFiles={1}
           error={errorMessage}
         />
+        {!isTenantAllotemnt && (
+          <div>
+            <p className="text-sm text-gray-600 mb-2">
+              Do you want to upload the file with existing record?
+            </p>
 
-        <div>
-          <p className="text-sm text-gray-600 mb-2">
-            Do you want to upload the file with existing record?
-          </p>
+            <div className="flex gap-3">
+              <RadioPill
+                name="mergeExisting"
+                label="Yes"
+                value="1"
+                checked={mergeExisting === "0"}
+                onChange={() => setMergeExisting("0")}
+              />
 
-          <div className="flex gap-3">
-            <RadioPill
-              name="mergeExisting"
-              label="Yes"
-              value="1"
-              checked={mergeExisting === "0"}
-              onChange={() => setMergeExisting("0")}
-            />
-
-            <RadioPill
-              name="mergeExisting"
-              label="No"
-              value="0"
-              checked={mergeExisting === "1"}
-              onChange={() => setMergeExisting("1")}
-            />
+              <RadioPill
+                name="mergeExisting"
+                label="No"
+                value="0"
+                checked={mergeExisting === "1"}
+                onChange={() => setMergeExisting("1")}
+              />
+            </div>
           </div>
-        </div>
+
+        )}
+
         <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-sm text-gray-700 space-y-2">
           <p className="font-medium text-gray-800">Notes:</p>
 

@@ -95,6 +95,7 @@ export const Booking: React.FC = () => {
                     SubSubSource: filterParams.SubSubSource || undefined,
                     AgreementValue: filterParams.AgreementValue ? Number(filterParams.AgreementValue) : undefined,
                     BookingType: filterParams.BookingType?.trim() || undefined,
+                    BookingSearchKey:"SALE BOOKING",
                     SortBy: getSortByParam(sortInfo ?? null, bookingColumns)
                 };
 
@@ -214,6 +215,7 @@ export const Booking: React.FC = () => {
                     AgreementValue: tempFilters.AgreementValue ? Number(tempFilters.AgreementValue) : undefined,
                     BookingType: tempFilters.BookingType?.trim() || undefined,
                     SortBy: getSortByParam(null, bookingColumns),
+                    BookingSearchKey:"SALE BOOKING",
                     ExportType: exportType
                 };
 

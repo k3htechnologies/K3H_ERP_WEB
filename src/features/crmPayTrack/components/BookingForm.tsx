@@ -30,6 +30,8 @@ import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTab
 import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import type { FilterWithPaginationTenantRequest, TenantData } from "@/features/tenant/models/TenantModel";
+import { tenantService } from "@/features/tenant/services/TenantService";
 
 interface BookingProps {
     modalOpen: boolean;
@@ -50,6 +52,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [editEnquiryData, setEditEnquiryData] = useState<EnquiryData | null>(null);
+    const [tenantList, setTenantList] = useState<TenantData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isUpdateBookingRDPModalOpen, setIsUpdateBookingRDPModalOpen] = useState(false);
@@ -163,6 +166,48 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
         );
     };
 
+    const fetchTenantDetails = async (tenantIdToFetch: number, buildingId: number) => {
+
+        if (!tenantIdToFetch || tenantIdToFetch === 0) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationTenantRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    TenantId: tenantIdToFetch,
+                    ProjectId: Number(projectId),
+                    IsCheckPermission: false,
+                    BuildingId: buildingId,
+                };
+
+                const response = await tenantService.apiCallPullTenant(params);;
+
+                if (E.isRight(response)) {
+
+                    const tenantList = response.right.Data?.[0] ?? null;;
+
+                    setTenantList(tenantList);
+
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Tenant Details'
+        );
+    };
+
     const loadBookingFromServer = async () => {
         if (!bookingId) return;
         await runApiWithLoader(
@@ -193,6 +238,10 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                         setSelectedParkingValues(parkingIdString)
 
+                    }
+                    if (booking?.TenantId && booking.TenantId > 0) {
+
+                        await fetchTenantDetails(Number(booking.TenantId), Number(booking.TenantBuildingId) || 0);
                     }
 
                 } else {
@@ -787,6 +836,128 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                 </div>
                             </section>
                         )}
+                        {tenantList && (
+
+                            <>
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                    <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#13367A]">
+                                            Exisiting Unit Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Tenant Code" value={tenantList?.SystemGeneratedCode} />
+                                                    <FieldItem label="Unit / Annexure / Survey Number" value={tenantList?.UnitAnnexureSurveyNumber} />
+                                                    <FieldItem label="Unit Type" value={tenantList?.UnitType} />
+                                                </div>
+                                            </div>
+
+                                            <div className="lg:col-span-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    {tenantList?.UnitType?.toUpperCase() !== "GYM"
+                                                        ?
+                                                        <FieldItem label="Unit Configuration" value={tenantList?.UnitConfiguration} />
+                                                        : <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
+                                                    }
+
+                                                    {tenantList?.UnitType?.toUpperCase() !== "GYM"
+                                                        ?
+                                                        <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
+                                                        : ""
+                                                    }
+                                                    <FieldItem label="Unit Facing" value={tenantList?.UnitFacing} />
+
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+
+                                    </div>
+                                </section>
+
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                                    <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                            Eligibility Details in Carpet Area (SqFt)
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Extra Free Carpet Area Offered (%)" value={tenantList?.ExtraFreeCarpetAreaOfferedPercent} />
+                                                    <FieldItem label="Free MOFA Carpet Area (SqFt)" value={tenantList?.FreeMOFACarpetAreaSqFt} />
+
+                                                </div>
+                                            </div>
+
+
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Existing Terrace Area (SqFt)" value={tenantList?.ExistingTerraceAreaSqFt} />
+                                                    <FieldItem label="New Eligibility MOFA Carpet Area (SqFt)" value={tenantList?.NewEligibilityMOFACarpetAreaSqFt} />
+                                                    <FieldItem label="New Eligibility RERA Carpet Area (SqFt)" value={tenantList?.NewEligibilityRERACarpetAreaSqFt} />
+
+
+                                                </div>
+                                            </div>
+
+
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="(A) Area Against Terrace (SqFt)" value={tenantList?.AreaAgainstTerraceSqFt} />
+                                                    <FieldItem label="MOFA Carpet Area Purchased (SqFt)" value={tenantList?.MOFACarpetAreaPurchasedSqFt} />
+                                                    <FieldItem label="RERA Carpet Area Purchased (SqFt)" value={tenantList?.RERACarpetAreaPurchasedSqFt} />
+
+
+                                                </div>
+                                            </div>
+                                            <div className="lg:col-span-3 pt-3 pb-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="(B) Deck Area (SqFt)" value={tenantList?.DeckAreaSqFt} />
+                                                    <FieldItem label="Total New MOFA Carpet Area (SqFt)" value={tenantList?.TotalNewMOFACarpetAreaSqFt} />
+                                                    <FieldItem label="(C) Total New Rera Carpet Area (SqFt)" value={tenantList?.TotalNewRERACarpetAreaSqFt} />
+
+
+
+                                                </div>
+                                            </div>
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className='flex'>
+                                                    <FieldItem
+                                                        label="Area Against Terrace + Deck Area + Total New RERA Carpet Area (SqFt) (A + B + C)"
+                                                        value={(
+                                                            (Number(tenantList?.TotalNewRERACarpetAreaSqFt) || 0) +
+                                                            (Number(tenantList?.DeckAreaSqFt) || 0) +
+                                                            (Number(tenantList?.AreaAgainstTerraceSqFt) || 0)
+                                                        ).toFixed(2)}
+                                                    />
+                                                </div>
+
+                                            </div>
+
+                                            <div className="lg:col-span-3 pt-3">
+                                                <div className='flex'>
+                                                    <FieldItem label="Remark" value={tenantList?.Remark} />
+                                                </div>
+
+                                            </div>
+
+
+                                        </div>
+                                    </div>
+
+                                </section>
+                            </>
+                        )}
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
                             <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
@@ -984,6 +1155,16 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
 
                                 <div className="divide-y divide-[#135bec2e]">
+                                    
+                                    {Number(tenantList?.TenantId) > 0 && (
+                                        <div className="py-4">
+                                            {bookingData.CarpetAreaPurchasedSqFt === "MOFA" ? (
+                                                <FieldItem label="Carpet Area Purchased" value={`${tenantList?.MOFACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
+                                            ) : (
+                                                <FieldItem label="Carpet Area Purchased" value={`${tenantList?.RERACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
+                                            )}
+                                        </div>
+                                    )}
 
                                     <div className="py-4">
                                         <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />

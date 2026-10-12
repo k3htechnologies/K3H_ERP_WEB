@@ -111,6 +111,7 @@ const Inventory = () => {
 
     const { canAction, canExport } = useMenuPermissions();
     const { canAction: canBookingAction } = useMenuPermissions('/booking');
+    const { canAction: canTenantBookingAction } = useMenuPermissions('/tenantBooking');
 
     useEffect(() => {
 
@@ -1615,6 +1616,7 @@ const Inventory = () => {
                             isLastFloor={isLastFloor}
                             canAction={canAction}
                             canBookingAction={canBookingAction}
+                            canTenantBookingAction={canTenantBookingAction}
                             approvalStatus={selectedWing?.ApprovalStatus}
                         />
                     );

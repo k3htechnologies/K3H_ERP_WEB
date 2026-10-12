@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     if (item.children && item.children.length > 0) {
 
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" ||  item.path === "crmDashboard" ||  item.path === "hireSpaceDashboard" || item.path === '/teamWorkspaceDashboard') {
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" ||  item.path === "crmDashboard" ||  item.path === "hireSpaceDashboard" ||  item.path === "visitorManagementDashboard" || item.path === 'teamWorkspaceDashboard') {
 
         const route = mapPathToRoute(item.path)
 
@@ -203,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     } else {
       if (item.path) {
-
+       
         const route = mapPathToRoute(item.path)
 
         const navigateTo = route || item.path;

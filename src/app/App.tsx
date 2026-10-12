@@ -263,6 +263,8 @@ import { TenantBookingListStateProvider } from '@/features/tenantBooking/context
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
 import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking';
 import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
+import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/BaselineCostPlanDocument';
+import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -582,6 +584,8 @@ function App() {
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
+            <Route path="baselineCostPlan" element={<BaselineCostPlanDocument />} />
+            <Route path="constructionArea" element={<ConstructionAreaDetails />} />
 
             {/* FINANCE */}
             <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />

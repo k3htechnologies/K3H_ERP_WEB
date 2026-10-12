@@ -1,0 +1,558 @@
+import React from 'react'
+import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
+import { useViewportHeight } from '@/core/utils/useViewportHeight'
+import NoDataView from '@/ui/components/NoDataView/NoDataView'
+import { useHorizontalScroll } from './useHorizontalScroll'
+
+export interface TableRowSpanColumn {
+    key: string
+    label: string
+    render?: (value: any, row: any, index: number) => React.ReactNode
+    sortable?: boolean
+    width?: string
+    fixed?: 'left' | 'right'
+    align?: 'left' | 'center' | 'right'
+    truncate?: boolean
+    maxWidth?: string
+    children?: TableRowSpanColumn[]
+
+    // NEW: Dynamic row merging
+    rowSpan?: (row: any, index: number, data: any[]) => number
+}
+
+export interface PaginationInfo {
+    currentPage: number
+    totalPages: number
+    totalRecords: number
+    pageSize: number
+    onPageChange: (page: number) => void
+}
+
+export interface SortInfo {
+    column: string
+    direction: 'asc' | 'desc'
+}
+
+interface DataTableRowSpanProps {
+    data: any[]
+    columns: TableRowSpanColumn[]
+    pagination?: PaginationInfo
+    loading?: boolean
+    emptyMessage?: string
+    className?: string
+    fixedHeight?: boolean
+    maxHeight?: string
+    recordsPerPage?: number
+    sortInfo?: SortInfo
+    onSort?: (sortInfo: SortInfo) => void
+    onRowSelect?: (rows: any[]) => void
+    rowKey?: string
+    lastUpdatedRow?: string | number | null
+    selectedRowKeys?: (string | number)[]
+}
+
+export const getRowSpan = (
+        data: any[],
+        index: number,
+        groupKeys: string[]
+    ): number => {
+
+        if (index > 0) {
+            const isSameGroup = groupKeys.every(
+                key => data[index - 1][key] === data[index][key]
+            );
+
+            if (isSameGroup) {
+                return 0;
+            }
+        }
+
+        let rowSpan = 1;
+
+        for (let i = index + 1; i < data.length; i++) {
+            const isSameGroup = groupKeys.every(
+                key => data[index][key] === data[i][key]
+            );
+
+            if (!isSameGroup) {
+                break;
+            }
+
+            rowSpan++;
+        }
+
+        return rowSpan;
+    };
+
+export const DataTableRowSpan: React.FC<DataTableRowSpanProps> = ({
+    data,
+    columns,
+    pagination,
+    loading = false,
+    emptyMessage = 'No data available',
+    className = '',
+    fixedHeight = false,
+    maxHeight = useViewportHeight(255, 350, 900),
+    recordsPerPage = 10,
+    sortInfo,
+    onSort,
+    onRowSelect,
+    rowKey = 'id',
+    lastUpdatedRow,
+    selectedRowKeys
+}) => {
+
+    const scrollRef = useHorizontalScroll()
+
+    const [selectedRows, setSelectedRows] =
+        React.useState<(string | number)[]>([])
+
+    const [tempHighlightRow, setTempHighlightRow] =
+        React.useState<string | number | null>(null)
+
+    React.useEffect(() => {
+        if (lastUpdatedRow !== null && lastUpdatedRow !== undefined) {
+
+            setTempHighlightRow(lastUpdatedRow)
+
+            const timer = setTimeout(() => {
+                setTempHighlightRow(null)
+            }, 3000)
+
+            return () => clearTimeout(timer)
+        }
+    }, [lastUpdatedRow])
+
+    React.useEffect(() => {
+        if (selectedRowKeys) {
+            setSelectedRows(selectedRowKeys)
+        }
+    }, [selectedRowKeys])
+
+    const handleSort = (columnKey: string) => {
+        const column = columns.find(col => col.key === columnKey)
+
+        if (!onSort || !column?.sortable) return
+
+        const newDirection =
+            sortInfo?.column === columnKey &&
+                sortInfo?.direction === 'asc'
+                ? 'desc'
+                : 'asc'
+
+        onSort({
+            column: columnKey,
+            direction: newDirection
+        })
+    }
+
+    const renderPagination = () => {
+        if (!pagination) return null
+
+        const {
+            currentPage,
+            totalPages,
+            totalRecords,
+            pageSize,
+            onPageChange
+        } = pagination
+
+        const startRecord =
+            totalRecords === 0
+                ? 0
+                : (currentPage - 1) * pageSize + 1
+
+        const endRecord = Math.min(
+            currentPage * pageSize,
+            totalRecords
+        )
+
+        return (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-t border-gray-200">
+
+                <div className="text-sm text-gray-700">
+                    Showing {startRecord} to {endRecord} of {totalRecords} entries
+                </div>
+
+                <div className="flex items-center space-x-2">
+
+                    <button
+                        onClick={() => onPageChange(currentPage - 1)}
+                        disabled={
+                            totalRecords === 0 ||
+                            currentPage === 1
+                        }
+                        className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        <ChevronLeft className="h-4 w-4" />
+                    </button>
+
+                    <div className="flex items-center space-x-1">
+
+                        {Array.from(
+                            { length: Math.min(5, totalPages) },
+                            (_, i) => {
+
+                                let pageNum: number
+
+                                if (totalPages <= 5) {
+                                    pageNum = i + 1
+                                } else if (currentPage <= 3) {
+                                    pageNum = i + 1
+                                } else if (
+                                    currentPage >= totalPages - 2
+                                ) {
+                                    pageNum = totalPages - 4 + i
+                                } else {
+                                    pageNum = currentPage - 2 + i
+                                }
+
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => onPageChange(pageNum)}
+                                        className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 ${
+                                            currentPage === pageNum
+                                                ? 'bg-blue-500 text-white'
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                )
+                            }
+                        )}
+
+                    </div>
+
+                    <button
+                        onClick={() => onPageChange(currentPage + 1)}
+                        disabled={
+                            totalRecords === 0 ||
+                            currentPage === totalPages
+                        }
+                        className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                    >
+                        <ChevronRight className="h-4 w-4" />
+                    </button>
+
+                </div>
+            </div>
+        )
+    }
+
+    return (
+        <div
+            className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${
+                fixedHeight ? 'h-full' : ''
+            } ${className}`}
+        >
+
+            {/* Table Container */}
+            <div
+                ref={scrollRef}
+                className={`overflow-x-auto thin-scroll ${
+                    fixedHeight ? 'flex-1 overflow-y-auto' : ''
+                }`}
+                style={
+                    fixedHeight
+                        ? {
+                            maxHeight:
+                                recordsPerPage === 10
+                                    ? 'calc(10 * 2.5rem + 2.5rem)'
+                                    : maxHeight
+                        }
+                        : {}
+                }
+            >
+
+                <table className="min-w-full border-collapse">
+
+                    {/* Table Header */}
+                    <thead
+                        className={`${
+                            fixedHeight ? 'sticky top-0 z-40' : ''
+                        } shadow-sm`}
+                        style={{
+                            backgroundColor: '#E5E5E5',
+                            position: fixedHeight ? 'sticky' : 'static',
+                            top: 0,
+                            zIndex: 30
+                        }}
+                    >
+                        <tr
+                            className="h-10"
+                            style={{
+                                fontSize: '14px',
+                                fontWeight: '500',
+                                lineHeight: '1.4',
+                                letterSpacing: '0%',
+                                paddingTop: '6px',
+                                paddingBottom: '6px'
+                            }}
+                        >
+
+                            {columns.map((column) => (
+                                <th
+                                    key={column.key}
+                                    className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
+                                        ${
+                                            column.align === 'center'
+                                                ? 'text-center'
+                                                : column.align === 'right'
+                                                    ? 'text-right'
+                                                    : 'text-left'
+                                        }
+                                        ${
+                                            column.sortable
+                                                ? 'cursor-pointer hover:bg-gray-200'
+                                                : ''
+                                        }
+                                        ${
+                                            column.fixed === 'left'
+                                                ? 'sticky left-0 z-35 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                                                : column.fixed === 'right'
+                                                    ? 'sticky right-0 z-35 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                                                    : ''
+                                        }`}
+                                    style={{
+                                        ...(column.width
+                                            ? { width: column.width }
+                                            : {}),
+                                        fontSize: '14px',
+                                        fontWeight: '500',
+                                        lineHeight: '1.4',
+                                        letterSpacing: '0%',
+                                        backgroundColor: '#E4F0FF',
+                                        borderBottom: '1px solid #D1D5DB',
+                                        borderRight: '1px solid #D1D5DB'
+                                    }}
+                                    onClick={() =>
+                                        column.sortable &&
+                                        handleSort(column.key)
+                                    }
+                                >
+
+                                    <div
+                                        className={`flex items-center space-x-1 ${
+                                            column.align === 'center'
+                                                ? 'justify-center'
+                                                : column.align === 'right'
+                                                    ? 'justify-end'
+                                                    : 'justify-start'
+                                        }`}
+                                    >
+                                        <span className="truncate">
+                                            {column.label}
+                                        </span>
+
+                                        {column.sortable && (
+                                            <ArrowUpDown className="h-3 w-3 flex-shrink-0" />
+                                        )}
+
+                                        {sortInfo?.column === column.key && (
+                                            <span className="text-blue-500 flex-shrink-0">
+                                                {sortInfo.direction === 'asc'
+                                                    ? '↑'
+                                                    : '↓'}
+                                            </span>
+                                        )}
+                                    </div>
+
+                                </th>
+                            ))}
+
+                        </tr>
+                    </thead>
+
+                    {/* Table Body */}
+                    <tbody className="bg-white">
+
+                        {!loading && data.length === 0 ? (
+
+                            <tr>
+                                <td
+                                    colSpan={columns.length}
+                                    className="py-10"
+                                >
+                                    <NoDataView message={emptyMessage} />
+                                </td>
+                            </tr>
+
+                        ) : (
+
+                            data.map((row, index) => {
+
+                                const rowKeyValue = row[rowKey]
+
+                                const isSelected =
+                                    selectedRows.includes(rowKeyValue)
+
+                                const isTempHighlighted =
+                                    tempHighlightRow === rowKeyValue
+
+                                return (
+                                    <tr
+                                        key={rowKeyValue}
+                                        onClick={
+                                            onRowSelect
+                                                ? () => {
+
+                                                    const updatedSelection =
+                                                        isSelected
+                                                            ? selectedRows.filter(
+                                                                key =>
+                                                                    key !== rowKeyValue
+                                                            )
+                                                            : [
+                                                                ...selectedRows,
+                                                                rowKeyValue
+                                                            ]
+
+                                                    setSelectedRows(
+                                                        updatedSelection
+                                                    )
+
+                                                    const selectedData =
+                                                        data.filter(r =>
+                                                            updatedSelection.includes(
+                                                                r[rowKey]
+                                                            )
+                                                        )
+
+                                                    onRowSelect(selectedData)
+                                                }
+                                                : undefined
+                                        }
+                                        className={`h-10 border-b border-gray-200 transition-all duration-700
+                                            ${onRowSelect ? 'cursor-pointer' : ''}
+                                            ${
+                                                isSelected
+                                                    ? 'bg-blue-50 border-l-4 border-blue-500'
+                                                    : ''
+                                            }
+                                            ${
+                                                isTempHighlighted
+                                                    ? 'bg-blue-50 border-l-4 border-blue-500'
+                                                    : ''
+                                            }
+                                            ${
+                                                !isSelected &&
+                                                !isTempHighlighted &&
+                                                onRowSelect
+                                                    ? 'hover:bg-gray-50'
+                                                    : ''
+                                            }`}
+                                    >
+
+                                        {columns.map((column) => {
+
+                                            // NEW: Calculate the merged row count
+                                            const rowSpan = column.rowSpan
+                                                ? column.rowSpan(
+                                                    row,
+                                                    index,
+                                                    data
+                                                )
+                                                : 1
+
+                                            // Do not render a cell already
+                                            // covered by a previous merged cell
+                                            if (rowSpan === 0) {
+                                                return null
+                                            }
+
+                                            const cellValue = column.render
+                                                ? column.render(
+                                                    row[column.key],
+                                                    row,
+                                                    index
+                                                )
+                                                : row[column.key]
+
+                                            return (
+                                                <td
+                                                    key={column.key}
+                                                    rowSpan={rowSpan}
+                                                    className={`px-4 py-2 text-gray-900
+                                                        ${
+                                                            !column.fixed
+                                                                ? 'border-r border-gray-200'
+                                                                : ''
+                                                        }
+                                                        ${
+                                                            column.align === 'center'
+                                                                ? 'text-center'
+                                                                : column.align === 'right'
+                                                                    ? 'text-right'
+                                                                    : 'text-left'
+                                                        }
+                                                        ${
+                                                            column.fixed === 'left'
+                                                                ? `sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r border-gray-100 ${
+                                                                    isTempHighlighted || isSelected
+                                                                        ? 'bg-blue-50'
+                                                                        : 'bg-white'
+                                                                }`
+                                                                : column.fixed === 'right'
+                                                                    ? `sticky right-0 z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l border-gray-100 ${
+                                                                        isTempHighlighted || isSelected
+                                                                            ? 'bg-blue-50'
+                                                                            : 'bg-white'
+                                                                    }`
+                                                                    : ''
+                                                        }`}
+                                                    style={{
+                                                        ...(column.width
+                                                            ? { width: column.width }
+                                                            : {}),
+                                                        fontSize: '14px',
+                                                        fontWeight: '400',
+                                                        lineHeight: '1.5',
+                                                        minHeight: '40px',
+                                                        verticalAlign: 'middle'
+                                                    }}
+                                                    title=""
+                                                >
+
+                                                    <div
+                                                        className={`${
+                                                            column.truncate !== false
+                                                                ? 'truncate whitespace-nowrap'
+                                                                : ''
+                                                        } max-w-full`}
+                                                        style={{
+                                                            maxWidth:
+                                                                column.maxWidth ||
+                                                                column.width,
+                                                            lineHeight: '1.5'
+                                                        }}
+                                                    >
+                                                        {cellValue}
+                                                    </div>
+
+                                                </td>
+                                            )
+                                        })}
+
+                                    </tr>
+                                )
+                            })
+                        )}
+
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Pagination */}
+            {pagination && (
+                <div className="flex-shrink-0">
+                    {renderPagination()}
+                </div>
+            )}
+
+        </div>
+    )
+}
+
+export default DataTableRowSpan

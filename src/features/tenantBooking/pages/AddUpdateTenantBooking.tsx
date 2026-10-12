@@ -826,12 +826,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
       newErrors.TermsAndConditionsDescription = "Terms and Conditions Description is required";
     }
 
-    if (Number(formData.AgreementValue) < 0 && paymentSchedules.length === 0) {
+    if (Number(formData.AgreementValue) > 0 && paymentSchedules.length === 0) {
       addToast({ type: "error", title: "Payment schedule is required" });
       return { isValid: false, errors: newErrors };
     }
-
-
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -1185,58 +1183,9 @@ export const AddUpdateTenantBooking: React.FC = () => {
           {tenantUniqueCode && tenantUniqueCode.trim() !== "" && (
             Number(tenantId) > 0 ? (
               <div className="pt-5">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
-                  <div className="lg:col-span-3 space-y-6">
+                
 
-                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-
-                      <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
-                        <h4 className="text-sm font-semibold text-[#C2410C]">
-                          Applicant Details
-                        </h4>
-                      </div>
-                      <div className="p-4 bg-white">
-                        <div className="space-y-5">
-                          {applicantList.length > 0 ? (
-                            applicantList.map((tenantData, i) => {
-
-                              return (
-                                <div key={tenantData.TenantApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                  {/* SECTION 1 */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900 bold' />
-                                    <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
-                                    <FieldItem label="Mobile Number" value={`${getSafeString(tenantData?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(tenantData?.ApplicantMobileNumber)}`} />
-                                    <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
-
-                                    <FieldItem label="Aadhaar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
-                                    <FieldItem label="PAN No." value={tenantData?.PanNumber} urls={tenantData?.PanCardURL} isIcon />
-                                    <FieldItem label="Passport No." value={tenantData?.PassportNumber} urls={tenantData?.PassportURL} isIcon />
-                                    <FieldItem label="Driving License" value={tenantData?.DrivingLicenseNumber} urls={tenantData?.DrivingLicenseURL} isIcon />
-                                    <FieldItem label="Voting ID No." value={tenantData?.VotingIdNumber} urls={tenantData?.VotingIdURL} isIcon />
-                                    <FieldItem label="GST No." value={tenantData?.GSTNumber} urls={tenantData?.GSTNumberURL} isIcon />
-
-                                    <FieldItem label="Bank Name" value={tenantData?.BankName} />
-                                    <FieldItem label="Account No." value={tenantData?.AccountNumber} urls={tenantData?.ChequeURL} isIcon />
-                                    <FieldItem label="IFSC" value={tenantData?.IFSCCode} />
-                                  </div>
-
-                                </div>
-                              );
-                            })
-                          ) : (
-                            <div className="py-6 text-center text-gray-500 text-sm">
-                              <NoDataView message="No Applicant Data Found" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </section>
-
-                  </div>
-                </div>
-
-                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
                   <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                     <h4 className="text-sm font-semibold text-[#13367A]">
@@ -1353,6 +1302,57 @@ export const AddUpdateTenantBooking: React.FC = () => {
                   </div>
 
                 </section>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-5">
+                  <div className="lg:col-span-3 space-y-6">
+
+                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                      <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                        <h4 className="text-sm font-semibold text-[#C2410C]">
+                          Applicant Details
+                        </h4>
+                      </div>
+                      <div className="p-4 bg-white">
+                        <div className="space-y-5">
+                          {applicantList.length > 0 ? (
+                            applicantList.map((tenantData, i) => {
+
+                              return (
+                                <div key={tenantData.TenantApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                  {/* SECTION 1 */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900 bold' />
+                                    <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
+                                    <FieldItem label="Mobile Number" value={`${getSafeString(tenantData?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(tenantData?.ApplicantMobileNumber)}`} />
+                                    <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
+
+                                    <FieldItem label="Aadhaar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />
+                                    <FieldItem label="PAN No." value={tenantData?.PanNumber} urls={tenantData?.PanCardURL} isIcon />
+                                    <FieldItem label="Passport No." value={tenantData?.PassportNumber} urls={tenantData?.PassportURL} isIcon />
+                                    <FieldItem label="Driving License" value={tenantData?.DrivingLicenseNumber} urls={tenantData?.DrivingLicenseURL} isIcon />
+                                    <FieldItem label="Voting ID No." value={tenantData?.VotingIdNumber} urls={tenantData?.VotingIdURL} isIcon />
+                                    <FieldItem label="GST No." value={tenantData?.GSTNumber} urls={tenantData?.GSTNumberURL} isIcon />
+
+                                    <FieldItem label="Bank Name" value={tenantData?.BankName} />
+                                    <FieldItem label="Account No." value={tenantData?.AccountNumber} urls={tenantData?.ChequeURL} isIcon />
+                                    <FieldItem label="IFSC" value={tenantData?.IFSCCode} />
+                                  </div>
+
+                                </div>
+                              );
+                            })
+                          ) : (
+                            <div className="py-6 text-center text-gray-500 text-sm">
+                              <NoDataView message="No Applicant Data Found" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </section>
+
+                  </div>
+                </div>
               </div>
             )
               :

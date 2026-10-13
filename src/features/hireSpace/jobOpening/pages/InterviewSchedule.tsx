@@ -303,12 +303,20 @@ export const InterviewSchedule: React.FC = () => {
       newErrors.InterviewPanel = 'Interviewers is required';
     }
 
+    const isInterviewDateTimeChanged = !editCandidateInterviewData
+      || formData.InterviewDate !== convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(editCandidateInterviewData.InterviewDate)
+      || formData.InterviewTime !== parseTimeFromISO(`1970-01-01T${editCandidateInterviewData.InterviewTime || ''}`);
+
     if (!formData.InterviewDate) {
       newErrors.InterviewDate = 'Interview date is required';
+    } else if (isInterviewDateTimeChanged && formData.InterviewDate < todayKey) {
+      newErrors.InterviewDate = 'Interview date cannot be a past date';
     }
 
     if (!formData.InterviewTime) {
       newErrors.InterviewTime = 'Interview time is required';
+    } else if (isInterviewDateTimeChanged && formData.InterviewDate === todayKey && new Date(`${formData.InterviewDate}T${formData.InterviewTime}`) < new Date()) {
+      newErrors.InterviewTime = 'Interview time must be greater than current time';
     }
 
     if (!formData.Stage.trim()) {
@@ -688,6 +696,7 @@ export const InterviewSchedule: React.FC = () => {
             disabled={isViewOnlyInterview}
             value={formatDate_dd_mm_yyyy(formData.InterviewDate)}
             onChange={(value) => handleFieldChange('InterviewDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(value))}
+            minDate={new Date()}
             error={errors.InterviewDate}
           />
 

@@ -555,30 +555,28 @@ export const JobRoleMaster: React.FC = () => {
                             />
                           </div>
 
-                          <div className="flex shrink-0 items-center justify-end gap-2">
-                         
-
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  color="transparent"
-                                  size="sm"
-                                  isborderRadius
-                                  title="Edit"
-                                  onClick={() => handleEditJobRoleMaster(jobRole)}
-                                >
-                                  <Edit className="h-4 w-4 text-blue-700" />
-                                </Button>
-                                <Button
-                                  color="transparent"
-                                  size="sm"
-                                  isborderRadius
-                                  title="Delete"
-                                  onClick={() => handleConfirmationDialogBoxOpen(jobRole)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
-                          </div>
+                          {canAction && (
+                            <div className="flex shrink-0 items-center gap-2">
+                              <Button
+                                color="transparent"
+                                size="sm"
+                                isborderRadius
+                                title="Edit"
+                                onClick={() => handleEditJobRoleMaster(jobRole)}
+                              >
+                                <Edit className="h-4 w-4 text-blue-700" />
+                              </Button>
+                              <Button
+                                color="transparent"
+                                size="sm"
+                                isborderRadius
+                                title="Delete"
+                                onClick={() => handleConfirmationDialogBoxOpen(jobRole)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}

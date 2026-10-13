@@ -588,7 +588,7 @@ export const JobApplicationDetails: React.FC = () => {
                           <p className="mb-3 mt-4 text-sm font-normal uppercase text-gray-500">
                             Top Skills
                           </p>
-                          <span className="text-sm font-medium text-gray-900">
+                          <span className="block break-words text-sm font-medium text-gray-900">
                             {selectedCandidate.Skills|| '-'}
                           </span>
 

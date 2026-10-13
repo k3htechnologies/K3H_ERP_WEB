@@ -58,10 +58,10 @@ export const JobOpening: React.FC = () => {
           PageNumber: pageNumber,
           PageSize: pagination.pageSize,
           DepartmentMasterId: departmentId,
-          WorkMode: filterParams.WorkMode?.trim() || undefined,
-          EmploymentType: filterParams.EmploymentType?.trim() || undefined,
+          WorkMode:searchtext || filterParams.WorkMode?.trim() || undefined,
+          EmploymentType: searchtext || filterParams.EmploymentType?.trim() || undefined,
           RoleName: searchtext ?? filterParams.RoleName?.trim() ?? undefined,
-          ExperienceYears: filterParams.ExperienceYears
+          ExperienceYears:searchtext|| filterParams.ExperienceYears
             ? Number(filterParams.ExperienceYears)
             : undefined,
           JobRoleStatus:
@@ -308,6 +308,7 @@ export const JobOpening: React.FC = () => {
 
       <TableActionToolbar
         searchTerm={searchTerm}
+        searchPlaceholder="Search By Job Opening"
         onSearchChange={(v) => {
           updateListState({ searchTerm: v });
           debouncedSearch(v);
@@ -327,7 +328,7 @@ export const JobOpening: React.FC = () => {
         addTitle="Add"
         onAdd={handleAddJobOpening}
         isShowAddButton={canAction}
-       isShowExportButton={canExport && jobOpeningList.length !== 0}
+        isShowExportButton={canExport && jobOpeningList.length !== 0}
         onExportExcel={() => handleExportJobOpening('Excel')}
         onExportPdf={() => handleExportJobOpening('PDF')}
         exportLoading={isLoading}
@@ -428,7 +429,7 @@ export const JobOpening: React.FC = () => {
                         <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
                           <span className="flex items-center gap-2">
                             <Briefcase className="h-4 w-4 shrink-0 text-gray-400" />
-                            {jobOpening.ExperienceYears ? `${jobOpening.ExperienceYears} Year`: "-"}
+                            {jobOpening.ExperienceYears != null ? `${jobOpening.ExperienceYears} Year`: "-"}
                           </span>
                           <span className="flex items-center gap-2">
                             <MapPin className="h-4 w-4 shrink-0 text-gray-400" />

@@ -286,7 +286,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
               
               <div>
                 <TextArea
-                  label="Qualifications"
+                  label="Education & Qualifications"
                   placeholder="Enter Qualifications"
                   value={formData.RoleQualification}
                   onChange={(event) => handleFieldChange('RoleQualification', event.target.value)}

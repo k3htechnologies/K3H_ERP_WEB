@@ -9,8 +9,7 @@ import { Loader } from '@/core/utils/loader';
 import {
   ACTIVE_INACTIVE_OPTIONS,
   EMPLOYMENT_TYPE_OPTIONS,
-  EXPERIENCE_MONTH_OPTIONS,
-  EXPERIENCE_YEAR_OPTIONS,
+  EXPERIENCE_YEARS_OPTIONS,
   WORK_MODE_OPTIONS,
 } from '@/core/constants';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
@@ -39,7 +38,7 @@ const INITIAL_FORM_STATE: AddUpdateJobOpeningRequest = {
   JobQualification: '',
   JobSkills: '',
   WorkMode: '',
-  ExperienceYears: 0,
+  ExperienceYears: null,
   ExperienceMonths: null,
   NumberOfOpenings: 0,
   WorkLocation: '',
@@ -74,7 +73,6 @@ export const AddUpdateJobOpening: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
-
 
   const fetchDepartments = async () => {
     await runApiWithLoader(
@@ -199,7 +197,7 @@ export const AddUpdateJobOpening: React.FC = () => {
       newErrors.WorkMode = 'Work mode is required';
     }
 
-    if (!formData.ExperienceYears) {
+    if (formData.ExperienceYears === null) {
       newErrors.ExperienceYears = 'Experience years is required';
     }
 
@@ -244,7 +242,7 @@ export const AddUpdateJobOpening: React.FC = () => {
       JobQualification: formData.JobQualification,
       JobSkills: formData.JobSkills,
       WorkMode: formData.WorkMode,
-      ExperienceYears: formData.ExperienceYears,
+      ExperienceYears: formData.ExperienceYears!,
       ExperienceMonths: formData.ExperienceMonths!,
       NumberOfOpenings: formData.NumberOfOpenings,
       WorkLocation: formData.WorkLocation,
@@ -369,7 +367,7 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Job Description"
-                  placeholder="Pre-filled"
+                  placeholder="Job Description"
                   value={formData.JobDescription}
                   title={formData.JobDescription}
                   onChange={(e) => handleFieldChange('JobDescription', e.target.value)}
@@ -381,7 +379,7 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Job Responsibilities"
-                  placeholder="Pre-filled"
+                  placeholder="Job Responsibilities"
                   value={formData.JobResponsibilities}
                   title={formData.JobResponsibilities}
                   onChange={(e) => handleFieldChange('JobResponsibilities', e.target.value)}
@@ -393,7 +391,7 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Job Requirement"
-                  placeholder="Pre-filled"
+                  placeholder="Job Requirement"
                   value={formData.JobRequirement}
                   title={formData.JobRequirement}
                   onChange={(e) => handleFieldChange('JobRequirement', e.target.value)}
@@ -405,7 +403,7 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Qualifications"
-                  placeholder="Pre-filled"
+                  placeholder="Qualifications"
                   value={formData.JobQualification}
                   title={formData.JobQualification}
                   onChange={(e) => handleFieldChange('JobQualification', e.target.value)}
@@ -417,7 +415,7 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div className="md:col-span-2">
                 <Input
                   label="Skills"
-                  placeholder="Pre-filled"
+                  placeholder="Skills"
                   value={formData.JobSkills}
                   title={formData.JobSkills}
                   onChange={(e) => handleFieldChange('JobSkills', e.target.value)}
@@ -440,7 +438,6 @@ export const AddUpdateJobOpening: React.FC = () => {
                   value={formData.WorkMode}
                   onChange={(e) => handleFieldChange('WorkMode', String(e))}
                   options={WORK_MODE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  searchable={false}
                   required
                   error={errors.WorkMode}
                 />
@@ -456,25 +453,14 @@ export const AddUpdateJobOpening: React.FC = () => {
                   <div className="flex-1">
                     <SinglePageSelection
                       placeholder="Select Years"
-                      value={formData.ExperienceYears ? String(formData.ExperienceYears) : ''}
-                      onChange={(e) => handleFieldChange('ExperienceYears', Number(e) || 0)}
-                      options={EXPERIENCE_YEAR_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                      searchable={false}
-                      error={errors.ExperienceYears}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <SinglePageSelection
-                      placeholder="Select Months"
                       value={
-                        formData.ExperienceMonths === null
+                        formData.ExperienceYears === null
                           ? ''
-                          : String(formData.ExperienceMonths)
+                          : String(formData.ExperienceYears)
                       }
-                      onChange={(e) => handleFieldChange('ExperienceMonths', Number(e))}
-                      options={EXPERIENCE_MONTH_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                      searchable={false}
-                      error={errors.ExperienceMonths}
+                      onChange={(e) => handleFieldChange('ExperienceYears', Number(e))}
+                      options={EXPERIENCE_YEARS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                      error={errors.ExperienceYears}
                     />
                   </div>
                 </div>
@@ -509,7 +495,6 @@ export const AddUpdateJobOpening: React.FC = () => {
                   value={formData.EmploymentType}
                   onChange={(e) => handleFieldChange('EmploymentType', String(e))}
                   options={EMPLOYMENT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  searchable={false}
                   required
                   error={errors.EmploymentType}
                 />
@@ -528,7 +513,6 @@ export const AddUpdateJobOpening: React.FC = () => {
                   }
                   onChange={(e) => handleFieldChange('JobRoleStatus', String(e) === 'Active')}
                   options={ACTIVE_INACTIVE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  searchable={false}
                   required
                   error={errors.JobRoleStatus}
                 />

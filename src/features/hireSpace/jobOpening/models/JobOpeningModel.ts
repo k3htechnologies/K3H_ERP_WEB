@@ -49,7 +49,7 @@ export interface AddUpdateJobOpeningRequest {
     JobQualification: string
     JobSkills: string
     WorkMode: string
-    ExperienceYears: number
+    ExperienceYears: number | null
     ExperienceMonths: number | null
     NumberOfOpenings: number
     WorkLocation: string

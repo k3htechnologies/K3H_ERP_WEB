@@ -29,7 +29,7 @@ import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
-import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "@/features/inventory/InventoryFlatDropdown";
+import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatWithBuildingNameDropdown } from "@/features/inventory/InventoryFlatDropdown";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 
@@ -265,7 +265,7 @@ const AddUpdateTenant: React.FC = () => {
             setApplicantList(applicantsWithFiles);
             setDropdownLabels({
               bankName: tenant?.TenantApplicantData[0].BankName || "",
-              Flat: tenant?.Flat || ""
+              Flat: (tenant?.BuildingNumber +' - '+ tenant?.Flat) || ""
             });
 
             if (tenant.InventoryFlatId) {
@@ -1218,7 +1218,7 @@ setSelectFlatValues("");
   const fetchInventoryFlats = useCallback(
     async (pageNumber: number, params?: { value?: string }) => {
 
-      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
+      return fetchPaginatedInventoryFlatWithBuildingNameDropdown(pageNumber, {
         projectId: Number(projectId),
         flat: params?.value,
         flatStatus: "Available,Alloted",

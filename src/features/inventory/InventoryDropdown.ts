@@ -34,7 +34,7 @@ export const fetchBuildingDropdown = async (params?: { projectId?: number; }) =>
   }
 };
 
-// Wing
+
 export const fetchWingDropdown = async (params?: { projectId?: number; inventoryBuildingId?: number }) => {
   try {
 

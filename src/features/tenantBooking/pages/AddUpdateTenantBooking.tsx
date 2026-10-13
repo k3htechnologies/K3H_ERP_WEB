@@ -1556,6 +1556,12 @@ export const AddUpdateTenantBooking: React.FC = () => {
                       })),
                     );
                   }
+
+                  if(agreementValue===0){
+                    setPaymentSchedules([]);
+                  }
+                 
+
                   if (Boolean(formData.IsApplicableOtherCharge)) {
 
                     if (otherCharges.length === 0) {

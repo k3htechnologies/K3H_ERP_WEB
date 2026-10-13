@@ -1208,7 +1208,6 @@ const Inventory = () => {
         return data;
     }, [getFilteredFloors, selectedWing]);
 
-    // Table columns definition
     const tableColumns: TableColumn[] = useMemo(() => [
         {
             key: 'Floor',

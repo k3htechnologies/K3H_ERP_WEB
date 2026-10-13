@@ -428,7 +428,13 @@ export const ConstructionArea: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: value => value || '-',
+            rowSpan: (_row, index, data) =>
+                getRowSpan(
+                    data,
+                    index,
+                    ['BuildingNumber', 'Floor', 'Wing']
+                )
         },
         {
             key: 'CumlativeHeightMt',
@@ -436,7 +442,13 @@ export const ConstructionArea: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: value => value || '-',
+            rowSpan: (_row, index, data) =>
+                getRowSpan(
+                    data,
+                    index,
+                    ['BuildingNumber', 'Floor', 'Wing']
+                )
         },
         {
             key: 'Remark',

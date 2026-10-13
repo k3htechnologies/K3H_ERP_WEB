@@ -277,7 +277,7 @@ export function SignIn() {
 
                                 <Input
                                     autoFocus
-                                    type="text"
+                                    type="password"
                                     placeholder="Enter OTP"
                                     leftIcon={<KeyIcon />}
                                     value={otp}
@@ -347,7 +347,7 @@ export function SignIn() {
                                     autoFocus
                                     variant="filled"
                                     fullWidth
-                                    type="text"
+                                    type="password"
                                     placeholder="Enter MPIN"
                                     leftIcon={<KeyIcon />}
                                     value={otp}

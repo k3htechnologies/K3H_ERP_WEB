@@ -33,6 +33,7 @@ export interface TenantData {
   SystemGeneratedCode:string | null;
   ProjectId: number;
   BuildingId: number;
+  BuildingName: string | null;
 
   InventoryFlatId: number | null;
   BuildingNumber: string | null;

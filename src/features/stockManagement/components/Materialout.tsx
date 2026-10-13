@@ -17,6 +17,7 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { Input } from "@/ui/components/forms";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 interface MaterialUsageForm {
     unusedQuantity: string;
@@ -42,6 +43,7 @@ export const MaterialOut: React.FC = () => {
     const { SubMaterialMasterId } = useParams<{ SubMaterialMasterId?: string }>();
     const { listState } = useStockManagementListState();
     const currentSubMaterialMasterId = SubMaterialMasterId ? Number(SubMaterialMasterId) : listState.SubMaterialMasterId;
+    const { canAction } = useMenuPermissions();
 
     const totalQty = Number(selectedMaterialOut?.MaterialQuantityInwardOutward ?? 0);
     const uomCode = selectedMaterialOut?.UomCode ?? '';
@@ -62,7 +64,7 @@ export const MaterialOut: React.FC = () => {
     }, []);
 
     const validateUsageForm = (): boolean => {
-        
+
         const errors: MaterialUsageFormErrors = {};
         const quantity = Number(usageForm.unusedQuantity ?? '');
 
@@ -139,11 +141,11 @@ export const MaterialOut: React.FC = () => {
                 sortable: false,
                 align: 'left',
                 render: (value, row) => {
-                    if (!value) return '-';
+                    if (!value) return '0';
                     const isInward = row.InwardOutwardType === 'INWARD';
                     return (
                         <span className={isInward ? 'text-green-600' : 'text-red-600'}>
-                            {isInward ? '+' : '-'}{value} {row.UomCode}
+                            {isInward ? '+' : '0'}{value} {row.UomCode}
                         </span>
                     );
                 },
@@ -200,26 +202,28 @@ export const MaterialOut: React.FC = () => {
                 render: (value?: string) => (value ? formatDate_dd_MonthName_yy(value) : '-')
             },
             {
-                key: 'Actions',
-                label: 'Actions',
-                width: '10',
+                key: "Actions",
+                label: "Actions",
+                width: "10",
                 sortable: false,
-                align: 'left',
+                align: "left",
                 render: (_value, row) => (
-                    <Button
-                        type='button'
-                        color='blue'
-                        size='sm'
-                        disabled={Number(row.UsedMaterial ?? 0) > 0}
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            openUsageModal(row);
-                        }}
-                    >
-                        Material Usage
-                    </Button>
-                )
+                    canAction ? (
+                        <Button
+                            type="button"
+                            color="blue"
+                            size="sm"
+                            disabled={Number(row.UsedMaterial ?? 0) > 0}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openUsageModal(row);
+                            }}
+                        >
+                            Material Usage
+                        </Button>
+                    ) : null
+                ),
             }
         ], [openUsageModal]);
 

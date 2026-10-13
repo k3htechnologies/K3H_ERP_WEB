@@ -111,6 +111,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     //ESTIMATION AND BUDGET
     BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
+    CONSTRUCTION_AREA_SELECTED_COLUMNS: 'constructionArea.selectedColumns',
 
     //TERM SHEET
     TERM_SHEET_SELECTED_COLUMNS: 'termSheet.selectedColumns',

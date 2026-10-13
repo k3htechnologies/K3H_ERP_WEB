@@ -212,6 +212,14 @@ export const StockManagement: React.FC = () => {
         render: (value) => <TooltipText text={value || "-"} maxWidth="250px" tooltipThreshold={25} />,
       },
       {
+        key: "UomCode",
+        label: 'UOM',
+        width: "20",
+        sortable: false,
+        align: "left",
+        render: (value) => value || "-"
+      },
+      {
         key: "QuantityGroup",
         label: "Quantity",
         align: "center",
@@ -222,7 +230,7 @@ export const StockManagement: React.FC = () => {
             width: "20",
             sortable: false,
             align: "left",
-            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            render: (value: any) => value || "0"
           },
           {
             key: "AvailableMaterial",
@@ -230,7 +238,7 @@ export const StockManagement: React.FC = () => {
             width: "20",
             sortable: false,
             align: "left",
-            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            render: (value: any) => value || "0"
           },
           {
             key: "UsedQuantity",
@@ -238,7 +246,7 @@ export const StockManagement: React.FC = () => {
             width: "20",
             sortable: false,
             align: "left",
-            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            render: (value: any) => value || "0"
           },
           {
             key: "ScrapQuantity",
@@ -246,7 +254,7 @@ export const StockManagement: React.FC = () => {
             width: "20",
             sortable: false,
             align: "left",
-            render: (value: any, row: any) => (value != null ? `${value} ${row.UomCode || ""}`.trim() : "-"),
+            render: (value: any) => value || "0"
           },
         ],
       },
@@ -390,6 +398,14 @@ export const StockManagement: React.FC = () => {
         formData.InwardOutwardType === "INWARD"
           ? "Sender Name must be at least 5 characters."
           : "Receiver Name must be at least 5 characters.";
+
+    } else if (
+      (formData.InwardOutwardType === "INWARD" || formData.InwardOutwardType === "OUTWARD") && /^\d+$/.test(formData.PartyName?.trim() ?? "")
+    ) {
+      newErrors.PartyName =
+        formData.InwardOutwardType === "INWARD"
+          ? "Sender Name cannot contain numbers."
+          : "Receiver Name cannot contain numbers.";
     }
 
     return {

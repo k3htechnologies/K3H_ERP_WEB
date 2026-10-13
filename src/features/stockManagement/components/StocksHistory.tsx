@@ -80,12 +80,12 @@ export const StockHistory: React.FC = () => {
                 sortable: false,
                 align: "left",
                 render: (value, row) => {
-                    if (!value) return "-";
+                    if (!value) return "0";
 
                     const isInward = row.InwardOutwardType === "INWARD";
                     return (
                         <span className={isInward ? "text-green-600" : "text-red-600"}>
-                            {isInward ? "+" : "-"}{value} {row.UomCode}
+                            {isInward ? "+" : "0"}{value} {row.UomCode}
                         </span>
                     );
                 }

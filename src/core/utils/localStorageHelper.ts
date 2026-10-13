@@ -1508,6 +1508,27 @@ export const LocalStorageHelper = {
     return null
   },
 
+  storeConstructionAreaTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CONSTRUCTION_AREA_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Construction Area Columns Details:', error)
+    }
+  },
+
+  getConstructionAreaTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CONSTRUCTION_AREA_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.CONSTRUCTION_AREA_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Construction Area Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
   //TERM SHEET
 
   storeTermSheetTableColumns: (columns: string): void => {

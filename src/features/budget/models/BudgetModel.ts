@@ -4,6 +4,7 @@ export interface FilterWithPaginationBudgetRequest {
     PageSize: number;
     PageNumber: number;
     ProjectId?: number;
+    InventoryFlatFloorBasementPodiumWingId?: number
     BudgetId?: number
     LevelType?: string;
     CategoryName?: string;
@@ -42,8 +43,8 @@ export interface BudgetData {
     OrderBy: number | 0
     WBSCode: string | null
     Quantity: number | 0
-    ReceivedQuantity :  number | 0
-    OrderQuantity:  number | 0
+    ReceivedQuantity: number | 0
+    OrderQuantity: number | 0
     L3Quantity: number | 0
     LabourCost: number | 0
     MaterialCost: number | 0
@@ -54,6 +55,7 @@ export interface BudgetData {
     IsAccessToDelete: boolean
     IsApproval: boolean
     ApprovalStatus: string
+    InventoryFlatFloorBasementPodiumWingId: number | 0
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -67,6 +69,7 @@ export interface AddUpdateBudget {
     BudgetId: number | 0
     ProjectId: number | 0
     UniqueKey: string | null
+    InventoryFlatFloorBasementPodiumWingId: number | 0
     LevelId1: number | 0
     LevelId2: number | 0
     LevelId3: number | 0
@@ -82,5 +85,11 @@ export interface AddUpdateBudget {
     Remark: string | null
 }
 
+export interface SubmitBudgetForApprovalData {
+    ProjectId: number | 0,
+    InventoryFlatFloorBasementPodiumWingId: number | 0
+}
+
 export type BudgetListResponse = ApiResponse<BudgetData[]>;
 export type BudgetSaveResponse = ApiResponse<BudgetData[]>;
+export type SubmitBudgetForApprovalSaveResponse = ApiResponse<SubmitBudgetForApprovalData[]>;

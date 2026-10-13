@@ -245,6 +245,8 @@ import { TenantBookingListStateProvider } from '@/features/tenantBooking/context
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
 import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking';
 import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
+import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/BaselineCostPlanDocument';
+import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 import Event from '@/features/event/pages/Event';
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 
@@ -413,7 +415,7 @@ function App() {
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
 
-            <Route path="inventory" element={ <BookingListStateProvider> <TenantBookingListStateProvider>   <Inventory /> </TenantBookingListStateProvider> </BookingListStateProvider> } />
+            <Route path="inventory" element={<BookingListStateProvider> <TenantBookingListStateProvider>   <Inventory /> </TenantBookingListStateProvider> </BookingListStateProvider>} />
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
@@ -509,7 +511,7 @@ function App() {
             <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><TenantBookingListStateProvider><AddUpdateTenant /></TenantBookingListStateProvider></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantBookingListStateProvider><TenantDocument /></TenantBookingListStateProvider></TenantListStateProvider>} />
 
-          
+
 
             <Route path="tenantBooking" element={<TenantBookingListStateProvider><TenantBooking /></TenantBookingListStateProvider>} />
             <Route path="tenantBooking/view" element={<TenantBookingListStateProvider><ViewTenantBooking /></TenantBookingListStateProvider>} />
@@ -559,6 +561,8 @@ function App() {
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
+            <Route path="baselineCostPlan" element={<BaselineCostPlanDocument />} />
+            <Route path="constructionArea" element={<ConstructionAreaDetails />} />
 
             {/* FINANCE */}
             <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />

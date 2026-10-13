@@ -16,7 +16,7 @@ import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { handleExportFile } from '@/core/utils/exportFile';
-import {  type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import { FileText } from 'lucide-react';
 import type { FilterWithPaginationTenantRequest, TenantData } from '@/features/tenant/models/TenantModel';
@@ -113,7 +113,7 @@ export const ViewTenantBooking: React.FC = () => {
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
                     IsCheckPermission: sourcePage === 'inventory' ? false : true,
-                    BookingSearchKey:"TENANT BOOKING",
+                    BookingSearchKey: "TENANT BOOKING",
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
@@ -155,7 +155,7 @@ export const ViewTenantBooking: React.FC = () => {
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
                     ExportType: exportType,
-                    BookingSearchKey:"TENANT BOOKING",
+                    BookingSearchKey: "TENANT BOOKING",
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
@@ -220,7 +220,7 @@ export const ViewTenantBooking: React.FC = () => {
         const boldIfTotal = (row: any) => row.isTotal ? "font-bold text-gray-500" : "";
 
         return [
-            
+
             {
                 key: "Date",
                 label: "Date / Stage (Milestone)",
@@ -443,7 +443,7 @@ export const ViewTenantBooking: React.FC = () => {
                         navigate('/parking');
                     } else if (sourcePage === 'tenant') {
                         navigate('/tenant');
-                    } 
+                    }
                     else {
                         navigate('/tenantBooking');
                     }
@@ -501,24 +501,33 @@ export const ViewTenantBooking: React.FC = () => {
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                             <FieldItem label="Tenant Code" value={tenantList?.SystemGeneratedCode} />
                                                             <FieldItem label="Unit / Annexure / Survey Number" value={tenantList?.UnitAnnexureSurveyNumber} />
+                                                            <FieldItem label="Building Name" value={tenantList?.BuildingName} />
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
                                                             <FieldItem label="Unit Type" value={tenantList?.UnitType} />
+                                                            <FieldItem label="Unit Facing" value={tenantList?.UnitFacing} />
+                                                            {tenantList?.UnitType?.toUpperCase() !== "GYM"
+                                                                ?
+                                                                <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
+                                                                : ""
+                                                            }
                                                         </div>
                                                     </div>
 
                                                     <div className="lg:col-span-3 pt-3">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
                                                             {tenantList?.UnitType?.toUpperCase() !== "GYM"
                                                                 ?
                                                                 <FieldItem label="Unit Configuration" value={tenantList?.UnitConfiguration} />
                                                                 : <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
                                                             }
 
-                                                            {tenantList?.UnitType?.toUpperCase() !== "GYM"
-                                                                ?
-                                                                <FieldItem label="Unit Carpet Area (SqFt)" value={tenantList?.UnitCarpetAreaSqFt} />
-                                                                : ""
-                                                            }
-                                                            <FieldItem label="Unit Facing" value={tenantList?.UnitFacing} />
+
 
                                                         </div>
                                                     </div>
@@ -624,17 +633,26 @@ export const ViewTenantBooking: React.FC = () => {
                                         <div className="divide-y divide-[#135bec2e]">
 
                                             <div className="py-1">
-                                                <FieldItem label="Booking From" value={bookingData.CarpetAreaPurchasedSqFt} isRow />
+                                                <FieldItem
+                                                    label="Booking Registered"
+                                                    value={
+                                                        <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">
+                                                            {bookingData.CarpetAreaPurchasedSqFt}
+                                                        </span>
+                                                    }
+                                                    isRow
+                                                />
+
                                             </div>
 
                                             <div className="py-4">
-                                                {bookingData.CarpetAreaPurchasedSqFt==="MOFA" ? (
+                                                {bookingData.CarpetAreaPurchasedSqFt === "MOFA" ? (
                                                     <FieldItem label="Carpet Area Purchased" value={`${tenantList?.MOFACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
                                                 ) : (
                                                     <FieldItem label="Carpet Area Purchased" value={`${tenantList?.RERACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
                                                 )}
                                             </div>
-                                                
+
 
                                             <div className="py-4">
                                                 <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
@@ -842,7 +860,7 @@ export const ViewTenantBooking: React.FC = () => {
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
                                         <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
                                         <FieldItem label="Final Registration Completed" value={getSafeString(bookingData.IsFinalRegistrationCompleted === true ? 'Yes' : 'No')} urls={bookingData.FinalRegistrationURL} isIcon />
-                                        
+
 
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
@@ -1048,36 +1066,36 @@ export const ViewTenantBooking: React.FC = () => {
                                 <div className="p-4 bg-white">
 
                                     <div className="space-y-5">
-                                    {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
-                                        bookingData.BookingApplicantData.map((applicant, i) => (
-                                            <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
-                                                    <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
-                                                    <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
-                                                    <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                                    <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                                    <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
-                                                    <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                                    <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
-                                                    <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
-                                                    <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
-                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
-                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
-                                                    <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
-                                                    <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
-                                                    <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                                    <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
+                                        {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
+                                            bookingData.BookingApplicantData.map((applicant, i) => (
+                                                <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                        <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                                        <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                                        <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
+                                                        <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
+                                                        <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                                        <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                                        <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
+                                                        <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                                        <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                                        <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                        <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
+                                                        <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
+                                                        <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                                        <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                        <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
+                                                        <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                        <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
+                                                    </div>
                                                 </div>
+                                            ))
+                                        ) : (
+                                            <div className="py-6 text-center text-gray-500 text-sm">
+                                                <NoDataView message="No Applicant Data Found" />
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div className="py-6 text-center text-gray-500 text-sm">
-                                            <NoDataView message="No Applicant Data Found" />
-                                        </div>
-                                    )}
-                                </div>
+                                        )}
+                                    </div>
                                 </div>
                             </section>
                         </div>

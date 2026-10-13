@@ -796,7 +796,7 @@ export const Tenant: React.FC = () => {
                       }
                     );
                   }}
-                  className="text-blue-600 hover:underline font-medium cursor-pointer"
+                  className="text-blue-600 underline font-medium cursor-pointer"
                 >
                   Booking Done
                 </button>

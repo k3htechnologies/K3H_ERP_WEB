@@ -124,12 +124,28 @@ export default function ExportImport({
           <p className="font-medium text-gray-800">Notes:</p>
 
           <ul className="list-disc list-inside space-y-1">
-            <li>
-              If <span className="font-medium">Yes</span> is selected, existing records will be kept and new data will be merged.
-            </li>
-            <li>
-              If <span className="font-medium text-red-600">No</span> is selected, all existing records will be permanently deleted before uploading new data.
-            </li>
+            {!isTenantAllotemnt ? (
+              <>
+                <li>
+                  If <span className="font-medium">Yes</span> is selected, existing records will be kept and new data will be merged.
+                </li>
+                <li>
+                  If <span className="font-medium text-red-600">No</span> is selected, all existing records will be permanently deleted before uploading new data.
+                </li>
+              </>
+            ) :
+              <>
+                <li>
+                  Ensure that the Excel file includes the details of <span className="font-semibold text-blue-600">already allotted tenants</span> along with their respective <span className="font-semibold">New Unit No</span> before uploading.
+                </li>
+                <li>
+                  Once allotted, member data should not be re-uploaded via Excel.
+                </li>
+                <li>
+                  The <span className="font-semibold">New Unit No</span> must be provided in the Excel file.
+                </li>
+              </>
+            }
             <li>
               Only <span className="font-medium">.xlsx, .xls, or .csv</span> files are allowed.
             </li>

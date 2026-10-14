@@ -2,7 +2,7 @@ import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { UNIT_SQFT_LUMPSUM } from '@/core/constants/staticData';
+import { UNIT_SQFT_LUMPSUM ,APPLICABLE_FOR_OPTIONS} from '@/core/constants/staticData';
 import type { AddUpdateOtherChargesRequest } from '@/features/otherCharges/models/OtherChargesModel';
 import { allowPercentage, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 
@@ -16,6 +16,8 @@ interface OtherChargesFormModalProps {
   errors: { [k: string]: string };
   editingData: any;
   loading: boolean;
+  canActionSale: boolean;
+  canActionTenant: boolean;
 }
 
 export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
@@ -27,7 +29,9 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
   onFieldChange,
   errors,
   editingData,
-  loading
+  loading,
+  canActionSale,
+  canActionTenant,
 }) => {
   return (
     <Modal
@@ -42,6 +46,18 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
     >
       <div className="space-y-10 p-6 bg-blue-100">
         <div className="space-y-4">
+           <div>
+            <SinglePageSelection
+              label="Applicable For"
+              placeholder="Select Applicable For"
+              value={formData.ApplicableFor ?? ''}
+              onChange={value => onFieldChange('ApplicableFor', value)}
+              options={APPLICABLE_FOR_OPTIONS .filter(opt => { const applicableFor = opt.id.trim().toUpperCase(); if (applicableFor === 'SALE') return canActionSale; if (applicableFor === 'TENANT') return canActionTenant; return false; }) .map(opt => ({ label: opt.name, value: opt.id }))}
+              
+              error={errors.ApplicableFor}
+              required
+            />
+          </div>
           <div>
             <Input
               label="Charges"
@@ -99,6 +115,7 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
               placeholder="Enter GST (%)"
               rightIcon="%"
               required
+               error={errors.GSTPercentage}
             />
 
           </div>

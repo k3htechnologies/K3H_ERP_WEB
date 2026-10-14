@@ -487,6 +487,7 @@ export const ConstructionAreaComparative: React.FC = () => {
                         <Input
                             label="Area By PL Line (SqMt)"
                             type="text"
+                            disabled={editingConstructionAreaComparative?.Type === "Project Area"}
                             value={formData.AreaByPLLineSqMt || ''}
                             onChange={(e) => handleFieldChange('AreaByPLLineSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                             placeholder="Enter Area By PL Line"

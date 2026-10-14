@@ -92,6 +92,7 @@ export class BudgetDatasourceImpl implements BudgetDatasource {
             const queryParams = new URLSearchParams({
                 ProjectId: (params.ProjectId ?? 0).toString(),
                 InventoryFlatFloorBasementPodiumWingId: (params.InventoryFlatFloorBasementPodiumWingId ?? 0).toString(),
+                IsDisplayProjectBudget: (params.IsDisplayProjectBudget ?? false).toString(),
             });
             if (params.SearchText) queryParams.append("SearchText", params.SearchText);
 

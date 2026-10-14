@@ -50,6 +50,7 @@ import { fetchTenantBySystemGeneratedCode } from "@/features/tenant/tenantDropDo
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { fetchBuildingDropdown } from "@/features/building/buildingDropdown";
 import Tabs from "@/ui/components/Tab/Tab";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const initialFormState = (): AddUpdateBookingRequest => ({
   BookingId: 0,
@@ -131,6 +132,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
     { id: "MOFA", label: "MOFA" },
   ];
   const [activeTab, setActiveTab] = useState(CarpetAreaPurchasedSqFtTabList[0].id);
+
+  // DELETE BOOKING OTHER CHARGES STATES
+  const [isConfirmationDialogBoxOpenForOtherCharges, setIsConfirmationDialogBoxOpenForOtherCharges] = useState(false);
+  const [deleteBookingOtherChargesData, setDeleteBookingOtherChargesData] = useState<{ row: AddUpdateBookingOtherChargesRequest; index: number; } | null>(null);
 
   const [selectedWing, setSelectedWing] = useState<string>("");
   const [selectedFloor, setSelectedFloor] = useState<string>("");
@@ -346,6 +351,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
     applicants.forEach((applicant: any, index: number) => {
 
       const applicantName = applicant?.ApplicantName || `Applicant ${index + 1}`;
+
+      if (!applicant?.ApplicantEmailId?.trim()) {
+        errors.push(`${applicantName}: E-Mail ID is required.`);
+      }
 
       if (!applicant?.PhotoURL?.trim()) {
         errors.push(`${applicantName}: Photo is required.`);
@@ -706,6 +715,11 @@ export const AddUpdateTenantBooking: React.FC = () => {
     [cumulativePercentages, canAction, paymentScheduleOptions],
   );
 
+  const handleConfirmationDialogBoxOpenForOtherCharges = (row: AddUpdateBookingOtherChargesRequest, index: number) => {
+    setDeleteBookingOtherChargesData({ row, index });
+    setIsConfirmationDialogBoxOpenForOtherCharges(true);
+  };
+
   const otherChargesColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -749,9 +763,50 @@ export const AddUpdateTenantBooking: React.FC = () => {
         align: "right",
         render: (value) => formatCurrency(value) || "0",
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row, index) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleConfirmationDialogBoxOpenForOtherCharges(row as AddUpdateBookingOtherChargesRequest, index);
+                }}
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'red' }}
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     [canAction],
   );
+
+  const handleDeleteOtherCharges = () => {
+    if (!deleteBookingOtherChargesData) return;
+
+    const { index } = deleteBookingOtherChargesData;
+
+    setOtherCharges(prev => prev.filter((_, i) => i !== index));
+
+    setIsConfirmationDialogBoxOpenForOtherCharges(false);
+    setDeleteBookingOtherChargesData(null);
+
+    addToast({ type: "success", title: "Other Charges deleted successfully" });
+  };
+
   const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
@@ -989,6 +1044,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
       value: params?.value || "",
       projectId: projectId || 0,
       displayParkingId: parkingId || "",
+      parkingStatus: "Member"
+
     });
   }, [projectId, parkingId]);
 
@@ -1014,6 +1071,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
           PageSize: 500,
           IsCheckPermission: false,
           ProjectId: Number(projectId),
+          ApplicableFor:"Tenant"
         };
 
         const response = await otherChargesService.apiCallPullOtherCharges(params);
@@ -1183,13 +1241,13 @@ export const AddUpdateTenantBooking: React.FC = () => {
           {tenantUniqueCode && tenantUniqueCode.trim() !== "" && (
             Number(tenantId) > 0 ? (
               <div className="pt-5">
-                
+
 
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
                   <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                     <h4 className="text-sm font-semibold text-[#13367A]">
-                      Exisiting Unit Details
+                      Existing Unit Details
                     </h4>
                   </div>
                   <div className="p-4 bg-white">
@@ -1453,7 +1511,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
             {parkingData && parkingData.length > 0 && (
 
 
-              <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
+              <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
                 <h4 className="text-lg font-semibold text-gray-900">
                   Parking Details
                 </h4>
@@ -1557,10 +1615,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
                     );
                   }
 
-                  if(agreementValue===0){
+                  if (agreementValue === 0) {
                     setPaymentSchedules([]);
                   }
-                 
+
 
                   if (Boolean(formData.IsApplicableOtherCharge)) {
 
@@ -1906,7 +1964,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
         isLoading={isLoading}
       />
 
-      {/* ADD PAYMENT SCHEDULE MODAL */}
+
       <Modal
         isOpen={isPaymentScheduleModalOpen}
         onClose={() => {
@@ -2096,6 +2154,16 @@ export const AddUpdateTenantBooking: React.FC = () => {
         </div>
       </Modal>
 
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenForOtherCharges}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenForOtherCharges(false);
+          setDeleteBookingOtherChargesData(null);
+        }}
+        onConfirm={handleDeleteOtherCharges}
+        loading={isLoading}
+        pageName="other charges"
+      />
 
     </div>
   );

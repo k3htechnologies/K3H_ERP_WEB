@@ -7,6 +7,7 @@ import { Button } from "@/ui/components/forms";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
 import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext";
 
 interface ParkingCardProps {
   parking: ParkingData;
@@ -19,6 +20,7 @@ interface ParkingCardProps {
 export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction, approvalStatus }: ParkingCardProps) => {
   const navigate = useNavigate();
   const { updateListState } = useBookingListState();
+  const { updateTenantListState } = useTenantBookingListState();
 
   const hexToRgba = (hex: string, alpha: number = 0.12) => {
     const cleanHex = hex.replace('#', '');
@@ -59,15 +61,35 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction, appr
     });
   };
 
+
   const handleOwnerNameClick = () => {
+
     if (parking.BookingId && parking.BookingId > 0) {
-      updateListState({
-        bookingId: parking.BookingId,
-        bookingName: parking.OwnerName || '',
-      });
-      navigate('/booking/view', {
-        state: { sourcePage: 'parking' }
-      });
+
+      const isTenantBooking = parking.ParkingStatus === "Member";
+
+      const isBookingIdZero = Number(parking.BookingId);
+
+      if (isTenantBooking) {
+        updateTenantListState({
+          bookingId: parking.BookingId,
+          bookingName: parking.OwnerName || '',
+        });
+      }
+      else {
+        updateListState({
+          bookingId: parking.BookingId,
+          bookingName: parking.OwnerName || '',
+        });
+      }
+
+      if (isBookingIdZero > 0) {
+
+        navigate(isTenantBooking ? '/tenantBooking/view' : '/booking/view', {
+          state: { sourcePage: 'parking' }
+        });
+      }
+
     }
   };
 

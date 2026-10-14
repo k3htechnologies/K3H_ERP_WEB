@@ -491,7 +491,7 @@ export const ViewTenantBooking: React.FC = () => {
 
                                             <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                                                 <h4 className="text-sm font-semibold text-[#13367A]">
-                                                    Exisiting Unit Details
+                                                    Existing Unit Details
                                                 </h4>
                                             </div>
                                             <div className="p-4 bg-white">
@@ -632,7 +632,7 @@ export const ViewTenantBooking: React.FC = () => {
 
                                         <div className="divide-y divide-[#135bec2e]">
 
-                                            <div className="py-1">
+                                            <div className="py-4">
                                                 <FieldItem
                                                     label="Booking Registered"
                                                     value={

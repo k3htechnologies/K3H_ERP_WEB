@@ -36,7 +36,7 @@ export const ConstructionArea: React.FC = () => {
         InventoryFlatId: 0,
         AreaByPLLineSqMt: 0,
         MultiplierForAreaPercentage: 0,
-        HeightMt: 0,
+        FloorToFloorHeightMt: 0,
         Remark: "",
     })
 
@@ -149,6 +149,7 @@ export const ConstructionArea: React.FC = () => {
     const handleEditConstructionAreaData = useCallback((row: ConstructionAreaData) => {
         setEditingConstructionArea({
             ...row,
+            FloorToFloorHeightMt: row.FloorToFloorHeightMt
         })
         setIsAddUpdateConstructionAreaModalOpen(true);
     }, [])
@@ -164,13 +165,14 @@ export const ConstructionArea: React.FC = () => {
                     InventoryFlatId: editingConstructionArea.InventoryFlatId ?? 0,
                     AreaByPLLineSqMt: editingConstructionArea.AreaByPLLineSqMt ?? 0,
                     MultiplierForAreaPercentage: editingConstructionArea.MultiplierForAreaPercentage ?? 0,
-                    HeightMt: editingConstructionArea.HeightMt ?? 0,
+                    FloorToFloorHeightMt: editingConstructionArea.FloorToFloorHeightMt ?? 0,
                     Remark: editingConstructionArea.Remark ?? "",
 
                 });
 
             } else {
                 setFormData(initialFormStateForConstructionAreaData());
+
             }
             setErrors({});
         }
@@ -184,7 +186,7 @@ export const ConstructionArea: React.FC = () => {
             InventoryFlatId: formData.InventoryFlatId ?? 0,
             AreaByPLLineSqMt: formData.AreaByPLLineSqMt ?? 0,
             MultiplierForAreaPercentage: formData.MultiplierForAreaPercentage ?? 0,
-            HeightMt: formData.HeightMt ?? 0,
+            FloorToFloorHeightMt: formData.FloorToFloorHeightMt ?? 0,
             Remark: formData.Remark ?? "",
         };
     };
@@ -248,11 +250,19 @@ export const ConstructionArea: React.FC = () => {
 
                         setConstructionAreaDataList(prevData =>
                             prevData.map(item =>
-                                item.InventoryFlatId === formData.InventoryFlatId
-                                    ? updatedRecord
+                                item.BuildingNumber === updatedRecord.BuildingNumber &&
+                                    item.Floor === updatedRecord.Floor &&
+                                    item.Wing === updatedRecord.Wing
+                                    ? {
+                                        ...item,
+                                        FloorToFloorHeightMt: updatedRecord.FloorToFloorHeightMt,
+                                        CumlativeHeightMt: updatedRecord.CumlativeHeightMt
+                                    }
                                     : item
                             )
-                        )
+                        );
+
+                        
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     }
                     setFormData(initialFormStateForConstructionAreaData())
@@ -423,8 +433,8 @@ export const ConstructionArea: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'HeightMt',
-            label: 'Height (Mt)',
+            key: 'FloorToFloorHeightMt',
+            label: 'FTF Height (Mt)',
             width: '15',
             sortable: false,
             align: 'left',
@@ -790,8 +800,8 @@ export const ConstructionArea: React.FC = () => {
                         <Input
                             label="Height (Mt)"
                             type="text"
-                            value={formData.HeightMt || ''}
-                            onChange={(e) => handleFieldChange('HeightMt', filterNumbersWithDecimal(e.target.value) || 0)}
+                            value={formData.FloorToFloorHeightMt || ''}
+                            onChange={(e) => handleFieldChange('FloorToFloorHeightMt', filterNumbersWithDecimal(e.target.value) || 0)}
                             placeholder="Enter Height"
                             rightIcon="Mt"
                         />

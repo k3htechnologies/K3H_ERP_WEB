@@ -125,7 +125,7 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
         >
             <div className="space-y-3">
                 <p className="text-sm text-gray-700">
-                    You access has been modified, please restart to use the application.
+                    You access has been modified, please click restart to use the application.
                 </p>
             </div>
         </Modal>

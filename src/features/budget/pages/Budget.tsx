@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import type { AddUpdateBudget, BudgetData, FilterWithPaginationBudgetRequest, SubmitBudgetForApprovalData } from "@/features/budget/models/BudgetModel";
+import type { AddUpdateBudget, BudgetData, FilterWithInventoryProjectBasementPodiumWingBudgetRequest, FilterWithPaginationBudgetRequest, InventoryProjectBasementPodiumWingBudgetData, SubmitBudgetForApprovalData } from "@/features/budget/models/BudgetModel";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { budgetService } from "@/features/budget/services/BudgetService";
@@ -43,6 +43,8 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchInventoryProjectBasementPodiumWingBudgetDropdown } from "../InventoryProjectBasementPodiumWingBudgetDropdown";
 import Checkbox from "@/ui/components/forms/Checkbox";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
@@ -95,7 +97,8 @@ export const Budget: React.FC = () => {
     const [selectedWingId, setSelectedWingId] = useState<number>(0);
     const [showApprovalStatus, setShowApprovalStatus] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-
+    const [inventoryProjectBasementPodiumWingBudgetData, setInventoryProjectBasementPodiumWingBudgetData] = useState<InventoryProjectBasementPodiumWingBudgetData[]>([]);
+    const [isWingBudgetModalOpen, setISWingBudgetIsModalOpen] = useState(false);
 
 
     useEffect(() => {
@@ -124,6 +127,12 @@ export const Budget: React.FC = () => {
             }),
         [projectId]
     );
+
+    const fetchWingCallback = useCallback((_pageNumber: number, params?: { value?: string }) =>
+        fetchInventoryProjectBasementPodiumWingBudgetDropdown({ projectId: Number(projectId), searchText: params?.value ?? "", isDisplayProjectBudget: false }),
+        [projectId]
+    );
+
     useLayoutEffect(() => {
 
         const savedBudgetId = sessionStorage.getItem(`budgetScrollId_${projectId}`);
@@ -200,6 +209,7 @@ export const Budget: React.FC = () => {
             'Loading Budget Data'
         );
     }, [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination, selectedWingId]);
+
 
     useEffect(() => {
         if (isAddUpdateModalOpen) {
@@ -876,7 +886,7 @@ export const Budget: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
-     const handleSubmitBudgetForApproval = async () => {
+    const handleSubmitBudgetForApproval = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -912,7 +922,7 @@ export const Budget: React.FC = () => {
             "Submitting Budget for Approval"
         );
     };
-    
+
     const handleApproveRejectBudget = (approvalType: "approve" | "reject" | "reopen") => {
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
@@ -978,6 +988,56 @@ export const Budget: React.FC = () => {
 
     const grandTotal = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
 
+
+    const loadInventoryProjectBasementPodiumWingBudgetData = useCallback(async () => {
+        runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithInventoryProjectBasementPodiumWingBudgetRequest = {
+                    ProjectId: Number(projectId),
+                    IsDisplayProjectBudget: true
+                }
+
+                const response = await budgetService.apiCallPullInventoryProjectBasementPodiumWingBudget(params);
+
+                if (E.isRight(response)) {
+
+                    setInventoryProjectBasementPodiumWingBudgetData(response.right.Data);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: 'error', title: error.message }),
+
+            undefined,
+            'Loading Inventory Project Basement Podium Wing Budget Data'
+        );
+    }, [projectId]);
+
+    const inventoryProjectBasementPodiumWingBudgetColumn = useMemo<TableColumn[]>(() => [
+        {
+            key: 'ProjectBuildingNumberWing',
+            label: 'Component',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-',
+
+        },
+        {
+            key: 'BudgetAmount',
+            label: 'Budget Amount (₹)',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => formatCurrency(value) || '0',
+
+        },
+    ], [projectId]);
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
@@ -991,6 +1051,14 @@ export const Budget: React.FC = () => {
                 isShowAddButton={canAction && Number(projectId) > 0 && !isBudgetApproved}
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
+
+                isShowAddExtraButton
+                addExtraTitle="Summary"
+                onAddExtra={() => {
+                    setISWingBudgetIsModalOpen(true)
+                    loadInventoryProjectBasementPodiumWingBudgetData()
+                }}
+
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
@@ -1014,7 +1082,7 @@ export const Budget: React.FC = () => {
                             key={projectId}
                             title="Select Wing"
                             size="lg"
-                            dataFetchCallBack={fetchInventoryProjectBasementPodiumWingBudgetDropdown}
+                            dataFetchCallBack={fetchWingCallback}
                             onSelected={(item) => {
                                 const selectedId = Number(item?.value ?? 0);
 
@@ -1028,7 +1096,7 @@ export const Budget: React.FC = () => {
 
                         />
                     </div>
-                    {!showApprovalStatus && budgetData.length > 0 ? (
+                    {!showApprovalStatus && budgetData.length > 0 && Number(grandTotal) > 0 ? (
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 checked={isModalOpen}
@@ -1043,25 +1111,23 @@ export const Budget: React.FC = () => {
                                 Send to Approval
                             </span>
                         </div>
-                    ) :
+                    ) : <div className="flex justify-end pb-2 gap-2 p-2">
 
-                        <div className="flex justify-end pb-2 gap-2 p-2">
-
-                            {budgetData.length > 0 && Number(projectId) > 0 && (
-                                <>
-                                    <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
-                                    <ApprovalActions
-                                        approvalStatus={approvalInfo?.ApprovalStatus}
-                                        showApproval={approvalInfo?.IsApproval}
-                                        onApprove={() => handleApproveRejectBudget("approve")}
-                                        onReject={() => handleApproveRejectBudget("reject")}
-                                        onReopen={() => handleApproveRejectBudget("reopen")}
-                                        onHistory={handleApprovalLog}
-                                        isIcons
-                                    />
-                                </>
-                            )}
-                        </div>
+                        {showApprovalStatus && budgetData.length > 0 && Number(projectId) > 0 && Number(grandTotal) > 0 && (
+                            <>
+                                <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
+                                <ApprovalActions
+                                    approvalStatus={approvalInfo?.ApprovalStatus}
+                                    showApproval={approvalInfo?.IsApproval}
+                                    onApprove={() => handleApproveRejectBudget("approve")}
+                                    onReject={() => handleApproveRejectBudget("reject")}
+                                    onReopen={() => handleApproveRejectBudget("reopen")}
+                                    onHistory={handleApprovalLog}
+                                    isIcons
+                                />
+                            </>
+                        )}
+                    </div>
                     }
                 </div>
             )}
@@ -1092,7 +1158,7 @@ export const Budget: React.FC = () => {
             <div className="w-full border border-gray-200 bg-gray-50 shadow-sm">
                 <div className="flex items-center justify-between px-2 py-2">
                     <span className="text-md font-medium text-gray-700">
-                        Grand Total Project Budget
+                        Grand Total Budget
                     </span>
 
                     <span className="text-md font-medium text-gray-600">
@@ -1588,7 +1654,7 @@ export const Budget: React.FC = () => {
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />
-              <Modal
+            <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 onCancel={() => setIsModalOpen(false)}
@@ -1596,13 +1662,133 @@ export const Budget: React.FC = () => {
                     e.preventDefault();
                     handleSubmitBudgetForApproval();
                 }}
-                title="Sent to Approval"
+                title="Submit Budget for Approval"
                 size="md"
-                saveText="Yes"
+                saveText="Yes, Submit for Approval"
             >
-                <div className="space-y-4 p-6 bg-blue-100">
-                    Do You Want To Give This Budget For Approval?
+                <div className="space-y-5 p-3">
+
+                    <div className="flex items-start gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                            <svg
+                                className="h-6 w-6 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 3c-2.755 0-5.294.932-7.273 2.5L3 7l1.5 1.5L3 10l1.5 1.5L3 13l1.5 1.5L3 16l1.727 1.5A11.955 11.955 0 0012 21c4.97 0 9-4.03 9-9 0-1.425-.331-2.773-.92-3.972z"
+                                />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3 className="text-base font-semibold text-blue-900">
+                                Ready to Submit Your Budget?
+                            </h3>
+
+                            <p className="mt-1 text-sm leading-6 text-blue-800">
+                                You are about to submit the project budget for approval.
+                                Please ensure that all budget details and amounts are correct
+                                before continuing.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <h4 className="mb-3 text-sm font-semibold text-gray-800">
+                            What happens next?
+                        </h4>
+
+                        <div className="space-y-4">
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                                    1
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        Submit Budget
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Your budget will be submitted to the approval workflow.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold text-amber-700">
+                                    2
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        Approval Review
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        The authorized approver can review the submitted budget.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700">
+                                    3
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        Final Decision
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        The budget status will reflect the approval decision.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div className="rounded-md bg-gray-50 px-4 py-3">
+                        <p className="text-sm text-gray-700">
+                            <span className="font-semibold">Please note:</span>{" "}
+                            Ensure the budget is accurate before submitting it for approval.
+                            Do you want to continue?
+                        </p>
+                    </div>
+
                 </div>
+            </Modal>
+
+            <Modal
+                isOpen={isWingBudgetModalOpen}
+                onClose={() => setISWingBudgetIsModalOpen(false)}
+                onCancel={() => setISWingBudgetIsModalOpen(false)}
+                title="Budget Summary"
+                size="half-screen"
+            >
+                <div className="space-y-4">
+                    {inventoryProjectBasementPodiumWingBudgetData.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center py-8">
+                            <NoDataView message="No Data Available" />
+                        </div>
+                    ) : (
+                        <div className="border border-[#33333321] rounded-xl overflow-y-auto thin-scroll">
+                            <DataTableWithHeaderRowDivider
+                                columns={inventoryProjectBasementPodiumWingBudgetColumn}
+                                data={inventoryProjectBasementPodiumWingBudgetData}
+                                emptyMessage="No Budget Amount Data Found"
+                                fixedHeight={true}
+                                className="flex-1"
+                            />
+                        </div>
+                    )}
+                </div>
+
             </Modal>
 
         </div>

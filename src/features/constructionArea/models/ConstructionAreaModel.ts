@@ -38,7 +38,7 @@ export interface ConstructionAreaData {
   MultiplierForAreaPercentage: number;
   TotalAreaSqMt: number;
   TotalAreaSqFt: number;
-  HeightMt: number;
+  FloorToFloorHeightMt: number;
   CumlativeHeightMt: number;
   Remark:string;
   CreatedById: number;
@@ -56,7 +56,7 @@ export interface AddUpdateConstructionAreaRequest {
   InventoryFlatId: number | 0;
   AreaByPLLineSqMt: number | 0;
   MultiplierForAreaPercentage: number | 0;
-  HeightMt: number | 0;
+  FloorToFloorHeightMt: number | 0;
   Remark:string | ""
 
 }

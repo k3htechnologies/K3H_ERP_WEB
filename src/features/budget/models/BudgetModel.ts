@@ -96,6 +96,7 @@ export interface FilterWithInventoryProjectBasementPodiumWingBudgetRequest {
     ProjectId?: number;
     InventoryFlatFloorBasementPodiumWingId?: number;
     SearchText?: string;
+    IsDisplayProjectBudget?:boolean
 }
 
 export interface InventoryProjectBasementPodiumWingBudgetData {

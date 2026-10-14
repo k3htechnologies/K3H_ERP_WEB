@@ -1137,8 +1137,8 @@ const BaselineCostPlanDocument: React.FC = () => {
               value={baselineCostPlanDocumentFiles}
               onChange={setBaselineCostPlanDocumentFiles}
               availableFilesURL={baselineCostPlanDocumentURL ?? ""}
-              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-              maxFiles={5}
+              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel",".dwg"]}
+                         
               error={errors.BaselineCostPlanDocumentURL}
               onRemoveExisting={(url) => {
                 setRemoveBaselineCostPlanDocumentUrls((prev) => [...prev, url]);

@@ -202,26 +202,20 @@ export const AddUpdateBooking: React.FC = () => {
   const location = useLocation();
   const { projectId } = useProject();
 
-  //#region BOOKING LIST STATE CONTEXT
   const { listState, updateListState } = useBookingListState();
   const { bookingId } = listState;
-  //#endregion
-
-  // Track source page for navigation after submit
+  
   const [sourcePage, setSourcePage] = useState<"inventory" | "parking" | "booking" | null>(null);
 
   const isAddMode = bookingId === 0;
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions("/booking");
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
-
-  //#region ENQUIRY DETAILS
+  
   const [enquiryList, setEnquiryMasterList] = useState<EnquiryData | null>(null)
   const [enquiryUniqueCode, setEnquiryUniqueCode] = useState<string>();
   const [enquiryId, setEnquiryId] = useState<number | null>(null);
 
-  //#endregion
 
   //#region BOOKING APPLICANT
   const [formDataForApplicant, setFormDataForApplicant] = useState<AddUpdateBookingApplicantRequest>(() => initialFormStateApplicantDetails());
@@ -293,14 +287,15 @@ export const AddUpdateBooking: React.FC = () => {
   const [deleteBookingApplicantData, setDeleteBookingApplicantData] = useState<{ row: BookingApplicantWithFiles; index: number } | null>(null);
   //#endregion
 
-  //#region INVENTORY SELECTION STATE
+  // DELETE BOOKING OTHER CHARGES STATES
+  const [isConfirmationDialogBoxOpenForOtherCharges, setIsConfirmationDialogBoxOpenForOtherCharges] = useState(false);
+  const [deleteBookingOtherChargesData, setDeleteBookingOtherChargesData] = useState<{ row: AddUpdateBookingOtherChargesRequest; index: number; } | null>(null);
+
   const [selectedWing, setSelectedWing] = useState<string>("");
   const [selectedFloor, setSelectedFloor] = useState<string>("");
   const [selectedFlatData, setSelectedFlatData] = useState<InventoryFlatData | null>(null);
   const [parkingData, setParkingData] = useState<ParkingData[]>([]);
   const [selectedParkingValues, setSelectedParkingValues] = useState<string | number | null>(null);
-
-  //COMPLETE VERIFICATION
 
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -322,7 +317,6 @@ export const AddUpdateBooking: React.FC = () => {
     wing?: string;
   }>({});
 
-  //#region PAYMENT SCHEDULE STATE
   const [paymentSchedules, setPaymentSchedules] = useState<AddUpdateBookingPaymentScheduleRequest[]>([]);
   const [paymentScheduleOptions, setPaymentScheduleOptions] = useState<{ label: string; value: string }[]>([]);
 
@@ -333,14 +327,10 @@ export const AddUpdateBooking: React.FC = () => {
   const [paymentScheduleStageOther, setPaymentScheduleStageOther] = useState<string>("");
   const [paymentSchedulePercentage, setPaymentSchedulePercentage] = useState<string>("");
   const [editingPaymentScheduleIndex, setEditingPaymentScheduleIndex] = useState<number | null>(null);
-  //#endregion
-
-  //#region OTHER CHARGES STATE
+  
   const [otherCharges, setOtherCharges] = useState<AddUpdateBookingOtherChargesRequest[]>([]);
   const [otherChargesData, setOtherChargesData] = useState<OtherChargesData[]>([]);
-  //#endregion
-
-  //#region PAYMENT SCHEDULE CALCULATIONS
+  
   const totalPercentage = useMemo(() => {
     return paymentSchedules.reduce((sum, schedule) => {
       return sum + (schedule.PaymentSchedulePercentage || 0);
@@ -355,9 +345,6 @@ export const AddUpdateBooking: React.FC = () => {
     });
   }, [paymentSchedules]);
 
-  //#endregion
-
-  //#region INITIALIZATION
   useEffect(() => {
     if (!projectId) return;
 
@@ -504,7 +491,7 @@ export const AddUpdateBooking: React.FC = () => {
           PageSize: 1,
           BookingId: bookingId,
           ProjectId: Number(projectId),
-          BookingSearchKey:"SALE BOOKING",
+          BookingSearchKey: "SALE BOOKING",
         };
 
         const response = await bookingService.apiCallPullBooking(params);
@@ -580,7 +567,7 @@ export const AddUpdateBooking: React.FC = () => {
                 FlatConfiguration: booking.FlatConfiguration || "",
                 FlatStatus: "Booked",
                 FlatFacing: "",
-                Note:"",
+                Note: "",
                 InventoryFlatSpecificationData: [],
                 OwnerName: "",
                 CreatedById: 0,
@@ -1019,9 +1006,7 @@ export const AddUpdateBooking: React.FC = () => {
     ],
     [handleEditApplicant, handleConfirmationDialogBoxOpen, applicantList, canAction],
   );
-  //#endregion
 
-  //#region PAYMENT SCHEDULE TABLE COLUMN
   const paymentScheduleColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -1153,9 +1138,13 @@ export const AddUpdateBooking: React.FC = () => {
     ],
     [cumulativePercentages, canAction, paymentScheduleOptions],
   );
-  //#endregion
 
-  //#region OTHER CHARGES TABLE COLUMN
+
+  const handleConfirmationDialogBoxOpenForOtherCharges = (row: AddUpdateBookingOtherChargesRequest, index: number) => {
+    setDeleteBookingOtherChargesData({ row, index });
+    setIsConfirmationDialogBoxOpenForOtherCharges(true);
+  };
+
   const otherChargesColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -1199,21 +1188,57 @@ export const AddUpdateBooking: React.FC = () => {
         align: "right",
         render: (value) => formatCurrency(value) || "0",
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row, index) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleConfirmationDialogBoxOpenForOtherCharges(row as AddUpdateBookingOtherChargesRequest, index);
+                }}
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'red' }}
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     [canAction],
   );
-  //#endregion
 
-  //#region HANDLE CHANGE EVENT FOR APPLICANT
+  const handleDeleteOtherCharges = () => {
+    if (!deleteBookingOtherChargesData) return;
+
+    const { index } = deleteBookingOtherChargesData;
+
+    setOtherCharges(prev => prev.filter((_, i) => i !== index));
+
+    setIsConfirmationDialogBoxOpenForOtherCharges(false);
+    setDeleteBookingOtherChargesData(null);
+
+    addToast({ type: "success", title: "Other Charges deleted successfully" });
+  };
+
   const handleFieldChangeBookingApplicant = (field: keyof AddUpdateBookingApplicantRequest, value: any) => {
     setFormDataForApplicant((prev) => ({ ...prev, [field]: value }));
     if (errorsBookingApplicant[field]) {
       setErrorsBookingApplicant((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region VALIDATION
   const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
@@ -1226,13 +1251,13 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!formData.PermanentAddress) {
       newErrors.PermanentAddress = "Permanent Address is required";
-    }else if (formData.PermanentAddress.trim().length < 25) {
+    } else if (formData.PermanentAddress.trim().length < 25) {
       newErrors.PermanentAddress = "Permanent Address must be at least 25 characters";
     }
 
     if (!formData.CommunicationAddress) {
       newErrors.CommunicationAddress = "Communication Address is required";
-    }else if (formData.CommunicationAddress.trim().length < 25) {
+    } else if (formData.CommunicationAddress.trim().length < 25) {
       newErrors.CommunicationAddress = "Communication Address must be at least 25 characters";
     }
 
@@ -1266,13 +1291,13 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!formData.FlatAlterationRemark?.trim()) {
       newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
-    }else if (formData.FlatAlterationRemark.trim().length < 25) {
+    } else if (formData.FlatAlterationRemark.trim().length < 25) {
       newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark must be at least 25 characters";
     }
 
     if (!formData.PaymentRemark?.trim()) {
       newErrors.PaymentRemark = "Payment Related Remark is required";
-    }else if (formData.PaymentRemark.trim().length < 25) {
+    } else if (formData.PaymentRemark.trim().length < 25) {
       newErrors.PaymentRemark = "Payment Related Remark must be at least 25 characters";
     }
 
@@ -1290,7 +1315,7 @@ export const AddUpdateBooking: React.FC = () => {
       return { isValid: false, errors: newErrors };
     }
 
-    
+
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -1882,15 +1907,14 @@ export const AddUpdateBooking: React.FC = () => {
       isAddMode ? "Adding Booking" : "Updating Booking",
     );
   };
-  //#endregion
 
-  //#region FETCH PARKING DROPDOWN WITH PROJECT WISE
   const fetchParkingProjectWise = useCallback(async (pageNumber: number, params?: { value?: string }) => {
     return fetchParkingDropdown(pageNumber, {
       ...params,
       value: params?.value || "",
       projectId: projectId || 0,
       displayParkingId: parkingId || "",
+      parkingStatus: "Available"
     });
   }, [projectId, parkingId]);
 
@@ -1900,17 +1924,13 @@ export const AddUpdateBooking: React.FC = () => {
     autoFetchOptions: true,
   });
 
-  //#endregion
 
-  //#region FETCH TNC DROPDOWN WITH MODULE NAME
   const fetchTncByModuleName = (moduleName: string) => (page: number, params?: { value?: string }) =>
     fetchTncMasterDropdown(page, {
       value: params?.value || "",
       moduleName: moduleName,
     });
-  //#endregion
 
-  //#region FETCH OTHER CHARGES WHEN FIRST TIME BOOKING MEANS BOOKINGID===0
   const loadOtherCharges = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -1921,6 +1941,7 @@ export const AddUpdateBooking: React.FC = () => {
           PageSize: 500,
           IsCheckPermission: false,
           ProjectId: Number(projectId),
+          ApplicableFor:"Sale"
         };
 
         const response = await otherChargesService.apiCallPullOtherCharges(params);
@@ -1950,9 +1971,7 @@ export const AddUpdateBooking: React.FC = () => {
     );
   };
 
-  //#endregion
 
-  //#region FETCH PAYMENT SCHEDULE SCHEME DROPDOWN WITH PROJECT ID
   const fetchPaymentScheduleSchemeMaster = () => (page: number) =>
     fetchPaymentScheduleSchemeMasterDropDown(page, {
       projectId: Number(projectId),
@@ -1960,9 +1979,7 @@ export const AddUpdateBooking: React.FC = () => {
       inventoryFlatFloorBasementPodiumWingId: (location.state as any)?.flatData!.InventoryFlatFloorBasementPodiumWingId ?? selectedFlatData?.InventoryFlatFloorBasementPodiumWingId ?? 0,
     });
 
-  //#endregion
 
-  //#region FETCH PAYMENT SCHEDULE WHEN SELECTED PAYMENT SCHEDULE SCHEME
   const loadPaymentScheduleByPaymentScheduleSchemeId = async (schemeId: number) => {
     await runApiWithLoader(
       setIsLoading,
@@ -2005,9 +2022,7 @@ export const AddUpdateBooking: React.FC = () => {
     );
   };
 
-  //#endregion
 
-  //#region FETCH PAYMENT SCHEDULE STAGES
   const loadPaymentSchedule = async () => {
     const flatDataFromState = (location.state as any)?.flatData;
 
@@ -2023,7 +2038,7 @@ export const AddUpdateBooking: React.FC = () => {
 
     setPaymentScheduleOptions(response.itemList);
   };
-  //#endregion
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
@@ -3135,7 +3150,18 @@ export const AddUpdateBooking: React.FC = () => {
         pageName="applicant"
       />
 
-      {/* ADD PAYMENT SCHEDULE MODAL */}
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenForOtherCharges}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenForOtherCharges(false);
+          setDeleteBookingOtherChargesData(null);
+        }}
+        onConfirm={handleDeleteOtherCharges}
+        loading={isLoading}
+        pageName="other charges"
+      />
+
       <Modal
         isOpen={isPaymentScheduleModalOpen}
         onClose={() => {

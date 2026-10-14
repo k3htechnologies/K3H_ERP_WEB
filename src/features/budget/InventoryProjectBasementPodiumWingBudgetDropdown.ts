@@ -1,12 +1,14 @@
 import * as E from 'fp-ts/Either';
 import { budgetService } from "@/features/budget/services/BudgetService";
 
-export const fetchInventoryProjectBasementPodiumWingBudgetDropdown = async (projectId: number, params?: { value?: string }) => {
+export const fetchInventoryProjectBasementPodiumWingBudgetDropdown = async (params?: { projectId?: number; searchText?: string,isDisplayProjectBudget?:boolean }) => {
+
   try {
 
     const responseEither = await budgetService.apiCallPullInventoryProjectBasementPodiumWingBudget({
-      ProjectId: projectId,
-      SearchText: params?.value || '',
+      ProjectId: Number(params?.projectId),
+      SearchText: params?.searchText || '',
+      IsDisplayProjectBudget:params?.isDisplayProjectBudget || false
     });
 
     if (E.isLeft(responseEither)) {

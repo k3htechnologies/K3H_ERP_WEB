@@ -265,6 +265,7 @@ import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking'
 import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
 import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/BaselineCostPlanDocument';
 import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
+import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -315,6 +316,7 @@ function App() {
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard/view" element={<ViewDashboardApprovals />} />
             <Route path="erpRoadmap" element={<ErpRoadmap />} />
 
             {/* SETTING -> COMPANY SETUP */}
@@ -426,7 +428,9 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
-            <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+           
+            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider> } />
+
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}

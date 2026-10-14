@@ -499,7 +499,7 @@ export const MASTER_DATA = {
     "Supreme Court of India",
   ],
 
-  paymentMode: ["Cheque", 'Challan',"Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
+  paymentMode: ["Cheque", 'Challan', "Demand Draft", "IMPS", "NEFT", "Online Transfer", "RTGS", "UPI"],
 
   paymentType: ["Advance", "Late Fee", "Penalty", "Regular"],
 
@@ -713,7 +713,7 @@ export const MASTER_DATA = {
 
   termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
-   noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending"],
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending"],
 
   vendorType: ["Material", "Contractor", "Both"],
 
@@ -777,11 +777,13 @@ export const MASTER_DATA = {
     "JobSkills",
   ],
 
-   materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
+  materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
 
   materialRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
 
-   priorityOptions: ['Critical', 'Non - Critical']
+  priorityOptions: ['Critical', 'Non - Critical'],
+
+  applicableFor: ['Sale', 'Tenant']
 } as const;
 
 // ============================================================================
@@ -808,8 +810,8 @@ export const DAYS_OPTIONS = toOptions(MASTER_DATA.days);
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses);
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups);
 export const FIRMS_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType);
-export const OWNERSHIP_TYPE_OPTIONS= toOptions(MASTER_DATA.ownershipType);
-export const BUSINESS_TYPE_OPTIONS= toOptions(MASTER_DATA.businessType);
+export const OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.ownershipType);
+export const BUSINESS_TYPE_OPTIONS = toOptions(MASTER_DATA.businessType);
 export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType);
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus);
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory);
@@ -944,6 +946,7 @@ export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFi
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
+export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);
 
 
 // ============================================================================

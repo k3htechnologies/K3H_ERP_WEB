@@ -700,6 +700,12 @@ export const getPageInfo = (path: string) => {
         description: "Streamlined material requests for efficient project execution",
       };
 
+    //CONTRACT REQUISITION
+    case 'contractrequisition':
+      return {
+        title: "Contract Requisition",
+        description: "Manage and organize company departments with complete CRUD operations",
+      }
 
 
     default:

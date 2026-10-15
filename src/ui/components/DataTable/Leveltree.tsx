@@ -4,6 +4,7 @@ import { isDevelopment } from '@/core/config'
 import type { TableColumn } from '@/ui/components/DataTable/DataTable'
 import NoDataView from '../NoDataView/NoDataView'
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
+import { useHorizontalScroll } from '../DataTable/useHorizontalScroll'
 
 export interface LevelFieldPair {
   idKey: string
@@ -229,6 +230,35 @@ const getCheckState = (leafIds: RowId[], selected: Set<RowId>): CheckState => {
   return 'indeterminate'
 }
 
+const collectSelectedIdsWithAncestors = <T extends AnyRow>(
+  nodes: LevelNode<T>[],
+  selected: Set<RowId>
+): RowId[] => {
+  const ids = new Set<RowId>()
+
+  const traverse = (node: LevelNode<T>, ancestors: LevelNode<T>[]) => {
+    // If this node is selected, add itself + all its ancestors
+    if (selected.has(node.id)) {
+      ids.add(node.id)
+
+      for (const ancestor of ancestors) {
+        ids.add(ancestor.id)
+      }
+    }
+
+    // Traverse children and keep current node in the ancestor chain
+    for (const child of node.children) {
+      traverse(child, [...ancestors, node])
+    }
+  }
+
+  for (const node of nodes) {
+    traverse(node, [])
+  }
+
+  return Array.from(ids)
+}
+
 const setsAreEqual = <V,>(a: Set<V>, b: Set<V>): boolean => {
   if (a.size !== b.size) return false
   for (const v of a) {
@@ -303,7 +333,7 @@ const renderCellValue = (column: TableColumn, row: AnyRow, index: number): React
   return (
     <div
       className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`}
-      style={{ maxWidth: column.maxWidth || column.width || '200px' }}
+      style={{ maxWidth: column.maxWidth || column.width || '300px' }}
     >
       {content}
     </div>
@@ -499,11 +529,12 @@ interface LevelTreeProps<T extends AnyRow> {
   treeColumnKey?: string
   levelRowColors?: string[]
   selectable?: boolean
+  disabled?: boolean
   initialSelectedIds?: RowId[]
   onSelectionChange?: (selectedIds: RowId[]) => void
   onSave?: (selectedIds: RowId[]) => Promise<void>
   loading?: boolean
-  emptyMessage?: string,
+  emptyMessage?: string
   maxHeight?: string | number
 }
 
@@ -515,16 +546,18 @@ export const LevelTree = <T extends AnyRow>({
   treeColumnKey,
   levelRowColors = DEFAULT_LEVEL_ROW_COLORS,
   selectable = false,
+  disabled = false,
   initialSelectedIds,
   onSelectionChange,
   onSave,
   loading = false,
   emptyMessage = 'No data available',
   maxHeight = useViewportHeight(285, 350, 900),
-  
+
 }: LevelTreeProps<T>) => {
   const rows = response ?? []
   const isDevelopmentMode = isDevelopment()
+  const scrollRef = useHorizontalScroll()
 
   const { columns, actionColumn } = React.useMemo(() => {
     const deduped = dedupeColumns(columnsProp)
@@ -577,10 +610,6 @@ export const LevelTree = <T extends AnyRow>({
     setSavedJustNow(false)
   }, [response, seedSelection])
 
-  const droppedPreviousCount = selectable
-    ? (initialSelectedIds?.length ?? 0) - (initialSelectedIds ?? []).filter((id) => validIds.has(id)).length
-    : 0
-
   const onToggleCollapse = React.useCallback((code: string) => {
     setCollapsed((prev) => {
       const next = new Set(prev)
@@ -597,8 +626,11 @@ export const LevelTree = <T extends AnyRow>({
     [onSelectionChange]
   )
 
+  const selectionDisabled = saving || disabled
+
   const onToggleSelect = React.useCallback(
     (leafIds: RowId[], nextChecked: boolean) => {
+      if (disabled) return
       setSelected((prev) => {
         const next = new Set(prev)
         leafIds.forEach((id) => (nextChecked ? next.add(id) : next.delete(id)))
@@ -608,7 +640,7 @@ export const LevelTree = <T extends AnyRow>({
       setSaveError(null)
       setSavedJustNow(false)
     },
-    [emitSelectionChange]
+    [emitSelectionChange, disabled]
   )
 
   const masterState = selectable ? getCheckState(allLeafIds, selected) : 'unchecked'
@@ -626,7 +658,8 @@ export const LevelTree = <T extends AnyRow>({
     setSaving(true)
     setSaveError(null)
     try {
-      await onSave(Array.from(selected))
+      const idsToSave = collectSelectedIdsWithAncestors(tree, selected);
+      await onSave(idsToSave)
       setBaseline(new Set(selected))
       setSavedJustNow(true)
       setTimeout(() => setSavedJustNow(false), 3000)
@@ -637,30 +670,13 @@ export const LevelTree = <T extends AnyRow>({
     }
   }
 
-  if (loading) {
-    return (
-      <div className="animate-pulse space-y-2 p-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <div key={i} className="h-8 bg-gray-100 rounded" />
-        ))}
-      </div>
-    )
-  }
-
-  if (rows.length > 0 && !resolved) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-2">
-        <AlertTriangle size={28} />
-        <p className="text-sm text-gray-500">
-          Could not detect a hierarchy in this data. Pass <code>config.levels</code> to tell LevelTree which fields to use.
-        </p>
-      </div>
-    )
-  }
+  const showLoadingSkeleton = loading
+  const showHierarchyWarning = !loading && rows.length > 0 && !resolved
+  const showTableChrome = !showLoadingSkeleton && !showHierarchyWarning
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-gray-200">
-      {(title || selectable) && (
+      {showTableChrome && (title || selectable) && (
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200">
           <div>
             <h2 className="text-base font-semibold text-gray-900">{title || 'Items'}</h2>
@@ -673,20 +689,28 @@ export const LevelTree = <T extends AnyRow>({
         </div>
       )}
 
-      {selectable && droppedPreviousCount > 0 && (
-        <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700">
-          <AlertTriangle size={14} className="shrink-0" />
-          {droppedPreviousCount} previously selected item{droppedPreviousCount === 1 ? '' : 's'} no longer{' '}
-          {droppedPreviousCount === 1 ? 'exists' : 'exist'} in this list and {droppedPreviousCount === 1 ? 'was' : 'were'} dropped.
-        </div>
-      )}
-
-      <div className="overflow-auto flex-1 thin-scroll"
-      style={{maxHeight}}
+      <div
+        ref={scrollRef}
+        className="overflow-auto flex-1 thin-scroll"
+      	style={{maxHeight}}
         // style={{
         //   maxHeight: 'calc(10 * 2.5rem + 2.5rem)'
         // }}
       >
+        {showLoadingSkeleton ? (
+          <div className="animate-pulse space-y-2 p-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="h-8 bg-gray-100 rounded" />
+            ))}
+          </div>
+        ) : showHierarchyWarning ? (
+          <div className="flex flex-col items-center justify-center py-12 text-gray-400 gap-2">
+            <AlertTriangle size={28} />
+            <p className="text-sm text-gray-500">
+              Could not detect a hierarchy in this data. Pass <code>config.levels</code> to tell LevelTree which fields to use.
+            </p>
+          </div>
+        ) : (
         <table className="border-collapse text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
           <thead>
             <tr className="text-[14px] text-gray-300 tracking-wide">
@@ -698,7 +722,7 @@ export const LevelTree = <T extends AnyRow>({
                   <TriStateCheckbox
                     state={masterState}
                     onChange={onToggleSelectAll}
-                    disabled={saving}
+                    disabled={selectionDisabled}
                     label="Select all"
                   />
                 </th>
@@ -760,7 +784,7 @@ export const LevelTree = <T extends AnyRow>({
                   selectable={selectable}
                   selected={selected}
                   onToggleSelect={onToggleSelect}
-                  selectionDisabled={saving}
+                  selectionDisabled={selectionDisabled}
                   columns={columns}
                   actionColumn={actionColumn}
                   treeColumnKey={resolvedTreeColumnKey}
@@ -788,9 +812,10 @@ export const LevelTree = <T extends AnyRow>({
             )}
           </tbody>
         </table>
+        )}
       </div>
 
-      {showSaveBar && (
+      {showTableChrome && showSaveBar && (
         <div className="flex items-center justify-between gap-3 px-4 py-3 border-t border-gray-200">
           <div className="text-xs">
             {saveError ? (

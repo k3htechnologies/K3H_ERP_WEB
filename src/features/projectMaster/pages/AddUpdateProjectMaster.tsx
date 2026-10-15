@@ -22,6 +22,7 @@ import { IndianRupee, Phone } from "lucide-react";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
+import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -92,7 +93,8 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectSubScheme: '',
     GoogleLocation: '',
     IsFederation: false,
-    FederationAmount: 0
+    FederationAmount: 0,
+    IsLockAndKey: false
 });
 
 const AddUpdateProjectMaster: React.FC = () => {
@@ -295,6 +297,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             GoogleLocation: row.GoogleLocation ?? prev.GoogleLocation ?? '',
                             IsFederation: row.IsFederation ?? prev.IsFederation ?? false,
                             FederationAmount: Number(row.FederationAmount ?? prev.FederationAmount ?? 0),
+                            IsLockAndKey: row.IsLockAndKey ?? prev.IsLockAndKey
                         }));
                         setProjectPhotoFiles([]);
                         setProjectPhotoURL(row.ProjectPhotoURL)
@@ -524,6 +527,7 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('GoogleLocation', formData.GoogleLocation ?? '');
         fd.append('IsFederation', String(formData.IsFederation ?? false));
         fd.append('FederationAmount', String(formData.FederationAmount ?? 0));
+        fd.append('IsLockAndKey', String(formData.IsLockAndKey) ?? false);
 
         projectPhotoFiles.forEach(file => {
             if (file instanceof File) {
@@ -626,6 +630,16 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="Is This Project a Redevelopment Project?"
                                     checked={formData.IsRedevelopment === 1}
                                     onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
+                                />
+                            </div>
+                            <div className="space-y-4">
+                                <ToggleSwitch
+                                    label="Is Lock and Key"
+                                    name="IsRedevelopment"
+                                    value={formData.IsLockAndKey}
+                                    onChange={(_, value) =>
+                                        handleFieldChange('IsLockAndKey', value)
+                                    }
                                 />
                             </div>
                         </div>

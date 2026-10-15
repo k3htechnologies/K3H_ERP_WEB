@@ -1708,6 +1708,47 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  storeContractMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.Contract_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Contract Master Columns Details:", error);
+    }
+  },
+
+  getContractMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.Contract_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.Contract_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Contract Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeContractRequisitionTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CONTRACT_REQUISITION_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Contract Requisition Columns Details:", error);
+    }
+  },
+  
+  getContractRequisitionTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CONTRACT_REQUISITION_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.CONTRACT_REQUISITION_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Contract Requisition Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
 
   clearLocalStorageData: (): void => {
     try {

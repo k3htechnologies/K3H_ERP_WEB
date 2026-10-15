@@ -55,7 +55,7 @@ export interface ProjectMasterData {
     TenderAmountChequeNumber: string | '';
     TenderAmountChequeNumberURL: string | '';
     TenderAmountPayorderRemark: string | '';
-    
+
     TenderEMDAmount: number | 0;
     TenderSubmissionDate: string | '';
     TenderEMDPaymentMode: string | '';
@@ -87,7 +87,7 @@ export interface ProjectMasterData {
     ProjectEstimateCost: number | 0;
     ProjectAreaInSqft: string | '';
     ProjectAreaInSqmt: string | '';
-    OnGoingBudgetCost:number | 0;
+    OnGoingBudgetCost: number | 0;
 
     SurveyDate: string | null;
     ExpectedStartDate: string | null;
@@ -113,8 +113,8 @@ export interface ProjectMasterData {
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
 
-    IsFederation:boolean | false;
-    FederationAmount:number | 0;
+    IsFederation: boolean | false;
+    FederationAmount: number | 0;
 
     // Notification
     NotificationCount: number | 0;
@@ -133,6 +133,7 @@ export interface ProjectMasterData {
     ModifiedDate: string | null
     LastModifiedBy: string | ''
     LastModifiedDate: string | null
+    IsLockAndKey: boolean;
 }
 
 export interface ProjectWithBankDetails {
@@ -187,7 +188,7 @@ export interface AddUpdateProjectMasterRequest {
     TenderAmountChequeNumberURL: (File | string)[] | null;
     RemoveTenderAmountChequeNumberURL: string | '';
     TenderAmountPayorderRemark: string | '';
-    
+
     TenderEMDAmount: number | 0;
     TenderSubmissionDate: string | null;
     TenderEMDPaymentMode: string | '';
@@ -234,8 +235,9 @@ export interface AddUpdateProjectMasterRequest {
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
 
-    IsFederation:boolean | false;
-    FederationAmount:number | 0;
+    IsFederation: boolean | false;
+    FederationAmount: number | 0;
+    IsLockAndKey: boolean;
 }
 
 export interface AddUpdateProjectMasterWithEmployeeRequest {

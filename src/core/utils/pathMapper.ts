@@ -42,6 +42,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/materialmaster': '/materialMaster',
         '/submaterialmaster': '/subMaterialMaster',
         '/uommaster': '/uomMaster',
+        '/contractmaster': '/contractMaster',
         '/category': '/category',
         '/document': '/document',
         '/reracategory': '/reraCategory',
@@ -149,11 +150,11 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         // PURCHASE MATERIAL REQUISITION
         '/materialrequisition': '/materialRequisition',
-        '/materialrequisitionreports':'/materialRequisitionReports',
-        '/purchasemasterreport':'/purchaseMasterReport',
+        '/materialrequisitionreports': '/materialRequisitionReports',
+        '/purchasemasterreport': '/purchaseMasterReport',
 
         //STORE STOCK MANAGEMENT
-        '/stock':'/stock',
+        '/stock': '/stock',
 
         //TEAM WORK SPACE
         '/eventdashboard': '/teamWorkspaceDashboard',
@@ -161,6 +162,9 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/conference': '/conference',
         '/meeting': '/meeting',
         '/task': '/task',
+
+        //CONTRACT REQUISITION
+        '/contractRequisition': '/contractRequisition',
     }
 
 

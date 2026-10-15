@@ -72,7 +72,8 @@ export interface ProjectData {
   ModifiedDate: string
   EmployeeData: any[]
   CompanyData: any[]
-  ProjectWithBankDetailsData: any[]
+  ProjectWithBankDetailsData: any[],
+  IsLockAndKey: boolean
 }
 
 export type AuthenticationResponse = ApiResponse<EmployeeData[]>;

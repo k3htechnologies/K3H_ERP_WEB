@@ -103,6 +103,7 @@ export const TncMaster: React.FC = () => {
   //#regionTAB ACTIVITY
   const tncTabList = [
     { id: "Material Requisition", label: "Material Requisition" },
+    { id: "Contract Requisition", label: "Contract Requisition" },
     { id: "Booking", label: "Booking" },
   ];
 

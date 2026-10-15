@@ -65,7 +65,7 @@ export const LOCAL_STORAGE_KEYS = {
     MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
     SUB_MATERIAL_MASTER_SELECTED_COLUMNS: 'subMaterialMaster.selectedColumns',
     UOM_MASTER_SELECTED_COLUMNS: 'uomMaster.selectedColumns',
-
+    Contract_MASTER_SELECTED_COLUMNS: 'contractMaster.selectedColumns',
 
     // CHANNEL PARTNER
     CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
@@ -127,7 +127,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     //PURCHASE  MATERIAL REQUISITION
     MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
-    
+
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
 
@@ -135,7 +135,8 @@ export const LOCAL_STORAGE_KEYS = {
     TASK_SELECTED_COLUMNS: 'task.selectedColumns',
     AGENDA_TASK_SELECTED_COLUMNS: 'agendaTask.selectedColumns',
 
-
+    //CONTRACT
+    CONTRACT_REQUISITION_SELECTED_COLUMNS: 'contractRequisition.selectedColumns',
 
 
 } as const
@@ -175,6 +176,6 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TASK: 'task.listState',
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
-
+    CONTRACT_REQUISITION: 'contractRequisition.listState'
 
 } as const

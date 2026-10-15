@@ -258,6 +258,14 @@ import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask
 import Meeting from '@/features/meeting/pages/Meeting';
 import AddUpdateMeeting from '@/features/meeting/pages/AddUpdateMeeting';
 import ViewMeeting from '@/features/meeting/pages/ViewMeeting';
+import { ContractRequisition } from '@/features/contractRequisition/pages/ContractRequisition';
+import { ContractRequisitionListStateProvider } from '@/features/contractRequisition/context/ContractRequisitionListStateContext';
+import { AddUpdateContractRequisition } from '@/features/contractRequisition/pages/AddUpdateContractRequisition';
+import { ViewContractRequisition } from '@/features/contractRequisition/pages/ViewContractRequisition';
+import { ContractMaster } from '@/features/contractMaster/pages/ContractMaster';
+import AddUpdateContractInvoice from '@/features/contractRequisition/components/invoice/AddUpdateContractInvoice';
+import AddUpdateContractInvoicePayment from '@/features/contractRequisition/components/invoice/AddUpdateContractInvoicePayment';
+import ViewContractInvoicePayment from '@/features/contractRequisition/components/invoice/ViewContractInvoicePayment';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -338,6 +346,7 @@ function App() {
             <Route path="materialMaster" element={<MaterialMaster />} />
             <Route path="subMaterialMaster" element={<SubMaterialMaster />} />
             <Route path="uomMaster" element={<UomMaster />} />
+            <Route path="contractMaster" element={<ContractMaster />} />
 
             {/* SETTING -> COMPANY SETUP -> PROJECT */}
             <Route path="projectMaster" element={<ProjectMasterListStateProvider><ProjectMaster /></ProjectMasterListStateProvider>} />
@@ -629,6 +638,13 @@ function App() {
 
             <Route path="purchaseMasterReport" element={<PurchaseMasterReport />} />
 
+            {/*Contract Requisition*/}
+            <Route path="contractRequisition" element={<ContractRequisitionListStateProvider><ContractRequisition /></ContractRequisitionListStateProvider>} />
+            <Route path="contractRequisition/add/:ContractRequisitionId?" element={<AddUpdateContractRequisition />} />
+            <Route path="contractRequisition/view" element={<ContractRequisitionListStateProvider><ViewContractRequisition /></ContractRequisitionListStateProvider>} />
+            <Route path="contractInvoice/add/:ContractInvoiceId?" element={<ContractRequisitionListStateProvider><AddUpdateContractInvoice /></ContractRequisitionListStateProvider>} />
+            <Route path="contractInvoicePayment/add" element={<ContractRequisitionListStateProvider><AddUpdateContractInvoicePayment /></ContractRequisitionListStateProvider>} />
+            <Route path="contractInvoicePayment/invoicePayment" element={<ContractRequisitionListStateProvider><ViewContractInvoicePayment /></ContractRequisitionListStateProvider>} />
 
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />

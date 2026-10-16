@@ -326,7 +326,7 @@ export const getPageInfo = (path: string) => {
     //REDEVELOPMENT
     case "redevelopmentDashboard":
       return {
-        title: "Redevelopment Dashboard",
+        title: "Business Development Dashboard",
         description: "Structured redevelopment workflows for efficient execution",
       };
     case "building":

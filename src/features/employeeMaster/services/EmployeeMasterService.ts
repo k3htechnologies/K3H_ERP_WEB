@@ -21,7 +21,6 @@ const employeeMasterDatasource = new EmployeeMasterDatasourceImpl();
 export const employeeMasterService = {
 
     apiCallPullLocationHierarchy: async (): Promise<E.Either<Failure, LocationResponse>> => {
-        debugger
         try {
             const response = await employeeMasterDatasource.pullLocationHierarchy();
             return E.right(response);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import type { AddUpdateBudget, BudgetData, FilterWithPaginationBudgetRequest, SubmitBudgetForApprovalData } from "@/features/budget/models/BudgetModel";
+import type { AddUpdateBudget, BudgetData, FilterWithInventoryProjectBasementPodiumWingBudgetRequest, FilterWithPaginationBudgetRequest, InventoryProjectBasementPodiumWingBudgetData, SubmitBudgetForApprovalData } from "@/features/budget/models/BudgetModel";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { budgetService } from "@/features/budget/services/BudgetService";
@@ -41,13 +41,15 @@ import { fetchPaginatedFlatsDropdown } from "@/features/inventory/PaginatedFlats
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { fetchWingDropdown } from "@/features/inventory/InventoryDropdown";
+import { fetchInventoryProjectBasementPodiumWingBudgetDropdown } from "../InventoryProjectBasementPodiumWingBudgetDropdown";
 import Checkbox from "@/ui/components/forms/Checkbox";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
-    BudgetId: 0,
     InventoryFlatFloorBasementPodiumWingId: 0,
+    BudgetId: 0,
     UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     LevelId1: 0,
     LevelId2: 0,
@@ -92,14 +94,15 @@ export const Budget: React.FC = () => {
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject" | "reopen">("approve");
-
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [showApprovalStatus, setShowApprovalStatus] = useState(false);
     const [selectedWingId, setSelectedWingId] = useState<number>(0);
+    const [showApprovalStatus, setShowApprovalStatus] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [inventoryProjectBasementPodiumWingBudgetData, setInventoryProjectBasementPodiumWingBudgetData] = useState<InventoryProjectBasementPodiumWingBudgetData[]>([]);
+    const [isWingBudgetModalOpen, setISWingBudgetIsModalOpen] = useState(false);
 
     useEffect(() => {
         if (!projectId) return
-
+        setSelectedWingId(0);
         setPagination({ currentPage: 1 });
         loadBudgetData(1, filters, sortInfo, searchTerm)
     }, [projectId]);
@@ -123,7 +126,6 @@ export const Budget: React.FC = () => {
             }),
         [projectId]
     );
-
     useLayoutEffect(() => {
 
         const savedBudgetId = sessionStorage.getItem(`budgetScrollId_${projectId}`);
@@ -158,7 +160,7 @@ export const Budget: React.FC = () => {
         };
     }, [budgetData, projectId]);
 
-    const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string, wingId: number = selectedWingId) => {
+    const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string, wingId?: number) => {
         runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -167,8 +169,8 @@ export const Budget: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
+                    InventoryFlatFloorBasementPodiumWingId: (wingId ?? selectedWingId) || undefined,
                     BudgetId: filterParams.BudgetId ? Number(filterParams.BudgetId) : undefined,
-                    InventoryFlatFloorBasementPodiumWingId: wingId > 0 ? wingId : undefined,
                     CategoryName: searchText ?? filterParams.CategoryName ?? undefined,
                     LevelType: filterParams.LevelType ?? undefined,
                     Uom: filterParams.Uom ?? undefined,
@@ -181,6 +183,9 @@ export const Budget: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setBudgetData(response.right.Data);
+
+                    setShowApprovalStatus(response.right.Data[0]?.IsSubmitBudgetForApproval ?? false);
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -197,9 +202,38 @@ export const Budget: React.FC = () => {
             undefined,
             'Loading Budget Data'
         );
-    }, [projectId, selectedWingId, pagination.currentPage, pagination.pageSize, addToast, setPagination]);
+    }, [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination, selectedWingId]);
+
+    const loadInventoryProjectBasementPodiumWingBudgetData = useCallback(async () => {
+        runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithInventoryProjectBasementPodiumWingBudgetRequest = {
+                    ProjectId: Number(projectId),
+                }
+
+                const response = await budgetService.apiCallPullInventoryProjectBasementPodiumWingBudget(params);
+
+                if (E.isRight(response)) {
+
+                    setInventoryProjectBasementPodiumWingBudgetData(response.right.Data);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: 'error', title: error.message }),
+
+            undefined,
+            'Loading Inventory Project Basement Podium Wing Budget Data'
+        );
+    }, [projectId]);
 
     useEffect(() => {
+
         if (isAddUpdateModalOpen) {
             if (editBudgetData) {
 
@@ -218,8 +252,8 @@ export const Budget: React.FC = () => {
                 }
                 setFormData({
                     BudgetId: editBudgetData.BudgetId,
+                    InventoryFlatFloorBasementPodiumWingId: editBudgetData ? editBudgetData.InventoryFlatFloorBasementPodiumWingId : selectedWingId || formData.InventoryFlatFloorBasementPodiumWingId || 0,
                     ProjectId: Number(projectId),
-                    InventoryFlatFloorBasementPodiumWingId: editBudgetData.InventoryFlatFloorBasementPodiumWingId,
                     UniqueKey: editBudgetData.UniqueKey,
                     LevelId1: editBudgetData.LevelId1,
                     LevelId2: editBudgetData.LevelId2,
@@ -319,8 +353,8 @@ export const Budget: React.FC = () => {
     const PushBudgetFormData = (): AddUpdateBudget => {
         return {
             BudgetId: formData.BudgetId,
+            InventoryFlatFloorBasementPodiumWingId: selectedWingId || formData.InventoryFlatFloorBasementPodiumWingId || 0,
             ProjectId: Number(projectId),
-            InventoryFlatFloorBasementPodiumWingId: selectedWingId,
             UniqueKey: formData.UniqueKey,
             LevelId1: formData.LevelId1,
             LevelId2: formData.LevelId2,
@@ -401,6 +435,7 @@ export const Budget: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
+                    InventoryFlatFloorBasementPodiumWingId: (selectedWingId) || undefined,
                     CategoryName: filters.CategoryName?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, BudgetColumns),
                     ExportType: exportType
@@ -629,7 +664,8 @@ export const Budget: React.FC = () => {
                 const showAddButton = !["L3", "L4"].includes(row.LevelType);
 
                 const accessToEdit =
-                    canAction && !isApproved &&
+                    canAction &&
+                    !isApproved &&
                     (
                         row.LevelType === "L3" ||
                         row.LevelType === "L4" ||
@@ -804,6 +840,7 @@ export const Budget: React.FC = () => {
         setFormData({
             ...initialFormState(),
             ProjectId: Number(projectId),
+            InventoryFlatFloorBasementPodiumWingId: selectedWingId,
             LevelId1: 0,
             LevelId2: 0,
             LevelId3: 0,
@@ -874,7 +911,44 @@ export const Budget: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
-    const handleApproveRejectInvoice = (approvalType: "approve" | "reject" | "reopen") => {
+    const handleSubmitBudgetForApproval = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: SubmitBudgetForApprovalData = {
+                    ProjectId: Number(projectId),
+                    InventoryFlatFloorBasementPodiumWingId: selectedWingId,
+                };
+
+                const response = await budgetService.apiCallSubmitBudgetForApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsModalOpen(false);
+
+                    setShowApprovalStatus(true);
+
+                    await loadBudgetData(1, filters, sortInfo, searchTerm);
+                } else {
+                    addToast({ type: "error", title: response.left.message, });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message, });
+            },
+            undefined,
+            "Submitting Budget for Approval"
+        );
+    };
+
+    const handleApproveRejectBudget = (approvalType: "approve" | "reject" | "reopen") => {
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
     };
@@ -882,7 +956,7 @@ export const Budget: React.FC = () => {
     const handleApprovalLog = () => {
         setApprovalLogRequest({
             Id: Number(projectId),
-            SubId: 0,
+            SubId: selectedWingId || 0,
             SubSubId: 0,
             SubSubSubId: 0,
             ProjectId: Number(projectId),
@@ -898,7 +972,7 @@ export const Budget: React.FC = () => {
         const payload: UpdateModulesWorkflowApprovalRequest = {
             ModuleName: "BUDGET APPROVAL",
             Id: Number(projectId),
-            SubId: 0,
+            SubId: selectedWingId || 0,
             ProjectId: Number(projectId),
             IsApproved: approvalActionType === "approve",
             Remarks: remark ?? null,
@@ -937,50 +1011,28 @@ export const Budget: React.FC = () => {
     const approvalInfo = budgetData.length > 0 ? budgetData[0] : null;
     const isBudgetApproved = approvalInfo?.ApprovalStatus === "Approved" || approvalInfo?.ApprovalStatus === "Partial Approved";
 
-    const grandTotal = budgetData
-        .filter(item => item.LevelType === "L1")
-        .reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
+    const grandTotal = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
 
-    const fetchWingDropdownCallback = useCallback(
+    const InventoryProjectBasementPodiumWingBudgetColumn = useMemo<TableColumn[]>(() => [
+        {
+            key: 'ProjectBuildingNumberWing',
+            label: 'Building - Wing Name',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-',
 
-        () => fetchWingDropdown({ projectId: Number(projectId) }),
-        [projectId]);
+        },
+        {
+            key: 'BudgetAmount',
+            label: 'Budget Amount',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '0',
 
-    const handleSubmitBudgetForApproval = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload: SubmitBudgetForApprovalData = {
-                    ProjectId: Number(projectId),
-                    InventoryFlatFloorBasementPodiumWingId: selectedWingId,
-                };
-
-                const response = await budgetService.apiCallSubmitBudgetForApproval(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsModalOpen(false);
-                    setShowApprovalStatus(true);
-
-                    await loadBudgetData(1, filters, sortInfo, searchTerm);
-                } else {
-                    addToast({ type: "error", title: response.left.message, });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message, });
-            },
-            undefined,
-            "Submitting Budget for Approval"
-        );
-    };
+        },
+    ], [projectId]);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -995,13 +1047,21 @@ export const Budget: React.FC = () => {
                 isShowAddButton={canAction && Number(projectId) > 0 && !isBudgetApproved}
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
+
+                isShowAddExtraButton
+                addExtraTitle="Summary"
+                onAddExtra={() => {
+                    setISWingBudgetIsModalOpen(true)
+                    loadInventoryProjectBasementPodiumWingBudgetData()
+                }}
+
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
                     setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
-                isShowExportButton={canExport && BudgetColumns.length > 0 && Number(projectId) > 0}
+                isShowExportButton={canExport && budgetData.length > 0 && Number(projectId) > 0}
                 onExportExcel={handleExportBudgetExcel}
                 onExportPdf={handleExportBudgetPdf}
                 isShowCustomizeButton
@@ -1011,68 +1071,63 @@ export const Budget: React.FC = () => {
             />
 
             {Number(projectId) > 0 && (
-                <div className="mt-1 w-full border border-gray-200 shadow-sm">
-                    <div className="flex items-center justify-between gap-4 p-2">
+                <div className="flex items-center justify-between mt-1 w-full border border-gray-200 shadow-sm gap-3 p-2">
 
-                        <div className="w-1/3">
-                            <SingleSelectDropdownWithPagination
-                                required
-                                title="Select Wing"
-                                size="lg"
-                                dataFetchCallBack={fetchWingDropdownCallback}
-                                onSelected={(item) => {
+                    <div className="relative min-w-0  w-[526px]">
+                        <SingleSelectDropdownWithPagination
+                            key={projectId}
+                            title="Select Wing"
+                            size="lg"
+                            dataFetchCallBack={fetchInventoryProjectBasementPodiumWingBudgetDropdown}
+                            onSelected={(item) => {
+                                const selectedId = Number(item?.value ?? 0);
 
-                                    const wingId = item ? Number(item.value) : 0;
+                                setSelectedWingId(selectedId);
 
-                                    setSelectedWingId(wingId);
-                                    setPagination({ currentPage: 1 });
-                                    setShowApprovalStatus(false);
+                                setPagination({ currentPage: 1 });
 
-                                    if (wingId > 0) {
-                                        loadBudgetData(1, filters, sortInfo, searchTerm, wingId);
-                                    } else {
-                                        setBudgetData([]);
+                                loadBudgetData(1, filters, sortInfo, searchTerm, selectedId);
+                            }}
+
+
+                        />
+                    </div>
+
+                    {!showApprovalStatus && budgetData.length > 0 ? (
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                checked={isModalOpen}
+                                onChange={(checked) => {
+                                    if (checked) {
+                                        setIsModalOpen(true);
                                     }
                                 }}
                             />
+
+                            <span className="text-sm text-blue-600">
+                                Send to Approval
+                            </span>
                         </div>
+                    ) :
 
-                        {!showApprovalStatus && (
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                    checked={isModalOpen}
-                                    onChange={(checked) => {
-                                        if (checked) {
-                                            setIsModalOpen(true);
-                                        }
-                                    }}
-                                />
+                        <div className="flex justify-end pb-2 gap-2 p-2">
 
-                                <span className="text-sm text-blue-600">
-                                    Send to Approval
-                                </span>
-                            </div>
-                        )}
-
-                        {showApprovalStatus && approvalInfo?.ApprovalStatus !== "Approved" && (
-                            <div className="flex items-center justify-end gap-2 shrink-0">
-
-                                <span className="text-md font-medium whitespace-nowrap text-gray-700">
-                                    Budget Status :
-                                </span>
-
-                                <ApprovalActions
-                                    approvalStatus={approvalInfo?.ApprovalStatus}
-                                    showApproval={approvalInfo?.IsApproval}
-                                    onApprove={() => handleApproveRejectInvoice("approve")}
-                                    onReject={() => handleApproveRejectInvoice("reject")}
-                                    onReopen={() => handleApproveRejectInvoice("reopen")}
-                                    onHistory={handleApprovalLog}
-                                    isIcons
-                                />
-                            </div>
-                        )}
-                    </div>
+                            {budgetData.length > 0 && Number(projectId) > 0 && (
+                                <>
+                                    <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
+                                    <ApprovalActions
+                                        approvalStatus={approvalInfo?.ApprovalStatus}
+                                        showApproval={approvalInfo?.IsApproval}
+                                        onApprove={() => handleApproveRejectBudget("approve")}
+                                        onReject={() => handleApproveRejectBudget("reject")}
+                                        onReopen={() => handleApproveRejectBudget("reopen")}
+                                        onHistory={handleApprovalLog}
+                                        isIcons
+                                    />
+                                </>
+                            )}
+                        </div>
+                    }
                 </div>
             )}
 
@@ -1595,6 +1650,33 @@ export const Budget: React.FC = () => {
                 <div className="space-y-4 p-6 bg-blue-100">
                     Do You Want To Give This Budget For Approval?
                 </div>
+            </Modal>
+
+            <Modal
+                isOpen={isWingBudgetModalOpen}
+                onClose={() => setISWingBudgetIsModalOpen(false)}
+                onCancel={() => setISWingBudgetIsModalOpen(false)}
+                title="Budget Amount Data"
+                size="half-screen"
+            >
+                <div className="space-y-4">
+                    {inventoryProjectBasementPodiumWingBudgetData.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center py-8">
+                            <NoDataView message="No Data Available" />
+                        </div>
+                    ) : (
+                        <div className="border border-[#33333321] rounded-xl overflow-y-auto thin-scroll">
+                            <DataTableWithHeaderRowDivider
+                                columns={InventoryProjectBasementPodiumWingBudgetColumn}
+                                data={inventoryProjectBasementPodiumWingBudgetData}
+                                emptyMessage="No Budget Amount Data Found"
+                                fixedHeight={true}
+                                className="flex-1"
+                            />
+                        </div>
+                    )}
+                </div>
+
             </Modal>
 
             <ApprovalLogModal

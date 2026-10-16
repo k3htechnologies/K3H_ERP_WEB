@@ -249,6 +249,7 @@ import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/
 import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 import Event from '@/features/event/pages/Event';
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -322,6 +323,7 @@ function App() {
             <Route path="employeeMaster/view" element={<EmployeeListStateProvider><ViewEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
+            <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
 
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />

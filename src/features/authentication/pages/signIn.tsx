@@ -11,7 +11,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Loader } from '@/core/utils/loader';
 import { useNavigate } from 'react-router-dom';
 import baseClient from '@/core/config/baseClient';
-import { KeyIcon, Mail, Phone } from 'lucide-react';
+import { Eye, EyeClosed, EyeOff, KeyIcon, Mail, Phone } from 'lucide-react';
 
 export function SignIn() {
 
@@ -24,6 +24,7 @@ export function SignIn() {
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
     const [resendTimer, setResendTimer] = useState(0);
     const navigate = useNavigate();
+    const [showMpin, setShowMpin] = useState(false);
 
     useEffect(() => {
         if (resendTimer <= 0) return;
@@ -277,20 +278,26 @@ export function SignIn() {
 
                                 <Input
                                     autoFocus
-                                    type="password"
+                                    type={showMpin ? "text" : "password"}
                                     placeholder="Enter OTP"
                                     leftIcon={<KeyIcon />}
+                                    rightIcon={
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowMpin((prev) => !prev)}
+                                        >
+                                            {showMpin ? <EyeOff className='h-5 w-5' /> : <Eye className='h-5 w-5' />}
+                                        </button>
+                                    }
                                     value={otp}
                                     inputMode="numeric"
                                     autoComplete="one-time-code"
                                     data-testid="otp-input"
                                     onChange={(e) => {
                                         const value = e.target.value.replace(/\D/g, '').slice(0, 4)
-                                        setOtp(value)
+                                        setOtp(value);
                                     }}
                                 />
-
-
 
                                 <Button
                                     data-testid="verify-otp-btn"
@@ -345,22 +352,26 @@ export function SignIn() {
 
                                 <Input
                                     autoFocus
-                                    variant="filled"
-                                    fullWidth
-                                    type="password"
+                                    type={showMpin ? "text" : "password"}
                                     placeholder="Enter MPIN"
                                     leftIcon={<KeyIcon />}
+                                    rightIcon={
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowMpin((prev) => !prev)}
+                                        >
+                                            {showMpin ? <EyeClosed className='h-5 w-5' /> : <Eye className='h-5 w-5' />}
+                                        </button>
+                                    }
                                     value={otp}
                                     inputMode="numeric"
                                     autoComplete="one-time-code"
                                     data-testid="otp-input"
                                     onChange={(e) => {
-                                        const value = e.target.value.replace(/\D/g, '').slice(0, 4)
-                                        setOtp(value)
+                                        const value = e.target.value.replace(/\D/g, '').slice(0, 4);
+                                        setOtp(value);
                                     }}
                                 />
-
-
 
                                 <Button
                                     data-testid="verify-otp-btn"

@@ -85,7 +85,7 @@ export const StockHistory: React.FC = () => {
                     const isInward = row.InwardOutwardType === "INWARD";
                     return (
                         <span className={isInward ? "text-green-600" : "text-red-600"}>
-                            {isInward ? "+" : "0"}{value} {row.UomCode}
+                            {isInward ? "+" : "-"}{value} {row.UomCode}
                         </span>
                     );
                 }

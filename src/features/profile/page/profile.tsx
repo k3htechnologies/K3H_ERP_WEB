@@ -47,6 +47,9 @@ import { getNameInitials } from '@/core/utils/getNameInitials';
 import { sendEmail } from '@/core/utils/comman';
 import Accordion from '@/ui/components/Card/Accordion';
 import ProfilePhotoUploader from '@/ui/components/ImagePicker/ProfilePhotoUploader';
+import type { AddUpdateEmployeeLetterAcceptEmployee, EmployeeLetterData, FilterWithPaginationEmployeeLetterRequest } from '@/features/employeeMaster/models/EmployeeLetterModal';
+import { employeeLetterService } from '@/features/employeeMaster/services/EmployeeLetterService';
+import FieldInfoTooltip from '@/ui/components/forms/FieldInfoTooltip';
 
 const initialFormState = (): UpdateEmployeeProfilePhoto => ({
     EmployeeId: 0,
@@ -176,6 +179,7 @@ export const Profile: React.FC = () => {
     const employeeTabList = [
         { id: "Overview", label: "Overview" },
         { id: "Document", label: "Document" },
+        { id: "Letter", label: "Letter" },
         { id: "Assets", label: "Assets" },
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
@@ -188,6 +192,14 @@ export const Profile: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [editingEmployeeProfilePhotoData, setEditingEmployeeProfilePhotoData] = useState<UpdateEmployeeProfilePhoto | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+
+    const [employeeLetterList, setEmployeeLetterList] = useState<EmployeeLetterData[]>([]);
+    const [employeeLetterAccept, setEmployeeLetterAccept] = useState<AddUpdateEmployeeLetterAcceptEmployee | null>(null);
+    const [isConfirmationDialogBoxOpenAcceptEmployeeLetter, setIsConfirmationDialogBoxOpenAcceptEmployeeLetter] = useState(false);
+    const [isOpenModal, setIsOpenModal] = useState(false);
+    const [rejectRemark, setRejectRemark] = useState('');
+    const [rejectRemarkError, setRejectRemarkError] = useState('');
+
     //#endregion
 
     //#region INIT
@@ -195,7 +207,9 @@ export const Profile: React.FC = () => {
 
         if (activeTab === "Overview") loadEmployee();
 
-        else if (activeTab === "Document") loadEmployeeDocuments()
+        else if (activeTab === "Document") loadEmployeeDocuments();
+
+        else if (activeTab === "Letter") loadEmployeeLetterData();
 
         else if (activeTab === "Assets") loadAssetMasterMapping();
 
@@ -204,7 +218,6 @@ export const Profile: React.FC = () => {
         else if (activeTab === 'Shift Policy') loadShiftMappings();
 
         else if (activeTab === 'Week Off Policy') loadWeekOffMappings();
-
 
     }, [activeTab]);
     //#endregion
@@ -585,6 +598,40 @@ export const Profile: React.FC = () => {
     }
 
     //#endregion
+
+    const loadEmployeeLetterData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationEmployeeLetterRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    IsCheckPermission: false,
+                    EmployeeId: employeeId,
+                    IsShowEmployee: true
+                }
+
+                const response = await employeeLetterService.apiCallPullEmployeeLetter(params);
+
+                if (E.isRight(response)) {
+
+                    setEmployeeLetterList(response.right.Data);
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Employee Letter'
+        )
+    }
 
     //#region EDIT EMPLOYEE DOCUMENT
 
@@ -1121,6 +1168,14 @@ export const Profile: React.FC = () => {
         return urls.length > 0;
     });
 
+
+    const letterDocsWithUrls = employeeLetterList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
+
     const employeeId = Number(LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0);
     const emp = LocalStorageHelper.getStoredEmployeeData?.() ?? null;
     const profilePhotoURL = emp?.ProfilePhotoURL ?? '—';
@@ -1220,6 +1275,92 @@ export const Profile: React.FC = () => {
         );
     };
 
+    const handleEmployeeLetterShowEmployee = async () => {
+        if (!employeeLetterAccept) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload: AddUpdateEmployeeLetterAcceptEmployee = {
+                    EmployeeLetterId: employeeLetterAccept.EmployeeLetterId,
+                    EmployeeId: employeeId,
+                    Uniquekey: employeeLetterAccept.Uniquekey,
+                    EmployeeRemark: employeeLetterAccept.EmployeeRemark,
+                    IsAcceptEmployee: true
+                };
+
+                const response = await employeeLetterService.apiCallAddUpdateEmployeeLetterAcceptEmployee(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
+                    loadEmployeeLetterData();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                setIsConfirmationDialogBoxOpenAcceptEmployeeLetter(false);
+                setEmployeeLetterAccept(null);
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Accept Letter",
+        );
+    };
+
+    const closeRejectModal = () => {
+        setIsOpenModal(false);
+        setEmployeeLetterAccept(null);
+        setRejectRemark('');
+        setRejectRemarkError('');
+    };
+
+    const handleEmployeeLetterReject = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+
+        if (!employeeLetterAccept) return;
+
+        if (!rejectRemark.trim()) {
+            setRejectRemarkError('Remark is required');
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload: AddUpdateEmployeeLetterAcceptEmployee = {
+                    EmployeeLetterId: employeeLetterAccept.EmployeeLetterId,
+                    EmployeeId: employeeId,
+                    Uniquekey: employeeLetterAccept.Uniquekey,
+                    EmployeeRemark: rejectRemark,
+                    IsAcceptEmployee: false,
+                };
+
+                const response = await employeeLetterService.apiCallAddUpdateEmployeeLetterAcceptEmployee(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
+
+                    closeRejectModal();
+                    loadEmployeeLetterData();
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Reject Letter",
+        );
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
@@ -1259,6 +1400,8 @@ export const Profile: React.FC = () => {
                         else if (t.id === "Document") loadEmployeeDocuments()
 
                         else if (t.id === "Assets") loadAssetMasterMapping();
+
+                        else if (t.id === "Letter") loadEmployeeLetterData();
 
                         else if (t.id === 'Project') loadProjects();
 
@@ -1995,6 +2138,120 @@ export const Profile: React.FC = () => {
                 </div>
             )}
 
+            {activeTab === 'Letter' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-5">
+
+                    {letterDocsWithUrls.length === 0 && (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Documents Found" />
+                        </section>
+                    )}
+
+                    {letterDocsWithUrls.map(d => {
+                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                            .filter(x => x?.trim()?.length);
+
+                        return (
+                            <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                <div className="flex items-start justify-between p-2 gap-2">
+                                    <div className="flex flex-col">
+
+                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                            {d.DocumentName}
+                                        </span>
+
+                                        <span className="text-sm text-gray-500 mt-1">
+                                            Document Count : {urls.length}
+                                        </span>
+                                    </div>
+
+                                    <MultiImageViewer
+                                        images={urls}
+                                        title={d.DocumentName ?? "Document"}
+                                        triggerLabel="View"
+                                        isIcon={false}
+                                    />
+                                </div>
+
+                                <div className="flex-grow" />
+                                <div className="bg-gray-50 p-2 mt-auto">
+                                    <FieldItem
+                                        label="Uploaded By / Date"
+                                        value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                            ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                            : d?.CreatedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                : '-'
+                                            }`}
+                                    />
+                                </div>
+
+                                {d.IsAcceptEmployee ? (
+
+                                    <div className="p-2">
+                                        <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
+                                            Accepted
+                                        </span>
+                                    </div>
+
+                                ) : d.EmployeeRemark ? (
+
+                                    <div className="flex items-center gap-2 p-2">
+                                        <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700">
+                                            Rejected
+                                        </span>
+
+                                        <FieldInfoTooltip value={d.EmployeeRemark} />
+                                    </div>
+
+                                ) : (
+                                    <div className="flex items-center justify-between p-2">
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEmployeeLetterAccept({
+                                                    EmployeeLetterId: d.EmployeeLetterId,
+                                                    EmployeeId: employeeId,
+                                                    Uniquekey: d.Uniquekey,
+                                                    EmployeeRemark: "",
+                                                    IsAcceptEmployee: true,
+                                                });
+                                                setIsConfirmationDialogBoxOpenAcceptEmployeeLetter(true);
+                                            }}
+                                            className="px-3 py-1 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                                        >
+                                            Accept
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setEmployeeLetterAccept({
+                                                    EmployeeLetterId: d.EmployeeLetterId,
+                                                    EmployeeId: employeeId,
+                                                    Uniquekey: d.Uniquekey,
+                                                    EmployeeRemark: "",
+                                                    IsAcceptEmployee: false,
+                                                });
+                                                setRejectRemark('');
+                                                setRejectRemarkError('');
+                                                setIsOpenModal(true);
+                                            }}
+                                            className="px-3 py-1 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+                                        >
+                                            Reject
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
             {activeTab === 'Assets' && assetMappingMasterList && (
                 <div className="space-y-4 pt-5">
                     {assetMappingMasterList.length === 0 ? (
@@ -2566,6 +2823,33 @@ export const Profile: React.FC = () => {
                 </div>
             </Modal>
 
+            <Modal
+                isOpen={isOpenModal}
+                onClose={closeRejectModal}
+                cancelText="Clear"
+                onCancel={() => closeRejectModal()}
+                title="Reject Reason"
+                onSubmit={handleEmployeeLetterReject}
+                saveText="Reject"
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="p-6 bg-blue-100">
+                    <TextArea
+                        label="Remark"
+                        className="thin-scroll"
+                        value={rejectRemark}
+                        onChange={(e) => {
+                            setRejectRemark(e.target.value);
+                            if (rejectRemarkError) setRejectRemarkError('');
+                        }}
+                        required
+                        error={rejectRemarkError}
+                        placeholder="Enter reason for rejecting this letter"
+                    />
+                </div>
+            </Modal>
+
             {/* Delete Confirmation Dialogs */}
             < ConfirmationDialogBox
                 isOpen={isDeleteEducationDialogOpen}
@@ -2596,6 +2880,22 @@ export const Profile: React.FC = () => {
                 loading={isLoading}
                 variant="danger"
             />
+
+            <ConfirmationDialogBox
+                title="Accept Letter"
+                message="Are you sure you want to Accept this Letter?"
+                isOpen={isConfirmationDialogBoxOpenAcceptEmployeeLetter}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpenAcceptEmployeeLetter(false);
+                    setEmployeeLetterAccept(null)
+                }}
+                onConfirm={handleEmployeeLetterShowEmployee}
+                confirmText="Accept"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant='info'
+            />
+
         </div >
     )
 }

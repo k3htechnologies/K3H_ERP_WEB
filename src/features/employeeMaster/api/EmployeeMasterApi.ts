@@ -16,7 +16,13 @@ export const EmployeeMasterApi = {
 
     SET_EMPLOYEE_MPIN: '/Employee/SetEmployeeMPIN',
     UPDATE: '/Employee/UpdateEmployee',
-    UPDATE_EMPLOYEE_PROFILE_PHOTO: '/Employee/UpdateEmployeeProfilePhoto'
+    UPDATE_EMPLOYEE_PROFILE_PHOTO: '/Employee/UpdateEmployeeProfilePhoto',
+
+    PULL_EMPLOYEE_LETTER: '/EmployeeLetter/PullEmployeeLetter',
+    ADD_UPDATE_EMPLOYEE_LETTER: '/EmployeeLetter/AddUpdateEmployeeLetter',
+    ADD_UPDATE_EMPLOYEE_LETTER_SHOW_EMPLOYEE: '/EmployeeLetter/AddUpdateEmployeeLetterShowEmployee',
+    ADD_UPDATE_EMPLOYEE_LETTER_ACCEPT_EMPLOYEE: '/EmployeeLetter/AddUpdateEmployeeLetterAcceptEmployee',
+    DELETE_EMPLOYEE_LETTER: '/EmployeeLetter/DeleteEmployeeLetter'
 
 } as const
 

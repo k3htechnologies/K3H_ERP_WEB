@@ -21,7 +21,7 @@ import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchBuildingDropdown } from "@/features/building/buildingDropdown";
-import { Copy, FileText, Trash2 } from "lucide-react";
+import { CircleCheck, Copy, FileText, House, Trash2, UserRound } from "lucide-react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
@@ -332,9 +332,66 @@ export const Tenant: React.FC = () => {
         fixed: "left",
         align: "left",
         truncate: false,
-        render: (value, row) => (
-          <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} onClick={() => handleViewTenantDetails(row)} />
-        ),
+        render: (value, row) => {
+
+          const isAllotted = !!row.Flat?.toString().trim();
+          const isBookingDone = Number(row.BookingId ?? 0) > 0;
+
+          return (
+            <div className="flex items-center gap-2">
+              {isAllotted && (
+                <TooltipText
+                  text={value || "-"}
+                  maxWidth="160px"
+                  tooltipThreshold={16}
+                  onClick={() => handleViewTenantDetails(row)}
+                />
+              )}
+
+              {isAllotted && !isBookingDone && (
+                <div
+                  title="Allotted"
+                  className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-purple-100"
+                >
+                  <CircleCheck
+                    size={15}
+                    color="#9333EA"
+                    strokeWidth={2}
+                  />
+                </div>
+              )}
+
+              {isBookingDone && (
+                <div
+                  title="Booking Done"
+                  className="relative flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-green-100"
+                >
+                  <UserRound
+                    size={17}
+                    color="#16A34A"
+                    strokeWidth={2}
+                  />
+
+                  <House
+                    size={10}
+                    color="#EA580C"
+                    className="absolute bottom-1 right-1"
+                    fill="#FDE68A"
+                  />
+                </div>
+              )}
+
+              {!isAllotted && !isBookingDone && (
+                <TooltipText
+                  text={value || "-"}
+                  maxWidth="160px"
+                  tooltipThreshold={16}
+                  onClick={() => handleViewTenantDetails(row)}
+                />
+              )}
+            </div>
+          );
+        },
       },
       {
         key: "ExisitingUnitGroup",
@@ -816,7 +873,7 @@ export const Tenant: React.FC = () => {
           const isDeleteDisabled = !canAction || Number(row.BookingId ?? 0) > 0;
 
           return canAction ? (
-            
+
             <div className="flex items-center justify-center gap-2">
 
               <Button
@@ -855,7 +912,7 @@ export const Tenant: React.FC = () => {
                   cursor: isDeleteDisabled ? "not-allowed" : "pointer",
                   opacity: isDeleteDisabled ? 0.5 : 1,
                 }}
-                title={Number(row.BookingId ?? 0) > 0   ? "Tenant cannot be deleted because Booking exists" : "Delete Tenant"}
+                title={Number(row.BookingId ?? 0) > 0 ? "Tenant cannot be deleted because Booking exists" : "Delete Tenant"}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

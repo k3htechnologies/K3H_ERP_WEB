@@ -35,6 +35,8 @@ import { getNameInitials } from '@/core/utils/getNameInitials';
 import { BriefcaseBusiness, ChevronDown, Contact, ContactRound, GitBranch, History, Landmark, MapPin, Phone, School, } from 'lucide-react';
 import { sendEmail } from '@/core/utils/comman';
 import Accordion from '@/ui/components/Card/Accordion';
+import type { EmployeeLetterData, FilterWithPaginationEmployeeLetterRequest } from '@/features/employeeMaster/models/EmployeeLetterModal';
+import { employeeLetterService } from '@/features/employeeMaster/services/EmployeeLetterService';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -43,6 +45,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const [employeeReportingCycleList, setEmployeeReportingCycleList] = useState<EmployeeReportingCycle[]>([]);
     const [assetMappingMasterList, setAssetMappingMasterList] = useState<AssetMappingMasterData[]>([]);
     const [employeeDocumentList, setEmployeeDocumentList] = useState<EmployeeDocumentData[]>([]);
+    const [employeeLetterList, setEmployeeLetterList] = useState<EmployeeLetterData[]>([]);
     const [shiftMappingMasterList, setShiftMappingMasterList] = useState<ShiftMappingMasterData[]>([]);
     const [weekOffMappingMasterList, setWeekOffMappingMasterList] = useState<WeekOffMappingMasterData[]>([]);
     const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
@@ -75,6 +78,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     const employeeTabList = [
         { id: "Overview", label: "Overview" },
         { id: "Document", label: "Document" },
+        { id: "Letter", label: "Letter" },
         { id: "Assets", label: "Assets" },
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
@@ -91,7 +95,9 @@ export const ViewEmployeeMaster: React.FC = () => {
 
         if (activeTab === "Overview") loadEmployee();
 
-        else if (activeTab === "Document") loadEmployeeDocuments()
+        else if (activeTab === "Document") loadEmployeeDocuments();
+
+        else if (activeTab === "Letter") loadEmployeeLetter();
 
         else if (activeTab === "Assets") loadAssetMasterMapping();
 
@@ -231,6 +237,41 @@ export const ViewEmployeeMaster: React.FC = () => {
     const getEmployeeDocuments = async (filterParams: FilterWithPaginationEmployeeDocumentRequest) => {
 
         return await employeeDocumentService.apiCallPullEmployeeDocument(filterParams);
+    }
+    //#endregion
+
+    //#region LOAD EMPLOYEE LETTER
+    const loadEmployeeLetter = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationEmployeeLetterRequest = {
+                    PageNumber: 1,
+                    PageSize: 500,
+                    IsCheckPermission: false,
+                    EmployeeId: listState.employeeId!,
+                    IsShowEmployee: true
+                }
+
+                const response = await employeeLetterService.apiCallPullEmployeeLetter(params);
+
+                if (E.isRight(response)) {
+
+                    setEmployeeLetterList(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Employee Letter'
+        )
     }
     //#endregion
 
@@ -476,6 +517,10 @@ export const ViewEmployeeMaster: React.FC = () => {
     };
     //#endregion
 
+    const handleEditEmployeeLetter = () => {
+        navigate('/employeeMaster/letter');
+    };
+
     //#region BACK EMPLOYE EMASTER PAGE
     const handleBackToListEmployeeMaster = () => {
         navigate('/employeeMaster');
@@ -487,6 +532,13 @@ export const ViewEmployeeMaster: React.FC = () => {
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
     const docsWithUrls = employeeDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
+
+    const letterDocsWithUrls = employeeLetterList.filter(d => {
         const urls = parseDocumentUrls(d.DocumentURL ?? "")
             .filter(x => x?.trim()?.length);
 
@@ -505,13 +557,16 @@ export const ViewEmployeeMaster: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEmployeeMaster()}
-                canAction={canAction && (activeTab === "Overview" || activeTab === "Document")}
+                canAction={canAction && (activeTab === "Overview" || activeTab === "Document" || activeTab === "Letter")}
                 onEdit={() => {
                     if (activeTab === "Overview") {
                         if (employeeData) handleEditEmployee(employeeData);
                     }
                     else if (activeTab === "Document") {
                         if (employeeData) handleEditEmployeeDocument(employeeData);
+
+                    } else if (activeTab === "Letter") {
+                        handleEditEmployeeLetter();
                     }
                 }}
                 isLoading={isLoading}
@@ -529,6 +584,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                         if (t.id === "Overview") loadEmployee();
 
                         else if (t.id === "Document") loadEmployeeDocuments()
+
+                        else if (t.id === "Letter") loadEmployeeLetter()
 
                         else if (t.id === "Assets") loadAssetMasterMapping();
 
@@ -1106,6 +1163,60 @@ export const ViewEmployeeMaster: React.FC = () => {
                                         <span className="line-clamp-2 break-words font-medium text-gray-900">
                                             {d.DocumentName}
                                         </span>
+                                        <span className="text-sm text-gray-500 mt-1">
+                                            Document Count : {urls.length}
+                                        </span>
+                                    </div>
+
+                                    <MultiImageViewer
+                                        images={urls}
+                                        title={d.DocumentName ?? "Document"}
+                                        triggerLabel="View"
+                                        isIcon={false}
+                                    />
+                                </div>
+
+                                <div className="flex-grow" />
+                                <div className="bg-gray-50 p-2 mt-auto">
+                                    <FieldItem
+                                        label="Uploaded By / Date"
+                                        value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                            ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                            : d?.CreatedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                : '-'
+                                            }`}
+                                    />
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {activeTab === 'Letter' && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-5">
+
+                    {letterDocsWithUrls.length === 0 && (
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Documents Found" />
+                        </section>
+                    )}
+
+                    {letterDocsWithUrls.map(d => {
+                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                            .filter(x => x?.trim()?.length);
+
+                        return (
+                            <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                <div className="flex items-start justify-between p-2 gap-2">
+                                    <div className="flex flex-col">
+
+                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                            {d.DocumentName}
+                                        </span>
+
                                         <span className="text-sm text-gray-500 mt-1">
                                             Document Count : {urls.length}
                                         </span>

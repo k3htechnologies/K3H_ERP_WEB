@@ -4,7 +4,7 @@ export interface FilterWithPaginationBudgetRequest {
     PageSize: number;
     PageNumber: number;
     ProjectId?: number;
-    InventoryFlatFloorBasementPodiumWingId?: number
+    InventoryFlatFloorBasementPodiumWingId?: number;
     BudgetId?: number
     LevelType?: string;
     CategoryName?: string;
@@ -19,6 +19,7 @@ export interface BudgetData {
     BudgetId: number | 0
     UniqueKey: string | null
     ProjectId: number | 0
+    Wing: string | null
     CategoryName: string | null
     UomMasterId: number | 0
     Uom: string | null
@@ -53,6 +54,7 @@ export interface BudgetData {
     BudgetAmount: number | 0
     Remark: string | null
     IsAccessToDelete: boolean
+    IsSubmitBudgetForApproval: boolean
     IsApproval: boolean
     ApprovalStatus: string
     InventoryFlatFloorBasementPodiumWingId: number | 0
@@ -68,8 +70,8 @@ export interface BudgetData {
 export interface AddUpdateBudget {
     BudgetId: number | 0
     ProjectId: number | 0
-    UniqueKey: string | null
     InventoryFlatFloorBasementPodiumWingId: number | 0
+    UniqueKey: string | null
     LevelId1: number | 0
     LevelId2: number | 0
     LevelId3: number | 0
@@ -86,10 +88,23 @@ export interface AddUpdateBudget {
 }
 
 export interface SubmitBudgetForApprovalData {
-    ProjectId: number | 0,
+    ProjectId: number | 0
     InventoryFlatFloorBasementPodiumWingId: number | 0
+}
+
+export interface FilterWithInventoryProjectBasementPodiumWingBudgetRequest {
+    ProjectId?: number;
+    InventoryFlatFloorBasementPodiumWingId?: number;
+    SearchText?: string;
+}
+
+export interface InventoryProjectBasementPodiumWingBudgetData {
+    InventoryFlatFloorBasementPodiumWingId: number | 0
+    ProjectBuildingNumberWing: string | null
+    BudgetAmount: number | 0
 }
 
 export type BudgetListResponse = ApiResponse<BudgetData[]>;
 export type BudgetSaveResponse = ApiResponse<BudgetData[]>;
-export type SubmitBudgetForApprovalSaveResponse = ApiResponse<SubmitBudgetForApprovalData[]>;
+export type SubmitBudgetForApprovalResponse = ApiResponse<string>;
+export type InventoryProjectBasementPodiumWingBudgetResponse = ApiResponse<InventoryProjectBasementPodiumWingBudgetData[]>;

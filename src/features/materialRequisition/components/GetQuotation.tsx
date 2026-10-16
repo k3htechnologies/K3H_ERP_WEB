@@ -36,7 +36,7 @@ export const GetQuotation: React.FC<OverviewProps> = ({ matrialRequisitionDetail
     const currentUniquekey = listState.Uniquekey;
     const { projectId } = useProject();
     const { addToast } = useToast();
-    const { canAction } = useMenuPermissions();
+    const { canAction: cangetQuotation } = useMenuPermissions('Get Quotation');
     const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
     const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
     const [selectedVendorIds, setSelectedVendorIds] = useState<number[]>([]);
@@ -85,6 +85,7 @@ export const GetQuotation: React.FC<OverviewProps> = ({ matrialRequisitionDetail
         const columns: TableColumn[] = [];
 
         if (isDirect) {
+
             columns.push(
                 // {
                 //     key: "Level1Name",
@@ -159,6 +160,7 @@ export const GetQuotation: React.FC<OverviewProps> = ({ matrialRequisitionDetail
 
             );
         }
+
         columns.push(
             {
                 key: "MaterialQuantity",
@@ -418,20 +420,22 @@ export const GetQuotation: React.FC<OverviewProps> = ({ matrialRequisitionDetail
                 </div> */}
 
             <div className="flex justify-end">
-                <Button
-                    size="sm"
-                    style={{
-                        color: '#d35400',
-                        backgroundColor: '#FDE6D3',
-                        padding: '4px 8px',
-                    }}
-                    leftIcon={<MessageSquareQuoteIcon size={15} />}
-                    onClick={() => {
-                        handleAddVendorForQuotation();
-                    }}
-                >
-                    Get Quotation
-                </Button>
+                {cangetQuotation && (
+                    <Button
+                        size="sm"
+                        style={{
+                            color: '#d35400',
+                            backgroundColor: '#FDE6D3',
+                            padding: '4px 8px',
+                        }}
+                        leftIcon={<MessageSquareQuoteIcon size={15} />}
+                        onClick={() => {
+                            handleAddVendorForQuotation();
+                        }}
+                    >
+                        Get Quotation
+                    </Button>
+                )}
             </div>
 
             <DataTableWithCheckbox
@@ -577,6 +581,7 @@ export const GetQuotation: React.FC<OverviewProps> = ({ matrialRequisitionDetail
                 //     expandButton: { openText: "Hide", closeText: "Show" },
                 // }}
                 expandable={{
+
                     keyField: "MaterialRequisitionDetailId",
                     alwaysFetchOnOpen: true,
                     fetchRow: async (row) => {

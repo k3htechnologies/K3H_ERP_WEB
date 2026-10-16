@@ -274,7 +274,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      "Loading Material Requisition",
+      "Loading Contract Requisition",
     );
   };
 
@@ -437,7 +437,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       },
       undefined,
       (error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : "Failed to save material requisition";
+        const errorMessage = error instanceof Error ? error.message : "Failed to save Contract requisition";
 
         addToast({ type: "error", title: errorMessage });
       },
@@ -511,7 +511,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
                     padding: "4px",
                   }}
                   leftIcon={<Edit className="h-4 w-4" />}
-                  title="Edit Material Requisition"
+                  title="Edit Contract Requisition"
                 />
 
                 <Button
@@ -533,7 +533,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
                     color: "red",
                     padding: "4px 8px",
                   }}
-                  title="Delete Material Requisition"
+                  title="Delete Contract Requisition"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>

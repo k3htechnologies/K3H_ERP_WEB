@@ -1,5 +1,6 @@
 import baseClient from "@/core/config/baseClient";
 import type {
+  CloseContractRequisitionRequest,
   ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationContractRequisition, PullProjectLockAndKeyContractStatusRequest,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
@@ -12,7 +13,7 @@ export abstract class ContractRequisitionDatasource {
   ): Promise<ContractRequisitionListResponse>;
   abstract addUpdateContractRequisition(data: FormData): Promise<ContractRequisitionSaveReponse>;
   abstract deleteContractRequisition(params: DeleteContractRequisitionRequest): Promise<ContractRequisitionDeleteResponse>;
-  abstract closeContractRequisition(payload: DeleteContractRequisitionRequest): Promise<ContractRequisitionDeleteResponse>;
+  abstract closeContractRequisition(payload: CloseContractRequisitionRequest): Promise<ContractRequisitionDeleteResponse>;
 }
 
 export class ContractRequisitionDatasourceImpl implements ContractRequisitionDatasource {
@@ -97,10 +98,10 @@ export class ContractRequisitionDatasourceImpl implements ContractRequisitionDat
     }
   }
 
-  async closeContractRequisition(payload: DeleteContractRequisitionRequest): Promise<ContractRequisitionDeleteResponse> {
+  async closeContractRequisition(payload: CloseContractRequisitionRequest): Promise<ContractRequisitionDeleteResponse> {
     try {
       const response = await this.k3hHttpClient.postRequestWithAuthentication(
-        `${ContractRequisitionApi.CLOSE_REQUISITION}?${payload.toString()}`,
+        `${ContractRequisitionApi.CLOSE_REQUISITION}`,
         payload,
       );
 

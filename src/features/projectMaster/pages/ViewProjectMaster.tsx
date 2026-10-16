@@ -318,10 +318,10 @@ export const ViewProjectMaster: React.FC = () => {
                         new Map(
                             items
                                 .filter(x => x.ModulesMasterId && x.ModuleName)
-                                .map(x => [x.ModulesMasterId, x])
+                                .map(x => [x.ModuleName, x])
                         ).values()
                     ).map(x => ({
-                        id: String(x.ModulesMasterId),
+                        id: String(x.ModuleName),
                         label: x.ModuleName!,
                     }));
 
@@ -380,7 +380,7 @@ export const ViewProjectMaster: React.FC = () => {
     }, [activeTabForModulesWorkflowApproval]);
 
     const filteredApprovalList = modulesWorkflowApprovalList.filter(
-        x => String(x.ModulesMasterId) === activeModuleTab
+        x => String(x.ModuleName) === activeModuleTab
     );
 
     const { bg, text } = getStatusColor(editProjectData?.ProjectStatus || "");

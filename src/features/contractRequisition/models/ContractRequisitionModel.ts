@@ -31,9 +31,10 @@ export interface ContractRequisitionData {
   FinalContractId: number;
   ContractStatus: string;
   IsLockAndKey: boolean;
-  IsFinalizeVendor?: boolean;
   VendorFinalizationApprovalStatus?: string;
-  IsWorkOrderGenerated?: boolean;
+  IsVendorFinalizationApproved?: boolean;
+  IsWorkOrderAvailable?: boolean;
+  CloseCompletionRemark?: string;
   FinalVendor: string;
   CreatedById: number;
   CreatedBy: string;
@@ -106,6 +107,14 @@ export interface DeleteContractRequisitionRequest {
   ContractRequisitionId: number;
   UniqueKey: string | null;
   ProjectId: string;
+}
+
+export interface CloseContractRequisitionRequest {
+  ContractRequisitionId: number,
+  UniqueKey: string | null,
+  ProjectId: number | 0,
+  Type: string | null,
+  CloseCompletionRemark: string | null,
 }
 
 export type ContractRequisitionListResponse = ApiResponse<ContractRequisitionData[]>;

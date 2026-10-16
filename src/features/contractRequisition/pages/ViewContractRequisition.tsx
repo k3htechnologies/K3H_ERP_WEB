@@ -10,7 +10,8 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useContractRequisitionListState } from "@/features/contractRequisition/context/ContractRequisitionListStateContext";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import type {
-  ContractRequisitionData, DeleteContractRequisitionRequest, FilterWithPaginationContractRequisition,
+  CloseContractRequisitionRequest,
+  ContractRequisitionData, FilterWithPaginationContractRequisition,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import Tabs from "@/ui/components/Tab/Tab";
@@ -24,6 +25,8 @@ import { contractRequisitionService } from "@/features/contractRequisition/servi
 import ContractBOQSelectionScreen from "@/features/contractRequisition/components/ContractBoqSelectionScreen";
 import type { RevokeFinalizationContractVendorRequest } from "@/features/contractRequisition/models/ContractVendorFinalizeModel";
 import { contractVendorFinalizationService } from "@/features/contractRequisition/services/ContractVendorFinalizationService";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 export const ViewContractRequisition: React.FC = () => {
   const [contractRequisitionData, setContractRequisitionData] = useState<ContractRequisitionData | null>(null);
@@ -31,14 +34,15 @@ export const ViewContractRequisition: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
-  const [selectedContractRequisitionItem, setSelectedContractRequisitionItem] = useState<ContractRequisitionData | null>(null);
+  const [selectedContractRequisitionItem, setSelectedContractRequisitionItem] = useState<CloseContractRequisitionRequest | null>(null);
+  const [closeCompletedRemarkError, setCloseCompletedRemarkError] = useState("");
 
   const [isRevokeFinalizationVendorDialogOpen, setIsRevokeFinalizationVendorDialogOpen] = useState(false);
 
   const { addToast } = useToast();
   const navigate = useNavigate();
   const { projectId } = useProject();
-  const { listState } = useContractRequisitionListState();
+  const { listState, updateListState } = useContractRequisitionListState();
   const { ContractRequisitionId, SystemGeneratedCode, ContractRequisitionStatus, VendorName } = listState;
   const location = useLocation();
   const { canView: canFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
@@ -75,6 +79,13 @@ export const ViewContractRequisition: React.FC = () => {
         const data = response.right.Data;
         const item = Array.isArray(data) ? data[0] : data;
         setContractRequisitionData(item ?? null);
+        updateListState({
+          ContractRequisitionId: item.ContractRequisitionId,
+          Uniquekey: item.UniqueKey,
+          SystemGeneratedCode: item.SystemGeneratedCode,
+          ContractRequisitionStatus: item.ContractStatus,
+          VendorFinalizationApprovalStatus: item.VendorFinalizationApprovalStatus
+        })
       } else {
         addToast({ type: "error", title: response.left.message });
       }
@@ -82,26 +93,41 @@ export const ViewContractRequisition: React.FC = () => {
     });
   };
 
-  const handleCloseRequisition = async () => {
+  const handleCloseRequisition = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (!selectedContractRequisitionItem) return;
+
+    const remark = selectedContractRequisitionItem.CloseCompletionRemark?.trim();
+
+    if (!remark) {
+      setCloseCompletedRemarkError("Remark is required.");
+      return;
+    }
+
+    setCloseCompletedRemarkError("");
 
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const payload: DeleteContractRequisitionRequest = {
+        const payload: CloseContractRequisitionRequest = {
           ContractRequisitionId: selectedContractRequisitionItem.ContractRequisitionId,
           UniqueKey: selectedContractRequisitionItem.UniqueKey,
-          ProjectId: String(projectId)
+          ProjectId: Number(projectId),
+          Type: selectedContractRequisitionItem.Type,
+          CloseCompletionRemark: selectedContractRequisitionItem.CloseCompletionRemark || "",
         };
 
         const response = await contractRequisitionService.apiCallCloseContractRequisition(payload);
 
         if (E.isRight(response)) {
+
           addToast({ type: "success", title: response.right.SuccessMessage[0] });
-          navigate("/contractRequisition");
+
           setIsCloseRequisitionDialogOpen(false);
-          loadContractRequisition();
+
+          navigate("/contractRequisition");
+
         } else {
           addToast({ type: "error", title: response.left.message });
           setIsCloseRequisitionDialogOpen(false);
@@ -111,7 +137,7 @@ export const ViewContractRequisition: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: "error", title: error.message }),
       undefined,
-      "Closing Requisition",
+      `${selectedContractRequisitionItem.Type} Requisition`,
     );
   };
 
@@ -136,7 +162,7 @@ export const ViewContractRequisition: React.FC = () => {
 
           addToast({ type: "success", title: response.right.SuccessMessage[0], });
 
-          navigate("/materialRequisition");
+          navigate("/contractRequisition");
 
           setIsRevokeFinalizationVendorDialogOpen(false);
 
@@ -174,7 +200,7 @@ export const ViewContractRequisition: React.FC = () => {
 
         <div className="flex justify-end gap-4">
           {
-            (contractRequisitionData?.IsFinalizeVendor && !contractRequisitionData.IsWorkOrderGenerated) ?
+            (contractRequisitionData?.IsVendorFinalizationApproved && !contractRequisitionData.IsWorkOrderAvailable) ?
               <Button
                 size="mxs"
                 style={{
@@ -200,7 +226,13 @@ export const ViewContractRequisition: React.FC = () => {
                   backgroundColor: "#FFF2F2",
                 }}
                 onClick={() => {
-                  setSelectedContractRequisitionItem(contractRequisitionData);
+                  setSelectedContractRequisitionItem({
+                    ContractRequisitionId: contractRequisitionData?.ContractRequisitionId ?? 0,
+                    UniqueKey: contractRequisitionData?.UniqueKey ?? "",
+                    ProjectId: Number(projectId),
+                    Type: "Closed",
+                    CloseCompletionRemark: ""
+                  });
                   setIsCloseRequisitionDialogOpen(true);
                 }}
               >
@@ -218,23 +250,76 @@ export const ViewContractRequisition: React.FC = () => {
 
       {activeTab === "Overview" && <ContractOverview contractRequisitionData={contractRequisitionData} />}
       {activeTab === "boq" && <ContractBOQSelectionScreen />}
-      {activeTab === "Finalized Vendor" && <FinalizedContractVendor />}
+      {activeTab === "Finalized Vendor" && <FinalizedContractVendor onApprovalSuccess={loadContractRequisition} />}
       {activeTab === "Work Order" && <ContractWorkOrder />}
       {activeTab === "Invoice" && <ContractInvoice />}
 
-      <ConfirmationDialogBox
+      <Modal
         isOpen={isCloseRequisitionDialogOpen}
         onClose={() => {
           setIsCloseRequisitionDialogOpen(false);
           setSelectedContractRequisitionItem(null);
         }}
-        onConfirm={handleCloseRequisition}
-        title="Close Requisition"
-        message={`Are you sure you want to Close this Contract Requisition?`}
-        confirmText="Close"
-        cancelText="Cancel"
+        title={selectedContractRequisitionItem?.Type === "Completed"
+          ? "Complete Requisition"
+          : "Close Requisition"}
+        onSubmit={handleCloseRequisition}
+        saveText={selectedContractRequisitionItem?.Type === "Completed"
+          ? "Complete Requisition"
+          : "Close Requisition"}
         loading={isLoading}
-      />
+        size="xl">
+
+        <div className="space-y-4 p-6 bg-blue-100">
+
+          <TextArea
+            label="Remark"
+            placeholder="Enter Remark"
+            required
+            className="thin-scroll"
+            error={closeCompletedRemarkError}
+            value={
+              selectedContractRequisitionItem?.CloseCompletionRemark ?? ""
+            }
+            onChange={(e) =>
+              setSelectedContractRequisitionItem(prev =>
+                prev
+                  ? {
+                    ...prev,
+                    CloseCompletionRemark: e.target.value
+                  }
+                  : prev
+              )
+            }
+          />
+
+          {selectedContractRequisitionItem?.Type === "Completed" ? (
+            <div className="text-sm text-[#00000080] pt-2">
+              <p>
+                By selecting this option, the <b>Contract Requisition</b> will be
+                marked as <b>Completed</b> and cannot be changed later.
+              </p>
+
+              <p className="mt-2 font-medium">
+                The following must be completed:
+              </p>
+
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Vendor Finalization</li>
+                <li>Vendor Finalization Approval</li>
+                <li>Work Order</li>
+                <li>Invoice</li>
+                <li>Invoice Payment – Fully Paid</li>
+              </ul>
+            </div>
+          ) : (
+            <p className="text-sm text-[#00000080] pt-2">
+              By selecting this option, the <b>Contract Requisition</b> will be
+              marked as <b>Closed</b> and cannot be changed later.
+            </p>
+          )}
+        </div>
+      </Modal>
 
       <ConfirmationDialogBox
         isOpen={isRevokeFinalizationVendorDialogOpen}

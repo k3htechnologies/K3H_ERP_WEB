@@ -17,7 +17,7 @@ export interface ContractRequisitionInvoiceData {
     ContractRequisitionId: number | 0;
     ContractRequisitionInvoiceId: number | 0;
     UniqueKey: string | null;
-    ContractRequisitionWorkOrderId : number | 0;
+    ContractRequisitionWorkOrderId: number | 0;
     InvoiceNumber: string | null;
     InvoiceDate: string | null;
     UploadInvoiceURL: string | null;
@@ -72,13 +72,18 @@ export interface FilterWithPaginationContractRequisitionInvoiceSummary {
 
 export interface ContractRequisitionInvoiceSummaryData {
     ContractRequisitionId: number | 0;
-    TotalInvoiceAmount: number | 0,
-    TotalAmountPaid: number | 0,
+    TotalInvoiceAmount: number | 0;
+    TotalAmountPaid: number | 0;
     TotalTDSAmountPaid: number | 0;
-    RemainingInvoiceAmount: number | 0,
-    TotalRequisitionAmount: number | 0,
-    PaidRequisitionAmount: number | 0,
-    PendingRequisitionAmount: number | 0
+    RemainingInvoiceAmount: number | 0;
+    TotalRequisitionAmount: number | 0;
+    PaidRequisitionAmount: number | 0;
+    PendingRequisitionAmount: number | 0;
+    FinalVendor: string;
+    FinalVendorCompanyName: string;
+    FinalVendorMobileNumber: string;
+    FinalVendorMobileNumberCountryCode: string;
+    FinalVendorGSTNumber: string;
 }
 
 export type ContractRequisitionInvoiceListResponse = ApiResponse<ContractRequisitionInvoiceData[]>;

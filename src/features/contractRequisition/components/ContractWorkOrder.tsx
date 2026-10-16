@@ -208,7 +208,7 @@ export const ContractWorkOrder: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Generate Purchase Order'
+      'Generate Work Order'
     )
   };
 
@@ -314,7 +314,7 @@ export const ContractWorkOrder: React.FC = () => {
       <div className="flex justify-end gap-2">
 
         {isWorkOrderLoaded && !hasWorkOrder && canGenerateWorkOrder && !["COMPLETED", "CLOSED"].includes(ContractRequisitionStatus?.toUpperCase()) &&
-          VendorFinalizationApprovalStatus.toUpperCase() === "APPROVED" && (
+          VendorFinalizationApprovalStatus?.toUpperCase() === "APPROVED" && (
             <>
               {/* <Button
                 color="red"
@@ -360,13 +360,15 @@ export const ContractWorkOrder: React.FC = () => {
             <h2 className="text-lg font-semibold mb-2">
               Work Order
             </h2>
-
-            <button
-              onClick={() => setIsMaximized(true)}
-              className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
-            >
-              <Maximize2 className="h-5 w-5 text-gray-700" />
-            </button>
+            <div className="flex gap-2">
+              <h2 className="text-lg font-semibold">Total Amount : {contractRequisitionWorkOrder?.TotalAmount}</h2>
+              <button
+                onClick={() => setIsMaximized(true)}
+                className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
+              >
+                <Maximize2 className="h-5 w-5 text-gray-700" />
+              </button>
+            </div>
           </div>
 
 
@@ -410,7 +412,7 @@ export const ContractWorkOrder: React.FC = () => {
         </div>
       ) :
         <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
-          <NoDataView message="No Purchase Order Found" />
+          <NoDataView message="No Work Order Found" />
         </section>}
 
       {isMaximized && (
@@ -418,8 +420,9 @@ export const ContractWorkOrder: React.FC = () => {
           <div className="w-full h-full bg-white flex flex-col">
             <div className="flex justify-between items-center p-3 border-b">
 
-              <h2 className="font-semibold">Purchase Order File</h2>
+              <h2 className="font-semibold">Work Order File</h2>
               <div className="flex justify-end gap-1">
+                <h2 className="text-lg font-semibold">Total Amount : {contractRequisitionWorkOrder?.TotalAmount}</h2>
                 <button
                   onClick={() => setIsMaximized(false)}
                   className="px-2 py-2 hover:bg-gray-100 rounded" >
@@ -442,7 +445,6 @@ export const ContractWorkOrder: React.FC = () => {
 
       <Modal
         isOpen={isAddUpdateModalOpen}
-
         onClose={() => {
           setIsAddUpdateModalOpen(false);
           setIsUploadWO(false);
@@ -453,7 +455,6 @@ export const ContractWorkOrder: React.FC = () => {
         title={isUploadWO ? "Upload Work Order" : "Work Order"}
         onSubmit={(e) => {
           e.preventDefault();
-
           if (isUploadWO) {
             handleUploadWorkOrder();
           } else {
@@ -461,7 +462,6 @@ export const ContractWorkOrder: React.FC = () => {
           }
         }}
         saveText={isUploadWO ? "Upload" : "Generate"}
-
         loading={isLoading}
         size="xl"
       >
@@ -547,7 +547,7 @@ export const ContractWorkOrder: React.FC = () => {
         }}
         onConfirm={handleDeleteGenerateWorkOrder}
         loading={isLoading}
-        pageName='Purchase Order'
+        pageName='Work Order'
       />
     </div>
   )

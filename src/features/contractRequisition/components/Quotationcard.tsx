@@ -6,6 +6,7 @@ import {
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
 import { useHorizontalScroll } from '@/ui/components/DataTable/useHorizontalScroll'
+import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton'
 
 /*                        API field mapping (edit here only)                  */
 export const LINE_FIELDS = {
@@ -115,6 +116,7 @@ export interface VendorQuotationLike {
   VerifiedNonVerified?: string
   IsApproval?: boolean
   IsFinalized?: boolean
+  VendorFinalizationApproval?: string | null
   ContractRequisitionQuotationTermsData?: QuotationTermsLike[] | null
   /** Optional overrides - not part of the current API response. */
   QuotationStatus?: string
@@ -123,7 +125,6 @@ export interface VendorQuotationLike {
   GSTPercentage?: number | null
 }
 
-/** Handed to onSave. Rows keep every original field; only item rows are changed. */
 export interface QuotationSavePatch {
   /** ContractRequisitionQuotationTermsData[0].ContractRequisitionQuotationTermsId (0 if the vendor has no terms yet) */
   ContractRequisitionQuotationTermsId: number
@@ -207,6 +208,10 @@ interface QuotationCardProps {
   vendor: VendorQuotationLike
   checked?: boolean
   checkDisabled?: boolean
+  canApprove?: boolean
+  onApprove?: (vendor: VendorQuotationLike) => void
+  onReject?: (vendor: VendorQuotationLike) => void
+  onApprovalHistory?: (vendor: VendorQuotationLike) => void
   onCheckedChange?: (checked: boolean, vendor: VendorQuotationLike) => void
   expanded?: boolean
   defaultExpanded?: boolean
@@ -907,6 +912,10 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   vendor,
   checked,
   checkDisabled = false,
+  canApprove = false,
+  onApprove,
+  onReject,
+  onApprovalHistory,
   onCheckedChange,
   expanded,
   defaultExpanded = false,
@@ -938,6 +947,10 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     if (expanded === undefined) setInnerExpanded(next)
     onExpandedChange?.(next)
   }
+  const collapseCard = () => {
+    if (expanded === undefined) setInnerExpanded(false)
+    onExpandedChange?.(false)
+  }
   const handleChecked = (next: boolean) => {
     if (checked === undefined) setInnerChecked(next)
     onCheckedChange?.(next, vendor)
@@ -957,8 +970,9 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const [fetchedTerms, setFetchedTerms] = useState<QuotationTermsLike[] | null>(null)
   const [fetching, setFetching] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [stale, setStale] = useState(false)
   const requestId = useRef(0)
-  const needsFetch = !!loadTerms && !vendorHasTerms && fetchedTerms === null
+  const needsFetch = !!loadTerms && !vendorHasTerms && (fetchedTerms === null || stale)
   const activeTerms = vendorHasTerms ? vendorTerms : fetchedTerms
 
   useEffect(() => {
@@ -966,6 +980,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     setFetchedTerms(null)
     setFetchError(null)
     setFetching(false)
+    setStale(false)
   }, [vendor.VendorId])
 
   const fetchTerms = useCallback(async () => {
@@ -977,6 +992,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
       const res = await loadTerms(vendor)
       if (id !== requestId.current) return
       setFetchedTerms(Array.isArray(res) ? res : res ? [res] : [])
+      setStale(false)
     } catch (err) {
       if (id !== requestId.current) return
       setFetchError(err instanceof Error && err.message ? err.message : 'Could not load the quotation. Try again.')
@@ -1003,11 +1019,17 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const [dayDrafts, setDayDrafts] = useState<DayDraft>({ completion: '', payment: '' })
   const [dayBaseline, setDayBaseline] = useState<DayDraft>({ completion: '', payment: '' })
 
+  // Re-sync the table ONLY when the source data really changed (new props / refetched terms).
+  // Leaving edit mode alone must not reset it: that used to overwrite the just-saved values
+  // with the older, cached terms.
+  const syncedSource = useRef({ terms: activeTerms, fallback: fallbackLines })
   useEffect(() => {
-    if (!isEditing) {
-      setLines(getQuotationLines(activeTerms, fallbackLines))
-      setSavedDays(readDays(activeTerms))
-    }
+    if (isEditing) return
+    const prev = syncedSource.current
+    if (prev.terms === activeTerms && prev.fallback === fallbackLines) return
+    syncedSource.current = { terms: activeTerms, fallback: fallbackLines }
+    setLines(getQuotationLines(activeTerms, fallbackLines))
+    setSavedDays(readDays(activeTerms))
   }, [activeTerms, fallbackLines, isEditing])
 
   const viewLines = useMemo(() => enrichLines(lines, boqLineItems), [lines, boqLineItems])
@@ -1165,6 +1187,8 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
       setLines(patch.ContractRequisitionQuotationData)
       setSavedDays({ completion: draftToDays(dayDrafts.completion), payment: draftToDays(dayDrafts.payment) })
       exitEdit()
+      if (loadTerms && !vendorHasTerms) setStale(true)
+      collapseCard()
     } catch (err) {
       setSaveError(err instanceof Error && err.message ? err.message : 'Could not save changes. Try again.')
     } finally {
@@ -1217,6 +1241,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const totalVar = variance(grand.boqQuoted, grand.contractBase)
   const dash = !hasItems
   const isVerified = vendor.VerifiedNonVerified === 'Verified'
+  const showApprovalActions = canApprove && !!vendor.IsFinalized
 
   /* ---- cell renderers ---- */
   const cellBase = 'px-3 py-2 text-xs text-gray-900 border-r border-gray-100 align-middle'
@@ -1406,15 +1431,29 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
           </div>
         ))}
 
-        <button
-          type="button"
-          onClick={(e) => { e.stopPropagation(); toggleExpanded() }}
-          aria-expanded={isExpanded}
-          aria-label={isExpanded ? 'Collapse quotation' : 'Expand quotation'}
-          className="ml-auto rounded-md bg-gray-100 p-1 text-gray-700 transition-colors hover:bg-gray-200"
-        >
-          <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-        </button>
+        <div className="ml-auto flex items-center gap-2">
+          {showApprovalActions && (
+            <div onClick={(e) => e.stopPropagation()}>
+              <ApprovalActions
+                approvalStatus={vendor.VendorFinalizationApproval ?? undefined}
+                onApprove={() => onApprove?.(vendor)}
+                onReject={() => onReject?.(vendor)}
+                showApproval={vendor.IsApproval === true}
+                isIcons={true}
+                onHistory={() => onApprovalHistory?.(vendor)}
+              />
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); toggleExpanded() }}
+            aria-expanded={isExpanded}
+            aria-label={isExpanded ? 'Collapse quotation' : 'Expand quotation'}
+            className="rounded-md bg-gray-100 p-1 text-gray-700 transition-colors hover:bg-gray-200"
+          >
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+          </button>
+        </div>
       </div>
 
       {isExpanded && (

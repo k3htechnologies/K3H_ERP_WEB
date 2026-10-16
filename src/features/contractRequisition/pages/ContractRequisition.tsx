@@ -22,7 +22,6 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { Button, Input } from "@/ui/components/forms";
 import { Edit, Trash2 } from "lucide-react";
-import { getContractRequisitionStatusColor } from "../utils/contractRequisitionUtils";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { handleExportFile } from "@/core/utils/exportFile";
@@ -33,6 +32,7 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants";
 import { DateInput } from "@/ui/components/forms/DateInput";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 export const ContractRequisition: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -293,6 +293,16 @@ export const ContractRequisition: React.FC = () => {
   const handleExportContractRequisitionsExcel = () => handleExportContractRequisition("Excel");
   const handleExportContractRequisitionPdf = () => handleExportContractRequisition("PDF");
 
+  const getContractRequisitionStatusColor = (status: string = "") => {
+    const map: Record<string, { bg: string; text: string }> = {
+      "Completed": { bg: "#51E5514A", text: "#48C848" },
+      "Closed": { bg: "#FF003726", text: "#FF0037" },
+      "Ongoing": { bg: "#DBEAFE", text: "#2563EB" },
+    };
+    return map[status] ?? { bg: "#F3F4F6", text: "#111827" };
+  };
+
+
   const ContractRequisitionColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -312,7 +322,7 @@ export const ContractRequisition: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value) => value || "-",
+        render: (value) => value.toUpperCase() || "-",
       },
       {
         key: "ContractStatus",
@@ -320,19 +330,24 @@ export const ContractRequisition: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value) => {
+        render: (value, row) => {
           const { bg, text } = getContractRequisitionStatusColor(value);
 
           return (
-            <span
-              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-              style={{
-                backgroundColor: bg,
-                color: text,
-              }}
-            >
-              {value || "-"}
-            </span>
+                    <div className="flex items-center gap-2">
+                        <span
+                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                            style={{
+                                backgroundColor: bg,
+                                color: text,
+                            }}
+                        >
+                            {value || "-"}
+                        </span>
+                        {["COMPLETED", "CLOSED"].includes(value?.toUpperCase()) && (
+                            <FieldInfoTooltip value={row.CloseCompletionRemark} />
+                        )}
+                    </div>
           );
         },
       },

@@ -2,6 +2,7 @@ import * as E from "fp-ts/Either";
 
 import type { Failure } from "@/core/api/FailureResponse";
 import type {
+  CloseContractRequisitionRequest,
   ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationContractRequisition, PullProjectLockAndKeyContractStatusRequest,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
 import { ContractRequisitionDatasourceImpl } from "@/features/contractRequisition/datasources/ContractRequisitionDataSource";
@@ -38,7 +39,7 @@ export const contractRequisitionService = {
     }
   },
   apiCallCloseContractRequisition: async (
-    payload: DeleteContractRequisitionRequest,
+    payload: CloseContractRequisitionRequest,
   ): Promise<E.Either<Failure, ContractRequisitionDeleteResponse>> => {
     try {
       return E.right(await ContractRequisitionDatasource.closeContractRequisition(payload));

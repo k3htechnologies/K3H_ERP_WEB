@@ -18,7 +18,6 @@ import type {
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import { Loader } from "@/core/utils/loader";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import { Button, Input } from "@/ui/components/forms";
@@ -30,7 +29,11 @@ import QuotationCard, { type QuotationSavePatch } from "@/features/contractRequi
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { contractRequisitionQuotationService } from "@/features/contractRequisition/services/ContractRequisitionQuotationService";
 
-export const FinalizedContractVendor: React.FC = () => {
+interface FinalizedContractVendorProps {
+  onApprovalSuccess?: () => Promise<void>;
+}
+
+export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = ({ onApprovalSuccess }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [contractRequisitionVendorSelectedList, setContractRequisitionVendorSelectedList] = useState<SelectedVendorData[]>([]);
@@ -53,7 +56,7 @@ export const FinalizedContractVendor: React.FC = () => {
   const { canAction: cangetCompare } = useMenuPermissions('Contract - Get Compare');
   const { canAction: cangetQuotation } = useMenuPermissions('Contract - Get Quotation');
   const { canAction: canfinalizeVendor } = useMenuPermissions('Contract - Finalized Vendor');
-  
+
   useEffect(() => {
     if (!projectId) return;
     loadVendorForEnquiry();
@@ -144,9 +147,15 @@ export const FinalizedContractVendor: React.FC = () => {
         };
         const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
         if (E.isRight(response)) {
+
           addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
           setIsApprovalActionModalOpen(false);
+
           await loadSelectedVendorForEnquiry();
+
+          await onApprovalSuccess?.();
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -230,11 +239,10 @@ export const FinalizedContractVendor: React.FC = () => {
 
   const finalizedVendor = contractRequisitionVendorSelectedList.find((v) => v.IsFinalized);
   const isAnyFinalized = !!finalizedVendor;
-  const isApprovalAvailable = finalizedVendor?.IsApproval === true;
 
   const handleApprovalLog = () => {
     const request: ModulesApprovalStatusRequest = {
-      ModuleName: "FINALIZED VENDOR",
+      ModuleName: "CONTRACT - FINALIZED VENDOR",
       Id: ContractRequisitionId ?? 0,
       ProjectId: projectId ?? 0,
     };
@@ -342,16 +350,6 @@ export const FinalizedContractVendor: React.FC = () => {
       </Loader>
 
       <div className="flex justify-end gap-2">
-        {isAnyFinalized && canfinalizeVendor && (
-          <ApprovalActions
-            approvalStatus={finalizedVendor?.VendorFinalizationApproval}
-            onApprove={() => handleApproveRejectVendor("approve")}
-            onReject={() => handleApproveRejectVendor("reject")}
-            showApproval={isApprovalAvailable}
-            isIcons={true}
-            onHistory={handleApprovalLog}
-          />
-        )}
 
         {isAnyFinalized && (
           <ApprovalLogModal
@@ -407,8 +405,7 @@ export const FinalizedContractVendor: React.FC = () => {
           loading={isLoading}
         />
 
-        {/* {!isAnyFinalized && cangetQuotation && ( */}
-        {true && (
+        {!isAnyFinalized && cangetQuotation && (
           <Button
             size="sm"
             style={{
@@ -431,6 +428,7 @@ export const FinalizedContractVendor: React.FC = () => {
           </section> :
           contractRequisitionVendorSelectedList.map((vendor) => (
             <QuotationCard
+              key={vendor.VendorId}
               vendor={vendor}
               loadTerms={async (v) => {
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
@@ -453,14 +451,17 @@ export const FinalizedContractVendor: React.FC = () => {
                   setCheckedFinalVendor(Number(vendor.VendorId));
                 }
               }}
-              readOnly={!canAction}
+              readOnly={!canAction || isAnyFinalized}
               onSave={async (patch) => {
                 handleSavequotation(vendor.VendorId ?? 0, patch);
               }}
+              canApprove={canfinalizeVendor}
+              onApprove={() => handleApproveRejectVendor("approve")}
+              onReject={() => handleApproveRejectVendor("reject")}
+              onApprovalHistory={handleApprovalLog}
             />
           ))
       }
-
 
       <DeleteDialog
         isOpen={isFinalizeConfirmationOpen}

@@ -154,7 +154,7 @@ export const ContractInvoice: React.FC = () => {
       setLoadingMessage,
       async () => {
         const params: DeleteContractRequisitionInvoice = {
-          ProjectId: deleteContractInvoiceData.ProjectId || 0,
+          ProjectId: Number(projectId),
           ContractRequisitionId: deleteContractInvoiceData.ContractRequisitionId || 0,
           ContractRequisitionInvoiceId: deleteContractInvoiceData.ContractRequisitionInvoiceId || 0,
           UniqueKey: deleteContractInvoiceData.UniqueKey || "",
@@ -203,9 +203,10 @@ export const ContractInvoice: React.FC = () => {
 
   const handleApprovalLog = (row: ContractRequisitionInvoiceData) => {
     const request: ModulesApprovalStatusRequest = {
-      ModuleName: "CONTRACT INVOICE APPROVAL",
-      Id: row.ContractRequisitionInvoiceId ?? 0,
-      ProjectId: row.ProjectId ?? 0,
+      ModuleName: "CONTRACT - ADD INVOICE",
+      Id: ContractRequisitionId,
+      SubId: row.ContractRequisitionInvoiceId ?? 0,
+      ProjectId: Number(projectId),
     };
     setInvoiceAmount(row?.InvoiceAmount ?? 0);
     setApprovalLogRequest(request);
@@ -402,9 +403,10 @@ export const ContractInvoice: React.FC = () => {
     if (!approvalRowData) return;
 
     const payload: UpdateModulesWorkflowApprovalRequest = {
-      ModuleName: "CONTRACT INVOICE APPROVAL",
-      Id: approvalRowData.ContractRequisitionInvoiceId ?? 0,
-      ProjectId: approvalRowData.ProjectId ?? 0,
+      ModuleName: "CONTRACT REQUISITION",
+      Id: ContractRequisitionId,
+      SubId: approvalRowData.ContractRequisitionInvoiceId ?? 0,
+      ProjectId: Number(projectId),
       IsApproved: approvalActionType === "approve",
       Remarks: remark ?? null
     };
@@ -463,10 +465,10 @@ export const ContractInvoice: React.FC = () => {
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <FieldItem label="Vendor Name" value="hardcoded" />
-              <FieldItem label="Vendor Company" value="hardcoded" />
-              <FieldItem label="Mobile Number" value="hardcoded" />
-              <FieldItem label="GST Number" value="hardcoded" />
+              <FieldItem label="Vendor Name" value={invoiceSummaryData?.FinalVendor} />
+              <FieldItem label="Vendor Company" value={invoiceSummaryData?.FinalVendorCompanyName} />
+              <FieldItem label="Mobile Number" value={`${invoiceSummaryData?.FinalVendorMobileNumberCountryCode} ${invoiceSummaryData?.FinalVendorMobileNumber}`} />
+              <FieldItem label="GST Number" value={invoiceSummaryData?.FinalVendorGSTNumber} />
             </div>
           </div>
 

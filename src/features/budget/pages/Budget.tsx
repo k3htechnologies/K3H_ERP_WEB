@@ -105,7 +105,7 @@ export const Budget: React.FC = () => {
         if (!projectId) return
         setSelectedWingId(0);
         setPagination({ currentPage: 1 });
-        loadBudgetData(1, filters, sortInfo, searchTerm)
+        loadBudgetData(1, filters, sortInfo, searchTerm, 0)
     }, [projectId]);
 
     const flatFetchParams = useMemo(() => ({
@@ -580,13 +580,9 @@ export const Budget: React.FC = () => {
             label: 'Flat',
             width: '15',
             sortable: false,
-            align: 'left',
-            render: (value) => (
-                <TooltipText
-                    text={value || ""}
-                    tooltipThreshold={25}
-                    maxWidth="200px"
-                />
+            align: 'center',
+             render: (value) => (
+                <FieldInfoTooltip value={value} />
             )
         },
         {
@@ -987,6 +983,9 @@ export const Budget: React.FC = () => {
     const isBudgetApproved = approvalInfo?.ApprovalStatus === "Approved" || approvalInfo?.ApprovalStatus === "Partial Approved";
 
     const grandTotal = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
+    const grandMaterialCost = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.MaterialCost) || 0), 0);
+    const grandLabourCost = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.LabourCost) || 0), 0);
+    const grandPMCost = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.PMCost) || 0), 0);
 
 
     const loadInventoryProjectBasementPodiumWingBudgetData = useCallback(async () => {
@@ -1154,6 +1153,25 @@ export const Budget: React.FC = () => {
                 emptyMessage="No Budget Data"
                 loading={isLoading}
             />
+
+            <div className="w-full border border-gray-200 bg-gray-50 shadow-sm">
+
+                <div className="grid grid-cols-3 gap-4 px-3 py-2 font-medium text-gray-700">
+
+                    <div>
+                        Material Rate : <span className="ml-2">  {formatCurrency(grandMaterialCost)}  </span>
+                    </div>
+
+                    <div>
+                        Labour Rate : <span className="ml-2"> {formatCurrency(grandLabourCost)} </span>
+                    </div>
+
+                    <div>
+                        P&M Rate :  <span className="ml-2">  {formatCurrency(grandPMCost)}  </span>
+                    </div>
+
+                </div>
+            </div>
 
             <div className="w-full border border-gray-200 bg-gray-50 shadow-sm">
                 <div className="flex items-center justify-between px-2 py-2">
@@ -1609,20 +1627,10 @@ export const Budget: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Category Name"
+                            label="Cost Head / Description"
                             value={tempFilters?.CategoryName ?? ""}
                             onChange={(e) => handleFilterChange("CategoryName", e.target.value)}
-                            placeholder="Enter Category Name"
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            type="text"
-                            label="UOM"
-                            value={tempFilters?.Uom ?? ""}
-                            onChange={(e) => handleFilterChange("Uom", e.target.value)}
-                            placeholder="Enter UOM"
+                            placeholder="Enter Cost Head / Description"
                         />
                     </div>
 

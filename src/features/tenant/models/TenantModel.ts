@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel"
 
 export interface FilterWithPaginationTenantRequest {
   PageSize: number
@@ -26,6 +27,12 @@ export interface FilterWithPaginationTenantRequest {
   UnitConfiguration?: string | '';
   ExportType?: 'Excel' | 'PDF'
 }
+export interface FilterTenantByIdRequest {
+  ProjectId?: number
+  BuildingId?: number
+  TenantId?: number
+  SystemGeneratedCode?: string | ''
+}
 
 export interface TenantData {
   TenantId: number;
@@ -42,8 +49,10 @@ export interface TenantData {
   Flat: string | null;
   FlatFacing: string | null;
   RERACarpetAreaSqFt: number | null;
-  InventoryFlatType: string | null;
-  InventoryFlatConfiguration: string | null;
+  FlatType: string | null;
+  FlatConfiguration: string | null;
+  AdjustPurchaseAreaSqFt: number | null;
+  FlatIsEditDelete:boolean;
 
   ParkingData: Parking[];
   ParkingNumber: string | null;
@@ -79,6 +88,8 @@ export interface TenantData {
 
   BookingId: number | null;
   ApplicantName?: string | null;
+
+  InventoryFlatData?: InventoryFlatData[] | null;
 }
 
 export interface Parking {
@@ -161,7 +172,8 @@ export interface AddUpdateTenantRequest {
   ExistingTerraceAreaSqFt: number;
   AreaAgainstTerraceSqFt: number;
   Remark: string | null;
-  InventoryFlatId: number | null;
+  InventoryFlatId: string;
+  AddUpdateTenantInventoryAndAdjustPurchaseAreaDetailsJSON: string | null;
 }
 
 export interface AddUpdateTenantApplicant {
@@ -226,6 +238,7 @@ export interface DeleteTenantRequest {
 }
 
 export type TenantListResponse = ApiResponse<TenantData[]>;
+export type TenantByIdListResponse = ApiResponse<TenantData[]>;
 export type TenantSaveResponse = ApiResponse<TenantData[]>;
 export type TenantDeleteResponse = ApiResponse<number>;
 

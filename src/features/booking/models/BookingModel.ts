@@ -164,6 +164,7 @@ export interface BookingData {
     TenantBuildingId: number | null; 
     TenantBuildingName: string | null;
     CarpetAreaPurchasedSqFt:string | null; 
+    AdjustPurchaseAreaSqFt?: number | null;
     IsApplicableOtherCharge:boolean | null;
 }
 
@@ -388,7 +389,7 @@ export interface DeleteBookingRequest {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectId: number | null;
-    InventoryFlatId: number | null;
+    InventoryFlatId:  number | null;
     ParkingId: string | null;
 }
 

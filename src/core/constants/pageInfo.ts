@@ -617,7 +617,7 @@ export const getPageInfo = (path: string) => {
       };
     case "constructionArea":
       return {
-        title: "construction Area",
+        title: "Construction Area",
         description: "Overview of your system and key metrics",
       };
 

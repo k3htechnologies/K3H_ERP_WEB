@@ -653,6 +653,14 @@ export const ViewTenantBooking: React.FC = () => {
                                                 )}
                                             </div>
 
+                                            <div className="py-4">
+                                                <FieldItem label="Adjust Purchase Area" value={`${bookingData?.AdjustPurchaseAreaSqFt ?? 0} SqFt`} isRow />
+                                            </div>
+
+                                            <div className="py-4">
+                                                <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
+                                            </div>
+
 
                                             <div className="py-4">
                                                 <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
@@ -821,10 +829,10 @@ export const ViewTenantBooking: React.FC = () => {
                                             const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
 
                                             return (
-                                                <div key={parking.ParkingId || index} className="pt-4">
-                                                    <h3 className="text-sm font-semibold text-gray-500">
+                                                <div key={parking.ParkingId || index} className={index === 0 ? "" : "pt-3"}>
+                                                    <span className="inline-flex items-center  bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
                                                         Parking {index + 1}
-                                                    </h3>
+                                                    </span>
                                                     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
                                                         <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
                                                         <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />

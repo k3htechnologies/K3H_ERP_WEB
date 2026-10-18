@@ -190,7 +190,9 @@ export const ConstructionAreaComparative: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {}
 
-
+        if (formData.AreaByPLLineSqMt === null || formData.AreaByPLLineSqMt === undefined || Number(formData.AreaByPLLineSqMt) <= 0) {
+            newErrors.AreaByPLLineSqMt = "Area By PL Line is required";
+        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -313,7 +315,7 @@ export const ConstructionAreaComparative: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-           render: value => `${value || 0} SqMt`
+            render: value => `${value || 0} SqMt`
         },
         {
             key: 'VariationInPercentage',
@@ -321,7 +323,7 @@ export const ConstructionAreaComparative: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-           render: value => `${value || 0} %`
+            render: value => `${value || 0} %`
         },
         {
             key: 'AnnexureURL',
@@ -367,7 +369,7 @@ export const ConstructionAreaComparative: React.FC = () => {
             width: "33",
             sortable: false,
             align: "left",
-            render: (value) =>  formatDate_dd_MonthName_yy(value),
+            render: (value) => formatDate_dd_MonthName_yy(value),
         },
         {
             key: 'Actions',
@@ -477,8 +479,8 @@ export const ConstructionAreaComparative: React.FC = () => {
                     setFormData(initialFormStateForConstructionAreaComparativeData());
                     setErrors({});
                 }}
-                title="Add Construction Area Comparative Data"
-                saveText="Add"
+                title="Update Construction Area Comparative"
+                saveText="Update"
                 onSubmit={handleAddConstructionAreaComparative}
                 size='xl'
             >
@@ -486,12 +488,14 @@ export const ConstructionAreaComparative: React.FC = () => {
                     <div>
                         <Input
                             label="Area By PL Line (SqMt)"
+                            required
                             type="text"
                             disabled={editingConstructionAreaComparative?.Type === "Project Area"}
                             value={formData.AreaByPLLineSqMt || ''}
                             onChange={(e) => handleFieldChange('AreaByPLLineSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                             placeholder="Enter Area By PL Line"
                             rightIcon="SqMt"
+                            error={errors.AreaByPLLineSqMt}
                         />
                     </div>
 

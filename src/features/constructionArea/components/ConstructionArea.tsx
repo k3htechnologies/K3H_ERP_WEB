@@ -19,13 +19,16 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { Button, Input } from "@/ui/components/forms";
 import type { AddUpdateConstructionAreaRequest } from "@/features/constructionArea/models/ConstructionAreaModel";
 import { Edit } from "lucide-react";
-import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { allowPercentage, filterNumbersWithDecimal, isValidPercentage } from "@/core/utils/fileValidation";
 import DataTableRowSpan, { getRowSpan, type TableRowSpanColumn } from "@/ui/components/DataTable/DataTableRowSpan";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { getFloorStatuscolor } from "@/features/constructionArea/utils/Status";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
+import { technicalService } from "@/features/technical/services/TechnicalService";
 
 export const ConstructionArea: React.FC = () => {
 
@@ -58,6 +61,7 @@ export const ConstructionArea: React.FC = () => {
     const { projectId } = useProject();
     const { addToast } = useToast();
     const [isShowCustomizeConstructionAreaColumnsModal, setIsShowCustomizeConstructionAreaColumnsModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
 
     const loadConstructionArea = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
@@ -197,7 +201,17 @@ export const ConstructionArea: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {}
 
+        if (formData.AreaByPLLineSqMt === null || formData.AreaByPLLineSqMt === undefined || Number(formData.AreaByPLLineSqMt) <= 0) {
+            newErrors.AreaByPLLineSqMt = "Area By PL Line is required";
+        }
 
+        if (formData.MultiplierForAreaPercentage === null || formData.MultiplierForAreaPercentage === undefined || Number(formData.MultiplierForAreaPercentage) <= 0) {
+            newErrors.MultiplierForAreaPercentage = 'Multiplier For Area is required.';
+        } else if (Number(formData.MultiplierForAreaPercentage) < 0) {
+            newErrors.MultiplierForAreaPercentage = 'Multiplier For Area  cannot be negative.';
+        } else if (!isValidPercentage(String(formData.MultiplierForAreaPercentage))) {
+            newErrors.MultiplierForAreaPercentage = 'Enter a valid percentage'
+        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -250,19 +264,25 @@ export const ConstructionArea: React.FC = () => {
 
                         setConstructionAreaDataList(prevData =>
                             prevData.map(item =>
+                                item.InventoryFlatId === formData.InventoryFlatId ? updatedRecord : item
+                            )
+                        );
+
+                        setConstructionAreaDataList(prevData =>
+                            prevData.map(item =>
                                 item.BuildingNumber === updatedRecord.BuildingNumber &&
                                     item.Floor === updatedRecord.Floor &&
                                     item.Wing === updatedRecord.Wing
                                     ? {
                                         ...item,
                                         FloorToFloorHeightMt: updatedRecord.FloorToFloorHeightMt,
-                                        CumlativeHeightMt: updatedRecord.CumlativeHeightMt
+                                        CumulativeHeightMt: updatedRecord.CumulativeHeightMt
                                     }
                                     : item
                             )
                         );
 
-                        
+
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     }
                     setFormData(initialFormStateForConstructionAreaData())
@@ -283,7 +303,7 @@ export const ConstructionArea: React.FC = () => {
         )
     }
 
-    const handleExportConstructionAreaData = async (exportType: 'Excel' | 'PDF') => {
+    const handleExportConstructionAreaData = async (exportType: 'Excel' | 'PDF' | 'Sample') => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -308,7 +328,7 @@ export const ConstructionArea: React.FC = () => {
 
                 const response = await constructionAreaService.apiCallPullConstructionArea(params);
 
-                handleExportFile(response, exportType, 'ConstructionArea Data', addToast);
+                handleExportFile(response, exportType === "Sample" ? "Excel" : exportType, 'ConstructionArea Data', addToast);
 
                 return response;
             },
@@ -438,7 +458,7 @@ export const ConstructionArea: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-',
+            render: value => value || 0,
             rowSpan: (_row, index, data) =>
                 getRowSpan(
                     data,
@@ -447,12 +467,12 @@ export const ConstructionArea: React.FC = () => {
                 )
         },
         {
-            key: 'CumlativeHeightMt',
-            label: 'Cumlative Height (Mt)',
+            key: 'CumulativeHeightMt',
+            label: 'Cumulative Height (Mt)',
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-',
+            render: value => value || 0,
             rowSpan: (_row, index, data) =>
                 getRowSpan(
                     data,
@@ -527,7 +547,7 @@ export const ConstructionArea: React.FC = () => {
         },
     ], [handleEditConstructionAreaData]);
 
-    const requiredConstructionAreaDataColumnKeys: string[] = ['Name', 'Actions'];
+    const requiredConstructionAreaDataColumnKeys: string[] = ['BuildingNumber', 'Floor', 'Wing', 'Actions'];
 
     const allConstructionAreaDataColumnKeys: string[] = ConstructionAreaDataColumns.map(c => c.key);
 
@@ -596,6 +616,39 @@ export const ConstructionArea: React.FC = () => {
     )
     const ConstructionAreaDataForTable = useMemo(() => ConstructionAreaList, [ConstructionAreaList]);
 
+    const handleDownloadExcelSample = () => handleExportConstructionAreaData("Sample");
+
+    const uploadExcel = async (file: File, mergeExisting: string) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const fd = new FormData();
+
+                fd.append("ExcelFile", file);
+                fd.append("IsAllDelete", mergeExisting);
+                fd.append("TableName", "CONSTRUCTION AREA");
+                fd.append("ProjectId", String(projectId));
+
+                const response = await technicalService.apiCallExcelImport(fd);
+
+                if (E.isRight(response)) {
+                    addToast({ type: "success", title: "Excel imported sucessfully" });
+
+                    loadConstructionArea(1, filters, sortInfo, searchTerm);
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (err: any) => addToast({ type: "error", title: err.message }),
+            undefined,
+            "Importing Excel",
+        );
+    };
+
     return (
         <div>
 
@@ -615,7 +668,7 @@ export const ConstructionArea: React.FC = () => {
                     setShowFilterPopup(true);
                 }}
 
-                isShowAddButton={canAction && Number(projectId) > 0 ? true : false}
+                isShowAddButton={false}
                 addTitle="Add"
                 onAdd={handleAddConstructionAreaModal}
 
@@ -623,6 +676,12 @@ export const ConstructionArea: React.FC = () => {
                 onCustomize={() => {
                     setIsShowCustomizeConstructionAreaColumnsModal(true);
                 }}
+
+                isShowImportButton={canAction}
+
+                onUploadExcel={() => setShowImportModal(true)}
+                onDownloadSampleExcel={handleDownloadExcelSample}
+
                 isShowExportButton={canExport && ConstructionAreaDataForTable.length > 0}
                 onExportExcel={handleExportConstructionAreaDataExcel}
                 onExportPdf={handleExportConstructionAreaDataPdf}
@@ -717,10 +776,10 @@ export const ConstructionArea: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label='Flat'
+                            label='Unit'
                             value={tempFilters.Flat || ''}
                             onChange={e => handleFilterChange('Flat', e.target.value)}
-                            placeholder="Enter Flat"
+                            placeholder="Enter Unit"
                             maxLength={20}
                         />
                     </div>
@@ -728,10 +787,10 @@ export const ConstructionArea: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label='Flat Type'
+                            label='Unit Type'
                             value={tempFilters.FlatType || ''}
                             onChange={e => handleFilterChange('FlatType', e.target.value)}
-                            placeholder="Enter Flat Type"
+                            placeholder="Enter Unit Type"
                             maxLength={20}
                         />
                     </div>
@@ -739,10 +798,10 @@ export const ConstructionArea: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label='Flat Configuration'
+                            label='Unit Configuration'
                             value={tempFilters.FlatConfiguration || ''}
                             onChange={e => handleFilterChange('FlatConfiguration', e.target.value)}
-                            placeholder="Enter Flat Configuration"
+                            placeholder="Enter Unit Configuration"
                             maxLength={20}
                         />
                     </div>
@@ -763,20 +822,64 @@ export const ConstructionArea: React.FC = () => {
                     setFormData(initialFormStateForConstructionAreaData());
                     setErrors({});
                 }}
-                title="Add Construction Area Data"
-                saveText="Add"
+                title="Update Construction Area"
+                saveText="Update"
                 onSubmit={handleAddConstructionArea}
                 size='xl'
             >
                 <div className="space-y-4 p-6 bg-blue-100">
+                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+
+                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <FieldItem
+                                label="Building Number"
+                                value={editingConstructionArea?.BuildingNumber || "-"}
+                                isRow={false}
+                            />
+
+                            <FieldItem
+                                label="Wing"
+                                value={editingConstructionArea?.Wing || "-"}
+                                isRow={false}
+                            />
+
+                            <FieldItem
+                                label="Floor"
+                                value={editingConstructionArea?.Floor || "-"}
+                                isRow={false}
+                            />
+
+                            <FieldItem
+                                label="Unit Type"
+                                value={editingConstructionArea?.FlatType || "-"}
+                                isRow={false}
+                            />
+
+                            <FieldItem
+                                label="Unit Configuration"
+                                value={editingConstructionArea?.FlatConfiguration || "-"}
+                                isRow={false}
+                            />
+
+                            <FieldItem
+                                label="Unit"
+                                value={editingConstructionArea?.Flat || "-"}
+                                isRow={false}
+                            />
+                        </div>
+                    </div>
+
+
                     <div>
                         <Input
                             label="Area By PL Line (SqMt)"
+                            required
                             type="text"
                             value={formData.AreaByPLLineSqMt || ''}
                             onChange={(e) => handleFieldChange('AreaByPLLineSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
                             placeholder="Enter Area By PL Line"
                             rightIcon="SqMt"
+                            error={errors.AreaByPLLineSqMt}
                         />
                     </div>
                     <div>
@@ -791,7 +894,7 @@ export const ConstructionArea: React.FC = () => {
                                     handleFieldChange("MultiplierForAreaPercentage", filterNumbersWithDecimal(e.target.value));
                                 }
                             }}
-                            error={errors.ResidentialExtraCarpetPercent}
+                            error={errors.MultiplierForAreaPercentage}
                             placeholder="Enter Multiplier For Area"
                             rightIcon="%"
                         />
@@ -821,6 +924,15 @@ export const ConstructionArea: React.FC = () => {
 
                 </div>
             </Modal>
+
+            <ExportImport
+                open={showImportModal}
+                onClose={() => setShowImportModal(false)}
+                onUpload={(file, mergeExisting) => {
+                    setShowImportModal(false);
+                    uploadExcel(file, mergeExisting);
+                }}
+            />
         </div>
     );
 }

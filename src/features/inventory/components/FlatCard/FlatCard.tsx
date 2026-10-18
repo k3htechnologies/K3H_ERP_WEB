@@ -97,7 +97,8 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     tenantId: flat.TenantId,
                     tenantSystemGeneratedCode: flat.TenantSystemGeneratedCode,
                     tenantBuildingId: flat.TenantBuildingId,
-                    tenantBuildingName: flat.TenantBuildingName
+                    tenantBuildingName: flat.TenantBuildingName,
+                    AdjustPurchaseAreaSqFt:flat.AdjustPurchaseAreaSqFt
                 }
             }
         });

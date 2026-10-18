@@ -204,14 +204,14 @@ export const AddUpdateBooking: React.FC = () => {
 
   const { listState, updateListState } = useBookingListState();
   const { bookingId } = listState;
-  
+
   const [sourcePage, setSourcePage] = useState<"inventory" | "parking" | "booking" | null>(null);
 
   const isAddMode = bookingId === 0;
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions("/booking");
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  
+
   const [enquiryList, setEnquiryMasterList] = useState<EnquiryData | null>(null)
   const [enquiryUniqueCode, setEnquiryUniqueCode] = useState<string>();
   const [enquiryId, setEnquiryId] = useState<number | null>(null);
@@ -327,10 +327,10 @@ export const AddUpdateBooking: React.FC = () => {
   const [paymentScheduleStageOther, setPaymentScheduleStageOther] = useState<string>("");
   const [paymentSchedulePercentage, setPaymentSchedulePercentage] = useState<string>("");
   const [editingPaymentScheduleIndex, setEditingPaymentScheduleIndex] = useState<number | null>(null);
-  
+
   const [otherCharges, setOtherCharges] = useState<AddUpdateBookingOtherChargesRequest[]>([]);
   const [otherChargesData, setOtherChargesData] = useState<OtherChargesData[]>([]);
-  
+
   const totalPercentage = useMemo(() => {
     return paymentSchedules.reduce((sum, schedule) => {
       return sum + (schedule.PaymentSchedulePercentage || 0);
@@ -1914,7 +1914,8 @@ export const AddUpdateBooking: React.FC = () => {
       value: params?.value || "",
       projectId: projectId || 0,
       displayParkingId: parkingId || "",
-      parkingStatus: "Available"
+      parkingStatus: "Available",
+      isAcessOnlyApprovedParking: true
     });
   }, [projectId, parkingId]);
 
@@ -1941,7 +1942,7 @@ export const AddUpdateBooking: React.FC = () => {
           PageSize: 500,
           IsCheckPermission: false,
           ProjectId: Number(projectId),
-          ApplicableFor:"Sale"
+          ApplicableFor: "Sale"
         };
 
         const response = await otherChargesService.apiCallPullOtherCharges(params);
@@ -2070,79 +2071,85 @@ export const AddUpdateBooking: React.FC = () => {
             Number(enquiryId) > 0 &&
               (Number(bookingId) !== 0 || enquiryList?.FinalStage !== "Booking Done") ? (
               <div className="pt-5">
-                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                  {/* ===================== ENQUIRY DETAILS ===================== */}
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Enquiry Details</h4>
 
-                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
-                      <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
-                      <FieldItem label="E-Mail ID" value={enquiryList?.EmailId || '-'} />
-                      <FieldItem label="Name" value={enquiryList?.Name || "-"} />
-                      <FieldItem label="Nationality" value={enquiryList?.Nationality || "-"} />
-                      <FieldItem label="Mobile No" value={!enquiryList?.MobileNumber ? "-" : `${enquiryList?.MobileNumberCountryCode ?? "+91"}  ${enquiryList?.MobileNumber}`} />
-                      <FieldItem label="Source" value={enquiryList?.Source || "-"} />
-                      <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
-                      {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
-                    </div>
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
-                      <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
-                      <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
-                      <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
-                      <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
-                    </div>
-
+                  <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                    <h4 className="text-sm font-semibold text-[#13367A]">
+                      Enquiry Details
+                    </h4>
                   </div>
-
-                  {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Reference" && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                        <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
-                        <FieldItem label="Referral Project" value={enquiryList?.ReferralProjectName || "-"} />
-                        <FieldItem label="Referral Unit No" value={enquiryList?.ReferralUnitNumber || "-"} />
+                  <div className="p-4 bg-white">
+                    <div className="bg-blue-50 rounded-lg p-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                        <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
+                        <FieldItem label="E-Mail ID" value={enquiryList?.EmailId || '-'} />
+                        <FieldItem label="Name" value={enquiryList?.Name || "-"} />
+                        <FieldItem label="Nationality" value={enquiryList?.Nationality || "-"} />
+                        <FieldItem label="Mobile No" value={!enquiryList?.MobileNumber ? "-" : `${enquiryList?.MobileNumberCountryCode ?? "+91"}  ${enquiryList?.MobileNumber}`} />
+                        <FieldItem label="Source" value={enquiryList?.Source || "-"} />
+                        <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
+                        {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
                       </div>
-                    </div>
-                  )}
 
-                  {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Loyalty" && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
-                        <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
+                        <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
+                        <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
+                        <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
                       </div>
-                    </div>
-                  )}
-
-                  {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Employee Reference" && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                        <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
-                        <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
+                        <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
                       </div>
+
                     </div>
-                  )}
 
-                  {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
-                  {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
-                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                        <FieldItem label="CP Code" value={enquiryList?.ChannelPartnerCode || "-"} />
-                        <FieldItem label="CP Name" value={enquiryList?.ChannelPartnerName || "-"} />
-                        <FieldItem label="CP Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerMobileNumberCountryCode} ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
-                        <FieldItem label="CP E-Mail ID" value={enquiryList?.ChannelPartnerEmailId || '-'} />
-
-                        <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
-                        <FieldItem label="CP Team Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${enquiryList?.ChannelPartnerTeamMemberMobileNumber}` : "-"} />
-                        <FieldItem label="CP Team E-Mail ID" value={enquiryList?.ChannelPartnerTeamMemberEmailId || '-'} />
+                    {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
+                    {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Reference" && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                          <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
+                          <FieldItem label="Referral Project" value={enquiryList?.ReferralProjectName || "-"} />
+                          <FieldItem label="Referral Unit No" value={enquiryList?.ReferralUnitNumber || "-"} />
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+
+                    {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
+                    {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Loyalty" && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
+                          <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
+                    {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Employee Reference" && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg ">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                          <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
+                          <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
+                    {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
+                      <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                          <FieldItem label="CP Code" value={enquiryList?.ChannelPartnerCode || "-"} />
+                          <FieldItem label="CP Name" value={enquiryList?.ChannelPartnerName || "-"} />
+                          <FieldItem label="CP Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerMobileNumberCountryCode} ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                          <FieldItem label="CP E-Mail ID" value={enquiryList?.ChannelPartnerEmailId || '-'} />
+
+                          <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
+                          <FieldItem label="CP Team Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${enquiryList?.ChannelPartnerTeamMemberMobileNumber}` : "-"} />
+                          <FieldItem label="CP Team E-Mail ID" value={enquiryList?.ChannelPartnerTeamMemberEmailId || '-'} />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </section>
               </div>
             )
@@ -2293,38 +2300,42 @@ export const AddUpdateBooking: React.FC = () => {
             {parkingData && parkingData.length > 0 && (
 
 
-              <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
-                <h4 className="text-lg font-semibold text-gray-900">
-                  Parking Details
-                </h4>
+              <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                  <h4 className="text-sm font-semibold text-[#13367A]">
+                    Parking Details
+                  </h4>
+                </div>
+                <div className="p-4 bg-white">
 
-                {parkingData.map((parking, index) => {
+                  {parkingData.map((parking, index) => {
 
-                  const isLast = index === (parkingData?.length ?? 0) - 1;
+                    const isLast = index === (parkingData?.length ?? 0) - 1;
 
-                  return (
-                    <div key={parking.ParkingId || index} className="pt-4">
-                      <h3 className="text-sm font-semibold text-gray-500">
-                        Parking {index + 1}
-                      </h3>
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
-                        <FieldItem label="Parking Number" value={parking.ParkingNumber} />
-                        <FieldItem label="Building" value={parking.BuildingNumber} />
-                        <FieldItem label="Wing" value={parking.Wing} />
+                    return (
+                      <div key={parking.ParkingId || index} className="pt-4">
+                        <h3 className="text-sm font-semibold text-gray-500">
+                          Parking {index + 1}
+                        </h3>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                          <FieldItem label="Parking Number" value={parking.ParkingNumber} />
+                          <FieldItem label="Building" value={parking.BuildingNumber} />
+                          <FieldItem label="Wing" value={parking.Wing} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                          <FieldItem label="Floor" value={parking.Floor} />
+                          <FieldItem label="Category" value={parking.ParkingCategory} />
+                          <FieldItem label="Type" value={parking.ParkingType} />
+                        </div>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                          <FieldItem label="Size" value={parking.ParkingSubType} />
+                          <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
+                          <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                        <FieldItem label="Floor" value={parking.Floor} />
-                        <FieldItem label="Category" value={parking.ParkingCategory} />
-                        <FieldItem label="Type" value={parking.ParkingType} />
-                      </div>
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
-                        <FieldItem label="Size" value={parking.ParkingSubType} />
-                        <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
-                        <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </section>
             )}
           </div>

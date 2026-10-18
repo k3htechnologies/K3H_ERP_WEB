@@ -120,7 +120,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
   return (
     <div
-      className={`rich-text-editor bg-white rounded-xl shadow-sm border border-[#3333334f] ${className ?? ''}`}
+      className={`rich-text-editor bg-white rounded-xl  border border-[#33333321] ${className ?? ''}`}
       style={{
         width: '100%',
         marginBottom: theme.spacing.sm,

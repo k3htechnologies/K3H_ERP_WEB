@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePagination } from "@/core/hooks/usePagination";
-import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
@@ -30,8 +30,9 @@ import { useTenantListState } from "@/features/tenant/context/TenantListStateCon
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { copyToClipboard } from "@/core/utils/comman";
-import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext";
+import CustomTableRowSpan, { type CustomTableRowSpanColumn } from "@/ui/components/DataTable/CustomTableRowSpan";
+import { getRowSpan } from "@/ui/components/DataTable/DataTableRowSpan";
 
 export const Tenant: React.FC = () => {
 
@@ -280,8 +281,9 @@ export const Tenant: React.FC = () => {
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
-  const tenantColumns = useMemo<TableColumn[]>(
+  const tenantColumns = useMemo<CustomTableRowSpanColumn[]>(
     () => [
+      
       {
         key: "SystemGeneratedCode",
         label: "Tenant Code",
@@ -323,6 +325,7 @@ export const Tenant: React.FC = () => {
             </div>
           );
         },
+        rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
       },
       {
         key: "UnitAnnexureSurveyNumber",
@@ -333,6 +336,27 @@ export const Tenant: React.FC = () => {
         align: "left",
         truncate: false,
         render: (value, row) => {
+          return (
+            <div className="flex items-center gap-2">
+              <TooltipText
+                text={value || "-"}
+                maxWidth="160px"
+                tooltipThreshold={16}
+                onClick={() => handleViewTenantDetails(row)}
+              />
+            </div>
+          );
+        },
+        rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
+      },
+      {
+        key: "AllotedUnit",
+        label: "Alloted Unit",
+        width: "12",
+        sortable: false,
+        align: "center",
+
+        render: (_value, row) => {
 
           const isAllotted = !!row.Flat?.toString().trim();
           const isBookingDone = Number(row.BookingId ?? 0) > 0;
@@ -341,10 +365,9 @@ export const Tenant: React.FC = () => {
             <div className="flex items-center gap-2">
               {isAllotted && (
                 <TooltipText
-                  text={value || "-"}
+                  text={ row.Flat || "-"}
                   maxWidth="160px"
                   tooltipThreshold={16}
-                  onClick={() => handleViewTenantDetails(row)}
                 />
               )}
 
@@ -383,15 +406,15 @@ export const Tenant: React.FC = () => {
 
               {!isAllotted && !isBookingDone && (
                 <TooltipText
-                  text={value || "-"}
+                  text={ row.Flat || "-"}
                   maxWidth="160px"
                   tooltipThreshold={16}
-                  onClick={() => handleViewTenantDetails(row)}
                 />
               )}
             </div>
           );
         },
+
       },
       {
         key: "ExisitingUnitGroup",
@@ -415,6 +438,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => value ?? "-",
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
           {
@@ -430,6 +454,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "UnitConfiguration",
@@ -445,6 +470,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "UnitCarpetAreaSqFt",
@@ -460,6 +486,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "UnitFacing",
@@ -475,6 +502,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => value || "-",
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
         ]
       },
@@ -501,6 +529,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} %` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "FreeMOFACarpetAreaSqFt",
@@ -516,6 +545,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "NewEligibilityMOFACarpetAreaSqFt",
@@ -531,6 +561,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "NewEligibilityRERACarpetAreaSqFt",
@@ -546,6 +577,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "MOFACarpetAreaPurchasedSqFt",
@@ -561,6 +593,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "RERACarpetAreaPurchasedSqFt",
@@ -576,6 +609,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "TotalNewMOFACarpetAreaSqFt",
@@ -591,6 +625,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
 
@@ -608,6 +643,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "DeckAreaSqFt",
@@ -623,6 +659,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "ExistingTerraceAreaSqFt",
@@ -638,6 +675,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "AreaAgainstTerraceSqFt",
@@ -653,6 +691,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
 
@@ -677,6 +716,7 @@ export const Tenant: React.FC = () => {
 
               return total > 0 ? `${total.toFixed(2)} SqFt` : "-";
             },
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
         ]
@@ -690,6 +730,21 @@ export const Tenant: React.FC = () => {
           color: '#60D669'
         },
         children: [
+           {
+            key: "AdjustPurchaseAreaSqFt",
+            label: "Adjust Purchase Area (SqFt)",
+            width: "12",
+            sortable: false,
+            align: "center",
+            theadStyle: {
+              backgroundColor: '#FFF',
+              color: '#64748B'
+            },
+            tdStyle: {
+              backgroundColor: '#F0FDF4'
+            },
+             render: (value) => (value ? `${value} SqFt` : "-"),
+          },
           {
             key: "BuildingNumber",
             label: "Building Number",
@@ -767,7 +822,7 @@ export const Tenant: React.FC = () => {
             render: (value) => value || "-",
           },
           {
-            key: "InventoryFlatType",
+            key: "FlatType",
             label: "Unit Type",
             width: "12",
             sortable: false,
@@ -782,7 +837,7 @@ export const Tenant: React.FC = () => {
             render: (value) => value || "-",
           },
           {
-            key: "InventoryFlatConfiguration",
+            key: "FlatConfiguration",
             label: "Configuration",
             width: "12",
             sortable: false,
@@ -870,7 +925,7 @@ export const Tenant: React.FC = () => {
         align: "center",
         render: (_value, row) => {
 
-          const isDeleteDisabled = !canAction || Number(row.BookingId ?? 0) > 0;
+          const isDeleteDisabled = !canAction || !row.FlatIsEditDelete;
 
           return canAction ? (
 
@@ -920,6 +975,7 @@ export const Tenant: React.FC = () => {
             </div>
           ) : null;
         },
+         rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
       }
     ],
     [handleViewTenantDetails, handleViewTenantDocument, handleConfirmationDialogBoxOpen, canAction],
@@ -937,6 +993,7 @@ export const Tenant: React.FC = () => {
     "BuildingNumber",
     "Wing",
     "Flat",
+    "AllotedUnit",
     "actions",
   ];
 
@@ -1189,7 +1246,7 @@ export const Tenant: React.FC = () => {
         </div>
       </div>
 
-      <CustomTable
+      <CustomTableRowSpan
         data={tenantsForTable}
         columns={visibleTenantColumns}
         pagination={tenantPaginationInfo}

@@ -300,11 +300,11 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       let top: number;
       let maxHeight: number;
       let openUpward = false;
-      
+
       if (hasEnoughSpaceBelow) {
-        
+
         top = rect.bottom;
-        maxHeight = calculatedHeight+15;
+        maxHeight = calculatedHeight + 15;
 
       } else if (hasMoreSpaceAbove && availableSpaceAbove >= minHeight) {
         openUpward = true;
@@ -406,17 +406,22 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               padding: `${sizeStyles.padding + 4}px 16px`,
               fontSize: themeFontSize,
               borderRadius: theme.borderRadius.lg,
-              backgroundColor: theme.colors.background,
+              backgroundColor: disabled ? theme.colors.backgroundSecondary  : theme.colors.background,
               border: `0.5px solid ${displayError ? theme.colors.error : isOpen ? theme.colors.primary : theme.colors.border}`,
               cursor: disabled ? "not-allowed" : "pointer",
-              color: theme.colors.text, userSelect: "none", boxSizing: "border-box",
+              color: disabled ? theme.colors.textLight : theme.colors.text,
+              userSelect: "none",
+              boxSizing: "border-box",
               transition: "all 0.2s ease-in-out",
               boxShadow: isOpen ? theme.shadows.sm : "none",
             }}
           >
             <span style={{
-              flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-              color: selectedItem ? "#000" : theme.colors.textLight, fontWeight: "400",
+              flex: 1, whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              color: disabled ? theme.colors.textLight : selectedItem ? "#000" : theme.colors.textLight,
+              fontWeight: "400",
             }}>
               {selectedItem?.label ?? title}
             </span>

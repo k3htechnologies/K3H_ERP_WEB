@@ -259,7 +259,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
         TenantId: existingTenantId,
         TenantSystemGeneratedCode: existingTenantCode,
         TenantBuildingId: existingTenantBuildingId,
-        TenantBuildingName: existingTenantBuildingName
+        TenantBuildingName: existingTenantBuildingName,
+        AdjustPurchaseAreaSqFt:flatDataFromState.AdjustPurchaseAreaSqFt
       });
 
       setSelectedWing(flatDataFromState.Wing || "");
@@ -1044,8 +1045,9 @@ export const AddUpdateTenantBooking: React.FC = () => {
       value: params?.value || "",
       projectId: projectId || 0,
       displayParkingId: parkingId || "",
-      parkingStatus: "Member"
-
+      parkingStatus: "Member",
+      isAcessOnlyApprovedParking: false,
+      approvalStatus: "Approved"
     });
   }, [projectId, parkingId]);
 
@@ -1071,7 +1073,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
           PageSize: 500,
           IsCheckPermission: false,
           ProjectId: Number(projectId),
-          ApplicableFor:"Tenant"
+          ApplicableFor: "Tenant"
         };
 
         const response = await otherChargesService.apiCallPullOtherCharges(params);
@@ -1466,7 +1468,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
 
             {formData.BookingType === "FLAT" && selectedFlatData && (
               <div className="pt-5 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3">
                   <FieldItem label="Building" value={selectedFlatData?.BuildingNumber || "-"} />
 
                   <FieldItem label="Wing" value={selectedFlatData?.Wing || selectedWing || "-"} />
@@ -1480,6 +1482,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
                   <FieldItem label="Configuration" value={selectedFlatData?.FlatConfiguration || "-"} />
 
                   <FieldItem label="RERA Carpet Area" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
+
+                  <FieldItem label="Adjust Purchase Area" value={selectedFlatData?.AdjustPurchaseAreaSqFt ? `${selectedFlatData.AdjustPurchaseAreaSqFt} SqFt` : "-"} />
                 </div>
               </div>
             )}
@@ -1511,38 +1515,43 @@ export const AddUpdateTenantBooking: React.FC = () => {
             {parkingData && parkingData.length > 0 && (
 
 
-              <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                <h4 className="text-lg font-semibold text-gray-900">
-                  Parking Details
-                </h4>
+              <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
 
-                {parkingData.map((parking, index) => {
+                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                  <h4 className="text-sm font-semibold text-[#13367A]">
+                    Parking Details
+                  </h4>
+                </div>
+                <div className="p-4 bg-white">
 
-                  const isLast = index === (parkingData?.length ?? 0) - 1;
+                  {parkingData.map((parking, index) => {
 
-                  return (
-                    <div key={parking.ParkingId || index} className="pt-4">
-                      <h3 className="text-sm font-semibold text-gray-500">
-                        Parking {index + 1}
-                      </h3>
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
-                        <FieldItem label="Parking Number" value={parking.ParkingNumber} />
-                        <FieldItem label="Building" value={parking.BuildingNumber} />
-                        <FieldItem label="Wing" value={parking.Wing} />
+                    const isLast = index === (parkingData?.length ?? 0) - 1;
+
+                    return (
+                      <div key={parking.ParkingId || index} className={index === 0 ? "" : "pt-3"}>
+                        <span className="inline-flex items-center  bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                          Parking {index + 1}
+                        </span>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                          <FieldItem label="Parking Number" value={parking.ParkingNumber} />
+                          <FieldItem label="Building" value={parking.BuildingNumber} />
+                          <FieldItem label="Wing" value={parking.Wing} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                          <FieldItem label="Floor" value={parking.Floor} />
+                          <FieldItem label="Category" value={parking.ParkingCategory} />
+                          <FieldItem label="Type" value={parking.ParkingType} />
+                        </div>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                          <FieldItem label="Size" value={parking.ParkingSubType} />
+                          <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
+                          <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                        <FieldItem label="Floor" value={parking.Floor} />
-                        <FieldItem label="Category" value={parking.ParkingCategory} />
-                        <FieldItem label="Type" value={parking.ParkingType} />
-                      </div>
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
-                        <FieldItem label="Size" value={parking.ParkingSubType} />
-                        <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
-                        <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </section>
             )}
           </div>

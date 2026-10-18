@@ -62,17 +62,13 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
     };
   }, []);
 
-  // Calculate tooltip position
   const updateTooltipPosition = useCallback(() => {
     if (!iconRef.current || !tooltipRef.current) {
       return;
     }
 
-    const iconRect =
-      iconRef.current.getBoundingClientRect();
-
-    const tooltipRect =
-      tooltipRef.current.getBoundingClientRect();
+    const iconRect = iconRef.current.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
 
     const tooltipWidth = tooltipRect.width;
     const tooltipHeight = tooltipRect.height;
@@ -80,71 +76,25 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
     // Horizontal position
     let x = iconRect.left;
 
-    if (
-      x + tooltipWidth >
-      window.innerWidth - SCREEN_MARGIN
-    ) {
-      x =
-        window.innerWidth -
-        tooltipWidth -
-        SCREEN_MARGIN;
+    if (x + tooltipWidth > window.innerWidth - SCREEN_MARGIN) {
+      x = window.innerWidth - tooltipWidth - SCREEN_MARGIN;
     }
 
-    if (x < SCREEN_MARGIN) {
-      x = SCREEN_MARGIN;
-    }
+    x = Math.max(SCREEN_MARGIN, x);
 
-    // Available space
-    const spaceBelow =
-      window.innerHeight - iconRect.bottom;
+    // Always position below the icon
+    let y = iconRect.bottom + TOOLTIP_GAP;
 
-    const spaceAbove = iconRect.top;
-
-    let y: number;
-
-    // Prefer displaying below the icon
-    if (
-      spaceBelow >=
-      tooltipHeight + TOOLTIP_GAP + SCREEN_MARGIN
-    ) {
-      y = iconRect.bottom + TOOLTIP_GAP;
-    }
-
-    // Otherwise display above the icon
-    else if (
-      spaceAbove >=
-      tooltipHeight + TOOLTIP_GAP + SCREEN_MARGIN
-    ) {
-      y =
-        iconRect.top -
-        tooltipHeight -
-        TOOLTIP_GAP;
-    }
-
-    // Use whichever side has more available space
-    else if (spaceBelow >= spaceAbove) {
-      y = Math.min(
-        iconRect.bottom + TOOLTIP_GAP,
-        window.innerHeight -
-          tooltipHeight -
-          SCREEN_MARGIN
-      );
-
-      y = Math.max(SCREEN_MARGIN, y);
-    } else {
+    // Prevent tooltip from exceeding the bottom viewport boundary
+    if (y + tooltipHeight > window.innerHeight - SCREEN_MARGIN) {
       y = Math.max(
         SCREEN_MARGIN,
-        iconRect.top -
-          tooltipHeight -
-          TOOLTIP_GAP
+        window.innerHeight - tooltipHeight - SCREEN_MARGIN
       );
     }
 
     setPos((previous) => {
-      if (
-        previous.x === x &&
-        previous.y === y
-      ) {
+      if (previous.x === x && previous.y === y) {
         return previous;
       }
 
@@ -152,7 +102,6 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
     });
   }, []);
 
-  // Open tooltip
   const onEnter = () => {
     if (!iconRef.current) {
       return;
@@ -164,19 +113,12 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
       })
     );
 
-    const rect =
-      iconRef.current.getBoundingClientRect();
+    const rect = iconRef.current.getBoundingClientRect();
 
     let x = rect.left;
 
-    if (
-      x + TOOLTIP_WIDTH >
-      window.innerWidth - SCREEN_MARGIN
-    ) {
-      x =
-        window.innerWidth -
-        TOOLTIP_WIDTH -
-        SCREEN_MARGIN;
+    if (x + TOOLTIP_WIDTH > window.innerWidth - SCREEN_MARGIN) {
+      x = window.innerWidth - TOOLTIP_WIDTH - SCREEN_MARGIN;
     }
 
     x = Math.max(SCREEN_MARGIN, x);

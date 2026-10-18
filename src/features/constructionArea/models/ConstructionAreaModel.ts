@@ -17,7 +17,7 @@ export interface FilterWithPaginationConstructionAreaRequest {
   ApprovalStatus?: string
   constructionAreaId?: number
   SortBy?:string
-  ExportType?: "Excel" | "PDF";
+  ExportType?: "Excel" | "PDF" | "Sample";
 }
 
 export interface ConstructionAreaData {
@@ -39,7 +39,7 @@ export interface ConstructionAreaData {
   TotalAreaSqMt: number;
   TotalAreaSqFt: number;
   FloorToFloorHeightMt: number;
-  CumlativeHeightMt: number;
+  CumulativeHeightMt: number;
   Remark:string;
   CreatedById: number;
   CreatedBy: string;

@@ -3,11 +3,8 @@ import { tenantService } from '@/features/tenant/services/TenantService';
 
 export const fetchTenantBySystemGeneratedCode = async (systemGeneratedCode?: string,projectId?:number,tenantId?:number,BuildingId?:number) => {
 
-    const responseEither = await tenantService.apiCallPullTenant({
-        PageSize: 1,
-        PageNumber: 1,
+    const responseEither = await tenantService.apiCallPullTenantById({
         ProjectId:projectId,
-        IsCheckPermission: false,
         SystemGeneratedCode: systemGeneratedCode?.trim(),
         TenantId: tenantId,
         BuildingId: BuildingId,

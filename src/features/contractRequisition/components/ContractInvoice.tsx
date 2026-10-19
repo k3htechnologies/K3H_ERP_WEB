@@ -43,7 +43,7 @@ export const ContractInvoice: React.FC = () => {
 
   const navigate = useNavigate();
   const { canAction } = useMenuPermissions('/invoice');
-  const { canAction: canMakePaymentAction } = useMenuPermissions('/makePayment');
+  const { canAction: canMakePaymentAction } = useMenuPermissions('Contract - Make Payments');
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { pagination, setPagination } = usePagination(20);
@@ -380,6 +380,7 @@ export const ContractInvoice: React.FC = () => {
                   <Button
                     color="green"
                     size="md"
+                    disabled={!canMakePaymentAction}
                     onClick={() => {
                       updateListState({
                         ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId ?? 0,

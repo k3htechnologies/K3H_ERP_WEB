@@ -128,7 +128,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     //PURCHASE  MATERIAL REQUISITION
     MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
-    
+
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
 
@@ -174,10 +174,10 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
 
     STOCK_MANAGEMENT: 'stock.listState',
     MATERIAL_REQUISITION: 'materialRequisition.listState',
-    STOCK_MANAGEMENT: 'stock.listState',
     TASK: 'task.listState',
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
+    COST_TO_COMPANY: 'costToCompany.listState'
 
 
 } as const

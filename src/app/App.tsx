@@ -250,6 +250,10 @@ import ConstructionAreaDetails from '@/features/constructionArea/pages/Construct
 import Event from '@/features/event/pages/Event';
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
+import CostToCompany from '@/features/costToCompany/pages/CostToCompany';
+import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCostToCompany';
+import { CostToCompanyListStateProvider } from '@/features/costToCompany/context/CostToCompanyListStateContext';
+import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -413,6 +417,10 @@ function App() {
             <Route path="payrollReport" element={<PayrollReport />} />
 
             <Route path="attendance" element={<AttendanceCalendar />} />
+
+            <Route path='costToCompany' element={<CostToCompanyListStateProvider><CostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/add/:CostToCompanyId?' element={<CostToCompanyListStateProvider><AddUpdateCostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/view' element={<CostToCompanyListStateProvider><ViewCostToCompany /></CostToCompanyListStateProvider>} />
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
@@ -621,7 +629,6 @@ function App() {
             <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
 
             <Route path="purchaseMasterReport" element={<PurchaseMasterReport />} />
-
 
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />

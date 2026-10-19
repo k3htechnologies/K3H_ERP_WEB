@@ -18,8 +18,11 @@ export interface FilterWithPaginationCollectionReportRequest {
 export interface CollectionReportData {
   ProjectId: number | null;
   ProjectName: string | null;
-  Type: string | null;
   TotalUnit: number | null;
+  BuildingNumber: string | null;
+  Wing: string | null;
+  UnitType: string | null;
+  Type: string | null;
   TotalUnitRERACarpetAreaSqFt: number | null;
   RegistrationCompleted: number | null;
   RegistrationPending: number | null;

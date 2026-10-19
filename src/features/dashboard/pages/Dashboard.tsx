@@ -103,9 +103,7 @@ const Dashboard: React.FC = () => {
         <div className="col-span-3 lg:col-span-1">
           <WorktimeOverview workTimeOverviewTable={workTimeOverviewTable} />
         </div>
-        {/* <div className="col-span-3 lg:col-span-2">
-          <ModuleWorkFlowApproval moduleApproval={moduleApproval} />
-        </div> */}
+       
 
       </div>
       <div className="grid grid-cols-3 gap-5">

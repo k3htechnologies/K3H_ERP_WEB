@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
-import type { AddUpdateBudget, BudgetData, FilterWithPaginationBudgetRequest } from "@/features/budget/models/BudgetModel";
+import type { AddUpdateBudget, BudgetData, FilterWithInventoryProjectBasementPodiumWingBudgetRequest, FilterWithPaginationBudgetRequest, InventoryProjectBasementPodiumWingBudgetData, SubmitBudgetForApprovalData } from "@/features/budget/models/BudgetModel";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { budgetService } from "@/features/budget/services/BudgetService";
@@ -41,9 +41,14 @@ import { fetchPaginatedFlatsDropdown } from "@/features/inventory/PaginatedFlats
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { fetchInventoryProjectBasementPodiumWingBudgetDropdown } from "../InventoryProjectBasementPodiumWingBudgetDropdown";
+import Checkbox from "@/ui/components/forms/Checkbox";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
+    InventoryFlatFloorBasementPodiumWingId: 0,
     BudgetId: 0,
     UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     LevelId1: 0,
@@ -89,12 +94,18 @@ export const Budget: React.FC = () => {
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject" | "reopen">("approve");
+    const [selectedWingId, setSelectedWingId] = useState<number>(0);
+    const [showApprovalStatus, setShowApprovalStatus] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [inventoryProjectBasementPodiumWingBudgetData, setInventoryProjectBasementPodiumWingBudgetData] = useState<InventoryProjectBasementPodiumWingBudgetData[]>([]);
+    const [isWingBudgetModalOpen, setISWingBudgetIsModalOpen] = useState(false);
+
 
     useEffect(() => {
         if (!projectId) return
-
+        setSelectedWingId(0);
         setPagination({ currentPage: 1 });
-        loadBudgetData(1, filters, sortInfo, searchTerm)
+        loadBudgetData(1, filters, sortInfo, searchTerm, 0)
     }, [projectId]);
 
     const flatFetchParams = useMemo(() => ({
@@ -114,6 +125,11 @@ export const Budget: React.FC = () => {
                 projectId: Number(projectId),
                 value: params?.value,
             }),
+        [projectId]
+    );
+
+    const fetchWingCallback = useCallback((_pageNumber: number, params?: { value?: string }) =>
+        fetchInventoryProjectBasementPodiumWingBudgetDropdown({ projectId: Number(projectId), searchText: params?.value ?? "", isDisplayProjectBudget: false }),
         [projectId]
     );
 
@@ -151,7 +167,7 @@ export const Budget: React.FC = () => {
         };
     }, [budgetData, projectId]);
 
-    const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
+    const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string, wingId?: number) => {
         runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -160,6 +176,7 @@ export const Budget: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
+                    InventoryFlatFloorBasementPodiumWingId: (wingId ?? selectedWingId) || undefined,
                     BudgetId: filterParams.BudgetId ? Number(filterParams.BudgetId) : undefined,
                     CategoryName: searchText ?? filterParams.CategoryName ?? undefined,
                     LevelType: filterParams.LevelType ?? undefined,
@@ -173,6 +190,9 @@ export const Budget: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setBudgetData(response.right.Data);
+
+                    setShowApprovalStatus(response.right.Data[0]?.IsSubmitBudgetForApproval ?? false);
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -188,7 +208,8 @@ export const Budget: React.FC = () => {
             undefined,
             'Loading Budget Data'
         );
-    }, [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination]);
+    }, [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination, selectedWingId]);
+
 
     useEffect(() => {
         if (isAddUpdateModalOpen) {
@@ -209,6 +230,7 @@ export const Budget: React.FC = () => {
                 }
                 setFormData({
                     BudgetId: editBudgetData.BudgetId,
+                    InventoryFlatFloorBasementPodiumWingId: editBudgetData ? editBudgetData.InventoryFlatFloorBasementPodiumWingId : selectedWingId || formData.InventoryFlatFloorBasementPodiumWingId || 0,
                     ProjectId: Number(projectId),
                     UniqueKey: editBudgetData.UniqueKey,
                     LevelId1: editBudgetData.LevelId1,
@@ -259,12 +281,12 @@ export const Budget: React.FC = () => {
 
         if (addLevel === "L3") {
 
-              const isEmpty = (val: any) => val === undefined || val === null || val === "";
+            const isEmpty = (val: any) => val === undefined || val === null || val === "";
 
             if (isEmpty(formData?.LabourCost)) {
                 newErrors.LabourCost = "Labour Rate is Required"
             }
-            
+
             if (isEmpty(formData?.Quantity)) {
                 newErrors.Quantity = "Quantity is Required"
             }
@@ -307,6 +329,7 @@ export const Budget: React.FC = () => {
     const PushBudgetFormData = (): AddUpdateBudget => {
         return {
             BudgetId: formData.BudgetId,
+            InventoryFlatFloorBasementPodiumWingId: selectedWingId || formData.InventoryFlatFloorBasementPodiumWingId || 0,
             ProjectId: Number(projectId),
             UniqueKey: formData.UniqueKey,
             LevelId1: formData.LevelId1,
@@ -386,6 +409,7 @@ export const Budget: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
+                    InventoryFlatFloorBasementPodiumWingId: (selectedWingId) || undefined,
                     CategoryName: filters.CategoryName?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, BudgetColumns),
                     ExportType: exportType
@@ -481,36 +505,36 @@ export const Budget: React.FC = () => {
                 );
             },
         },
-      
-        { 
-            key: 'Quantity',
-             label: 'Quantity', 
-             width: '15', 
-             sortable: false, 
-             align: 'right', 
-             render: (value, row) => 
-                row.LevelType === 'L4' ? `${(Number(value) || 0) * (Number(row.L3Quantity) || 0)} ${row.Uom || ''}`
-                                         : value ? `${value} ${row.Uom || ''}` : '-' 
-                                        },
 
-                                        {
+        {
+            key: 'Quantity',
+            label: 'Quantity',
+            width: '15',
+            sortable: false,
+            align: 'right',
+            render: (value, row) =>
+                row.LevelType === 'L4' ? `${(Number(value) || 0) * (Number(row.L3Quantity) || 0)} ${row.Uom || ''}`
+                    : value ? `${value} ${row.Uom || ''}` : '-'
+        },
+
+        {
             key: 'OrderQuantity',
             label: 'Order QTY',
             width: '15',
             sortable: false,
             align: 'right',
-             render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
+            render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
         },
-        
+
         {
             key: 'ReceivedQuantity',
             label: 'Received QTY',
             width: '15',
             sortable: false,
             align: 'right',
-             render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
+            render: (value, row) => value ? `${value} ${row.Uom || ''}` : '-'
         },
-        
+
         {
             key: "MaterialCost",
             label: "Material Rate (₹)",
@@ -556,13 +580,9 @@ export const Budget: React.FC = () => {
             label: 'Flat',
             width: '15',
             sortable: false,
-            align: 'left',
-            render: (value) => (
-                <TooltipText
-                    text={value || ""}
-                    tooltipThreshold={25}
-                    maxWidth="200px"
-                />
+            align: 'center',
+             render: (value) => (
+                <FieldInfoTooltip value={value} />
             )
         },
         {
@@ -613,14 +633,14 @@ export const Budget: React.FC = () => {
                 const isApproved = row.ApprovalStatus === "Approved" || row.ApprovalStatus === "Partial Approved";
                 const showAddButton = !["L3", "L4"].includes(row.LevelType);
                 const accessToEdit =
-                                canAction &&
-                                !isApproved &&
-                                (
-                                    row.LevelType === "L3" ||
-                                    row.LevelType === "L4" ||
-                                    row.IsAccessToDelete === true
-                                );
-                                
+                    canAction &&
+                    !isApproved &&
+                    (
+                        row.LevelType === "L3" ||
+                        row.LevelType === "L4" ||
+                        row.IsAccessToDelete === true
+                    );
+
                 const canAdd = canAction && !isApproved;
 
                 return (
@@ -789,6 +809,7 @@ export const Budget: React.FC = () => {
         setFormData({
             ...initialFormState(),
             ProjectId: Number(projectId),
+            InventoryFlatFloorBasementPodiumWingId: selectedWingId,
             LevelId1: 0,
             LevelId2: 0,
             LevelId3: 0,
@@ -861,7 +882,44 @@ export const Budget: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
-    const handleApproveRejectInvoice = (approvalType: "approve" | "reject" | "reopen") => {
+    const handleSubmitBudgetForApproval = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: SubmitBudgetForApprovalData = {
+                    ProjectId: Number(projectId),
+                    InventoryFlatFloorBasementPodiumWingId: selectedWingId,
+                };
+
+                const response = await budgetService.apiCallSubmitBudgetForApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsModalOpen(false);
+
+                    setShowApprovalStatus(true);
+
+                    await loadBudgetData(1, filters, sortInfo, searchTerm);
+                } else {
+                    addToast({ type: "error", title: response.left.message, });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message, });
+            },
+            undefined,
+            "Submitting Budget for Approval"
+        );
+    };
+
+    const handleApproveRejectBudget = (approvalType: "approve" | "reject" | "reopen") => {
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
     };
@@ -869,7 +927,7 @@ export const Budget: React.FC = () => {
     const handleApprovalLog = () => {
         setApprovalLogRequest({
             Id: Number(projectId),
-            SubId: 0,
+            SubId: selectedWingId || 0,
             SubSubId: 0,
             SubSubSubId: 0,
             ProjectId: Number(projectId),
@@ -885,7 +943,7 @@ export const Budget: React.FC = () => {
         const payload: UpdateModulesWorkflowApprovalRequest = {
             ModuleName: "BUDGET APPROVAL",
             Id: Number(projectId),
-            SubId: 0,
+            SubId: selectedWingId || 0,
             ProjectId: Number(projectId),
             IsApproved: approvalActionType === "approve",
             Remarks: remark ?? null,
@@ -924,9 +982,60 @@ export const Budget: React.FC = () => {
     const approvalInfo = budgetData.length > 0 ? budgetData[0] : null;
     const isBudgetApproved = approvalInfo?.ApprovalStatus === "Approved" || approvalInfo?.ApprovalStatus === "Partial Approved";
 
-    const grandTotal = budgetData
-        .filter(item => item.LevelType === "L1")
-        .reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
+    const grandTotal = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
+    const grandMaterialCost = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.MaterialCost) || 0), 0);
+    const grandLabourCost = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.LabourCost) || 0), 0);
+    const grandPMCost = budgetData.filter(item => item.LevelType === "L1").reduce((sum, item) => sum + (Number(item.PMCost) || 0), 0);
+
+
+    const loadInventoryProjectBasementPodiumWingBudgetData = useCallback(async () => {
+        runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithInventoryProjectBasementPodiumWingBudgetRequest = {
+                    ProjectId: Number(projectId),
+                    IsDisplayProjectBudget: true
+                }
+
+                const response = await budgetService.apiCallPullInventoryProjectBasementPodiumWingBudget(params);
+
+                if (E.isRight(response)) {
+
+                    setInventoryProjectBasementPodiumWingBudgetData(response.right.Data);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: 'error', title: error.message }),
+
+            undefined,
+            'Loading Inventory Project Basement Podium Wing Budget Data'
+        );
+    }, [projectId]);
+
+    const inventoryProjectBasementPodiumWingBudgetColumn = useMemo<TableColumn[]>(() => [
+        {
+            key: 'ProjectBuildingNumberWing',
+            label: 'Component',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-',
+
+        },
+        {
+            key: 'BudgetAmount',
+            label: 'Budget Amount (₹)',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => formatCurrency(value) || '0',
+
+        },
+    ], [projectId]);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -941,13 +1050,21 @@ export const Budget: React.FC = () => {
                 isShowAddButton={canAction && Number(projectId) > 0 && !isBudgetApproved}
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
+
+                isShowAddExtraButton
+                addExtraTitle="Summary"
+                onAddExtra={() => {
+                    setISWingBudgetIsModalOpen(true)
+                    loadInventoryProjectBasementPodiumWingBudgetData()
+                }}
+
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
                     setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
-                isShowExportButton={canExport && BudgetColumns.length > 0 && Number(projectId) > 0}
+                isShowExportButton={canExport && budgetData.length > 0 && Number(projectId) > 0}
                 onExportExcel={handleExportBudgetExcel}
                 onExportPdf={handleExportBudgetPdf}
                 isShowCustomizeButton
@@ -957,19 +1074,60 @@ export const Budget: React.FC = () => {
             />
 
             {Number(projectId) > 0 && (
-                <div className="flex justify-end mt-1 w-full border border-gray-200 shadow-sm">
-                    <div className="flex justify-end pb-2 gap-2 p-2">
-                        <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
-                        <ApprovalActions
-                            approvalStatus={approvalInfo?.ApprovalStatus}
-                            showApproval={approvalInfo?.IsApproval}
-                            onApprove={() => handleApproveRejectInvoice("approve")}
-                            onReject={() => handleApproveRejectInvoice("reject")}
-                            onReopen={() => handleApproveRejectInvoice("reopen")}
-                            onHistory={handleApprovalLog}
-                            isIcons
+                <div className="flex items-center justify-between mt-1 w-full border border-gray-200 shadow-sm gap-3 p-2">
+
+                    <div className="relative min-w-0  w-[526px]">
+                        <SingleSelectDropdownWithPagination
+                            key={projectId}
+                            title="Select Wing"
+                            size="lg"
+                            dataFetchCallBack={fetchWingCallback}
+                            onSelected={(item) => {
+                                const selectedId = Number(item?.value ?? 0);
+
+                                setSelectedWingId(selectedId);
+
+                                setPagination({ currentPage: 1 });
+
+                                loadBudgetData(1, filters, sortInfo, searchTerm, selectedId);
+                            }}
+
+
                         />
                     </div>
+                    {!showApprovalStatus && budgetData.length > 0 && Number(grandTotal) > 0 ? (
+                        <div className="flex items-center gap-2">
+                            <Checkbox
+                                checked={isModalOpen}
+                                onChange={(checked) => {
+                                    if (checked) {
+                                        setIsModalOpen(true);
+                                    }
+                                }}
+                            />
+
+                            <span className="text-sm text-blue-600">
+                                Send to Approval
+                            </span>
+                        </div>
+                    ) : <div className="flex justify-end pb-2 gap-2 p-2">
+
+                        {showApprovalStatus && budgetData.length > 0 && Number(projectId) > 0 && Number(grandTotal) > 0 && (
+                            <>
+                                <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
+                                <ApprovalActions
+                                    approvalStatus={approvalInfo?.ApprovalStatus}
+                                    showApproval={approvalInfo?.IsApproval}
+                                    onApprove={() => handleApproveRejectBudget("approve")}
+                                    onReject={() => handleApproveRejectBudget("reject")}
+                                    onReopen={() => handleApproveRejectBudget("reopen")}
+                                    onHistory={handleApprovalLog}
+                                    isIcons
+                                />
+                            </>
+                        )}
+                    </div>
+                    }
                 </div>
             )}
 
@@ -997,9 +1155,28 @@ export const Budget: React.FC = () => {
             />
 
             <div className="w-full border border-gray-200 bg-gray-50 shadow-sm">
+
+                <div className="grid grid-cols-3 gap-4 px-3 py-2 font-medium text-gray-700">
+
+                    <div>
+                        Material Rate : <span className="ml-2">  {formatCurrency(grandMaterialCost)}  </span>
+                    </div>
+
+                    <div>
+                        Labour Rate : <span className="ml-2"> {formatCurrency(grandLabourCost)} </span>
+                    </div>
+
+                    <div>
+                        P&M Rate :  <span className="ml-2">  {formatCurrency(grandPMCost)}  </span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div className="w-full border border-gray-200 bg-gray-50 shadow-sm">
                 <div className="flex items-center justify-between px-2 py-2">
                     <span className="text-md font-medium text-gray-700">
-                        Grand Total Project Budget
+                        Grand Total Budget
                     </span>
 
                     <span className="text-md font-medium text-gray-600">
@@ -1069,7 +1246,7 @@ export const Budget: React.FC = () => {
                                 : addLevel === "L3"
                                     ? "Update Description"
                                     : "Update Sub Material"
-                                    
+
                         : addLevel === "L1"
                             ? "Add Category"
                             : addLevel === "L2"
@@ -1127,7 +1304,7 @@ export const Budget: React.FC = () => {
 
                             <div>
                                 <SingleSelectDropdownWithPagination
-                                   disabled={editBudgetData?.LevelType === "L3" && !editBudgetData?.IsAccessToDelete }
+                                    disabled={editBudgetData?.LevelType === "L3" && !editBudgetData?.IsAccessToDelete}
                                     label={
                                         addLevel === "L1"
                                             ? "Category"
@@ -1450,20 +1627,10 @@ export const Budget: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label="Category Name"
+                            label="Cost Head / Description"
                             value={tempFilters?.CategoryName ?? ""}
                             onChange={(e) => handleFilterChange("CategoryName", e.target.value)}
-                            placeholder="Enter Category Name"
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            type="text"
-                            label="UOM"
-                            value={tempFilters?.Uom ?? ""}
-                            onChange={(e) => handleFilterChange("Uom", e.target.value)}
-                            placeholder="Enter UOM"
+                            placeholder="Enter Cost Head / Description"
                         />
                     </div>
 
@@ -1495,6 +1662,142 @@ export const Budget: React.FC = () => {
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onCancel={() => setIsModalOpen(false)}
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSubmitBudgetForApproval();
+                }}
+                title="Submit Budget for Approval"
+                size="md"
+                saveText="Yes, Submit for Approval"
+            >
+                <div className="space-y-5 p-3">
+
+                    <div className="flex items-start gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                            <svg
+                                className="h-6 w-6 text-blue-600"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 3c-2.755 0-5.294.932-7.273 2.5L3 7l1.5 1.5L3 10l1.5 1.5L3 13l1.5 1.5L3 16l1.727 1.5A11.955 11.955 0 0012 21c4.97 0 9-4.03 9-9 0-1.425-.331-2.773-.92-3.972z"
+                                />
+                            </svg>
+                        </div>
+
+                        <div>
+                            <h3 className="text-base font-semibold text-blue-900">
+                                Ready to Submit Your Budget?
+                            </h3>
+
+                            <p className="mt-1 text-sm leading-6 text-blue-800">
+                                You are about to submit the project budget for approval.
+                                Please ensure that all budget details and amounts are correct
+                                before continuing.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="rounded-lg border border-gray-200 bg-white p-4">
+                        <h4 className="mb-3 text-sm font-semibold text-gray-800">
+                            What happens next?
+                        </h4>
+
+                        <div className="space-y-4">
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-semibold text-blue-700">
+                                    1
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        Submit Budget
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        Your budget will be submitted to the approval workflow.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold text-amber-700">
+                                    2
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        Approval Review
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        The authorized approver can review the submitted budget.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="flex items-start gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-sm font-semibold text-green-700">
+                                    3
+                                </div>
+
+                                <div>
+                                    <p className="text-sm font-medium text-gray-800">
+                                        Final Decision
+                                    </p>
+                                    <p className="mt-1 text-sm text-gray-500">
+                                        The budget status will reflect the approval decision.
+                                    </p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div className="rounded-md bg-gray-50 px-4 py-3">
+                        <p className="text-sm text-gray-700">
+                            <span className="font-semibold">Please note:</span>{" "}
+                            Ensure the budget is accurate before submitting it for approval.
+                            Do you want to continue?
+                        </p>
+                    </div>
+
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isWingBudgetModalOpen}
+                onClose={() => setISWingBudgetIsModalOpen(false)}
+                onCancel={() => setISWingBudgetIsModalOpen(false)}
+                title="Budget Summary"
+                size="half-screen"
+            >
+                <div className="space-y-4">
+                    {inventoryProjectBasementPodiumWingBudgetData.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center py-8">
+                            <NoDataView message="No Data Available" />
+                        </div>
+                    ) : (
+                        <div className="border border-[#33333321] rounded-xl overflow-y-auto thin-scroll">
+                            <DataTableWithHeaderRowDivider
+                                columns={inventoryProjectBasementPodiumWingBudgetColumn}
+                                data={inventoryProjectBasementPodiumWingBudgetData}
+                                emptyMessage="No Budget Amount Data Found"
+                                fixedHeight={true}
+                                className="flex-1"
+                            />
+                        </div>
+                    )}
+                </div>
+
+            </Modal>
 
         </div>
     )

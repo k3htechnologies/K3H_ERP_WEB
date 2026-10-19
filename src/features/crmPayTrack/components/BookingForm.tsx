@@ -30,7 +30,7 @@ import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTab
 import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
-import type { FilterWithPaginationTenantRequest, TenantData } from "@/features/tenant/models/TenantModel";
+import type { FilterTenantByIdRequest, TenantData } from "@/features/tenant/models/TenantModel";
 import { tenantService } from "@/features/tenant/services/TenantService";
 
 interface BookingProps {
@@ -175,16 +175,15 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
             setLoadingMessage,
             async () => {
 
-                const params: FilterWithPaginationTenantRequest = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    TenantId: tenantIdToFetch,
-                    ProjectId: Number(projectId),
-                    IsCheckPermission: false,
-                    BuildingId: buildingId,
-                };
 
-                const response = await tenantService.apiCallPullTenant(params);;
+                const params: FilterTenantByIdRequest = {
+
+                    TenantId: Number(tenantIdToFetch),
+                    ProjectId: Number(projectId),
+                    BuildingId: buildingId
+                }
+
+                const response = await tenantService.apiCallPullTenantById(params);
 
                 if (E.isRight(response)) {
 
@@ -843,7 +842,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                                     <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                                         <h4 className="text-sm font-semibold text-[#13367A]">
-                                            Exisiting Unit Details
+                                            Existing Unit Details
                                         </h4>
                                     </div>
                                     <div className="p-4 bg-white">
@@ -1073,10 +1072,10 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                         const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
 
                                         return (
-                                            <div key={parking.ParkingId || index} className="pt-4">
-                                                <h3 className="text-sm font-semibold text-gray-500">
+                                            <div key={parking.ParkingId || index} className={index === 0 ? "" : "pt-3"}>
+                                                <span className="inline-flex items-center  bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
                                                     Parking {index + 1}
-                                                </h3>
+                                                </span>
                                                 <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
                                                     <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
                                                     <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
@@ -1112,10 +1111,11 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                     <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
                                     <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
                                     <FieldItem label="Final Registration Completed" value={getSafeString(bookingData.IsFinalRegistrationCompleted === true ? 'Yes' : 'No')} urls={bookingData.FinalRegistrationURL} isIcon />
-                                    <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
+
 
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+                                    <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
                                     <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
                                     <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
                                 </div>
@@ -1155,15 +1155,35 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
 
                                 <div className="divide-y divide-[#135bec2e]">
-                                    
+
                                     {Number(tenantList?.TenantId) > 0 && (
-                                        <div className="py-4">
-                                            {bookingData.CarpetAreaPurchasedSqFt === "MOFA" ? (
-                                                <FieldItem label="Carpet Area Purchased" value={`${tenantList?.MOFACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
-                                            ) : (
-                                                <FieldItem label="Carpet Area Purchased" value={`${tenantList?.RERACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
-                                            )}
-                                        </div>
+                                        <>
+                                            <div className="py-4">
+                                                <FieldItem
+                                                    label="Booking Registered"
+                                                    value={
+                                                        <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">
+                                                            {bookingData.CarpetAreaPurchasedSqFt}
+                                                        </span>
+                                                    }
+                                                    isRow
+                                                />
+
+                                            </div>
+
+
+                                            <div className="py-4">
+                                                {bookingData.CarpetAreaPurchasedSqFt === "MOFA" ? (
+                                                    <FieldItem label="Carpet Area Purchased" value={`${tenantList?.MOFACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
+                                                ) : (
+                                                    <FieldItem label="Carpet Area Purchased" value={`${tenantList?.RERACarpetAreaPurchasedSqFt ?? 0} SqFt`} isRow />
+                                                )}
+                                            </div>
+
+                                            <div className="py-4">
+                                                <FieldItem label="Adjust Purchase Area" value={`${bookingData?.AdjustPurchaseAreaSqFt ?? 0} SqFt`} isRow />
+                                            </div>
+                                        </>
                                     )}
 
                                     <div className="py-4">
@@ -1379,7 +1399,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                 Other Charges
                             </h4>
                         </div>
-                        <div className="p-4 bg-white">
+                        <div className=" bg-white">
 
                             <DataTableWithHeaderRowDivider
                                 data={otherChargesDataWithTotal}
@@ -1403,7 +1423,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                 </span>
                             </h4>
                         </div>
-                        <div className="p-4 bg-white">
+                        <div className="bg-white">
 
                             <DataTableWithHeaderRowDivider
                                 data={paymentScheduleDataWithTotal}

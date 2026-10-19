@@ -5,6 +5,7 @@ import React, {
   useLayoutEffect,
   useRef,
   useState,
+  useCallback,
 } from "react";
 import { createPortal } from "react-dom";
 
@@ -38,6 +39,7 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
 
   const tooltipId = useRef(Symbol());
 
+  // Close other tooltips when a new one opens
   useEffect(() => {
     const handleAnotherTooltipOpen = (event: Event) => {
       const customEvent = event as CustomEvent<symbol>;
@@ -60,6 +62,46 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
     };
   }, []);
 
+  const updateTooltipPosition = useCallback(() => {
+    if (!iconRef.current || !tooltipRef.current) {
+      return;
+    }
+
+    const iconRect = iconRef.current.getBoundingClientRect();
+    const tooltipRect = tooltipRef.current.getBoundingClientRect();
+
+    const tooltipWidth = tooltipRect.width;
+    const tooltipHeight = tooltipRect.height;
+
+    // Horizontal position
+    let x = iconRect.left;
+
+    if (x + tooltipWidth > window.innerWidth - SCREEN_MARGIN) {
+      x = window.innerWidth - tooltipWidth - SCREEN_MARGIN;
+    }
+
+    x = Math.max(SCREEN_MARGIN, x);
+
+    // Always position below the icon
+    let y = iconRect.bottom + TOOLTIP_GAP;
+
+    // Prevent tooltip from exceeding the bottom viewport boundary
+    if (y + tooltipHeight > window.innerHeight - SCREEN_MARGIN) {
+      y = Math.max(
+        SCREEN_MARGIN,
+        window.innerHeight - tooltipHeight - SCREEN_MARGIN
+      );
+    }
+
+    setPos((previous) => {
+      if (previous.x === x && previous.y === y) {
+        return previous;
+      }
+
+      return { x, y };
+    });
+  }, []);
+
   const onEnter = () => {
     if (!iconRef.current) {
       return;
@@ -75,19 +117,11 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
 
     let x = rect.left;
 
-    if (
-      x + TOOLTIP_WIDTH >
-      window.innerWidth - SCREEN_MARGIN
-    ) {
-      x =
-        window.innerWidth -
-        TOOLTIP_WIDTH -
-        SCREEN_MARGIN;
+    if (x + TOOLTIP_WIDTH > window.innerWidth - SCREEN_MARGIN) {
+      x = window.innerWidth - TOOLTIP_WIDTH - SCREEN_MARGIN;
     }
 
-    if (x < SCREEN_MARGIN) {
-      x = SCREEN_MARGIN;
-    }
+    x = Math.max(SCREEN_MARGIN, x);
 
     setPos({
       x,
@@ -97,208 +131,88 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
     setShow(true);
   };
 
-  useLayoutEffect(() => {
-    if (
-      !show ||
-      !iconRef.current ||
-      !tooltipRef.current
-    ) {
-      return;
-    }
-
-    const iconRect =
-      iconRef.current.getBoundingClientRect();
-
-    const tooltipRect =
-      tooltipRef.current.getBoundingClientRect();
-
-
-    let x = iconRect.left;
-
-    if (
-      x + tooltipRect.width >
-      window.innerWidth - SCREEN_MARGIN
-    ) {
-      x =
-        window.innerWidth -
-        tooltipRect.width -
-        SCREEN_MARGIN;
-    }
-
-    if (x < SCREEN_MARGIN) {
-      x = SCREEN_MARGIN;
-    }
-
-
-    const spaceBelow =
-      window.innerHeight - iconRect.bottom;
-
-    const spaceAbove = iconRect.top;
-
-    let y: number;
-
-    if (
-      spaceBelow >=
-      tooltipRect.height + TOOLTIP_GAP
-    ) {
-      y =
-        iconRect.bottom +
-        TOOLTIP_GAP;
-    }
-
-    else if (
-      spaceAbove >=
-      tooltipRect.height + TOOLTIP_GAP
-    ) {
-      y =
-        iconRect.top -
-        tooltipRect.height -
-        TOOLTIP_GAP;
-    }
-
-    else if (spaceBelow >= spaceAbove) {
-      y =
-        iconRect.bottom +
-        TOOLTIP_GAP;
-
-      if (
-        y + tooltipRect.height >
-        window.innerHeight - SCREEN_MARGIN
-      ) {
-        y =
-          window.innerHeight -
-          tooltipRect.height -
-          SCREEN_MARGIN;
-      }
-    } else {
-      y =
-        iconRect.top -
-        tooltipRect.height -
-        TOOLTIP_GAP;
-
-      if (y < SCREEN_MARGIN) {
-        y = SCREEN_MARGIN;
-      }
-    }
-
-    setPos({
-      x,
-      y,
-    });
-  }, [show]);
-
+  // Recalculate position after rendering and during scrolling
   useLayoutEffect(() => {
     if (!show) {
       return;
     }
 
-    const handleResize = () => {
-      if (
-        !iconRef.current ||
-        !tooltipRef.current
-      ) {
-        return;
-      }
-
-      const iconRect =
-        iconRef.current.getBoundingClientRect();
-
-      const tooltipRect =
-        tooltipRef.current.getBoundingClientRect();
-
-      
-
-      let x = iconRect.left;
-
-      if (
-        x + tooltipRect.width >
-        window.innerWidth - SCREEN_MARGIN
-      ) {
-        x =
-          window.innerWidth -
-          tooltipRect.width -
-          SCREEN_MARGIN;
-      }
-
-      if (x < SCREEN_MARGIN) {
-        x = SCREEN_MARGIN;
-      }
-
-
-      const spaceBelow =
-        window.innerHeight - iconRect.bottom;
-
-      const spaceAbove = iconRect.top;
-
-      let y: number;
-
-      if (
-        spaceBelow >=
-        tooltipRect.height + TOOLTIP_GAP
-      ) {
-        y =
-          iconRect.bottom +
-          TOOLTIP_GAP;
-      }
-
-      else if (
-        spaceAbove >=
-        tooltipRect.height + TOOLTIP_GAP
-      ) {
-        y =
-          iconRect.top -
-          tooltipRect.height -
-          TOOLTIP_GAP;
-      }
-
-      else if (spaceBelow >= spaceAbove) {
-        y =
-          iconRect.bottom +
-          TOOLTIP_GAP;
-
-        if (
-          y + tooltipRect.height >
-          window.innerHeight -
-          SCREEN_MARGIN
-        ) {
-          y =
-            window.innerHeight -
-            tooltipRect.height -
-            SCREEN_MARGIN;
-        }
-      }
-
-      else {
-        y =
-          iconRect.top -
-          tooltipRect.height -
-          TOOLTIP_GAP;
-
-        if (y < SCREEN_MARGIN) {
-          y = SCREEN_MARGIN;
-        }
-      }
-
-      setPos({
-        x,
-        y,
-      });
+    const handlePositionUpdate = () => {
+      updateTooltipPosition();
     };
 
+    // Calculate after tooltip is rendered
+    handlePositionUpdate();
+
+    // Window resize
     window.addEventListener(
       "resize",
-      handleResize
+      handlePositionUpdate
+    );
+
+    // Capture scroll events from window and nested containers
+    window.addEventListener(
+      "scroll",
+      handlePositionUpdate,
+      true
     );
 
     return () => {
       window.removeEventListener(
         "resize",
-        handleResize
+        handlePositionUpdate
+      );
+
+      window.removeEventListener(
+        "scroll",
+        handlePositionUpdate,
+        true
+      );
+    };
+  }, [show, updateTooltipPosition]);
+
+  // Hide tooltip if icon scrolls outside the viewport
+  useEffect(() => {
+    if (!show) {
+      return;
+    }
+
+    const handleScroll = () => {
+      if (!iconRef.current) {
+        setShow(false);
+        return;
+      }
+
+      const rect =
+        iconRef.current.getBoundingClientRect();
+
+      const isOutsideViewport =
+        rect.bottom < 0 ||
+        rect.top > window.innerHeight ||
+        rect.right < 0 ||
+        rect.left > window.innerWidth;
+
+      if (isOutsideViewport) {
+        setShow(false);
+      }
+    };
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      true
+    );
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll,
+        true
       );
     };
   }, [show]);
 
-  
+  // Hide if there is no value
   if (!value?.trim()) {
     return null;
   }
@@ -316,6 +230,13 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
           ref={iconRef}
           className="inline-flex cursor-pointer"
           onMouseEnter={onEnter}
+          onFocus={onEnter}
+          tabIndex={0}
+          role="button"
+          aria-label={label || "Field information"}
+          aria-describedby={
+            show ? "field-info-tooltip" : undefined
+          }
         >
           <Info
             size={size}
@@ -328,11 +249,14 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
         createPortal(
           <div
             ref={tooltipRef}
-            className="fixed z-[99999]"
+            id="field-info-tooltip"
+            role="tooltip"
+            className="fixed z-[99999] pointer-events-auto"
             style={{
               left: `${pos.x}px`,
               top: `${pos.y}px`,
               width: `${TOOLTIP_WIDTH}px`,
+              maxWidth: `calc(100vw - ${SCREEN_MARGIN * 2}px)`,
             }}
             onMouseEnter={() => {
               setShow(true);
@@ -340,14 +264,17 @@ const FieldInfoTooltip: React.FC<FieldInfoTooltipProps> = ({
             onMouseLeave={() => {
               setShow(false);
             }}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                setShow(false);
+              }
+            }}
           >
             <div
               className="text-white text-sm px-4 py-3 rounded-lg shadow-2xl border max-h-60 overflow-y-auto thin-scroll"
               style={{
-                backgroundColor:
-                  COLORS.primary1,
-                borderColor:
-                  COLORS.primary1,
+                backgroundColor: COLORS.primary1,
+                borderColor: COLORS.primary1,
               }}
             >
               <div className="break-words whitespace-normal">

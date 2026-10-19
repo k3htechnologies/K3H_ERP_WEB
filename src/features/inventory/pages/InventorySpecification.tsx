@@ -693,7 +693,7 @@ const InventorySpecification: React.FC = () => {
           {(flatData?.FlatStatus === "Alloted" || flatData?.FlatStatus === "Booked") && (
             <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
               <div className="flex-1 border-b border-gray-300 pb-2">
-                <h3 className="text-lg font-semibold text-gray-900">{flatData?.FlatStatus === "Booked" ? "Sales Booking Details" : "Tenant Booking Details"}</h3>
+                <h3 className="text-lg font-semibold text-gray-900">{flatData?.FlatStatus === "Booked" ? "Sales Booking Details" : "Tenant Details"}</h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-4">
@@ -701,8 +701,8 @@ const InventorySpecification: React.FC = () => {
 
                 {flatData?.FlatStatus === "Alloted" && (
                   <>
-                    <FieldItem label="Tenant Building Name" value={flatData?.TenantBuildingName || "-"} />
                     <FieldItem label="Tenant Code" value={flatData?.TenantSystemGeneratedCode || "-"} />
+                    <FieldItem label="Tenant Building Name" value={flatData?.TenantBuildingName || "-"} />
                   </>
                 )}
                 <FieldItem label="Created By" value={flatData?.BookingCreatedBy ?? '-'} />

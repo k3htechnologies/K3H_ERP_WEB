@@ -7,7 +7,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import React from "react";
-import type { AddUpdateTenantApplicant, AddUpdateTenantRequest, FilterWithPaginationTenantRequest, TenantApplicant, TenantData } from "@/features/tenant/models/TenantModel";
+import type { AddUpdateTenantApplicant, AddUpdateTenantRequest, FilterTenantByIdRequest, TenantApplicant, TenantData } from "@/features/tenant/models/TenantModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -29,9 +29,12 @@ import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
-import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "@/features/inventory/InventoryFlatDropdown";
+import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatWithBuildingNameDropdown } from "@/features/inventory/InventoryFlatDropdown";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { getInventoryFlatIds } from "../utils/utils";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -58,7 +61,8 @@ const initialFormState = (): AddUpdateTenantRequest => ({
   ExistingTerraceAreaSqFt: 0,
   AreaAgainstTerraceSqFt: 0,
   Remark: "",
-  InventoryFlatId: 0
+  InventoryFlatId: "",
+  AddUpdateTenantInventoryAndAdjustPurchaseAreaDetailsJSON: "",
 });
 
 const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
@@ -179,8 +183,11 @@ const AddUpdateTenant: React.FC = () => {
   const { canAction } = useMenuPermissions('/tenant');
 
 
-  const [inventoryFlatData, setInventoryFlatData] = useState<InventoryFlatData | null>(null);
-  const [selectFlatValues, setSelectFlatValues] = useState<string  | null>(null);
+  const [inventoryFlatData, setInventoryFlatData] = useState<InventoryFlatData[]>([]);
+  const [selectFlatValues, setSelectFlatValues] = useState<string[]>([]);
+  const [selectedUnitFlatValues, setSelectedUnitFlatValues] = useState<(string | number)[]>([]);
+  const [adjustPurchaseAreaValues, setAdjustPurchaseAreaValues] = useState<Record<string, string>>({});
+  const [tenantInventoryAdjustPurchaseAreaDetails, setTenantInventoryAdjustPurchaseAreaDetails] = useState<any[]>([]);
 
   const handleFieldChange = (field: keyof AddUpdateTenantRequest, value: any) => {
 
@@ -198,29 +205,53 @@ const AddUpdateTenant: React.FC = () => {
     }
   }, [tenantId]);
 
+  useEffect(() => {
+    const fetchSelectedUnitDetails = async () => {
+
+      if (selectFlatValues.length === 0) {
+        setInventoryFlatData([]);
+        return;
+      }
+
+      try {
+        const results = await Promise.all(selectFlatValues.map(async (id) => {
+          const flat = await fetchInventoryFlatDetails(Number(projectId), Number(id));
+
+          return flat;
+        })
+        );
+
+        setInventoryFlatData(results.filter((flat): flat is InventoryFlatData => flat !== null && flat !== undefined));
+
+      } catch (error) {
+        console.error("Error fetching selected unit details:", error);
+        setInventoryFlatData([]);
+      }
+    };
+
+    fetchSelectedUnitDetails();
+  }, [selectFlatValues, projectId]);
+
   const fetchTenantDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
 
-        const params: FilterWithPaginationTenantRequest = {
-          PageNumber: 1,
-          PageSize: 1,
-          IsCheckPermission: false,
+        const params: FilterTenantByIdRequest = {
+
           TenantId: Number(TenantId),
           ProjectId: Number(projectId),
           BuildingId: buildingId
         }
 
-        const response = await tenantService.apiCallPullTenant(params);
+        const response = await tenantService.apiCallPullTenantById(params);
 
         if (E.isRight(response)) {
 
           const tenant = response.right.Data?.[0] as TenantData | undefined;
 
           if (tenant) {
-
             setFormData(prev => ({
               ...prev,
               TenantId: tenant.TenantId ?? prev.TenantId,
@@ -245,10 +276,22 @@ const AddUpdateTenant: React.FC = () => {
               AreaAgainstTerraceSqFt: tenant.AreaAgainstTerraceSqFt ?? prev.AreaAgainstTerraceSqFt,
               TotalNewRERACarpetAreaWithDeckSqFt: tenant.TotalNewRERACarpetAreaWithDeckSqFt ?? prev.TotalNewRERACarpetAreaWithDeckSqFt,
               Remark: tenant.Remark ?? prev.Remark,
-              InventoryFlatId: tenant.InventoryFlatId ?? prev.InventoryFlatId
+              AddUpdateTenantInventoryAndAdjustPurchaseAreaDetailsJSON: tenant.InventoryFlatData ? JSON.stringify(tenant.InventoryFlatData) : null,
             }));
 
-            setSelectFlatValues(String(tenant.InventoryFlatId || null));
+            const selectedInventoryIds = getInventoryFlatIds(tenant?.InventoryFlatData);
+
+            setSelectFlatValues(selectedInventoryIds ? selectedInventoryIds.split(",") : []);
+            setSelectedUnitFlatValues(selectedInventoryIds ? selectedInventoryIds.split(",") : []);
+
+            setFormData(prev => ({
+              ...prev,
+              InventoryFlatId: selectedInventoryIds
+            }));
+
+            setTenantInventoryAdjustPurchaseAreaDetails(tenant.InventoryFlatData || []);
+
+            setAdjustPurchaseAreaValues(Object.fromEntries((tenant.InventoryFlatData || []).map((flat: any) => [String(flat.InventoryFlatId), String(flat.AdjustPurchaseAreaSqFt ?? "")])));
 
             const applicantsWithFiles = (tenant?.TenantApplicantData || []).map(a => ({
               ...a,
@@ -265,20 +308,15 @@ const AddUpdateTenant: React.FC = () => {
             setApplicantList(applicantsWithFiles);
             setDropdownLabels({
               bankName: tenant?.TenantApplicantData[0].BankName || "",
-              Flat: tenant?.Flat || ""
+              Flat: (tenant?.BuildingNumber + ' - ' + tenant?.Flat) || ""
             });
 
-            if (tenant.InventoryFlatId) {
-              await fetchInventoryFlatDetails(Number(tenant.ProjectId), tenant.InventoryFlatId).then((flat) => {
-                if (!flat) return;
-                setInventoryFlatData(flat);
-              });
-            }
+
           }
         } else {
 
           addToast({ type: 'error', title: response.left.message });
-setSelectFlatValues("");
+          setSelectFlatValues([]);
         }
 
         return response
@@ -321,13 +359,42 @@ setSelectFlatValues("");
       newErrors.UnitFacing = 'Unit Facing is required'
     }
 
-    if (inventoryFlatData) {
-      if (!inventoryFlatData.FlatType?.trim()) {
-        newErrors.InventoryFlatId = 'Flat Type is required to allot the unit';
-      } else if (!inventoryFlatData.RERACarpetAreaSqFt || inventoryFlatData.RERACarpetAreaSqFt <= 0) {
-        newErrors.InventoryFlatId = 'RERA Carpet Area is required to allot the unit';
+    if (selectFlatValues.length > 0) {
+
+      if (inventoryFlatData.length !== selectFlatValues.length) {
+        newErrors.InventoryFlatId = 'Unable to load details for all selected units';
+      } else if (inventoryFlatData.some(flat => !flat.FlatType?.trim())) {
+        newErrors.InventoryFlatId = 'Flat Type is required for all selected units';
+      } else if (inventoryFlatData.some(flat => !flat.RERACarpetAreaSqFt || flat.RERACarpetAreaSqFt <= 0)) {
+        newErrors.InventoryFlatId = 'RERA Carpet Area is required for all selected units';
       }
     }
+
+    if (selectFlatValues.length > 0 && inventoryFlatData.length === selectFlatValues.length) {
+
+      const totalCarpetArea = inventoryFlatData.reduce((total, flat) => total + Number(flat.RERACarpetAreaSqFt || 0), 0);
+
+      const totalNewRERACarpetArea = (Number(formData?.TotalNewRERACarpetAreaSqFt || 0) + (Number(formData?.DeckAreaSqFt || 0)) + (Number(formData?.AreaAgainstTerraceSqFt || 0)));
+
+      if (Number(totalCarpetArea) !== Number(totalNewRERACarpetArea)) {
+        newErrors.AreaAgainstTerrace_DeckArea_TotalNewRERACarpetArea = `Total New RERA Carpet Area (${totalNewRERACarpetArea} SqFt) must match the sum of selected new units Carpet Area (${totalCarpetArea} SqFt).`;
+      }
+    }
+
+
+    if (selectFlatValues.length > 0 && inventoryFlatData.length === selectFlatValues.length) {
+
+      const totalAdjustPurchaseAreaSqFt = inventoryFlatData.reduce((total, flat) =>
+        total + Number(adjustPurchaseAreaValues[String(flat.InventoryFlatId)] ??
+          tenantInventoryAdjustPurchaseAreaDetails.find((item: any) => Number(item.InventoryFlatId) === Number(flat.InventoryFlatId))?.AdjustPurchaseAreaSqFt ?? 0), 0);
+
+      const rERACarpetAreaPurchasedSqFt = Number(formData.RERACarpetAreaPurchasedSqFt || 0);
+
+      if (totalAdjustPurchaseAreaSqFt !== rERACarpetAreaPurchasedSqFt) {
+        newErrors.RERACarpetAreaPurchasedSqFt = `RERA Carpet Area Purchased (${rERACarpetAreaPurchasedSqFt} SqFt) must match the sum of selected units Adjust Purchase Area (${totalAdjustPurchaseAreaSqFt} SqFt).`;
+      }
+    }
+
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -1142,7 +1209,19 @@ setSelectFlatValues("");
     fd.append('AreaAgainstTerraceSqFt', String(formData.AreaAgainstTerraceSqFt ?? 0));
     fd.append('TotalNewRERACarpetAreaWithDeckSqFt', String(formData.TotalNewRERACarpetAreaWithDeckSqFt ?? 0));
     fd.append('Remark', String(formData.Remark ?? ''));
-    fd.append('InventoryFlatId', String(formData.InventoryFlatId ?? 0));
+    fd.append('InventoryFlatId', selectFlatValues.join(','));
+
+    const inventoryAdjustPurchaseAreaDetails = inventoryFlatData.map((flat) => {
+      const savedDetails = tenantInventoryAdjustPurchaseAreaDetails.find((item: any) => Number(item.InventoryFlatId) === Number(flat.InventoryFlatId));
+
+      return {
+        TenantInventoryAndAdjustPurchaseAreaDetailsId: Number(savedDetails?.TenantInventoryAndAdjustPurchaseAreaDetailsId ?? 0),
+        InventoryFlatId: Number(flat.InventoryFlatId),
+        AdjustPurchaseAreaSqFt: Number(adjustPurchaseAreaValues[String(flat.InventoryFlatId)] || 0),
+      };
+    });
+
+    fd.append("AddUpdateTenantInventoryAndAdjustPurchaseAreaDetailsJSON", JSON.stringify(inventoryAdjustPurchaseAreaDetails));
 
     const addFilesWithExisting = (
       fdLocal: FormData,
@@ -1215,20 +1294,25 @@ setSelectFlatValues("");
     return fd;
   };
 
-  const fetchInventoryFlats = useCallback(
-    async (pageNumber: number, params?: { value?: string }) => {
+  const fetchInventoryFlats = useCallback(async (pageNumber: number, params?: { value?: string }) => {
 
-      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
-        projectId: Number(projectId),
-        flat: params?.value,
-        flatStatus: "Available,Alloted",
-        approvalStatus: "Approved",
-        isAllotedBookingDone: true,
-        displayInventoryFlatId:selectFlatValues || ""
-      });
-    },
-    [projectId,selectFlatValues],
+    return fetchPaginatedInventoryFlatWithBuildingNameDropdown(pageNumber, {
+      projectId: Number(projectId),
+      flat: params?.value,
+      flatStatus: "Available,Alloted",
+      approvalStatus: "Approved",
+      isAllotedBookingDone: true,
+      displayInventoryFlatId: selectFlatValues.join(",")
+    });
+  },
+    [projectId, selectFlatValues],
   );
+
+  const inventoryFlatDropdown = useMultiSelectDropdown({
+    value: selectedUnitFlatValues,
+    fetchCallback: fetchInventoryFlats,
+    autoFetchOptions: true,
+  });
 
   return (
 
@@ -1497,6 +1581,7 @@ setSelectFlatValues("");
                   onChange={(e) => handleFieldChange('RERACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
                   placeholder="Enter RERA CA Purchased"
                   rightIcon="SqFt"
+                  error={errors.RERACarpetAreaPurchasedSqFt}
                 />
               </div>
 
@@ -1529,6 +1614,7 @@ setSelectFlatValues("");
                   onChange={(e) => handleFieldChange("TotalNewRERACarpetAreaSqFt", filterNumbersWithDecimal(e.target.value))}
                   placeholder="Enter Total New Rera CA"
                   rightIcon="SqFt"
+                  error={errors.TotalNewRERACarpetAreaSqFt}
                 />
               </div>
             </div>
@@ -1539,6 +1625,7 @@ setSelectFlatValues("");
                 value={(Number(formData?.TotalNewRERACarpetAreaSqFt || 0) + (Number(formData?.DeckAreaSqFt || 0)) + (Number(formData?.AreaAgainstTerraceSqFt || 0))).toFixed(2)}
                 disabled
                 rightIcon="SqFt"
+                error={errors.AreaAgainstTerrace_DeckArea_TotalNewRERACarpetArea}
               />
             </div>
             <div>
@@ -1556,42 +1643,68 @@ setSelectFlatValues("");
           <div className="space-y-4  pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">New Unit Details</h3>
             <div>
-              <SingleSelectDropdownWithPagination
 
+              <MultiSelectPagination
                 label="Unit Number"
                 title="Select Unit Number"
-                size="lg"
                 dataFetchCallBack={fetchInventoryFlats}
-                onSelected={(item) => {
-                  if (!item) {
-                    handleFieldChange("InventoryFlatId", 0);
-                    setInventoryFlatData(null);
-                    setSelectFlatValues(null);
-                    return;
+                selectedValues={inventoryFlatDropdown.selectedValues}
+                options={inventoryFlatDropdown.initialOptions}
+                onChange={(values) => {
+                  const { idsString } = inventoryFlatDropdown.handleChange(values);
+
+                  const selectedIds = idsString ? idsString.split(",").filter(Boolean) : [];
+
+                  setSelectedUnitFlatValues(selectedIds);
+
+                  setSelectFlatValues(selectedIds);
+
+                  handleFieldChange("InventoryFlatId", idsString);
+
+                  if (errors.InventoryFlatId) {
+                    setErrors((prev) => ({ ...prev, InventoryFlatId: "" }));
                   }
-                  setInventoryFlatData(item as unknown as InventoryFlatData);
-                  handleFieldChange("InventoryFlatId", Number(item.value));
-                  setSelectFlatValues(String(item.value));
                 }}
-                initialValue={createDropdownInitialValue(formData.InventoryFlatId, dropdownLabels.Flat)}
-                error={errors.InventoryFlatId}
               />
+
             </div>
 
-            {Number(formData.InventoryFlatId) != 0 && Number(formData.InventoryFlatId) != 0 && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <FieldItem label="Building" value={inventoryFlatData?.BuildingNumber || "-"} />
-                  <FieldItem label="Wing" value={inventoryFlatData?.Wing || "-"} />
-                  <FieldItem label="Floor" value={inventoryFlatData?.Floor || "-"} />
-                  <FieldItem label="Unit Number" value={inventoryFlatData?.Flat || "-"} />
-                  <FieldItem label="Carpet Area (SqFt)" value={inventoryFlatData?.RERACarpetAreaSqFt || "-"} />
-                  <FieldItem label="Unit Type" value={inventoryFlatData?.FlatType || "-"} />
-                  <FieldItem label="Unit Configuration" value={inventoryFlatData?.FlatConfiguration || "-"} />
-                  <FieldItem label="Unit Facing" value={inventoryFlatData?.FlatFacing || "-"} />
-                  <FieldItem label="Status" value={inventoryFlatData?.FlatStatus || "-"} />
-                  
-                </div>
+            {inventoryFlatData.length > 0 && (
+
+              <div className="mt-4 ">
+                {inventoryFlatData.map((flat, index) => (
+                  <div className="p-4 mt-4 bg-blue-50 rounded-lg border border-blue-200" key={flat.InventoryFlatId ?? index}>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <FieldItem label="Building" value={flat?.BuildingNumber || "-"} />
+                      <FieldItem label="Wing" value={flat?.Wing || "-"} />
+                      <FieldItem label="Floor" value={flat?.Floor || "-"} />
+                      <FieldItem label="Unit Number" value={flat?.Flat || "-"} />
+                      <FieldItem label="Carpet Area (SqFt)" value={flat?.RERACarpetAreaSqFt || "-"} />
+                      <FieldItem label="Unit Type" value={flat?.FlatType || "-"} />
+                      <FieldItem label="Unit Configuration" value={flat?.FlatConfiguration || "-"} />
+                      <FieldItem label="Unit Facing" value={flat?.FlatFacing || "-"} />
+                      <FieldItem label="Status" value={flat?.FlatStatus || "-"} />
+
+                      <Input
+                        label="Adjust Purchase Area (SqFt)"
+                        type="text"
+                        value={adjustPurchaseAreaValues[String(flat.InventoryFlatId)] ?? ""}
+                        onChange={(e) => {
+                          const value = filterNumbersWithDecimal(e.target.value);
+
+                          setAdjustPurchaseAreaValues((prev) => ({
+                            ...prev,
+                            [String(flat.InventoryFlatId)]: value,
+                          }));
+                        }}
+                        placeholder="Enter Adjust Purchase Area"
+                        rightIcon="SqFt"
+                        error={errors.RERACarpetAreaPurchasedSqFt}
+                      />
+
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

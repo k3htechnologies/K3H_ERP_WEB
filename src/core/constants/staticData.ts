@@ -635,7 +635,7 @@ export const MASTER_DATA = {
     "Other",
   ],
 
-  budgetLevelType: ["L1", "L2", "L3"],
+  budgetLevelType: ["L1", "L2", "L3", "L4"],
 
   aopStatus: ["AOP", "NON - AOP", "EXPIRED", "EXPIRE SOON"],
 
@@ -713,7 +713,7 @@ export const MASTER_DATA = {
 
   termSheetDSRATerm: ["Mutual Fund (MF)", "Fixed Deposit (FD)"],
 
-  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending", "Pending"],
+  noticeStatus: ["Reply Submitted", "Favourable", "Non-Favourable", "Closed", "Reopened", "Reply Pending", "Pending"],
 
   vendorType: ["Material", "Contractor", "Both"],
 
@@ -781,7 +781,27 @@ export const MASTER_DATA = {
 
   materialRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
 
-  priorityOptions: ['Critical', 'Non - Critical']
+  priorityOptions: ['Critical', 'Non - Critical'],
+
+  applicableFor: ['Sale', 'Tenant'],
+
+  employeeLetterType: [
+    "Offer Letter",
+    "Appointment Letter",
+    "Joining Letter",
+    "Confirmation Letter",
+    "Increment Letter",
+    "Appraisal Letter",
+    "Promotion Letter",
+    "Transfer Letter",
+    "Relieving Letter",
+    "Experience Letter",
+    "Warning Letter",
+    "Termination Letter",
+    "Resignation Acceptance Letter",
+    "Salary Revision Letter",
+    "Employment Agreement",
+  ],
 } as const;
 
 // ============================================================================
@@ -944,6 +964,10 @@ export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.m
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
+export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
+export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);
+export const EMPLOYEE_LETTER_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeLetterType);
+
 
 
 // ============================================================================

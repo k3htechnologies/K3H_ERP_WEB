@@ -25,7 +25,7 @@ const CrmDashboard: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
 
-    const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE">("MONTHLY");
+    const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE">("TODAY");
     const [fromDate, setFromDate] = useState<string | null>(null);
     const [toDate, setToDate] = useState<string | null>(null);
 

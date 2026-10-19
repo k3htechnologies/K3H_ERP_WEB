@@ -18,7 +18,7 @@ export const HeaderSection = ({ approvalCount = 0 }: HeaderSectionProps) => {
     return (
         <div className="bg-white rounded-xl p-3 mb-5 shadow-sm">
             <div className="flex justify-between items-center">
-                {/* Left Side */}
+                
                 <div>
                     <h1 className="text-lg font-semibold text-gray-800">
                         Welcome {LocalStorageHelper.getStoredEmployeeData()?.FullName},
@@ -29,8 +29,8 @@ export const HeaderSection = ({ approvalCount = 0 }: HeaderSectionProps) => {
                     </p>
                 </div>
 
-                {/* Right Side */}
-                <div className="p-4">
+                
+                <div className="p-1">
                     <Button
                         onClick={handleDashboardModuleApprovalModal}
                         color="blue"

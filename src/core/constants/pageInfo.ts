@@ -326,7 +326,7 @@ export const getPageInfo = (path: string) => {
     //REDEVELOPMENT
     case "redevelopmentDashboard":
       return {
-        title: "Redevelopment Dashboard",
+        title: "Business Development Dashboard",
         description: "Structured redevelopment workflows for efficient execution",
       };
     case "building":
@@ -355,7 +355,7 @@ export const getPageInfo = (path: string) => {
         description: "Proposed Plan",
       };
 
-      case "tenantBooking":
+    case "tenantBooking":
       return {
         title: "Tenant Booking",
         description: "Manage tenant bookings efficiently with clear visibility and control",
@@ -610,6 +610,19 @@ export const getPageInfo = (path: string) => {
         description: "Overview of your system and key metrics",
       };
 
+    case "baselineCostPlan":
+      return {
+        title: "Baseline Cost Plan Document",
+        description: "Overview of your system and key metrics",
+      };
+    case "constructionArea":
+      return {
+        title: "Construction Area",
+        description: "Overview of your system and key metrics",
+      };
+
+
+
     //FINANCE
     case "termSheet":
       return {
@@ -630,12 +643,12 @@ export const getPageInfo = (path: string) => {
         description: "Gate Pass",
       };
 
-      case "visitorManagementDashboard":
+    case "visitorManagementDashboard":
       return {
         title: "Visitor Management Dashboard",
         description: "Dashboard for managing visitor access and entries",
       };
-      
+
 
     //PROJECT LEAD
     case "projectLead":

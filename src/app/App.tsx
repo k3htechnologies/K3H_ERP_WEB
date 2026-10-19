@@ -263,8 +263,10 @@ import { TenantBookingListStateProvider } from '@/features/tenantBooking/context
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
 import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking';
 import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
+import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/BaselineCostPlanDocument';
+import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
-import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
+import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -330,6 +332,8 @@ function App() {
             <Route path="employeeMaster/view" element={<EmployeeListStateProvider><ViewEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
+            <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
+
 
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
@@ -429,7 +433,9 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
-            <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+           
+            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider> } />
+
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}
@@ -592,9 +598,8 @@ function App() {
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
-
-            {/* FINANCE DASHBOARD */}
-            {/* <Route path='financeDashboard' element={<FinanceDashboard />} /> */}
+            <Route path="baselineCostPlan" element={<BaselineCostPlanDocument />} />
+            <Route path="constructionArea" element={<ConstructionAreaDetails />} />
 
             {/* FINANCE */}
             <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />

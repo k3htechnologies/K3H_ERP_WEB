@@ -39,11 +39,13 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status"
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper"
+import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext"
 
 const Inventory = () => {
 
     const navigate = useNavigate();
     const { updateListState } = useBookingListState();
+    const { updateTenantListState } = useTenantBookingListState();
     const [inventory, setInventory] = useState<InventoryData[]>([]);
     const [selectedBuilding, setSelectedBuilding] = useState<InventoryFlatFloorBasementPodiumWingData[] | undefined>(undefined)
     const [selectedBuildingIndex, setSelectedBuildingIndex] = useState<number | null>(null)
@@ -352,9 +354,9 @@ const Inventory = () => {
 
                 const response = await inventoryService.apiCallpullInventory(params);
 
-                const projectName=(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "";
+                const projectName = (LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "";
 
-                handleExportFile(response, exportType, 'Inventory '+projectName, addToast)
+                handleExportFile(response, exportType, 'Inventory ' + projectName, addToast)
 
                 return response;
             },
@@ -716,7 +718,7 @@ const Inventory = () => {
 
                     setIsAddBuildingModalOpen(false);
 
-                    addToast({ type: 'success', title: "Building Data added successfully"});
+                    addToast({ type: 'success', title: "Building Data added successfully" });
 
                     await fetchInventory();
 
@@ -1206,7 +1208,6 @@ const Inventory = () => {
         return data;
     }, [getFilteredFloors, selectedWing]);
 
-    // Table columns definition
     const tableColumns: TableColumn[] = useMemo(() => [
         {
             key: 'Floor',
@@ -1270,16 +1271,36 @@ const Inventory = () => {
             render: (value: string, row: any) => {
                 if (!value) return '-';
                 const flat = row.flatData as InventoryFlatData;
+
+
                 const handleBook = () => {
 
                     if (flat.BookingId && flat.BookingId > 0) {
-                        updateListState({
-                            bookingId: flat.BookingId,
-                            bookingName: flat.OwnerName || '',
-                        });
-                        navigate('/booking/view', {
-                            state: { sourcePage: 'inventory' }
-                        });
+
+                        const isTenantBooking = flat.FlatStatus === "Alloted";
+
+                        const isBookingIdZero = Number(flat.BookingId);
+
+                        if (isTenantBooking) {
+                            updateTenantListState({
+                                bookingId: flat.BookingId,
+                                bookingName: flat.OwnerName || '',
+                            });
+                        }
+                        else {
+                            updateListState({
+                                bookingId: flat.BookingId,
+                                bookingName: flat.OwnerName || '',
+                            });
+                        }
+
+                        if (isBookingIdZero > 0) {
+
+                            navigate(isTenantBooking ? '/tenantBooking/view' : '/booking/view', {
+                                state: { sourcePage: 'inventory' }
+                            });
+                        }
+
                     }
                 };
                 return (
@@ -1287,7 +1308,7 @@ const Inventory = () => {
                         text={value || '-'}
                         maxWidth="250px"
                         tooltipThreshold={25}
-                        onClick={() => handleBook()}
+                        onClick={  Number(flat.BookingId) > 0 ? () => handleBook()  : undefined}
                     />
                 );
             },

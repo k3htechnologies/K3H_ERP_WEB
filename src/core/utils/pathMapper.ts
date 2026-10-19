@@ -163,6 +163,10 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/conference': '/conference',
         '/meeting': '/meeting',
         '/task': '/task',
+
+        //ESTIMATION & BUDGET
+        '/baselinecostplan': '/baselineCostPlan',
+        '/constructionarea':'/constructionArea',
     }
 
 

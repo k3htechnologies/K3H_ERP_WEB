@@ -2,6 +2,8 @@ import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms';
 import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { APPLICABLE_FOR_OPTIONS } from '@/core/constants';
 
 interface FilterField {
   key: string;
@@ -18,6 +20,8 @@ interface OtherChargesFilterModalProps {
   tempFilters: FilterInfo;
   onFilterChange: (key: string, value: string) => void;
   filterFields?: FilterField[];
+  canActionSale: boolean;
+  canActionTenant: boolean;
 }
 
 export const OtherChargesFilterModal: React.FC<OtherChargesFilterModalProps> = ({
@@ -29,7 +33,9 @@ export const OtherChargesFilterModal: React.FC<OtherChargesFilterModalProps> = (
   onFilterChange,
   filterFields = [
     { key: 'ChargeName', label: 'Charge Name', placeholder: 'Enter Charge Name' }
-  ]
+  ],
+  canActionSale,
+  canActionTenant
 }) => {
   return (
     <Modal
@@ -57,6 +63,17 @@ export const OtherChargesFilterModal: React.FC<OtherChargesFilterModalProps> = (
             />
           </div>
         ))}
+
+        <div>
+          <SinglePageSelection
+            label="Applicable For"
+            placeholder="Select Applicable For"
+            value={tempFilters.ApplicableFor ?? ''}
+            onChange={e => onFilterChange('ApplicableFor', String(e))}
+            options={APPLICABLE_FOR_OPTIONS .filter(opt => { const applicableFor = opt.id.trim().toUpperCase(); if (applicableFor === 'SALE') return canActionSale; if (applicableFor === 'TENANT') return canActionTenant; return false; }) .map(opt => ({ label: opt.name, value: opt.id }))}
+            required
+          />
+        </div>
       </div>
     </Modal>
   );

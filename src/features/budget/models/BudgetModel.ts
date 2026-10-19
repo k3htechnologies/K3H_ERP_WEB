@@ -4,6 +4,7 @@ export interface FilterWithPaginationBudgetRequest {
     PageSize: number;
     PageNumber: number;
     ProjectId?: number;
+    InventoryFlatFloorBasementPodiumWingId?: number;
     BudgetId?: number
     LevelType?: string;
     CategoryName?: string;
@@ -18,6 +19,8 @@ export interface BudgetData {
     BudgetId: number | 0
     UniqueKey: string | null
     ProjectId: number | 0
+    InventoryFlatFloorBasementPodiumWingId: number | 0;
+    Wing: string | null
     CategoryName: string | null
     UomMasterId: number | 0
     Uom: string | null
@@ -31,9 +34,9 @@ export interface BudgetData {
     LevelId4: number | 0
     Level4Name: string | null
 
-    Level4MaterialName:string| null;
-    Level4SubMaterialUomCode:string| null;
-    Level4SubMaterialUom:string| null;
+    Level4MaterialName: string | null;
+    Level4SubMaterialUomCode: string | null;
+    Level4SubMaterialUom: string | null;
     Level4LeadTimeInDays: number | 0,
     Level4IsTolerant?: boolean,
 
@@ -43,8 +46,8 @@ export interface BudgetData {
     OrderBy: number | 0
     WBSCode: string | null
     Quantity: number | 0
-    ReceivedQuantity :  number | 0
-    OrderQuantity:  number | 0
+    ReceivedQuantity: number | 0
+    OrderQuantity: number | 0
     L3Quantity: number | 0
     LabourCost: number | 0
     MaterialCost: number | 0
@@ -53,6 +56,7 @@ export interface BudgetData {
     BudgetAmount: number | 0
     Remark: string | null
     IsAccessToDelete: boolean
+    IsSubmitBudgetForApproval: boolean
     IsApproval: boolean
     ApprovalStatus: string
     CreatedById: number | 0
@@ -66,6 +70,7 @@ export interface BudgetData {
 export interface AddUpdateBudget {
     BudgetId: number | 0
     ProjectId: number | 0
+    InventoryFlatFloorBasementPodiumWingId: number | 0
     UniqueKey: string | null
     LevelId1: number | 0
     LevelId2: number | 0
@@ -82,5 +87,25 @@ export interface AddUpdateBudget {
     Remark: string | null
 }
 
+export interface SubmitBudgetForApprovalData {
+    ProjectId: number | 0
+    InventoryFlatFloorBasementPodiumWingId: number | 0
+}
+
+export interface FilterWithInventoryProjectBasementPodiumWingBudgetRequest {
+    ProjectId?: number;
+    InventoryFlatFloorBasementPodiumWingId?: number;
+    SearchText?: string;
+    IsDisplayProjectBudget?:boolean
+}
+
+export interface InventoryProjectBasementPodiumWingBudgetData {
+    InventoryFlatFloorBasementPodiumWingId: number | 0
+    ProjectBuildingNumberWing: string | null
+    BudgetAmount: number | 0
+}
+
 export type BudgetListResponse = ApiResponse<BudgetData[]>;
 export type BudgetSaveResponse = ApiResponse<BudgetData[]>;
+export type SubmitBudgetForApprovalResponse = ApiResponse<string>;
+export type InventoryProjectBasementPodiumWingBudgetResponse = ApiResponse<InventoryProjectBasementPodiumWingBudgetData[]>;

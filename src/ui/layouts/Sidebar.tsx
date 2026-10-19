@@ -548,7 +548,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <div className="text-center">
                   <p className="text-xs text-gray-400">
-                    Version 1.0.2
+                    Version 2.0.1
                   </p>
                 </div>
               </div>
@@ -562,7 +562,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <LogOut className="h-4 w-4 text-white" />
                 </button>
                 <p className="text-xs text-gray-400">
-                  v1.0.2
+                  v2.0.1
                 </p>
               </div>
             )}

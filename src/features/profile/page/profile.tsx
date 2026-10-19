@@ -45,6 +45,9 @@ import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelectio
 import { BLOOD_GROUP_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS } from '@/core/constants';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { getNameInitials } from '@/core/utils/getNameInitials';
+import type { AddUpdateEmployeeLetterAcceptEmployee, EmployeeLetterData, FilterWithPaginationEmployeeLetterRequest } from '@/features/employeeMaster/models/EmployeeLetterModal';
+import { employeeLetterService } from '@/features/employeeMaster/services/EmployeeLetterService';
+import FieldInfoTooltip from '@/ui/components/forms/FieldInfoTooltip';
 
 export const Profile: React.FC = () => {
 
@@ -172,13 +175,18 @@ export const Profile: React.FC = () => {
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
         { id: "Week Off Policy", label: "Week Off Policy" },
+        { id: "Letter", label: "Letter" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(employeeTabList[0].id);
 
-    //#endregion
+    const [employeeLetterList, setEmployeeLetterList] = useState<EmployeeLetterData[]>([]);
+    const [employeeLetterAccept, setEmployeeLetterAccept] = useState<AddUpdateEmployeeLetterAcceptEmployee | null>(null);
+    const [isConfirmationDialogBoxOpenAcceptEmployeeLetter, setIsConfirmationDialogBoxOpenAcceptEmployeeLetter] = useState(false);
+    const [isOpenModal, setIsOpenModal] = useState(false);
+    const [rejectRemark, setRejectRemark] = useState('');
+    const [rejectRemarkError, setRejectRemarkError] = useState('');
 
-    //#region INIT
 
     useEffect(() => {
 
@@ -193,6 +201,8 @@ export const Profile: React.FC = () => {
         else if (activeTab === 'Shift Policy') loadShiftMappings();
 
         else if (activeTab === 'Week Off Policy') loadWeekOffMappings();
+
+        else if (activeTab === 'Letter') loadEmployeeLetterData();
 
 
     }, [activeTab]);
@@ -552,6 +562,40 @@ export const Profile: React.FC = () => {
     }
 
     //#endregion
+
+    const loadEmployeeLetterData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationEmployeeLetterRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    IsCheckPermission: false,
+                    EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId,
+                    IsShowEmployee: true
+                }
+
+                const response = await employeeLetterService.apiCallPullEmployeeLetter(params);
+
+                if (E.isRight(response)) {
+
+                    setEmployeeLetterList(response.right.Data);
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Employee Letter'
+        )
+    }
 
     //#region EDIT EMPLOYEE DOCUMENT
 
@@ -1088,6 +1132,103 @@ export const Profile: React.FC = () => {
 
         return urls.length > 0;
     });
+
+    const handleEmployeeLetterShowEmployee = async () => {
+        if (!employeeLetterAccept) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload: AddUpdateEmployeeLetterAcceptEmployee = {
+                    EmployeeLetterId: employeeLetterAccept.EmployeeLetterId,
+                    EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+                    Uniquekey: employeeLetterAccept.Uniquekey,
+                    EmployeeRemark: employeeLetterAccept.EmployeeRemark,
+                    IsAcceptEmployee: true
+                };
+
+                const response = await employeeLetterService.apiCallAddUpdateEmployeeLetterAcceptEmployee(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
+                    loadEmployeeLetterData();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                setIsConfirmationDialogBoxOpenAcceptEmployeeLetter(false);
+                setEmployeeLetterAccept(null);
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Accept Letter",
+        );
+    };
+
+    const closeRejectModal = () => {
+        setIsOpenModal(false);
+        setEmployeeLetterAccept(null);
+        setRejectRemark('');
+        setRejectRemarkError('');
+    };
+
+    const handleEmployeeLetterReject = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+
+        if (!employeeLetterAccept) return;
+
+        if (!rejectRemark.trim()) {
+            setRejectRemarkError('Reason is required');
+            return;
+        }
+        else if (rejectRemark.trim().trim().length < 25) {
+            setRejectRemarkError("Reason must be at least 25 characters");
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const payload: AddUpdateEmployeeLetterAcceptEmployee = {
+                    EmployeeLetterId: employeeLetterAccept.EmployeeLetterId,
+                    EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+                    Uniquekey: employeeLetterAccept.Uniquekey,
+                    EmployeeRemark: rejectRemark,
+                    IsAcceptEmployee: false,
+                };
+
+                const response = await employeeLetterService.apiCallAddUpdateEmployeeLetterAcceptEmployee(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
+
+                    closeRejectModal();
+                    loadEmployeeLetterData();
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Reject Letter",
+        );
+    };
+
+    const letterDocsWithUrls = employeeLetterList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -1134,6 +1275,8 @@ export const Profile: React.FC = () => {
 
                         else if (t.id === 'Week Off Policy') loadWeekOffMappings();
 
+                        else if (t.id === "Letter") loadEmployeeLetterData();
+
                     }}
                 />
 
@@ -1145,9 +1288,9 @@ export const Profile: React.FC = () => {
                             <div className="lg:col-span-2 space-y-6">
 
                                 {/* ================== BASIC DETAILS ================== */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                    <div className='flex justify-between'>
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                                    <div className='bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex justify-between'>
+                                        <h4 className="text-sm font-semibold text-[#1D4ED8]">
                                             Basic Details
                                         </h4>
 
@@ -1159,146 +1302,157 @@ export const Profile: React.FC = () => {
                                             leftIcon={<Edit className="h-4 w-4" />}
                                         />
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="First Name" value={safe(employeeData!.FirstName)} />
-                                                <FieldItem label="Middle Name" value={safe(employeeData!.MiddleName)} />
-                                                <FieldItem label="Last Name" value={safe(employeeData!.LastName)} />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="First Name" value={safe(employeeData!.FirstName)} />
+                                                    <FieldItem label="Middle Name" value={safe(employeeData!.MiddleName)} />
+                                                    <FieldItem label="Last Name" value={safe(employeeData!.LastName)} />
+                                                </div>
                                             </div>
-                                        </div>
 
 
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Gender" value={safe(employeeData!.Gender)} />
-                                                <FieldItem label="Marital Status" value={safe(employeeData!.MaritalStatus)} />
-                                                <FieldItem label="Blood Group" value={safe(employeeData!.BloodGroup)} />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Gender" value={safe(employeeData!.Gender)} />
+                                                    <FieldItem label="Marital Status" value={safe(employeeData!.MaritalStatus)} />
+                                                    <FieldItem label="Blood Group" value={safe(employeeData!.BloodGroup)} />
+                                                </div>
                                             </div>
-                                        </div>
 
 
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData!.DateOfBirth))} />
-                                                <FieldItem label="E-Mail ID" value={safe(employeeData!.EmailId)} />
-                                                <FieldItem label="Personal Mobile Number" value={employeeData?.PersonalMobileNumber
-                                                    ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
-                                                    : '-'}
-                                                />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData!.DateOfBirth))} />
+                                                    <FieldItem label="E-Mail ID" value={safe(employeeData!.EmailId)} />
+                                                    <FieldItem label="Personal Mobile Number" value={employeeData?.PersonalMobileNumber
+                                                        ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
+                                                        : '-'}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Aadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
-                                                <FieldItem label="PAN Number" value={safe(employeeData!.PanCardNumber)} />
-                                                <FieldItem label="Passport Number" value={safe(employeeData!.PassportNumber)} />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Aadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
+                                                    <FieldItem label="PAN Number" value={safe(employeeData!.PanCardNumber)} />
+                                                    <FieldItem label="Passport Number" value={safe(employeeData!.PassportNumber)} />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Driving Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
-                                                <FieldItem label="Voter Card Number" value={safe(employeeData!.VoterCardNumber)} />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Driving Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
+                                                    <FieldItem label="Voter Card Number" value={safe(employeeData!.VoterCardNumber)} />
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem
-                                                    label="Communication Address"
-                                                    value={safe(employeeData!.CommunicationAddress)}
-                                                />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                    <FieldItem
+                                                        label="Communication Address"
+                                                        value={safe(employeeData!.CommunicationAddress)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3  pt-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem
-                                                    label="Permanent Address"
-                                                    value={safe(employeeData!.PermanentAddress)}
-                                                />
+                                            <div className="lg:col-span-3  pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                    <FieldItem
+                                                        label="Permanent Address"
+                                                        value={safe(employeeData!.PermanentAddress)}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
 
 
+                                        </div>
                                     </div>
 
 
                                 </section>
                                 {/* ================== ADDRESS ================== */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Address
-                                    </h4>
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#13367A]">
+                                            Address
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                                <FieldItem label="Country" value={safe(employeeData!.CountryName)} />
-                                                <FieldItem label="State" value={safe(employeeData!.StateName)} />
-                                                <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
+                                                    <FieldItem label="Country" value={safe(employeeData!.CountryName)} />
+                                                    <FieldItem label="State" value={safe(employeeData!.StateName)} />
+                                                    <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
 
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <div className="lg:col-span-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                                <FieldItem label="City" value={safe(employeeData!.CityName)} />
-                                                <FieldItem label="Village" value={safe(employeeData!.VillageName)} />
+                                                    <FieldItem label="City" value={safe(employeeData!.CityName)} />
+                                                    <FieldItem label="Village" value={safe(employeeData!.VillageName)} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </section>
                                 {/* ================== EMPLOYEE INFO ================== */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Employee Information
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
 
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
-                                                <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
-                                                <FieldItem label="Department" value={safe(employeeData!.Department)} />
+                                    <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                            Employee Information
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Company Name" value={safe(employeeData!.CompanyName)} />
+                                                    <FieldItem label="Branch" value={safe(employeeData!.Branch)} />
+                                                    <FieldItem label="Department" value={safe(employeeData!.Department)} />
+
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
-                                                <FieldItem
-                                                    label="Joining Date"
-                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
-                                                />
-                                                <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Designation" value={safe(employeeData!.Designation)} />
+                                                    <FieldItem
+                                                        label="Joining Date"
+                                                        value={formatDate_dd_MonthName_yy(safe(employeeData!.JoiningDate))}
+                                                    />
+                                                    <FieldItem label="Reporting Person" value={safe(employeeData!.ReportPersonName)} />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Employment Type" value={safe(employeeData!.EmployeeType)} />
 
-                                                <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
-                                                    ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
-                                                    : '-'} />
+                                                    <FieldItem label="Office Number" value={employeeData?.OfficeMobileNumber
+                                                        ? `+91 ${safe(employeeData?.OfficeMobileNumber)}`
+                                                        : '-'} />
 
-                                                <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
+                                                    <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem
-                                                    label="Probation Date"
-                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.ProbationDate))}
-                                                />
-                                                <FieldItem
-                                                    label="Id Card Issued Date"
-                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.IdCardIssuedDate))}
-                                                />
+                                            <div className="lg:col-span-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem
+                                                        label="Probation Date"
+                                                        value={formatDate_dd_MonthName_yy(safe(employeeData!.ProbationDate))}
+                                                    />
+                                                    <FieldItem
+                                                        label="Id Card Issued Date"
+                                                        value={formatDate_dd_MonthName_yy(safe(employeeData!.IdCardIssuedDate))}
+                                                    />
 
-                                                <FieldItem label="MPIN" value={safe(employeeData!.MPIN)} />
+                                                    <FieldItem label="MPIN" value={safe(employeeData!.MPIN)} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1307,75 +1461,89 @@ export const Profile: React.FC = () => {
 
 
                                 {/* ================== BANK DETAILS ================== */}
-                                <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900  mb-4">
-                                        Bank Details
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="Bank Name" value={safe(employeeData!.BankName)} />
-                                                <FieldItem label="Account Number" value={safe(employeeData!.AccountNo)} />
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                    <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#C2410C]">
+                                            Bank Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                    <FieldItem label="Bank Name" value={safe(employeeData!.BankName)} />
+                                                    <FieldItem label="Account Number" value={safe(employeeData!.AccountNo)} />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="Bank Branch Name" value={safe(employeeData!.BankBranchName)} />
-                                                <FieldItem label="IFSC Code" value={safe(employeeData!.IFSCCode)} />
+                                            <div className="lg:col-span-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                    <FieldItem label="Bank Branch Name" value={safe(employeeData!.BankBranchName)} />
+                                                    <FieldItem label="IFSC Code" value={safe(employeeData!.IFSCCode)} />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </section>
 
                                 {/* ================== FAMILY DETAILS ================== */}
-                                <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Emergency Contact Details
-                                    </h4>
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="bg-[#D0D7DE] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                            Emergency Contact Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <div className="lg:col-span-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                                <FieldItem label="Relation to Emergency Contact" value={safe(employeeData!.EmergencyContactPersonRelationship)} />
-                                                <FieldItem
-                                                    label="Emergency Contact Number"
-                                                    value={
-                                                        employeeData?.EmergencyMobileNumber
-                                                            ? `+91 ${safe(employeeData?.EmergencyMobileNumber)}`
-                                                            : '-'
-                                                    }
-                                                />
+                                                    <FieldItem label="Relation to Emergency Contact" value={safe(employeeData!.EmergencyContactPersonRelationship)} />
+                                                    <FieldItem
+                                                        label="Emergency Contact Number"
+                                                        value={
+                                                            employeeData?.EmergencyMobileNumber
+                                                                ? `+91 ${safe(employeeData?.EmergencyMobileNumber)}`
+                                                                : '-'
+                                                        }
+                                                    />
 
 
+                                                </div>
                                             </div>
-                                        </div>
 
+                                        </div>
                                     </div>
                                 </section>
                                 {/* ================== ACTION DETAILS ================== */}
-                                <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Action Details
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="Created By" value={safe(employeeData!.CreatedBy)} />
-                                                <FieldItem
-                                                    label="Created Date"
-                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.CreatedDate))}
-                                                />
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                    <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#333333]">
+                                            Action Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                    <FieldItem label="Created By" value={safe(employeeData!.CreatedBy)} />
+                                                    <FieldItem
+                                                        label="Created Date"
+                                                        value={formatDate_dd_MonthName_yy(safe(employeeData!.CreatedDate))}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="Modified By" value={safe(employeeData!.ModifiedBy)} />
-                                                <FieldItem
-                                                    label="Modified Date"
-                                                    value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData!.ModifiedDate))}
-                                                />
+                                            <div className="lg:col-span-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                    <FieldItem label="Modified By" value={safe(employeeData!.ModifiedBy)} />
+                                                    <FieldItem
+                                                        label="Modified Date"
+                                                        value={formatDate_dd_MonthName_yy_hh_mm(safe(employeeData!.ModifiedDate))}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -1387,72 +1555,76 @@ export const Profile: React.FC = () => {
                             <div className="lg:col-span-1 space-y-6">
 
                                 {/* Reporting Structure example block */}
-                                <section className="bg-white rounded-xl  p-6 border-[0.5px] border-[#3333334f]">
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Reporting Structure
-                                    </h4>
-                                    <div className="space-y-4">
-                                        {employeeReportingCycleList && employeeReportingCycleList.length > 0 ? (
-                                            employeeReportingCycleList.map((item, index) => (
-                                                <div key={index} className="flex gap-4 relative">
+                                    <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                            Reporting Structure
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="space-y-4">
+                                            {employeeReportingCycleList && employeeReportingCycleList.length > 0 ? (
+                                                employeeReportingCycleList.map((item, index) => (
+                                                    <div key={index} className="flex gap-4 relative">
 
-                                                    <div className="flex flex-col items-center">
+                                                        <div className="flex flex-col items-center">
 
-                                                        {(() => {
+                                                            {(() => {
 
-                                                            const fullName = item?.FullName?.trim();
+                                                                const fullName = item?.FullName?.trim();
 
-                                                            const profilePhotoURL = item?.ProfilePhotoURL;
+                                                                const profilePhotoURL = item?.ProfilePhotoURL;
 
-                                                            const hasProfile =
-                                                                profilePhotoURL &&
-                                                                profilePhotoURL !== "" &&
-                                                                profilePhotoURL !== "—";
+                                                                const hasProfile =
+                                                                    profilePhotoURL &&
+                                                                    profilePhotoURL !== "" &&
+                                                                    profilePhotoURL !== "—";
 
-                                                            return hasProfile ? (
-                                                                <img
-                                                                    src={profilePhotoURL}
-                                                                    alt={fullName}
-                                                                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
-                                                                    onError={(e) => (e.currentTarget.style.display = "none")}
-                                                                />
-                                                            ) : (
-                                                                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
-                                                                    {getNameInitials(fullName)}
-                                                                </div>
-                                                            );
-                                                        })()}
+                                                                return hasProfile ? (
+                                                                    <img
+                                                                        src={profilePhotoURL}
+                                                                        alt={fullName}
+                                                                        className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                                                                        onError={(e) => (e.currentTarget.style.display = "none")}
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                                        {getNameInitials(fullName)}
+                                                                    </div>
+                                                                );
+                                                            })()}
 
-                                                        {index !== employeeReportingCycleList.length - 1 && (
-                                                            <div className="w-px bg-gray-500 flex-1 mt-1"></div>
-                                                        )}
+                                                            {index !== employeeReportingCycleList.length - 1 && (
+                                                                <div className="w-px bg-gray-500 flex-1 mt-1"></div>
+                                                            )}
+
+                                                        </div>
+
+                                                        {/* Content */}
+                                                        <div className="flex-1 pb-4">
+                                                            <div className="font-semibold text-gray-500">
+                                                                {item.FullName || '-'}
+                                                                <span className="ml-2 text-xs text-gray-300">
+                                                                    ({item.EmployeeCode || '-'})
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="text-sm text-gray-500">
+                                                                {item.Designation || '-'}
+                                                            </div>
+                                                            <div className="text-xs text-gray-400">
+                                                                {item.EmailId || '-'} +91 {item.PersonalMobileNumber || '-'}
+                                                            </div>
+
+                                                        </div>
 
                                                     </div>
-
-                                                    {/* Content */}
-                                                    <div className="flex-1 pb-4">
-                                                        <div className="font-semibold text-gray-500">
-                                                            {item.FullName || '-'}
-                                                            <span className="ml-2 text-xs text-gray-300">
-                                                                ({item.EmployeeCode || '-'})
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="text-sm text-gray-500">
-                                                            {item.Designation || '-'}
-                                                        </div>
-                                                        <div className="text-xs text-gray-400">
-                                                            {item.EmailId || '-'} +91 {item.PersonalMobileNumber || '-'}
-                                                        </div>
-
-                                                    </div>
-
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <NoDataView message='No Reporting Structure Found' />
-                                        )}
+                                                ))
+                                            ) : (
+                                                <NoDataView message='No Reporting Structure Found' />
+                                            )}
+                                        </div>
                                     </div>
 
                                 </section>
@@ -1469,7 +1641,6 @@ export const Profile: React.FC = () => {
                                     renderItem={(item, isOpen, toggle) => (
                                         <div>
 
-                                            {/* === HEADER === */}
                                             <div
                                                 className="flex justify-between items-center px-4 py-3 cursor-pointer"
                                                 onClick={async () => {
@@ -1493,7 +1664,6 @@ export const Profile: React.FC = () => {
                                             >
                                                 <h4 className="font-semibold">{item.title}</h4>
 
-                                                {/* ADD BUTTON */}
 
                                                 {item.key !== 'Branch Associations' && (
                                                     <Button
@@ -1721,38 +1891,42 @@ export const Profile: React.FC = () => {
                                     return (
                                         <>
 
-                                            <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]" >
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Asset Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Asset Name" value={asset.AssetName} />
-                                                            <FieldItem label="Asset Code" value={asset.AssetCode} />
-                                                            <FieldItem label="Asset Type" value={asset.AssetType} />
+                                                <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                    <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                                        Asset Details
+                                                    </h4>
+                                                </div>
+                                                <div className="p-4 bg-white">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Asset Name" value={asset.AssetName} />
+                                                                <FieldItem label="Asset Code" value={asset.AssetCode} />
+                                                                <FieldItem label="Asset Type" value={asset.AssetType} />
+
+                                                            </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Asset Brand" value={asset.AssetBrand} />
-                                                            <FieldItem label="Asset Model" value={asset.AssetModel} />
-                                                            <FieldItem label="Serial Number" value={asset.SerialNumber} />
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Asset Brand" value={asset.AssetBrand} />
+                                                                <FieldItem label="Asset Model" value={asset.AssetModel} />
+                                                                <FieldItem label="Serial Number" value={asset.SerialNumber} />
 
+                                                            </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate || "-")} />
-                                                            <FieldItem label="Assigned By" value={asset.CreatedBy || "-"} />
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(asset.AssignedDate || "-")} />
+                                                                <FieldItem label="Assigned By" value={asset.CreatedBy || "-"} />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
-
                                             </section>
                                         </>
                                     );
@@ -1810,71 +1984,86 @@ export const Profile: React.FC = () => {
 
                                                 {/* ================= LEFT SIDE (2/3) ================= */}
                                                 <div className="lg:col-span-2 space-y-6">
-                                                    <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
-                                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                            Basic Shift Details
-                                                        </h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                            <div className="lg:col-span-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                    <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
-                                                                    <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
+                                                        <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                            <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                                                Basic Shift Details
+                                                            </h4>
+                                                        </div>
+                                                        <div className="p-4 bg-white">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                                                <div className="lg:col-span-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                        <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
+                                                                        <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
+
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </section>
                                                     {/* ================= SHIFT DURATION ================= */}
-                                                    <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
-                                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                            Time Details
-                                                        </h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                    <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftBeginTime} />
-                                                                    <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftEndTime} />
-                                                                    <FieldItem label="Shift Duration Time" value={shiftMappingPolicy!.ShiftDurationTime} />
+                                                        <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                            <h4 className="text-sm font-semibold text-[#13367A]">
+                                                                Time Details
+                                                            </h4>
+                                                        </div>
+                                                        <div className="p-4 bg-white">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                        <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftBeginTime} />
+                                                                        <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftEndTime} />
+                                                                        <FieldItem label="Shift Duration Time" value={shiftMappingPolicy!.ShiftDurationTime} />
+
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="lg:col-span-3 pt-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                    <FieldItem label="Shift Work Duration Time" value={shiftMappingPolicy!.ShiftWorkDurationTime} />
+                                                                <div className="lg:col-span-3 pt-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                        <FieldItem label="Shift Work Duration Time" value={shiftMappingPolicy!.ShiftWorkDurationTime} />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </section>
 
                                                     {/* ================= HALF DAY AND ABSENCE RULES================= */}
-                                                    <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
-                                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                            Advance Setting
-                                                        </h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
 
-                                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                        <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                                            <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                                                Advance Setting
+                                                            </h4>
+                                                        </div>
+                                                        <div className="p-4 bg-white">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                                                    <FieldItem label="First Half Up To" value={shiftMappingPolicy!.FirstHalfUpTo} />
+                                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                                                        <FieldItem label="First Half Up To" value={shiftMappingPolicy!.FirstHalfUpTo} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                                                    <FieldItem label="Calculate Absent if working hours less than" value={shiftMappingPolicy!.AbsentWorkingHours} />
-                                                                    <FieldItem label="Calculate Half day working hours less than" value={shiftMappingPolicy!.HalfDayWorkingHours} />
+                                                                        <FieldItem label="Calculate Absent if working hours less than" value={shiftMappingPolicy!.AbsentWorkingHours} />
+                                                                        <FieldItem label="Calculate Half day working hours less than" value={shiftMappingPolicy!.HalfDayWorkingHours} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
 
-                                                            <div className="lg:col-span-3 pt-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                <div className="lg:col-span-3 pt-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                                                    <FieldItem label="Mark Half Day if Intime After" value={shiftMappingPolicy!.HalfDayInTimeAfter} />
-                                                                    <FieldItem label="Mark Half Day if Outtime After" value={shiftMappingPolicy!.HalfDayOutTimeBefore} />
+                                                                        <FieldItem label="Mark Half Day if Intime After" value={shiftMappingPolicy!.HalfDayInTimeAfter} />
+                                                                        <FieldItem label="Mark Half Day if Outtime After" value={shiftMappingPolicy!.HalfDayOutTimeBefore} />
 
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1888,53 +2077,67 @@ export const Profile: React.FC = () => {
                                                 <div className="lg:col-span-1 space-y-6">
 
                                                     {/* ================= BREAK DETAILS ================= */}
-                                                    <section className="bg-white rounded-xl border border-gray-300  p-6">
+                                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                            Break Details
-                                                        </h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                                    <FieldItem label="Break Begin Time" value={shiftMappingPolicy!.BreakBeginTime} />
-                                                                    <FieldItem label="Break End Time" value={shiftMappingPolicy!.BreakEndTime} />
+                                                        <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                                            <h4 className="text-sm font-semibold text-[#C2410C]">
+                                                                Break Details
+                                                            </h4>
+                                                        </div>
+                                                        <div className="p-4 bg-white">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                        <FieldItem label="Break Begin Time" value={shiftMappingPolicy!.BreakBeginTime} />
+                                                                        <FieldItem label="Break End Time" value={shiftMappingPolicy!.BreakEndTime} />
+                                                                    </div>
                                                                 </div>
-                                                            </div>
 
-                                                            <div className="lg:col-span-3 pt-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                                    <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
+                                                                <div className="lg:col-span-3 pt-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                                        <FieldItem label="Break Duration Time" value={shiftMappingPolicy!.BreakDurationTime} />
 
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </section>
 
 
-                                                    <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
-                                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                            Time Allowed for Late Entry
-                                                        </h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                            <div className="lg:col-span-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                                                    <FieldItem label="Grace Time In Minutes" value={shiftMappingPolicy!.GraceTime} />
+                                                        <div className="bg-[#D0D7DE] px-3 py-2 border-b border-[#D0D7DE]">
+                                                            <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                                                Time Allowed for Late Entry
+                                                            </h4>
+                                                        </div>
+                                                        <div className="p-4 bg-white">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                                                <div className="lg:col-span-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                        <FieldItem label="Grace Time In Minutes" value={shiftMappingPolicy!.GraceTime} />
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </section>
 
-                                                    <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
-                                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                            Remarks
-                                                        </h4>
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                            <div className="lg:col-span-3">
-                                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                                                    <FieldItem label="Remarks" value={shiftMappingPolicy!.Remarks} />
+                                                        <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                            <h4 className="text-sm font-semibold text-[#13367A]">
+                                                                Remarks
+                                                            </h4>
+                                                        </div>
+                                                        <div className="p-4 bg-white">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                                                <div className="lg:col-span-3">
+                                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                        <FieldItem label="Remarks" value={shiftMappingPolicy!.Remarks} />
+
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -1965,48 +2168,58 @@ export const Profile: React.FC = () => {
                                         <>
 
                                             {/* ================= BASIC DETAILS ================= */}
-                                            <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f] mt-3">
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Week Off Policy Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Week Off Policy Name" value={weekOffPolicyMapping!.WeekOffPolicyName} />
-                                                            <FieldItem label="Week Off Policy Code" value={weekOffPolicyMapping!.WeekOffPolicyCode} />
-                                                            <FieldItem label="Week Days" value={weekOffPolicyMapping!.WeekDays} />
+                                                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                    <h4 className="text-sm font-semibold text-[#13367A]">
+                                                        Week Off Policy Details
+                                                    </h4>
+                                                </div>
+                                                <div className="p-4 bg-white">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Week Off Policy Name" value={weekOffPolicyMapping!.WeekOffPolicyName} />
+                                                                <FieldItem label="Week Off Policy Code" value={weekOffPolicyMapping!.WeekOffPolicyCode} />
+                                                                <FieldItem label="Week Days" value={weekOffPolicyMapping!.WeekDays} />
+
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Week Days Starts On" value={weekOffPolicyMapping!.WeekDaysStartsOn} />
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Week Days Starts On" value={weekOffPolicyMapping!.WeekDaysStartsOn} />
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </section>
 
                                             {/* ================= WEEK OFF DETAILS ================= */}
-                                            <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
-                                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                    Week Off Details
-                                                </h4>
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                            <FieldItem label="Weekly Off" value={weekOffPolicyMapping!.WeeklyOff} />
-                                                            <FieldItem label="Weekly Off2" value={weekOffPolicyMapping!.WeeklyOff2} />
-                                                            <FieldItem label="Weekly Off2 Type" value={weekOffPolicyMapping!.WeeklyOff2Type} />
+                                                <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
+                                                    <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                                        Week Off Details
+                                                    </h4>
+                                                </div>
+                                                <div className="p-4 bg-white">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
+                                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                                <FieldItem label="Weekly Off" value={weekOffPolicyMapping!.WeeklyOff} />
+                                                                <FieldItem label="Weekly Off2" value={weekOffPolicyMapping!.WeeklyOff2} />
+                                                                <FieldItem label="Weekly Off2 Type" value={weekOffPolicyMapping!.WeeklyOff2Type} />
+
+                                                            </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div className="lg:col-span-3 pt-3">
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                                            <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
+                                                        <div className="lg:col-span-3 pt-3">
+                                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                                <FieldItem label="Not Applicable For Months" value={weekOffPolicyMapping!.NotApplicableForMonths} />
 
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2019,6 +2232,119 @@ export const Profile: React.FC = () => {
                     </div>
                 )}
 
+                {activeTab === 'Letter' && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                        {letterDocsWithUrls.length === 0 && (
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Documents Found" />
+                            </section>
+                        )}
+
+                        {letterDocsWithUrls.map(d => {
+                            const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                                .filter(x => x?.trim()?.length);
+
+                            return (
+                                <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                    <div className="flex items-start justify-between p-2 gap-2">
+                                        <div className="flex flex-col">
+
+                                            <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                                {d.DocumentName}
+                                            </span>
+
+                                            <span className="text-sm text-gray-500 mt-1">
+                                                Document Count : {urls.length}
+                                            </span>
+                                        </div>
+
+                                        <MultiImageViewer
+                                            images={urls}
+                                            title={d.DocumentName ?? "Document"}
+                                            triggerLabel="View"
+                                            isIcon={false}
+                                        />
+                                    </div>
+
+                                    <div className="flex-grow" />
+                                    <div className="bg-gray-50 p-2 mt-auto">
+                                        <FieldItem
+                                            label="Uploaded By / Date"
+                                            value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                                : d?.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                    : '-'
+                                                }`}
+                                        />
+                                    </div>
+
+                                    {d.IsAcceptEmployee ? (
+
+                                        <div className="p-2">
+                                            <span className="rounded-full bg-green-50 px-3 py-1 text-sm font-medium text-green-700">
+                                                Accepted
+                                            </span>
+                                        </div>
+
+                                    ) : d.EmployeeRemark ? (
+
+                                        <div className="flex items-center gap-2 p-2">
+                                            <span className="rounded-full bg-red-50 px-3 py-1 text-sm font-medium text-red-700">
+                                                Rejected
+                                            </span>
+
+                                            <FieldInfoTooltip value={d.EmployeeRemark} />
+                                        </div>
+
+                                    ) : (
+                                        <div className="flex items-center justify-between p-2">
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEmployeeLetterAccept({
+                                                        EmployeeLetterId: d.EmployeeLetterId,
+                                                        EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+                                                        Uniquekey: d.Uniquekey,
+                                                        EmployeeRemark: "",
+                                                        IsAcceptEmployee: true,
+                                                    });
+                                                    setIsConfirmationDialogBoxOpenAcceptEmployeeLetter(true);
+                                                }}
+                                                className="px-3 py-1 rounded-md text-sm font-medium text-white bg-green-600 hover:bg-green-700"
+                                            >
+                                                Accept
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEmployeeLetterAccept({
+                                                        EmployeeLetterId: d.EmployeeLetterId,
+                                                        EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+                                                        Uniquekey: d.Uniquekey,
+                                                        EmployeeRemark: "",
+                                                        IsAcceptEmployee: false,
+                                                    });
+                                                    setRejectRemark('');
+                                                    setRejectRemarkError('');
+                                                    setIsOpenModal(true);
+                                                }}
+                                                className="px-3 py-1 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+                                            >
+                                                Reject
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
 
             </div>
 
@@ -2335,6 +2661,47 @@ export const Profile: React.FC = () => {
                 loading={isLoading}
                 variant="danger"
             />
+            <Modal
+                isOpen={isOpenModal}
+                onClose={closeRejectModal}
+                title="Reject Reason"
+                onSubmit={handleEmployeeLetterReject}
+                saveText="Reject"
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="p-6 bg-blue-100">
+                    <TextArea
+                        label="Reason"
+                        className="thin-scroll"
+                        value={rejectRemark}
+                        onChange={(e) => {
+                            setRejectRemark(e.target.value);
+                            if (rejectRemarkError)
+                                setRejectRemarkError('');
+                        }}
+                        required
+                        error={rejectRemarkError}
+                        placeholder="Enter reason for rejecting this letter"
+                    />
+                </div>
+            </Modal>
+
+            <ConfirmationDialogBox
+                title="Accept Letter"
+                message="Are you sure you want to Accept this Letter?"
+                isOpen={isConfirmationDialogBoxOpenAcceptEmployeeLetter}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpenAcceptEmployeeLetter(false);
+                    setEmployeeLetterAccept(null)
+                }}
+                onConfirm={handleEmployeeLetterShowEmployee}
+                confirmText="Accept"
+                cancelText="Cancel"
+                loading={isLoading}
+                variant='generate'
+            />
+
         </div >
     )
 }

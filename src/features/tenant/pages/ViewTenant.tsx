@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { FilterWithPaginationTenantDocumentRequest, TenantData, TenantDocumentData } from '@/features/tenant/models/TenantModel';
 import { useNavigate } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
@@ -26,7 +25,7 @@ export const ViewTenant: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [applicantList, setApplicantList] = useState<any[]>([]);
-    const [parkingList, setParkingList] = useState<any[]>([]);
+    const [inventoryFlatList, setInventoryFlatList] = useState<any[]>([]);
 
     const { canAction } = useMenuPermissions();
     const navigate = useNavigate();
@@ -64,22 +63,19 @@ export const ViewTenant: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const params = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    IsCheckPermission: false,
                     TenantId: tenantId,
                     ProjectId: Number(projectId),
                     BuildingId: buildingId
                 };
 
-                const response = await tenantService.apiCallPullTenant(params);
+                const response = await tenantService.apiCallPullTenantById(params);
 
                 if (E.isRight(response)) {
                     const tenant = response.right.Data?.[0];
                     if (tenant) {
                         setEditTenantData(tenant);
                         setApplicantList(tenant.TenantApplicantData || []);
-                        setParkingList(tenant.ParkingData || []);
+                        setInventoryFlatList(tenant.InventoryFlatData || []);
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -107,23 +103,6 @@ export const ViewTenant: React.FC = () => {
     const handleViewTenantDocument = () => {
         navigate('/tenant/document');
     };
-
-    const parkingColumns = useMemo<TableColumn[]>(
-        () => [
-
-            {
-                key: 'ParkingNumber',
-                label: 'Parking Number',
-                width: '15',
-                sortable: false,
-                align: 'center',
-                render: (value) => value || '-'
-            }
-        ],
-        []
-
-    );
-
 
     const searchTenantDocument = async (searchValue: string) => {
 
@@ -198,11 +177,11 @@ export const ViewTenant: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
-                canAction={canAction && !(activeTab === "Overview" && Number(editTenantData?.BookingId ?? 0) > 0)}
+                canAction={canAction && !(activeTab === "Overview" && !editTenantData?.FlatIsEditDelete)}
                 onEdit={() => {
 
                     if (activeTab === "Overview") {
-                        if (Number(editTenantData?.BookingId ?? 0) > 0) return;
+                        if (!editTenantData?.FlatIsEditDelete) return;
 
                         if (editTenantData) {
                             handleEditTenant(editTenantData);
@@ -296,7 +275,7 @@ export const ViewTenant: React.FC = () => {
 
                                 <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#13367A]">
-                                        Exisiting Unit Details
+                                        Existing Unit Details
                                     </h4>
                                 </div>
                                 <div className="p-4 bg-white">
@@ -446,68 +425,122 @@ export const ViewTenant: React.FC = () => {
 
                     </section>
 
-                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
+                    {inventoryFlatList.length > 0 ? (
+                        inventoryFlatList.map((inventoryFlat, index) => (
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6" key={inventoryFlat.InventoryFlatId ?? index}>
 
-                        <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                            <h4 className="text-sm font-semibold text-[#13367A]">
-                                New Unit Details
-                            </h4>
-                        </div>
-                        <div className="p-4 bg-white">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Building Number" value={editTenantData?.BuildingNumber} />
-                                        <FieldItem label="Wing" value={editTenantData?.Wing} />
-                                        <FieldItem label="Floor" value={editTenantData?.Floor} />
-                                    </div>
+                                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between gap-3">
+                                    <h4 className="text-sm font-semibold text-[#13367A]">
+                                        New Unit Details : {inventoryFlat?.Flat}
+                                    </h4>
+
+                                    {Number(inventoryFlat?.BookingId ?? 0) > 0 && (
+                                        <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                            Booking Done
+                                        </span>
+                                    )}
                                 </div>
 
 
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Unit Number" value={editTenantData?.Flat} />
-                                        <FieldItem label="RERA Carpet Area (SqFt)" value={editTenantData?.RERACarpetAreaSqFt} />
-                                        <FieldItem label="Unit Type" value={editTenantData?.InventoryFlatType} />
+                                <div className="p-4 bg-white">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Building Number" value={inventoryFlat?.BuildingNumber} />
+                                                <FieldItem label="Wing" value={inventoryFlat?.Wing} />
+                                                <FieldItem label="Floor" value={inventoryFlat?.Floor} />
+                                            </div>
+                                        </div>
+
+
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Unit Number" value={inventoryFlat?.Flat} />
+                                                <FieldItem label="RERA Carpet Area (SqFt)" value={inventoryFlat?.RERACarpetAreaSqFt} />
+                                                <FieldItem label="Unit Type" value={inventoryFlat?.FlatType} />
+                                            </div>
+                                        </div>
+
+
+                                        <div className={`lg:col-span-3 pt-3 ${Number(inventoryFlat?.BookingId ?? 0) > 0 ? "border-b border-[#135bec2e] pb-3 " : ""}`}>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Unit Configuration" value={inventoryFlat?.FlatConfiguration} />
+                                                <FieldItem label="Unit Facing" value={inventoryFlat?.FlatFacing} />
+                                                <FieldItem label="Adjust Purchase Area (SqFt)" value={inventoryFlat?.AdjustPurchaseAreaSqFt} />
+                                            </div>
+                                        </div>
+
+                                        {Number(inventoryFlat?.BookingId ?? 0) > 0 && (
+                                            <div className="lg:col-span-3 pt-3">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                    <FieldItem label="Booking Created By" value={inventoryFlat?.BookingCreatedBy} />
+                                                    <FieldItem label="Booking Created Date" value={formatDate_dd_MonthName_yy_hh_mm(inventoryFlat?.BookingCreatedDate ?? '-')} />
+                                                </div>
+
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
+                                {inventoryFlat.ParkingData && inventoryFlat.ParkingData.length > 0 && (
+                                    <section className="border-t border-[#135bec2e] mt-5 pt-4 p-4">
+                                        <div className="bg-[#F6F9FF] px-3 py-2 border border-[#D0D7DE] rounded-md mb-4 flex items-center justify-between">
+                                            <h4 className="text-sm font-semibold text-[#13367A]"> Parking Details </h4>
+                                            <span className="text-xs font-medium text-gray-600">
 
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Unit Configuration" value={editTenantData?.InventoryFlatConfiguration} />
+                                                {inventoryFlat.ParkingData.length} Parking {inventoryFlat.ParkingData.length > 1 ? "'s" : ""}
+                                            </span>
+                                        </div>
 
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                        {inventoryFlat.ParkingData.map((parking: any, parkingIndex: any) => (
 
-                    </section>
+                                            <div key={parking.ParkingId ?? parkingIndex} className={parkingIndex === 0 ? "" : "pt-3"}>
 
-                    {parkingList.length > 0 ?
-                        <div className="mt-6">
-                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                <h4 className="text-lg font-semibold text-gray-900 border-b border-gray-200 pb-2 mb-4">
-                                    Parking Details</h4>
+                                                <span className="inline-flex items-center  bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">Parking : {parkingIndex + 1} </span>
 
-                                <div className="pt-2">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-3">
+                                                    <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
+                                                    <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
+                                                    <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
+                                                </div>
 
-                                    <div className="w-full">
-                                        <DataTable
-                                            data={parkingList}
-                                            columns={parkingColumns}
-                                            emptyMessage="No Parking Data found"
-                                            fixedHeight={false}
-                                            recordsPerPage={20}
-                                            className="min-w-full"
-                                            aria-label="Parking list"
-                                        />
-                                    </div>
-                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                                                    <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
+                                                    <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
+                                                    <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
+                                                </div>
+
+                                                <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${parkingIndex < inventoryFlat.ParkingData.length - 1 ? "border-b border-[#135bec2e] pb-4" : ""}`}>
+                                                    <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
+                                                    <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
+                                                    <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? "Yes" : "No"} />
+                                                </div>
+
+                                            </div>
+                                        ))}
+                                    </section>)}
                             </section>
-                        </div>
-                        : ""}
+                        ))
+                    ) : (
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
+
+
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between gap-3">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                    New Unit Details
+                                </h4>
+
+
+                            </div>
+                            <div className='p-4'>
+                                <NoDataView message='No New unit details available'/>
+                            </div>
+                        </section>
+                    )}
+
+
                 </>
             )}
 

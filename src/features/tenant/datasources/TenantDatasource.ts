@@ -3,7 +3,9 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { TenantApi } from '@/features/tenant/api/TenantApi'
 import type {
     FilterWithPaginationTenantRequest,
+    FilterTenantByIdRequest,
     TenantListResponse,
+    TenantByIdListResponse,
     DeleteTenantRequest,
     TenantDeleteResponse,
     TenantDocumentListResponse,
@@ -17,6 +19,7 @@ import type {
 export abstract class TenantDatasource {
 
     abstract pullTenant(params: FilterWithPaginationTenantRequest): Promise<TenantListResponse>;
+    abstract pullTenantById(params: FilterTenantByIdRequest): Promise<TenantByIdListResponse>;
     abstract addUpdateTenant(data: FormData): Promise<TenantSaveResponse>;
     abstract deleteTenant(params: DeleteTenantRequest): Promise<TenantDeleteResponse>;
 
@@ -68,6 +71,31 @@ export class TenantDatasourceImpl implements TenantDatasource {
 
             if (error instanceof TokenExpiredException) {
                 return await this.pullTenant(params);
+            }
+            throw error
+        }
+    }
+
+    async pullTenantById(params: FilterTenantByIdRequest): Promise<TenantByIdListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (params.ProjectId ?? 0).toString(),
+                BuildingId: (params.BuildingId ?? 0).toString(),
+                TenantId: (params.TenantId ?? 0).toString(),
+            })
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
+            
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TenantApi.PULL_BY_ID}?${queryParams.toString()}`
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('Error: Pull TENANT BY ID :', error);
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullTenantById(params);
             }
             throw error
         }

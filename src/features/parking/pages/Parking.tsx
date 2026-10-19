@@ -66,7 +66,6 @@ interface ParkingGroupedByFloor {
 }
 
 const Parking = () => {
-  //#region STATE MANAGEMENT
 
   const [parkingData, setParkingData] = useState<ParkingData[]>([]);
   const [groupedParking, setGroupedParking] = useState<ParkingGroupedByBuilding[]>([]);
@@ -106,17 +105,14 @@ const Parking = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-  // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [buildingName, setBuildingName] = useState<string | null>("");
   const [floor, setFloor] = useState<string | null>("");
 
-  // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
 
-  // Save tab state when it changes
   useEffect(() => {
     localStorage.setItem("parkingActiveTab", activeTab);
   }, [activeTab]);
@@ -126,9 +122,6 @@ const Parking = () => {
   const { canAction, canExport } = useMenuPermissions();
   const { canAction: canBookingAction } = useMenuPermissions("/booking");
 
-  //#region INIT
-
-  // Clear all state when project changes
   useEffect(() => {
     if (!projectId) {
       setParkingData([]);
@@ -141,7 +134,6 @@ const Parking = () => {
       return;
     }
 
-    // Clear all state when project changes
     setParkingData([]);
     setGroupedParking([]);
     setSelectedBuildingIndex(null);
@@ -915,7 +907,6 @@ const Parking = () => {
           </div>
         ))}
 
-      {/* Update Parking Modal */}
       <Modal
         isOpen={isUpdateParkingModalOpen}
         onClose={() => {
@@ -930,7 +921,7 @@ const Parking = () => {
         size="lg"
         loading={isLoading}
       >
-        <div className="space-y-4">
+         <div className="space-y-10 p-6 bg-blue-100">
           <div className="grid grid-cols-1 gap-4">
             <Input
               label="Parking Number"
@@ -1039,7 +1030,7 @@ const Parking = () => {
         </div>
       </Modal>
 
-      {/* Approval Log History */}
+      
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
         title="Parking"
@@ -1049,7 +1040,6 @@ const Parking = () => {
         request={approvalLogRequest}
       />
 
-      {/* Approval Action Modal */}
       <ApprovalActionModal
         title="Parking"
         isOpen={isApprovalActionModalOpen}

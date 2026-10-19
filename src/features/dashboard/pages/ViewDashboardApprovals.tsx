@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { Download } from "lucide-react";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { useViewportHeight } from "@/core/utils/useViewportHeight";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 const ViewDashboardApprovals: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -21,8 +22,6 @@ const ViewDashboardApprovals: React.FC = () => {
 
     const [moduleApprovalList, setModuleApprovalList] = useState<UserApprovalDashboardData[]>([]);
     const [activeTab, setActiveTab] = useState<string>("");
-
-    // const tableHeight = useViewportHeight(95, 300, 600);
 
     const tableHeight = useViewportHeight(200, 350, 900);
 
@@ -114,7 +113,16 @@ const ViewDashboardApprovals: React.FC = () => {
             // INVENTORY
             case "Inventory":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                     {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                     { key: "BuildingNumber", label: "Building", render: renderText },
                     { key: "Wing", label: "Wing", render: renderText },
                 ];
@@ -122,7 +130,16 @@ const ViewDashboardApprovals: React.FC = () => {
             // PARKING
             case "Parking":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                    {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                     { key: "BuildingNumber", label: "Building", render: renderText },
                     { key: "Wing", label: "Wing", render: renderText },
                     { key: "Floor", label: "Floor", render: renderText },
@@ -138,7 +155,16 @@ const ViewDashboardApprovals: React.FC = () => {
             case "Flat Handover":
             case "Cancel Booking":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                    {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                     { key: "Flat", label: "Flat", render: renderText },
                     { key: "ApplicantName", label: "Applicant", render: renderText },
                 ];
@@ -148,7 +174,16 @@ const ViewDashboardApprovals: React.FC = () => {
             case "RERA Document":
             case "Approval Document":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                    {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                     { key: "ProjectDocumentName", label: "Document", render: renderText },
                     { key: "ProjectDocumentCategory", label: "Category", render: renderText },
                 ];
@@ -156,13 +191,32 @@ const ViewDashboardApprovals: React.FC = () => {
             // BUDGET
             case "Budget":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                     {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
+                    { key: "Wing", label: "Wing", render: renderText },
                 ];
 
             // TERM SHEET
             case "Term Sheet":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                     {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                     { key: "NameOfInstitutionBankNBFC", label: "Name Of Institution / Bank / NBFC", render: renderText },
                 ];
 
@@ -170,14 +224,32 @@ const ViewDashboardApprovals: React.FC = () => {
             case "Finalized Vendor":
             case "Invoice Approval":
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                     {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                     { key: "SystemGeneratedCode", label: "MR Code", render: renderText },
                 ];
 
             // DEFAULT FALLBACK
             default:
                 return [
-                    { key: "ProjectName", label: "Project", render: renderText },
+                     {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
                 ];
         }
     };
@@ -274,15 +346,15 @@ const ViewDashboardApprovals: React.FC = () => {
 
                 <div className="flex-1 min-w-0 bg-white border border-gray-200 rounded-lg overflow-hidden" style={{ height: `${tableHeight}px` }}>
 
-                    {/* Table Body */}
-                    <div className="p-4">
-                        <DataTableWithHeaderRowDivider
-                            columns={dynamicColumns}
-                            data={activeModuleDocuments}
-                            emptyMessage="No Approvals Found"
-                            fixedHeight={true}
-                        />
-                    </div>
+
+                    <DataTableWithHeaderRowDivider
+                        columns={dynamicColumns}
+                        data={activeModuleDocuments}
+                        emptyMessage="No Approvals Found"
+                        recordsPerPage={20}
+                        fixedHeight={true}
+                    />
+
                 </div>
             </div>
         </div>

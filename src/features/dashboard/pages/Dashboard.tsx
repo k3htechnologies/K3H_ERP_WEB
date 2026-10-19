@@ -14,7 +14,7 @@ import { useToast } from '@/core/hooks/useToast';
 import EventsMore from "@/features/dashboard/components/EventsMore";
 import { Loader } from "@/core/utils/loader";
 import type { Table7, Table0, Table2, Table3, Table4, Table1, Table6, Table5, Table8, Table10, Table11, Table12, Table13 } from "@/features/dashboard/models/UserDashboardModel";
-import ModuleWorkFlowApproval from "../components/ModuleWorkFlowApproval";
+// import ModuleWorkFlowApproval from "../components/ModuleWorkFlowApproval";
 
 const Dashboard: React.FC = () => {
   const [attendanceSummaryData, setAttendanceSummaryData] = useState<Table7[]>([]);
@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
         const response = await userDashboardServices.apiCallPullUserDashboard();
 
         if (E.isRight(response)) {
@@ -97,15 +97,15 @@ const Dashboard: React.FC = () => {
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-      <HeaderSection />
+      <HeaderSection approvalCount={moduleApproval[0]?.MyApprovalCount ?? 0} />
 
       <div className="grid grid-cols-3 gap-5">
         <div className="col-span-3 lg:col-span-1">
           <WorktimeOverview workTimeOverviewTable={workTimeOverviewTable} />
-         </div>
-        <div className="col-span-3 lg:col-span-2">
-          <ModuleWorkFlowApproval moduleApproval={moduleApproval} />
         </div>
+        {/* <div className="col-span-3 lg:col-span-2">
+          <ModuleWorkFlowApproval moduleApproval={moduleApproval} />
+        </div> */}
 
       </div>
       <div className="grid grid-cols-3 gap-5">
@@ -113,7 +113,7 @@ const Dashboard: React.FC = () => {
           <EmployeeTable employeeOverviewTable={employeeOverviewTable} />
         </div>
         <div className="col-span-3 lg:col-span-1">
-          <AttendanceSummary attendanceSummaryData={attendanceSummaryData} employeeOverviewTable={employeeOverviewTable}/>
+          <AttendanceSummary attendanceSummaryData={attendanceSummaryData} employeeOverviewTable={employeeOverviewTable} />
         </div>
       </div>
 

@@ -816,7 +816,7 @@ export const Tenant: React.FC = () => {
           const isDeleteDisabled = !canAction || Number(row.BookingId ?? 0) > 0;
 
           return canAction ? (
-            
+
             <div className="flex items-center justify-center gap-2">
 
               <Button
@@ -855,7 +855,7 @@ export const Tenant: React.FC = () => {
                   cursor: isDeleteDisabled ? "not-allowed" : "pointer",
                   opacity: isDeleteDisabled ? 0.5 : 1,
                 }}
-                title={Number(row.BookingId ?? 0) > 0   ? "Tenant cannot be deleted because Booking exists" : "Delete Tenant"}
+                title={Number(row.BookingId ?? 0) > 0 ? "Tenant cannot be deleted because Booking exists" : "Delete Tenant"}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

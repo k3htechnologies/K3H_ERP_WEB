@@ -263,6 +263,8 @@ import { TenantBookingListStateProvider } from '@/features/tenantBooking/context
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
 import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking';
 import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
+import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
+import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -313,6 +315,7 @@ function App() {
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard/view" element={<ViewDashboardApprovals />} />
             <Route path="erpRoadmap" element={<ErpRoadmap />} />
 
             {/* SETTING -> COMPANY SETUP */}
@@ -456,7 +459,7 @@ function App() {
 
 
             {/* Account Dashbaord */}
-            <Route path="accountDashboard" element={<AccountDashboard />} />
+            {/* <Route path="accountDashboard" element={<AccountDashboard />} /> */}
 
             {/* TAX TRACKER */}
             <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
@@ -568,6 +571,7 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
+            <Route path="crmDashboard/view" element={<CrmMilestoneView />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
@@ -590,7 +594,7 @@ function App() {
             <Route path='specificationMaster' element={<SpecificationMaster />} />
 
             {/* FINANCE DASHBOARD */}
-            <Route path='financeDashboard' element={<FinanceDashboard />} />
+            {/* <Route path='financeDashboard' element={<FinanceDashboard />} /> */}
 
             {/* FINANCE */}
             <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />

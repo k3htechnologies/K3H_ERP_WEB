@@ -281,7 +281,7 @@ const ProjectDrawing: React.FC = () => {
                 EditText="Edit"
                 isLoading={isLoading}
             />
-            
+
             <div className="flex gap-5 items-start pt-5">
 
                 {drawingCategoryTabs.length > 0 && (
@@ -305,6 +305,7 @@ const ProjectDrawing: React.FC = () => {
                             />
 
                         </div>
+
                     </div>
                 )}
 

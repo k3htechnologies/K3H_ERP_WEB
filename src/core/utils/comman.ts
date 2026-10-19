@@ -212,6 +212,10 @@ export const cleanHtml = (html: string) => {
       ol.querySelectorAll('li').forEach(li => {
         const newLi = doc.createElement('li')
         newLi.innerHTML = li.innerHTML
+        // keep indent class/style so nested/indented bullets are preserved
+        if (li.className) newLi.className = li.className
+        const liStyle = li.getAttribute('style')
+        if (liStyle) newLi.setAttribute('style', liStyle)
         ul.appendChild(newLi)
       })
 
@@ -224,31 +228,54 @@ export const cleanHtml = (html: string) => {
     el.removeAttribute('data-list')
   )
 
-  // ✅ Handle indent
+  // ✅ Handle indent: set style for external rendering AND keep ql-indent- class so Quill editor keeps it
   doc.querySelectorAll('[class*="ql-indent-"]').forEach(el => {
     const match = el.className.match(/ql-indent-(\d+)/)
 
     if (match) {
       const level = parseInt(match[1], 10)
-      el.setAttribute('style', `margin-left:${level * 20}px`)
+      const existingStyle = el.getAttribute('style') || ''
+      el.setAttribute('style', `${existingStyle ? existingStyle + '; ' : ''}margin-left:${level * 20}px`)
     }
-
-    el.removeAttribute('class')
   })
 
-  // ✅ Remove remaining ql classes
+  // ✅ Remove remaining ql classes, retaining ql-indent-*
   doc.querySelectorAll('[class]').forEach(el => {
-    if (el.className.startsWith('ql-')) {
+    const classList = Array.from(el.classList).filter(
+      c => !c.startsWith('ql-') || c.startsWith('ql-indent-')
+    )
+    if (classList.length > 0) {
+      el.className = classList.join(' ')
+    } else {
       el.removeAttribute('class')
     }
   })
 
-  // ✅ Remove empty paragraphs
+  // ✅ Preserve leading, consecutive spaces, and tabs in text nodes as non-breaking spaces
+  const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT)
+  let textNode: Node | null
+  while ((textNode = walker.nextNode())) {
+    if (textNode.nodeValue) {
+      textNode.nodeValue = textNode.nodeValue
+        .replace(/\t/g, '\u00a0\u00a0\u00a0\u00a0')
+        .replace(/^[ ]+/g, match => '\u00a0'.repeat(match.length))
+        .replace(/[ ]{2,}/g, match => '\u00a0'.repeat(match.length))
+    }
+  }
+
+  // ✅ Remove completely empty paragraphs (retain <p><br></p> for vertical space / blank lines)
   doc.querySelectorAll('p').forEach(p => {
-    if (p.innerHTML === '<br>' || p.innerText.trim() === '') {
+    if (!p.hasChildNodes()) {
       p.remove()
     }
   })
+
+  // If the document has no content other than empty lines/spaces, return empty string
+  const textContent = doc.body.textContent?.replace(/\u00a0/g, ' ').trim() || ''
+  const hasMediaOrElements = doc.body.querySelector('img, table, iframe, ul, ol')
+  if (!textContent && !hasMediaOrElements) {
+    return ''
+  }
 
   return doc.body.innerHTML.trim()
 }
@@ -265,8 +292,8 @@ export const copyToClipboard = async (text?: string): Promise<boolean> => {
   }
 };
 
-export const getInputValue = (id: number,value: number | null | undefined) => {
-  return id > 0 ? (value ?? 0): (value === 0 ? '' : (value ?? ''));
+export const getInputValue = (id: number, value: number | null | undefined) => {
+  return id > 0 ? (value ?? 0) : (value === 0 ? '' : (value ?? ''));
 };
 
-export const isEmpty = (value: any) =>value === null || value === undefined || value === '';
+export const isEmpty = (value: any) => value === null || value === undefined || value === '';

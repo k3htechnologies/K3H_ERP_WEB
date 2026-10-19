@@ -1,7 +1,7 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import * as E from 'fp-ts/Either';
 import { CrmDashboardDatasourceImpl } from '@/features/crmDashboard/datasources/CrmDashboardDatasource';
-import type { CrmDashboardResponse,CrmMilestoneCollectionResponse } from '@/features/crmDashboard/models/CrmDashboardModel';
+import type { CrmDashboardResponse, CrmMilestoneCollectionResponse } from '@/features/crmDashboard/models/CrmDashboardModel';
 
 const CrmDashboardDatasource = new CrmDashboardDatasourceImpl();
 
@@ -11,7 +11,7 @@ export const crmDashboardService = {
         try {
 
             const response = await CrmDashboardDatasource.pullCrmDashboard(ProjectId, FilterType, FromDate, ToDate, signal);
-            
+
             return E.right(response);
 
         } catch (error: any) {
@@ -20,11 +20,25 @@ export const crmDashboardService = {
 
         }
     },
-    apiCallPullCrmMilestoneCollection: async (ProjectId: number, FilterType?: string, FromDate?: string | null, ToDate?: string | null,ExportType?: string, signal?: AbortSignal): Promise<E.Either<Failure, CrmMilestoneCollectionResponse>> => {
+    apiCallPullCrmMilestoneCollection: async (ProjectId: number, FilterType?: string, FromDate?: string | null, ToDate?: string | null, ExportType?: string, signal?: AbortSignal): Promise<E.Either<Failure, CrmMilestoneCollectionResponse>> => {
         try {
 
-            const response = await CrmDashboardDatasource.pullCrmMilestoneCollection(ProjectId, FilterType, FromDate, ToDate,ExportType, signal);
-            
+            const response = await CrmDashboardDatasource.pullCrmMilestoneCollection(ProjectId, FilterType, FromDate, ToDate, ExportType, signal);
+
+            return E.right(response);
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+    // Two New Api's Added Below
+    apiCallPullCollectionTrend: async (ProjectId: number, FilterType?: string, FromDate?: string | null, ToDate?: string | null, ExportType?: string, signal?: AbortSignal): Promise<E.Either<Failure, CrmMilestoneCollectionResponse>> => {
+        try {
+
+            const response = await CrmDashboardDatasource.pullCrmMilestoneCollection(ProjectId, FilterType, FromDate, ToDate, ExportType, signal);
+
             return E.right(response);
 
         } catch (error: any) {

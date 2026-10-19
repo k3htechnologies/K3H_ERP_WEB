@@ -30,7 +30,7 @@ const AgreementTDSGSTCollectionSummary: React.FC<Props> = ({
 
     return (
         <div className="pt-5">
-            
+
             <h2 className="text-lg font-semibold text-gray-800">Collection Summary</h2>
             <div className="bg-white border border-gray-100 rounded-xl p-4 space-y-4" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 

@@ -18,11 +18,17 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const theme = THEME
   const containerRef = useRef<HTMLDivElement | null>(null)
   const quillRef = useRef<Quill | null>(null)
+  const lastHtmlRef = useRef<string>('')
 
   // ✅ INIT QUILL
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
+    const wrapper = containerRef.current
+    if (!wrapper) return
+
+    // Toolbar is inserted as a sibling of the mount node, so mount on a child
+    // and clear the whole wrapper on cleanup (avoids duplicate toolbars in StrictMode)
+    const el = document.createElement('div')
+    wrapper.appendChild(el)
 
     const quill = new Quill(el, {
       theme: 'snow',
@@ -38,18 +44,33 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
             [{ color: [] }, { background: [] }],
             [{ align: [] }],
             [{ list: 'ordered' }, { list: 'bullet' }],
+            [{ indent: '-1' }, { indent: '+1' }],
             ['clean'],
           ],
+          keyboard: {
+            bindings: {
+              tab: {
+                key: 'Tab',
+                handler: (range: any, context: any) => {
+                  if (context?.format?.table) {
+                    return true
+                  }
+                  quill.insertText(range.index, '\u00a0\u00a0\u00a0\u00a0', 'user')
+                  quill.setSelection(range.index + 4, 'silent')
+                  return false
+                },
+              },
+            },
+          },
         },
     })
 
     quillRef.current = quill
 
     if (value) {
-      quill.setContents(
-        quill.clipboard.convert({ html: cleanHtml(value) }),
-        'silent'
-      )
+      const cleaned = cleanHtml(value)
+      lastHtmlRef.current = cleaned
+      quill.clipboard.dangerouslyPasteHTML(cleaned)
       quill.blur()
     }
 
@@ -66,6 +87,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           !html || html.replace(/<(.|\n)*?>/g, '').trim() === ''
 
         const cleaned = cleanHtml(isEmpty ? '' : html)
+        lastHtmlRef.current = cleaned
 
         onChange(cleaned)
       }, 200)
@@ -76,7 +98,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     return () => {
       quill.off('text-change', handler)
       quillRef.current = null
-      el.innerHTML = ''
+      wrapper.innerHTML = ''
     }
   }, [])
 
@@ -85,12 +107,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const quill = quillRef.current
     if (!quill) return
 
+    // Skip re-pasting if the value update originated from our own change handler
+    if (value === lastHtmlRef.current) return
+
     const currentHtml =
       quill.root.innerHTML === '<p><br></p>' ? '' : quill.root.innerHTML
 
     const cleanedValue = cleanHtml(value || '')
 
     if (currentHtml !== cleanedValue) {
+      lastHtmlRef.current = cleanedValue
       const range = quill.getSelection()
 
       quill.setContents([]) // safer reset

@@ -334,20 +334,20 @@ export const ContractRequisition: React.FC = () => {
           const { bg, text } = getContractRequisitionStatusColor(value);
 
           return (
-                    <div className="flex items-center gap-2">
-                        <span
-                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                            style={{
-                                backgroundColor: bg,
-                                color: text,
-                            }}
-                        >
-                            {value || "-"}
-                        </span>
-                        {["COMPLETED", "CLOSED"].includes(value?.toUpperCase()) && (
-                            <FieldInfoTooltip value={row.CloseCompletionRemark} />
-                        )}
-                    </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                style={{
+                  backgroundColor: bg,
+                  color: text,
+                }}
+              >
+                {value || "-"}
+              </span>
+              {["COMPLETED", "CLOSED"].includes(value?.toUpperCase()) && (
+                <FieldInfoTooltip value={row.CloseCompletionRemark} />
+              )}
+            </div>
           );
         },
       },
@@ -392,9 +392,15 @@ export const ContractRequisition: React.FC = () => {
         align: "center",
         render: (_value, row) => {
           const isLockAndKeyContract = row.ContractType === "lock and key";
+          const canActionStage =
+            canAction &&
+            !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
+          !["COMPLETED", "CLOSED"].includes(row.ContractStatus?.toUpperCase())
+
+
           return (
             <div className="flex items-center justify-center gap-1">
-              {true && (
+              {canAction && (
                 <>
                   <Button
                     type="button"
@@ -419,13 +425,13 @@ export const ContractRequisition: React.FC = () => {
                     type="button"
                     color="transparent"
                     size="sm"
-                    // disabled={!canActionStage}
-                    // style={{
-                    //   color: canActionStage ? "#dc2626" : "#9CA3AF",
-                    //   padding: "4px 8px",
-                    //   cursor: canActionStage ? "pointer" : "not-allowed",
-                    //   opacity: canActionStage ? 1 : 0.5,
-                    // }}
+                    disabled={!canActionStage}
+                    style={{
+                      color: canActionStage ? "#dc2626" : "#9CA3AF",
+                      padding: "4px 8px",
+                      cursor: canActionStage ? "pointer" : "not-allowed",
+                      opacity: canActionStage ? 1 : 0.5,
+                    }}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();

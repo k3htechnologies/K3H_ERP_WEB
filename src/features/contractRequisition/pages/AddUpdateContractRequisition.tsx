@@ -370,10 +370,13 @@ export const AddUpdateContractRequisition: React.FC = () => {
       return;
     }
     if (editIndex !== null) {
-      levelDetailsList.splice(editIndex, 1, levelFormData);
-      setLevelDetailsList(levelDetailsList);
+      setLevelDetailsList(prev =>
+        prev.map((item, index) =>
+          index === editIndex ? levelFormData : item
+        )
+      );
     } else {
-      setLevelDetailsList(prev => ([...prev, levelFormData]));
+      setLevelDetailsList(prev => [...prev, levelFormData]);
     }
     setShowAddLevelPopup(false);
   }

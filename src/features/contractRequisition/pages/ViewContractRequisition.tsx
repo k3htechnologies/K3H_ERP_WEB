@@ -51,7 +51,7 @@ export const ViewContractRequisition: React.FC = () => {
 
   const ContractRequisitionTabList: { id: string; label: string }[] = [
     { id: "Overview", label: "Overview" },
-    { id: "boq", label: "BOQ" },
+    contractRequisitionData?.ContractType !== "indirect" ? { id: "boq", label: "BOQ" } : null,
     canFinalizedVendor ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
     canGenerateWorkOrder ? { id: "Work Order", label: "Work Order" } : null,
     canAddInvoice ? { id: "Invoice", label: "Invoice" } : null,

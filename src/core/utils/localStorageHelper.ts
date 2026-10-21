@@ -1685,8 +1685,8 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
-// TEAM WORK SPACE
-   storeTaskTableColumns: (columns: string): void => {
+  // TEAM WORK SPACE
+  storeTaskTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS, columns);
     } catch (error) {
@@ -1722,6 +1722,27 @@ export const LocalStorageHelper = {
         return localStorage.getItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
       } catch (error) {
         console.error("Error reading Agenda Task Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+  storeCostToCompanyTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Cost To Company Columns Details:", error);
+    }
+  },
+
+  getCostToCompanyTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Cost To Company Columns Details:", error);
         return null;
       }
     }
@@ -1834,7 +1855,7 @@ export const LocalStorageHelper = {
 
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
-
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1870,7 +1891,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.AGENDA_TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MEETING);
-
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COST_TO_COMPANY);
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);

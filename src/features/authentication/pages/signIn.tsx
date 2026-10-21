@@ -11,7 +11,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Loader } from '@/core/utils/loader';
 import { useNavigate } from 'react-router-dom';
 import baseClient from '@/core/config/baseClient';
-import { Eye, EyeClosed, EyeOff, KeyIcon, Mail, Phone } from 'lucide-react';
+import { Eye, EyeClosed, KeyIcon, Mail, Phone } from 'lucide-react';
 
 export function SignIn() {
 
@@ -286,7 +286,7 @@ export function SignIn() {
                                             type="button"
                                             onClick={() => setShowMpin((prev) => !prev)}
                                         >
-                                            {showMpin ? <EyeOff className='h-5 w-5' /> : <Eye className='h-5 w-5' />}
+                                            {showMpin ? <Eye className='h-5 w-5' /> : <EyeClosed className='h-5 w-5' />}
                                         </button>
                                     }
                                     value={otp}
@@ -360,7 +360,7 @@ export function SignIn() {
                                             type="button"
                                             onClick={() => setShowMpin((prev) => !prev)}
                                         >
-                                            {showMpin ? <EyeClosed className='h-5 w-5' /> : <Eye className='h-5 w-5' />}
+                                            {showMpin ? <Eye className='h-5 w-5' /> : <EyeClosed className='h-5 w-5' />}
                                         </button>
                                     }
                                     value={otp}

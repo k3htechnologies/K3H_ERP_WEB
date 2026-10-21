@@ -726,6 +726,11 @@ export const getPageInfo = (path: string) => {
         description: "Streamlined material requests for efficient project execution",
       };
 
+    case "costToCompany":
+      return {
+        title: "Cost To Company",
+        description: "Overview of your system and key metrics",
+      };
 
 
     default:

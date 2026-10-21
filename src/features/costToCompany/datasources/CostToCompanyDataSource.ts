@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import { CostToCompanyApi } from "../api/CostToCompanyApi";
-import type { AddUpdateCostToCompanyData, CostToCompanyByIdListResponse, CostToCompanyDeleteResponse, CostToCompanyListResponse, CostToCompanySaveResponse, DeleteCostToCompany, FilterWithPaginationCostToCompanyById, FilterWithPaginationCostToCompanyRequest } from "../models/CostToCompanyModel";
+import { CostToCompanyApi } from "@/features/costToCompany/api/CostToCompanyApi";
+import type { AddUpdateCostToCompanyData, CostToCompanyByIdListResponse, CostToCompanyDeleteResponse, CostToCompanyListResponse, CostToCompanySaveResponse, DeleteCostToCompany, FilterWithPaginationCostToCompanyById, FilterWithPaginationCostToCompanyRequest } from "@/features/costToCompany/models/CostToCompanyModel";
 
 export abstract class CostToCompanyDatasource {
     abstract pullCostToCompany(params: FilterWithPaginationCostToCompanyRequest, signal?: AbortSignal): Promise<CostToCompanyListResponse>;
@@ -28,7 +28,6 @@ export class CostToCompanyDatasourceImpl implements CostToCompanyDatasource {
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
-
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${CostToCompanyApi.PULL}?${queryParams.toString()}`, { signal }
             )
@@ -36,7 +35,7 @@ export class CostToCompanyDatasourceImpl implements CostToCompanyDatasource {
 
         } catch (error: any) {
 
-            console.error("ERROR: PULL Cost To Company:", error);
+            console.error("ERROR: PULL COST TO COMPANY :", error);
 
             if (error instanceof TokenExpiredException) {
 
@@ -51,6 +50,8 @@ export class CostToCompanyDatasourceImpl implements CostToCompanyDatasource {
             const queryParams = new URLSearchParams({
                 CostToCompanyId: (params.CostToCompanyId ?? 0).toString(),
             });
+
+            if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${CostToCompanyApi.PULL_COST_TO_COMPANY_BY_ID}?${queryParams.toString()}`, { signal }

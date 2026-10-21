@@ -36,6 +36,7 @@ export const LOCAL_STORAGE_KEYS = {
     //PAYROLL
     LEAVE_SELECTED_COLUMNS: 'leave.selectedColumns',
     OUTDOOR_SELECTED_COLUMNS: 'outdoor.selectedColumns',
+    COST_TO_COMPANY_SELECTED_COLUMNS: 'costToCompany.selectedColumns',
 
     //SETTING -> COMPANY SETUP
     DAPARTMENT_MASTER_SELECTED_COLUMNS: 'departmentMaster.selectedColumns',
@@ -135,8 +136,6 @@ export const LOCAL_STORAGE_KEYS = {
     //TEAM WORK SPACE
     TASK_SELECTED_COLUMNS: 'task.selectedColumns',
     AGENDA_TASK_SELECTED_COLUMNS: 'agendaTask.selectedColumns',
-
-
 
 
 } as const

@@ -1,23 +1,30 @@
-import { useEffect, useMemo, useState } from "react"
-import type { CostToCompanyData, CostToCompanyDeductionData, CostToCompanyEarningData, FilterWithPaginationCostToCompanyById } from "../models/CostToCompanyModel";
-import { useCostToCompanyListState } from "../context/CostToCompanyListStateContext";
+import { useEffect, useState } from "react"
+import type { CostToCompanyData, CostToCompanyDeductionData, CostToCompanyEarningData, FilterWithPaginationCostToCompanyById } from "@/features/costToCompany/models/CostToCompanyModel";
+import { useCostToCompanyListState } from "@/features/costToCompany/context/CostToCompanyListStateContext";
 import { useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
-import { CostToCompanyService } from "../services/CostToCompanyService";
+import { costToCompanyService } from "@/features/costToCompany/services/CostToCompanyService";
 import * as E from "fp-ts/Either";
-import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { Loader } from "@/core/utils/loader";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { formatCurrency } from "@/core/utils/comman";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { Button } from "@/ui/components/forms";
+import { Download } from "lucide-react";
 
 export const ViewCostToCompany: React.FC = () => {
 
-    const [costToCompanyById, setCostToCompanyById] = useState<CostToCompanyData | null>(null);
+    const [costToCompanyData, setCostToCompanyData] = useState<CostToCompanyData | null>(null);
     const { addToast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [costToCompanyEarningData, setCostToCompanyEarningData] = useState<CostToCompanyEarningData[]>([]);
     const [costToCompanyDeductionData, setCostToCompanyDeductionData] = useState<CostToCompanyDeductionData[]>([]);
+    const { canAction, canExport } = useMenuPermissions();
 
     const { CostToCompanyId } = useParams<{ CostToCompanyId?: string }>();
     const { listState } = useCostToCompanyListState();
@@ -40,7 +47,7 @@ export const ViewCostToCompany: React.FC = () => {
                     CostToCompanyId: Number(currentCostToCompanyId),
                 };
 
-                const response = await CostToCompanyService.apiCallPullCostToCompanyById(params);
+                const response = await costToCompanyService.apiCallPullCostToCompanyById(params);
 
                 if (E.isRight(response)) {
 
@@ -50,7 +57,7 @@ export const ViewCostToCompany: React.FC = () => {
                         ? data[0] ?? null
                         : data;
 
-                    setCostToCompanyById(costToCompany);
+                    setCostToCompanyData(costToCompany);
 
                     setCostToCompanyEarningData(
                         costToCompany?.CostToCompanyEarningData ?? []
@@ -74,121 +81,225 @@ export const ViewCostToCompany: React.FC = () => {
         );
     };
 
-    const CostToCompanyEarningColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "EarningName",
-            label: "Earning Name",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: value => value || "",
-        },
-        {
-            key: "Appliable",
-            label: "Appliable",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: value => value || "",
-        },
-        {
-            key: "Value",
-            label: "Value",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: value => value ?? 0,
-        },
-        {
-            key: "MonthlyAmount",
-            label: "Monthly Amount",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: value => value ?? 0,
-        },
-        {
-            key: "YearlyAmount",
-            label: "Yearly Amount",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: value => value ?? 0,
-        },
-    ], []);
-
-    const CostToCompanyDeductionColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "DeductionName",
-            label: "Deduction Name",
-            width: "20",
-            sortable: false,
-            align: "left",
-            render: value => value || "",
-        },
-        {
-            key: "Appliable",
-            label: "Appliable",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: value => value || "",
-        },
-        {
-            key: "Value",
-            label: "Value",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: value => value ?? 0,
-        },
-        {
-            key: "MonthlyAmount",
-            label: "Monthly Amount",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: value => value ?? 0,
-        },
-        {
-            key: "YearlyAmount",
-            label: "Yearly Amount",
-            width: "15",
-            sortable: false,
-            align: "right",
-            render: value => value ?? 0,
-        },
-    ], []);
-
     const handleBackToListCostToCompany = () => {
         navigate("/costToCompany");
     };
 
+    const totalMonthlyEarnings = costToCompanyEarningData.reduce(
+        (total, item) => total + Number(item.MonthlyAmount ?? 0),
+        0
+    );
+
+    const totalYearlyEarnings = costToCompanyEarningData.reduce(
+        (total, item) => total + Number(item.YearlyAmount ?? 0),
+        0
+    );
+
+    const totalMonthlyDeductions = costToCompanyDeductionData.reduce(
+        (total, item) => total + Number(item.MonthlyAmount ?? 0),
+        0
+    );
+
+    const totalYearlyDeductions = costToCompanyDeductionData.reduce(
+        (total, item) => total + Number(item.YearlyAmount ?? 0),
+        0
+    );
+
+    const handleEditCostToCompany = (row: CostToCompanyData) => {
+        navigate(`/costToCompany/add/${row.CostToCompanyId}`, {
+            state: {
+                fromList: true
+            }
+        });
+    };
+
+    const handleExportCostToCompanyById = async (exportType: 'Excel' | 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationCostToCompanyById = {
+                    CostToCompanyId: Number(currentCostToCompanyId),
+                    ExportType: exportType,
+                };
+
+                const response = await costToCompanyService.apiCallPullCostToCompanyById(params);
+
+                handleExportFile(response, exportType, "Cost To Company", addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: "error", title: error.message || "Export failed" }),
+            undefined,
+            "Preparing Export",
+        );
+    }
+
+    const handleExportCostToCompanyByIdPdf = () => handleExportCostToCompanyById("PDF");
+
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
+        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+            <Loader loading={isLoading} title={loadingMessage}> <div />   </Loader>
 
-            <HeaderActionBar
-                titleText={costToCompanyById?.EmployeeName ?? ""}
-                cancelText="Cancel"
-                onCancel={() => handleBackToListCostToCompany()}
-            />
-
-            <div className="flex flex-col gap-4 pt-4">
-                <DataTable
-                    data={costToCompanyEarningData}
-                    columns={CostToCompanyEarningColumns}
-                    emptyMessage="No Cost To Company Earning Data Found"
+            <div className="flex justify-between">
+                <HeaderActionBar
+                    titleText={costToCompanyData?.EmployeeName ?? ""}
+                    cancelText="Cancel"
+                    onCancel={handleBackToListCostToCompany}
+                    isLoading={false}
                 />
 
-                <DataTable
-                    data={costToCompanyDeductionData}
-                    columns={CostToCompanyDeductionColumns}
-                    emptyMessage="No Cost To Company Deduction Data Found"
-                />
+                <div className="flex justify-between gap-2">
+                    {canAction && (
+                        <Button
+                            color="blue"
+                            size="sm"
+                            onClick={() => {
+                                if (costToCompanyData) handleEditCostToCompany(costToCompanyData)
+                            }}
+                        >
+                            Edit
+                        </Button>
+                    )}
+
+                    {canExport && (
+                        <Button
+                            type="button"
+                            size="mxs"
+                            color="blue"
+                            colorMode="gradient_light"
+                            defineWidth
+                            style={{ width: '95px' }}
+                            leftIcon={<Download className="h-4 w-4" />}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleExportCostToCompanyByIdPdf();
+                            }}
+                        >
+                            Export
+                        </Button>
+                    )}
+                </div>
+
+            </div>
+
+            <div className="mt-5 overflow-hidden rounded-sm border border-[#9aafd0] bg-white">
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-4 p-4 gap-4">
+                    <FieldItem label="Employee Code" value={costToCompanyData?.EmployeeCode} isRow />
+                    <FieldItem label="Department" value={costToCompanyData?.Department} isRow />
+                    <FieldItem label="Designation" value={costToCompanyData?.Designation} isRow />
+                    <FieldItem label="Branch" value={costToCompanyData?.Branch} isRow />
+                    <FieldItem label="Joining Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.JoiningDate ?? "-")} isRow />
+                    <FieldItem label="PanCard No." value={costToCompanyData?.PanCardNumber} isRow />
+                    <FieldItem label="Bank Name" value={costToCompanyData?.BankName} isRow />
+                    <FieldItem label="Account No." value={costToCompanyData?.AccountNo} isRow />
+                    <FieldItem label="Monthly CTC" value={formatCurrency(costToCompanyData?.MonthlyCTC)} isRow />
+                    <FieldItem label="Annual CTC" value={formatCurrency(costToCompanyData?.AnnualCTC)} isRow />
+                    <FieldItem label="Effective From Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.EffectiveFromDate ?? "-")} isRow />
+                    <FieldItem label="Effective To Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.EffectiveToDate ?? "-")} isRow />
+                    <FieldItem label="Provident Fund" value={costToCompanyData?.IsProvidentFund === true ? "Yes" : "No"} isRow />
+                    <FieldItem label="Employees State Insurance Corporation" value={costToCompanyData?.EmployeesStateInsuranceCorporation === true ? "Yes" : "No"} isRow />
+                </div>
+
+                <div className="overflow-hidden">
+                    <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
+                        <div className="px-4 py-3">Earning Name</div>
+                        <div className="px-3 py-3 text-right">Monthly Amount</div>
+                        <div className="px-3 py-3 text-right">Yearly Amount</div>
+                    </div>
+
+                    <div className="bg-[#f2f7fd] text-sm text-gray-800">
+                        {costToCompanyEarningData.length > 0 ? (
+                            costToCompanyEarningData.map((item, index) => (
+                                <div key={`${item.EarningName}-${index}`}
+                                    className="grid grid-cols-[2fr_1fr_1fr] items-center border-b border-[#d5e0ef] last:border-b-0"
+                                >
+                                    <div className="px-4 py-2">{item.EarningName}</div>
+
+                                    <div className="px-3 py-2 text-right tabular-nums">
+                                        {formatCurrency(Number(item.MonthlyAmount ?? 0))}
+                                    </div>
+
+                                    <div className="px-3 py-2 text-right tabular-nums">
+                                        {formatCurrency(Number(item.YearlyAmount ?? 0))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="px-4 py-6 text-center text-gray-500">
+                                No earnings found
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
+                        <div className="px-4 py-3">Total Earnings</div>
+
+                        <div className="px-3 py-3 text-right tabular-nums">
+                            {formatCurrency(totalMonthlyEarnings)}
+                        </div>
+
+                        <div className="px-3 py-3 text-right tabular-nums">
+                            {formatCurrency(totalYearlyEarnings)}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="h-6 border-y border-[#9aafd0] bg-white" />
+
+                <div className="overflow-hidden">
+                    <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
+                        <div className="px-4 py-3">Deduction Name</div>
+                        <div className="px-3 py-3 text-right">Monthly Amount</div>
+                        <div className="px-3 py-3 text-right">Yearly Amount</div>
+                    </div>
+
+                    <div className=" bg-[#f2f7fd] text-sm text-gray-800">
+                        {costToCompanyDeductionData.length > 0 ? (
+                            costToCompanyDeductionData.map((item, index) => (
+                                <div key={`${item.DeductionName}-${index}`}
+                                    className="grid grid-cols-[2fr_1fr_1fr] items-center border-b border-[#d5e0ef] last:border-b-0"
+                                >
+                                    <div className="px-4 py-2">{item.DeductionName}</div>
+
+                                    <div className="px-3 py-2 text-right tabular-nums">
+                                        {formatCurrency(Number(item.MonthlyAmount ?? 0))}
+                                    </div>
+
+                                    <div className="px-3 py-2 text-right tabular-nums">
+                                        {formatCurrency(Number(item.YearlyAmount ?? 0))}
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="px-4 py-6 text-center text-gray-500">
+                                No deductions found
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
+                        <div className="px-4 py-3">Total Deductions</div>
+
+                        <div className="px-3 py-3 text-right tabular-nums">
+                            {formatCurrency(totalMonthlyDeductions)}
+                        </div>
+
+                        <div className="px-3 py-3 text-right tabular-nums">
+                            {formatCurrency(totalYearlyDeductions)}
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
 
         </div>
-    )
+    );
+
 }
 export default ViewCostToCompany;

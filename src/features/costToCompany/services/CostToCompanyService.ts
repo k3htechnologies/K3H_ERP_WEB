@@ -1,12 +1,12 @@
 
 import * as E from 'fp-ts/Either';
 import type { Failure } from "@/core/api/FailureResponse";
-import type { AddUpdateCostToCompanyData, CostToCompanyByIdListResponse, CostToCompanyDeleteResponse, CostToCompanyListResponse, CostToCompanySaveResponse, DeleteCostToCompany, FilterWithPaginationCostToCompanyById, FilterWithPaginationCostToCompanyRequest } from '../models/CostToCompanyModel';
-import { CostToCompanyDatasourceImpl } from '../datasources/CostToCompanyDataSource';
+import type { AddUpdateCostToCompanyData, CostToCompanyByIdListResponse, CostToCompanyDeleteResponse, CostToCompanyListResponse, CostToCompanySaveResponse, DeleteCostToCompany, FilterWithPaginationCostToCompanyById, FilterWithPaginationCostToCompanyRequest } from '@/features/costToCompany/models/CostToCompanyModel';
+import { CostToCompanyDatasourceImpl } from '@/features/costToCompany/datasources/CostToCompanyDataSource';
 
 const CostToCompanyDatasource = new CostToCompanyDatasourceImpl();
 
-export const CostToCompanyService = {
+export const costToCompanyService = {
 
     apiCallPullCostToCompany: async (params: FilterWithPaginationCostToCompanyRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CostToCompanyListResponse>> => {
 

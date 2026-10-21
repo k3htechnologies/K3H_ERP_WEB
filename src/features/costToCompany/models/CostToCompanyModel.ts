@@ -12,6 +12,7 @@ export interface FilterWithPaginationCostToCompanyRequest {
 
 export interface FilterWithPaginationCostToCompanyById {
     CostToCompanyId: number
+    ExportType?: 'Excel' | 'PDF'
 }
 
 export interface CostToCompanyData {
@@ -33,6 +34,14 @@ export interface CostToCompanyData {
     ModifiedDate: string | null
     CostToCompanyEarningData: CostToCompanyEarningData[]
     CostToCompanyDeductionData: CostToCompanyDeductionData[]
+    EmployeeCode: string | null
+    Department: string | null
+    Designation: string | null
+    Branch: string | null
+    JoiningDate: string | null
+    PanCardNumber: string | null
+    BankName: string | null
+    AccountNo: string | null
 }
 
 export interface CostToCompanyEarningData {

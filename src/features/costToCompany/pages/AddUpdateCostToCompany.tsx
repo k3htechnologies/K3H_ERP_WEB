@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import type { AddUpdateCostToCompanyData, FilterWithPaginationCostToCompanyRequest } from "../models/CostToCompanyModel";
+import type { AddUpdateCostToCompanyData, FilterWithPaginationCostToCompanyRequest } from "@/features/costToCompany/models/CostToCompanyModel";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils";
-import { CostToCompanyService } from "../services/CostToCompanyService";
+import { costToCompanyService } from "@/features/costToCompany/services/CostToCompanyService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -14,6 +14,7 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 
 const initialFormStateForCostToCompany = (): AddUpdateCostToCompanyData => ({
     CostToCompanyId: 0,
@@ -42,9 +43,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
     const isAddMode = costToCompanyId === 0;
 
-    const [dropdownLabels, setDropdownLabels] = useState<{
-        employee?: string;
-    }>({});
+    const [dropdownLabels, setDropdownLabels] = useState<{ employee?: string; }>({});
 
     useEffect(() => {
         if (!isAddMode) {
@@ -53,9 +52,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
     }, [costToCompanyId]);
 
     const fetchCostToCompany = async () => {
-
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
             async () => {
@@ -66,7 +63,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
                     CostToCompanyId: Number(CostToCompanyId),
                 };
 
-                const response = await CostToCompanyService.apiCallPullCostToCompany(params);
+                const response = await costToCompanyService.apiCallPullCostToCompany(params);
 
                 if (E.isRight(response)) {
 
@@ -105,16 +102,15 @@ export const AddUpdateCostToCompany: React.FC = () => {
     };
 
     const PushCostToCompanyData = (): AddUpdateCostToCompanyData => {
-
         return {
             CostToCompanyId: formData.CostToCompanyId,
-            Uniquekey: formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            Uniquekey: formData.Uniquekey,
             AnnualCTC: formData.AnnualCTC,
             MonthlyCTC: formData.MonthlyCTC,
             EmployeesStateInsuranceCorporation: formData.EmployeesStateInsuranceCorporation,
             IsProvidentFund: formData.IsProvidentFund,
             EmployeeId: formData.EmployeeId,
-            EffectiveFromDate: formData.EffectiveToDate,
+            EffectiveFromDate: formData.EffectiveFromDate,
             EffectiveToDate: formData.EffectiveToDate
         };
     };
@@ -127,10 +123,6 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
         if (!formData.AnnualCTC) {
             newErrors.AnnualCTC = "Annual CTC is required";
-        }
-
-        if (!formData.MonthlyCTC) {
-            newErrors.MonthlyCTC = "Monthly CTC is required";
         }
 
         if (!formData.EmployeeId) {
@@ -167,7 +159,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
                 const payload = PushCostToCompanyData();
 
-                const response = await CostToCompanyService.apiCallAddUpdateCostToCompany(payload);
+                const response = await costToCompanyService.apiCallAddUpdateCostToCompany(payload);
 
                 if (E.isRight(response)) {
 
@@ -190,9 +182,24 @@ export const AddUpdateCostToCompany: React.FC = () => {
     };
 
     const handleFieldChange = (field: keyof AddUpdateCostToCompanyData, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
+        setFormData((prev) => {
+            const updatedData = {
+                ...prev, [field]: value,
+            };
+
+            if (field === "AnnualCTC") {
+                updatedData.MonthlyCTC = Number(value || 0) / 12;
+            }
+
+            return updatedData;
+        });
+
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+
+        if (field === "AnnualCTC" && errors.MonthlyCTC) {
+            setErrors((prev) => ({ ...prev, MonthlyCTC: "" }));
         }
     };
 
@@ -203,7 +210,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
             <div className="space-y-4 pb-3">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Cost To Company Details</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div>
                         <SingleSelectDropdownWithPagination
@@ -228,29 +235,28 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
                     <div>
                         <Input
-                            type="text"
-                            label='Annual CTC'
-                            value={formData.AnnualCTC || ''}
-                            onChange={e => handleFieldChange("AnnualCTC", e.target.value)}
+                            label="Annual CTC"
+                            value={formData.AnnualCTC || ""}
+                            onChange={(e) => handleFieldChange("AnnualCTC", e.target.value)}
                             placeholder="Enter Annual CTC"
-                            maxLength={70}
                             required
+                            maxLength={9}
                             error={errors.AnnualCTC}
                         />
                     </div>
 
                     <div>
                         <Input
-                            type="text"
                             label='Monthly CTC'
-                            value={formData.MonthlyCTC || ''}
-                            onChange={e => handleFieldChange("MonthlyCTC", e.target.value)}
-                            placeholder="Enter Monthly CTC"
-                            maxLength={70}
+                            value={formData.MonthlyCTC || "0"}
+                            disabled
                             required
-                            error={errors.MonthlyCTC}
                         />
                     </div>
+
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     <div>
                         <DatePickerInput
@@ -269,6 +275,28 @@ export const AddUpdateCostToCompany: React.FC = () => {
                             value={formatDate_dd_mm_yyyy(formData.EffectiveToDate)}
                             onChange={(val) => handleFieldChange('EffectiveToDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             error={errors.EffectiveToDate}
+                        />
+                    </div>
+
+                    <div>
+                        <ToggleSwitch
+                            label="Is Provident Fund"
+                            name="IsProvidentFund"
+                            value={formData.IsProvidentFund}
+                            onChange={(name, value) => {
+                                handleFieldChange(name as keyof AddUpdateCostToCompanyData, value);
+                            }}
+                        />
+                    </div>
+
+                    <div>
+                        <ToggleSwitch
+                            label="Employees State Insurance Corporation"
+                            name="EmployeesStateInsuranceCorporation"
+                            value={formData.EmployeesStateInsuranceCorporation}
+                            onChange={(name, value) => {
+                                handleFieldChange(name as keyof AddUpdateCostToCompanyData, value);
+                            }}
                         />
                     </div>
                 </div>

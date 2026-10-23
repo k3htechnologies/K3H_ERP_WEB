@@ -186,12 +186,7 @@ export const MASTER_DATA = {
 
   employmentType: ["Full-Time", "Contract", "Internship"],
 
-  experienceYears: [
-  "0-5",
-  "6-10",
-  "11-15",
-  "15+",
-  ],
+  experienceYears: ["0-5", "6-10", "11-15", "15+"],
 
 
 
@@ -792,7 +787,8 @@ export const EVENT_TYPE = toOptions(MASTER_DATA.event_type);
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name);
 export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
 export const EMPLOYMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.employmentType);
-export const EXPERIENCE_YEARS_OPTIONS = toOptions(MASTER_DATA.experienceYears);
+export const EXPERIENCE_RANGE_OPTIONS = toOptions(MASTER_DATA.experienceYears);
+
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving);
 export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning);

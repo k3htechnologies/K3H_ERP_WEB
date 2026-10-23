@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as E from 'fp-ts/Either';
-import { Edit } from 'lucide-react';
-
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import { useToast } from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils';
+import { getCurrentTime } from '@/core/utils/comman';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import {
   convert_dd_mm_yyyy_To_Yyyy_mm_dd,
+  convert_hh_mm_ss_to_hh_mm,
   convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd,
   formatDate_dd_mm_yyyy,
   formatDate_dd_MonthName_yy,
@@ -22,6 +22,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import {
   InterviewCalendar,
   InterviewDetailsPanel,
+  type InterviewCalendarView,
 } from '@/features/hireSpace/jobOpening/components';
 import { useJobOpeningListState } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
 import {
@@ -34,12 +35,14 @@ import type {
   CandidateInterviewData,
 } from '@/features/hireSpace/jobOpening/models/CandidateInterviewModel';
 import { CandidateInterviewService } from '@/features/hireSpace/jobOpening/services/CandidateInterviewService';
+import { getCalendarViewDateRange } from '@/features/hireSpace/jobOpening/utils/jobOpeningUtils';
+import { getInterviewStatusColor } from '@/features/hireSpace/jobOpening/utils/Status';
 import type { CalendarEvent } from '@/ui/components/Calender/CalendarEvent';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { Button, Input } from '@/ui/components/forms';
+import { Input } from '@/ui/components/forms';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -55,7 +58,7 @@ const initialFormState = (): AddUpdateCandidateInterviewRequest => ({
   Stage: 'Interview',
   InterviewPanel: '',
   InterviewDate: '',
-  InterviewTime: '',
+  InterviewTime: getCurrentTime(),
   AttachmentUrl: null,
   RemoveattachmentUrl: '',
   Remarks: '',
@@ -74,7 +77,7 @@ export const InterviewSchedule: React.FC = () => {
   const [removeAttachmentUrls, setRemoveAttachmentUrls] = useState<string[]>([]);
   const [attachmentURL, setAttachmentURL] = useState<string>();
   const [selectedDate, setSelectedDate] = useState(() => new Date());
-  const [isTodayListExpanded, setIsTodayListExpanded] = useState(false);
+  const [calendarView, setCalendarView] = useState<InterviewCalendarView>('month');
   const [selectedInterviewerValues, setSelectedInterviewerValues] = useState<string | number | null>(null);
   const [selectedCandidateValues, setSelectedCandidateValues] = useState<string | number | null>(null);
   const [dropdownLabels, setDropdownLabels] = useState<{
@@ -182,7 +185,6 @@ export const InterviewSchedule: React.FC = () => {
           ...initialFormState(),
           CandidateId: String(candidateId),
           JobOpeningMasterId: jobOpeningMasterId,
-          InterviewDate: formatDate_yyyy_mm_dd(selectedDate),
         });
         setSelectedInterviewerValues(null);
         setSelectedCandidateValues(String(candidateId));
@@ -195,10 +197,7 @@ export const InterviewSchedule: React.FC = () => {
           jobOpeningName: jobRoleName,
         });
       } else {
-        setFormData({
-          ...initialFormState(),
-          InterviewDate: formatDate_yyyy_mm_dd(selectedDate),
-        });
+        setFormData(initialFormState());
         setSelectedInterviewerValues(null);
         setSelectedCandidateValues(null);
         setAttachmentFiles([]);
@@ -223,12 +222,9 @@ export const InterviewSchedule: React.FC = () => {
         return {
           id: item.InterviewId,
           type: 'MEETING',
-          title: `${item.InterviewTime.slice(0, 5)} - ${item.CandidateName}`,
+          title: item.CandidateName || '-',
           start,
           end: start,
-          fullname: item.InterviewPanelName,
-          CreatedBy: item.InterviewPanelName,
-          CreatedDate: dateKey,
         };
       })
       .filter(Boolean) as CalendarEvent[];
@@ -243,27 +239,22 @@ export const InterviewSchedule: React.FC = () => {
     [interviews, selectedDate],
   );
 
-  const pipelineInterviews = useMemo(
-    () =>
-      interviews.filter((item) => {
-        const dateKey = convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(item.InterviewDate);
-        return Boolean(dateKey && dateKey >= todayKey);
-      }),
-    [interviews],
-  );
+  const pipelineInterviews = useMemo(() => {
+    const { startDate, endDate } = getCalendarViewDateRange(selectedDate, calendarView);
+    const startDateKey = formatDate_yyyy_mm_dd(startDate);
+    const fromDateKey = startDateKey < todayKey ? todayKey : startDateKey;
+    const toDateKey = formatDate_yyyy_mm_dd(endDate);
+
+    return interviews.filter((item) => {
+      const dateKey = convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(item.InterviewDate);
+      return Boolean(dateKey && dateKey >= fromDateKey && dateKey <= toDateKey);
+    });
+  }, [interviews, selectedDate, calendarView]);
 
   const isSelectedDateToday = isToday(selectedDate);
   const selectedDateHeading = isSelectedDateToday
     ? 'Upcoming Today'
     : `Interviews - ${formatDate_dd_MonthName_yy(selectedDate)}`;
-
-  const visibleTodaysInterviews = useMemo(
-    () =>
-      !isSelectedDateToday || isTodayListExpanded
-        ? selectedDateInterviews
-        : selectedDateInterviews.slice(0, 2),
-    [isTodayListExpanded, selectedDateInterviews],
-  );
 
   const isViewOnlyInterview = Boolean(
     editCandidateInterviewData &&
@@ -271,7 +262,6 @@ export const InterviewSchedule: React.FC = () => {
   );
 
   const handleDateChange = (date: Date) => {
-    setIsTodayListExpanded(false);
     setSelectedDate(date);
   };
 
@@ -298,6 +288,10 @@ export const InterviewSchedule: React.FC = () => {
     errors: { [key: string]: string };
   } => {
     const newErrors: { [key: string]: string } = {};
+
+    if (!formData.CandidateId) {
+      newErrors.CandidateId = 'Candidate is required';
+    }
 
     if (!formData.InterviewPanel) {
       newErrors.InterviewPanel = 'Interviewers is required';
@@ -408,10 +402,6 @@ export const InterviewSchedule: React.FC = () => {
     );
   };
 
-  const handleViewMoreToday = () => {
-    setIsTodayListExpanded(true);
-  };
-
   const handleBackInterviewPage = () => {
     navigate(-1);
   };
@@ -441,39 +431,35 @@ export const InterviewSchedule: React.FC = () => {
       },
       {
         key: 'InterviewDate',
-        label: 'Date & Time',
-        render: (value) => value || '-',
+        label: 'Interview Date',
+        render: (value) => <span>{formatDate_dd_MonthName_yy(value || '')}</span>,
+      },
+      {
+        key: 'InterviewTime',
+        label: 'Interview Time',
+        render: (value) => <span>{convert_hh_mm_ss_to_hh_mm(value || '')}</span>,
       },
       {
         key: 'Stage',
-        label: 'Stage',
-        render: (value) => value || '-',
-      },
-      {
-        key: 'Actions',
-        label: 'Action',
-        align: 'center',
-        width: '80px',
-        truncate: false,
-        render: (_value, item: CandidateInterviewData) =>
-          canAction ? (
-            <Button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleEditCandidateInterview(item);
+        label: 'Status',
+        render: (value) => {
+          const { bg, text } = getInterviewStatusColor(value);
+
+          return (
+            <span
+              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+              style={{
+                backgroundColor: bg,
+                color: text,
               }}
-              title="Edit"
-              color="transparent"
-              isborderRadius
-              size="sm"
             >
-              <Edit className="h-4 w-4 text-blue-700" />
-            </Button>
-          ) : null,
+              {value || '-'}
+            </span>
+          );
+        },
       },
     ],
-    [canAction],
+    [],
   );
 
   return (
@@ -500,29 +486,22 @@ export const InterviewSchedule: React.FC = () => {
             events={calendarEvents}
             onDateChange={handleDateChange}
             onEventClick={handleEventClick}
+            onViewChange={setCalendarView}
           />
         </div>
 
-        <div className="min-w-0 xl:col-span-1">
+        <div className="min-h-0 min-w-0 xl:col-span-1">
           <InterviewDetailsPanel
             heading={selectedDateHeading}
             interviewCount={selectedDateInterviews.length}
-            interviews={visibleTodaysInterviews}
+            interviews={selectedDateInterviews}
             emptyMessage={
               isSelectedDateToday
                 ? 'No upcoming interviews for today'
                 : 'No interviews scheduled for this date'
             }
             canAction={canAction}
-            isViewOnly={formatDate_yyyy_mm_dd(selectedDate) < todayKey}
             onEdit={handleEditCandidateInterview}
-            onView={handleEditCandidateInterview}
-            onViewAll={handleViewMoreToday}
-            showViewAllButton={
-              isSelectedDateToday &&
-              !isTodayListExpanded &&
-              selectedDateInterviews.length > 2
-            }
           />
         </div>
       </div>
@@ -531,18 +510,22 @@ export const InterviewSchedule: React.FC = () => {
         id="interview-pipeline"
         className="mt-4 scroll-mt-4 bg-white p-4 sm:p-5"
       >
-        <h2 className="mb-4 text-lg font-semibold text-gray-900">Interview Pipeline</h2>
-
-        <div className="max-h-[360px] overflow-auto thin-scroll">
-          <div className="min-w-[820px]">
-            <DataTable
-              data={pipelineInterviews}
-              columns={pipelineColumns}
-              rowKey="InterviewId"
-              emptyMessage="No upcoming interviews scheduled"
-            />
-          </div>
+        <div className="mb-4 flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-gray-900">Interview Pipeline</h2>
+          <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium uppercase leading-none text-blue-600">
+            {pipelineInterviews.length} {pipelineInterviews.length === 1 ? 'Interview' : 'Interviews'}
+          </span>
         </div>
+
+        <DataTable
+          data={pipelineInterviews}
+          columns={pipelineColumns}
+          rowKey="InterviewId"
+          emptyMessage="No upcoming interviews scheduled"
+          fixedHeight
+          maxHeight="360px"
+          recordsPerPage={20}
+        />
       </section>
 
       <Modal
@@ -624,6 +607,7 @@ export const InterviewSchedule: React.FC = () => {
                   key={`candidate-${formData.JobOpeningMasterId}`}
                   label="Candidate"
                   title="Select Candidate"
+                  required
                   disabled={isViewOnlyInterview || !formData.JobOpeningMasterId}
                   dataFetchCallBack={(pageNumber, params) =>
                     fetchCandidateDropdown(pageNumber, {
@@ -639,6 +623,7 @@ export const InterviewSchedule: React.FC = () => {
                     setSelectedCandidateValues(idsString || null);
                     handleFieldChange('CandidateId', idsString);
                   }}
+                  error={errors.CandidateId}
                 />
               </div>
             </>
@@ -683,7 +668,7 @@ export const InterviewSchedule: React.FC = () => {
           <Input
             label="Stage"
             required
-            disabled={isViewOnlyInterview}
+            disabled
             value={formData.Stage}
             onChange={(event) => handleFieldChange('Stage', event.target.value)}
             placeholder="Enter interview stage"

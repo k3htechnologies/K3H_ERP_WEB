@@ -215,16 +215,24 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
         <div className="border-b border-gray-300 pb-2">
           <HeaderActionBar
-            titleText={isAddMode ? 'Add Job Role : ' : 'Edit Job Role : '}
-            subTitleText={departmentName}
+            titleText={isAddMode ? 'Add Job Role' : 'Edit Job Role'}
             canAction={false}
             isLoading={isLoading}
           />
         </div>
 
         <form onSubmit={handleAddUpdateJobRoleMaster}>
-          <div className="space-y-4 pb-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4 pb-3 pt-2">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <Input
+                  label="Department Name"
+                  placeholder="Enter Department Name"
+                  value={departmentName}
+                  required
+                  disabled
+                />
+              </div>
 
               <div>
                 <Input
@@ -240,20 +248,24 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
               <div>
                 <Input
                   label="Required Skills"
-                  placeholder="Enter comma-separated skills"
+                  placeholder="Enter skills"
                   value={formData.RoleSkills}
                   onChange={(event) => handleFieldChange('RoleSkills', event.target.value)}
+                  maxLength={250}
                   error={errors.RoleSkills}
                   required
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <TextArea
                   label="Role Description"
                   placeholder="Enter Role Description"
                   value={formData.RoleDescription}
                   onChange={(event) => handleFieldChange('RoleDescription', event.target.value)}
+                  maxLength={500}
                   error={errors.RoleDescription}
                   rows={6}
                   required
@@ -266,6 +278,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   placeholder="Enter Responsibilities"
                   value={formData.RoleResponsibility}
                   onChange={(event) => handleFieldChange('RoleResponsibility', event.target.value)}
+                  maxLength={500}
                   error={errors.RoleResponsibility}
                   rows={6}
                   required
@@ -278,6 +291,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   placeholder="Enter Job Requirements"
                   value={formData.JobRequirement}
                   onChange={(event) => handleFieldChange('JobRequirement', event.target.value)}
+                  maxLength={500}
                   error={errors.JobRequirement}
                   rows={6}
                   required
@@ -290,6 +304,7 @@ export const AddUpdateJobRoleMaster: React.FC = () => {
                   placeholder="Enter Qualifications"
                   value={formData.RoleQualification}
                   onChange={(event) => handleFieldChange('RoleQualification', event.target.value)}
+                  maxLength={500}
                   error={errors.RoleQualification}
                   rows={6}
                   required

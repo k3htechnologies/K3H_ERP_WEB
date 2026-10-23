@@ -16,6 +16,7 @@ interface TabsProps {
   isChips?: boolean;
   isvertical?: boolean;
   istoggleTab?: boolean;
+  isShowCount?: boolean;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -26,6 +27,7 @@ export const Tabs: React.FC<TabsProps> = ({
   isChips = false,
   isvertical = false,
   istoggleTab = false,
+  isShowCount = true,
 }) => {
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
@@ -125,9 +127,11 @@ export const Tabs: React.FC<TabsProps> = ({
                 >
                   <span>{tab.label}</span>
 
-                  <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>
-                    {tab.count ?? 0}
-                  </span>
+                  {isShowCount && (
+                    <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>
+                      {tab.count ?? 0}
+                    </span>
+                  )}
                   
                 </button>
               </div>

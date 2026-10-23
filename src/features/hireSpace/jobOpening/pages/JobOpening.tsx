@@ -3,15 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import * as E from 'fp-ts/Either';
 import { Briefcase, Clock3, Edit, MapPin, Trash2 } from 'lucide-react';
 
-import { ACTIVE_INACTIVE_OPTIONS, EMPLOYMENT_TYPE_OPTIONS, WORK_MODE_OPTIONS } from '@/core/constants';
+import {
+  ACTIVE_INACTIVE_OPTIONS,
+  EMPLOYMENT_TYPE_OPTIONS,
+  WORK_MODE_OPTIONS,
+} from '@/core/constants';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { usePagination } from '@/core/hooks/usePagination';
 import { useToast } from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils';
 import { handleExportFile } from '@/core/utils/exportFile';
+import { filterNumbers } from '@/core/utils/fileValidation';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { Loader } from '@/core/utils/loader';
-import { fetchJobOpeningDepartmentDropdown } from '@/features/hireSpace/jobOpening/jobOpeningDropDown';
+import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
+import { getExperienceRangeLabel } from '@/features/hireSpace/jobOpening/utils/jobOpeningUtils';
 import { useJobOpeningListState } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
 import type {
   DeleteJobOpeningRequest,
@@ -37,8 +43,9 @@ export const JobOpening: React.FC = () => {
   const { pagination, setPagination } = usePagination(20);
   const { canAction, canExport } = useMenuPermissions('/jobOpenings');
   const { listState, updateListState } = useJobOpeningListState();
-  const { searchTerm, filters, departmentId } = listState;
+  const { searchTerm, filters } = listState;
 
+  const [departmentId, setDepartmentId] = useState(0);
   const [departmentTabList, setDepartmentTabList] = useState<TabItem[]>([]);
   const [jobOpeningList, setJobOpeningList] = useState<JobOpeningData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -54,22 +61,26 @@ export const JobOpening: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
+        const isAllDepartments = departmentId === 0;
+        const jobRoleStatus =
+          filterParams.Status === 'Active'
+            ? true
+            : filterParams.Status === 'Inactive'
+              ? false
+              : undefined;
+
         const params: FilterWithPaginationJobOpeningRequest = {
           PageNumber: pageNumber,
           PageSize: pagination.pageSize,
-          DepartmentMasterId: departmentId,
-          WorkMode:searchtext || filterParams.WorkMode?.trim() || undefined,
-          EmploymentType: searchtext || filterParams.EmploymentType?.trim() || undefined,
-          RoleName: searchtext ?? filterParams.RoleName?.trim() ?? undefined,
-          ExperienceYears:searchtext|| filterParams.ExperienceYears
+          DepartmentMasterId: isAllDepartments ? undefined : departmentId,
+          ShowAll: jobRoleStatus !== undefined ? false : isAllDepartments || undefined,
+          WorkMode: filterParams.WorkMode?.trim() || undefined,
+          EmploymentType: filterParams.EmploymentType?.trim() || undefined,
+          RoleName: searchtext || filterParams.RoleName?.trim() || undefined,
+          ExperienceYears: filterParams.ExperienceYears
             ? Number(filterParams.ExperienceYears)
             : undefined,
-          JobRoleStatus:
-            filterParams.Status === 'Active'
-              ? true
-              : filterParams.Status === 'Inactive'
-                ? false
-                : undefined,
+          JobRoleStatus: jobRoleStatus,
         };
 
         const response = await JobOpeningService.apiCallPullJobOpening(params);
@@ -104,9 +115,12 @@ export const JobOpening: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const response = await fetchJobOpeningDepartmentDropdown();
+        const response = await fetchDepartmentMasterDropdown(1);
 
-        setDepartmentTabList([{ id: '0', label: 'All' }, ...response.itemList]);
+        setDepartmentTabList([
+          { id: '0', label: 'All' },
+          ...response.itemList.map((department) => ({ id: department.value, label: department.label })),
+        ]);
 
         return response;
       },
@@ -169,6 +183,11 @@ export const JobOpening: React.FC = () => {
   };
 
   const handleViewJobOpening = (jobOpening: JobOpeningData) => {
+    if (!jobOpening.TotalApplications) {
+      addToast({ type: 'error', title: 'No application is present' });
+      return;
+    }
+
     updateListState({
       departmentId: jobOpening.DepartmentMasterId,
       departmentName: jobOpening.DepartmentName,
@@ -180,6 +199,12 @@ export const JobOpening: React.FC = () => {
   };
 
   const handleAddJobOpening = () => {
+    const selectedDepartment = departmentTabList.find((tab) => Number(tab.id) === departmentId);
+
+    updateListState({
+      departmentId,
+      departmentName: selectedDepartment?.label || '',
+    });
     navigate('/jobOpenings/add');
   };
 
@@ -188,13 +213,7 @@ export const JobOpening: React.FC = () => {
   };
 
   const handleDepartmentChange = (tab: TabItem) => {
-    updateListState({
-      departmentId: Number(tab.id),
-      departmentName: tab.label,
-      jobOpeningMasterId: 0,
-      jobRoleMasterId: 0,
-      jobRoleName: '',
-    });
+    setDepartmentId(Number(tab.id));
   };
 
   const handleConfirmationDialogBoxOpen = (jobOpening: JobOpeningData) => {
@@ -268,10 +287,19 @@ export const JobOpening: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
+        const isAllDepartments = departmentId === 0;
+        const jobRoleStatus =
+          filters.Status === 'Active'
+            ? true
+            : filters.Status === 'Inactive'
+              ? false
+              : undefined;
+
         const params: FilterWithPaginationJobOpeningRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          DepartmentMasterId: departmentId,
+          DepartmentMasterId: isAllDepartments ? undefined : departmentId,
+          ShowAll: jobRoleStatus !== undefined ? false : isAllDepartments || undefined,
           WorkMode: filters.WorkMode?.trim() || undefined,
           EmploymentType: filters.EmploymentType?.trim() || undefined,
           RoleName: searchTerm.trim() || filters.RoleName?.trim() || undefined,
@@ -279,12 +307,7 @@ export const JobOpening: React.FC = () => {
           ExperienceYears: filters.ExperienceYears
             ? Number(filters.ExperienceYears)
             : undefined,
-          JobRoleStatus:
-            filters.Status === 'Active'
-              ? true
-              : filters.Status === 'Inactive'
-                ? false
-                : undefined,
+          JobRoleStatus: jobRoleStatus,
         };
 
 
@@ -334,134 +357,138 @@ export const JobOpening: React.FC = () => {
         exportLoading={isLoading}
       />
 
-      {departmentTabList.length === 0 && !isLoading? (
+      {departmentTabList.length === 0 && !isLoading ? (
         <NoDataView message="No Departments Found" />
-      ):(departmentTabList.length > 0 || isLoading) && (
-        <div className="min-w-0">
-          <div className="mb-4 min-w-0 overflow-x-hidden thin-scroll ">
-            <div
-              className="flex flex-nowrap min-w-max items-center gap-2 [&>*]:flex-shrink-0 [&>*]:flex-row [&_div]:flex-nowrap"
-              style={{ display: 'flex', flexWrap: 'nowrap', whiteSpace: 'wrap' }}
-            >
+      ) : (
+        <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-4">
+          <div className="bg-white min-w-0 lg:col-span-1">
+            <aside className="flex h-full flex-col rounded-lg border border-gray-200 p-4">
+              <h2 className="shrink-0 pb-3 text-base font-semibold text-gray-900">Department</h2>
               <Tabs
                 tabs={departmentTabList}
                 defaultActive={String(departmentId)}
+                isvertical
+                isShowCount={false}
                 onTabChange={handleDepartmentChange}
               />
-            </div>
+            </aside>
           </div>
 
-          <div
-            className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto px-1"
-            onScroll={handleJobOpeningListScroll}
-            style={{ maxHeight: '65vh' }}
-          >
-            {jobOpeningList.length === 0 && !isLoading ? (
-              <NoDataView message="No Job Openings Found" />
-            ) : (
-              jobOpeningList.map((jobOpening) => {
-                return (
-                  <div
-                    key={jobOpening.JobOpeningMasterId}
-                    className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 mb-4 transition hover:shadow"
-                    onClick={() => handleViewJobOpening(jobOpening)}
-                  >
-                    <div className="flex flex-col gap-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="flex min-w-0 flex-1 items-center gap-2">
-                          <div className="min-w-0 w-fit max-w-[560px]">
-                            <TooltipText
-                              text={jobOpening.JobRoleName}
-                              maxWidth="560px"
-                              tooltipThreshold={48}
-                              onClick={() => handleViewJobOpening(jobOpening)}
-                            />
-                          </div>
-                          <span className="inline-block shrink-0 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium whitespace-nowrap text-blue-800">
-                            {jobOpening.DepartmentName}
-                          </span>
-                          <span
-                            className={`inline-block shrink-0 rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap ${
-                              jobOpening.JobRoleStatus
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-gray-100 text-gray-500'
-                            }`}
-                          >
-                            {jobOpening.JobRoleStatus ? 'Active' : 'Inactive'}
-                          </span>
-                        </div>
+          <div className="min-w-0 lg:col-span-3">
+            <div className="flex h-full flex-col bg-white p-5 rounded-md border border-gray-200">
+              <div
+                className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pr-1"
+                onScroll={handleJobOpeningListScroll}
+                style={{ maxHeight: '65vh' }}
+              >
+                {jobOpeningList.length === 0 && !isLoading ? (
+                  <NoDataView message="No Job Openings Found" />
+                ) : (
+                  jobOpeningList.map((jobOpening) => {
+                    return (
+                      <div
+                        key={jobOpening.JobOpeningMasterId}
+                        className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 mb-4 transition hover:shadow"
+                        onClick={() => handleViewJobOpening(jobOpening)}
+                      >
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex min-w-0 flex-1 items-center gap-2">
+                              <div className="min-w-0 w-fit max-w-[560px]">
+                                <TooltipText
+                                  text={jobOpening.JobRoleName}
+                                  maxWidth="560px"
+                                  tooltipThreshold={48}
+                                  onClick={() => handleViewJobOpening(jobOpening)}
+                                />
+                              </div>
+                              <span className="inline-block shrink-0 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium whitespace-nowrap text-blue-800">
+                                {jobOpening.DepartmentName}
+                              </span>
+                              <span
+                                className={`inline-block shrink-0 rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap ${
+                                  jobOpening.JobRoleStatus
+                                    ? 'bg-green-100 text-green-700'
+                                    : 'bg-gray-100 text-gray-500'
+                                }`}
+                              >
+                                {jobOpening.JobRoleStatus ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
 
-                        {canAction && (
-                          <div className="flex shrink-0 items-center gap-2">
+                            {canAction && (
+                              <div className="flex shrink-0 items-center gap-2">
+                                <Button
+                                  color="transparent"
+                                  size="sm"
+                                  isborderRadius
+                                  title="Edit"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleEditJobOpening(jobOpening);
+                                  }}
+                                >
+                                  <Edit className="h-4 w-4 text-blue-700" />
+                                </Button>
+                                <Button
+                                  color="transparent"
+                                  size="sm"
+                                  isborderRadius
+                                  title="Delete"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    handleConfirmationDialogBoxOpen(jobOpening);
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+
+                          <p className="text-sm text-gray-600">
+                            Total Openings : <span className="font-bold"> {jobOpening.NumberOfOpenings}</span>
+                          </p>
+
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                              <span className="flex items-center gap-2">
+                                <Briefcase className="h-4 w-4 shrink-0 text-gray-400" />
+                                {getExperienceRangeLabel(jobOpening.ExperienceYears)}
+                              </span>
+                              <span className="flex items-center gap-2">
+                                <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
+                                {jobOpening.WorkMode}
+                              </span>
+                              <span className="flex items-center gap-2">
+                                <Clock3 className="h-4 w-4 shrink-0 text-gray-400" />
+                                {jobOpening.EmploymentType}
+                              </span>
+                            </div>
+
                             <Button
                               color="transparent"
                               size="sm"
                               isborderRadius
-                              title="Edit"
                               onClick={(event) => {
                                 event.stopPropagation();
-                                handleEditJobOpening(jobOpening);
+                                handleViewJobOpening(jobOpening);
                               }}
                             >
-                              <Edit className="h-4 w-4 text-blue-700" />
-                            </Button>
-                            <Button
-                              color="transparent"
-                              size="sm"
-                              isborderRadius
-                              title="Delete"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleConfirmationDialogBoxOpen(jobOpening);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
+                              {jobOpening.TotalApplications} Applications
                             </Button>
                           </div>
-                        )}
-                      </div>
-
-                      <p className="text-sm text-gray-600">
-                        Total Openings : {jobOpening.NumberOfOpenings}
-                      </p>
-
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                          <span className="flex items-center gap-2">
-                            <Briefcase className="h-4 w-4 shrink-0 text-gray-400" />
-                            {jobOpening.ExperienceYears != null ? `${jobOpening.ExperienceYears} Year`: "-"}
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 shrink-0 text-gray-400" />
-                            {jobOpening.WorkMode}
-                          </span>
-                          <span className="flex items-center gap-2">
-                            <Clock3 className="h-4 w-4 shrink-0 text-gray-400" />
-                            {jobOpening.EmploymentType}
-                          </span>
                         </div>
-
-                        <Button
-                          color="transparent"
-                          size="sm"
-                          isborderRadius
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            handleViewJobOpening(jobOpening);
-                          }}
-                        >
-                          {jobOpening.TotalApplications} Applications
-                        </Button>
                       </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
+                    );
+                  })
+                )}
 
-            {isFetchingMoreJobOpening && (
-              <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
-            )}
+                {isFetchingMoreJobOpening && (
+                  <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -515,9 +542,9 @@ export const JobOpening: React.FC = () => {
           <Input
             label="Experience Years"
             placeholder="Enter Experience Years"
-            type="number"
             value={tempFilters.ExperienceYears || ''}
-            onChange={(event) => handleFilterChange('ExperienceYears', event.target.value)}
+            onChange={(event) => handleFilterChange('ExperienceYears', filterNumbers(event.target.value))}
+            maxLength={2}
           />
 
           <SinglePageSelection

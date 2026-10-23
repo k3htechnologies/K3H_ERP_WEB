@@ -11,6 +11,7 @@ export interface FilterWithPaginationJobOpeningRequest {
     ExperienceYears?: number
     RoleName?: string
     JobRoleStatus?: boolean
+    ShowAll?: boolean
     ExportType?: 'Excel' | 'PDF'
 }
 

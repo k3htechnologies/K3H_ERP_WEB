@@ -35,6 +35,8 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
             if (params.IsCheckPermission) queryParams.append('IsCheckPermission', params.IsCheckPermission.toString());
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
+            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
+            if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
 
             return await this.k3hHttpClient.getRequestWithAuthentication(`${AttendanceApi.PULL}?${queryParams.toString()}`, { signal });
 
@@ -43,7 +45,7 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
             console.error('ERROR: PULL ATTENDANCE :', error);
 
             if (error instanceof TokenExpiredException) {
-              return await this.pullAttendance(params);
+                return await this.pullAttendance(params);
             }
 
             throw error
@@ -61,7 +63,7 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-               return await this.addUpdateAttendance(params);
+                return await this.addUpdateAttendance(params);
             }
             throw error
         }

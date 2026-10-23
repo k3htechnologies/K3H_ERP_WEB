@@ -13,6 +13,8 @@ export interface FilterWithPaginationAttendanceRequest {
   IsCheckPermission?: boolean
   ExportType?: "Excel" | "PDF";
   EmployeeName?: string;
+  DepartmentName?: string;
+  CompanyName?: string;
 }
 
 export interface AttendanceData {
@@ -32,6 +34,7 @@ export interface AttendanceData {
   EndLongitude?: number | null;
   Polyline?: string | null;
   Distance?: number | null;
+  IsLate?: string | null
   CreatedById?: number | null;
   CreatedBy?: string | null;
   CreatedDate?: string | null;

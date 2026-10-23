@@ -143,21 +143,18 @@ export const getTodayDateRange = () => {
 };
 
 export const getWeekToDateRange = () => {
+  const today = new Date();
 
-  const now = new Date();
-
-  const today = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
+  const fromDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
   );
 
-  const day = today.getDay();
+  const day = fromDate.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
 
-  const diffToTuesday = (day >= 2) ? day - 2 : day + 5;
-
-  const fromDate = new Date(today);
-  fromDate.setDate(today.getDate() - diffToTuesday);
+  fromDate.setDate(fromDate.getDate() + diffToMonday);
 
   const toDate = new Date(fromDate);
   toDate.setDate(fromDate.getDate() + 6);
@@ -167,6 +164,7 @@ export const getWeekToDateRange = () => {
 
   return { fromDate, toDate };
 };
+
 export const getYearToDateRange = () => {
 
   const today = new Date();
@@ -265,11 +263,11 @@ export const copyToClipboard = async (text?: string): Promise<boolean> => {
   }
 };
 
-export const getInputValue = (id: number,value: number | null | undefined) => {
-  return id > 0 ? (value ?? 0): (value === 0 ? '' : (value ?? ''));
+export const getInputValue = (id: number, value: number | null | undefined) => {
+  return id > 0 ? (value ?? 0) : (value === 0 ? '' : (value ?? ''));
 };
 
-export const isEmpty = (value: any) =>value === null || value === undefined || value === '';
+export const isEmpty = (value: any) => value === null || value === undefined || value === '';
 
 export const sendEmail = (email: string) => {
   if (email) {

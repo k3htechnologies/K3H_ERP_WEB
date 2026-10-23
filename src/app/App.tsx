@@ -254,6 +254,7 @@ import CostToCompany from '@/features/costToCompany/pages/CostToCompany';
 import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCostToCompany';
 import { CostToCompanyListStateProvider } from '@/features/costToCompany/context/CostToCompanyListStateContext';
 import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
+import AttendanceReport from '@/features/attendanceReport/pages/AttendanceReport';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -634,7 +635,7 @@ function App() {
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
 
-
+            <Route path="attendanceReport" element={<AttendanceReport />} />
 
           </Route>
 

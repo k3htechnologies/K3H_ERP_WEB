@@ -1,9 +1,7 @@
 export const CrmDashboardApi = {
     PULL: '/CrmDashboard/CrmPullDashboard',
-    PULL_CRM_MILESTONE_COLLECTION: '/CrmDashboard/PullCrmMilestoneCollection',
-    // Two New Api's add-ons
-    PULL_COLLECTION_TREND: '/CrmDashboard/PullCollectionTrend',
-    PULL_MILESTONE_COLLECTION: '/CrmDashboard/PullMilestoneCollection',
+    PULL_MILESTONE_COLLECTION_NEW: '/CrmDashboard/PullCrmMilestoneCollection',
+    PULL_MILESTONE_SUMMARY: '/CrmDashboard/PullCrmCollectionSummary'
 
 } as const
 

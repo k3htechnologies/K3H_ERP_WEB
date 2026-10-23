@@ -267,6 +267,8 @@ import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/
 import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
 import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
+import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
+import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -433,8 +435,8 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
-           
-            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider> } />
+
+            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider>} />
 
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
@@ -577,7 +579,8 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
-            <Route path="crmDashboard/view" element={<CrmMilestoneView />} />
+            <Route path="crmDashboard/collectionMilestone/view" element={<CrmMilestoneView />} />
+            <Route path="crmDashboard/collectionSummary/view" element={<CrmCollectionSummaryView />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />

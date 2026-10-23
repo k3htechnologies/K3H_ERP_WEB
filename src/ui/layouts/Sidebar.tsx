@@ -57,26 +57,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const findActiveMenuItem = (currentPath: string) => {
     const normalizedCurrent = normalizePath(currentPath.split("/").filter(Boolean)[0])
+    if (normalizedCurrent === '/dashboard') {
+      return { isDashboard: true, module: null, subModule: null, subSubModule: null }
+    }
     if (!modules || modules.length === 0) return null
 
     for (const module of modules) {
-      if (!module.SubModuleData || module.SubModuleData.length === 0) continue
+      if (module.SubModuleData && module.SubModuleData.length > 0) {
+        for (const subModule of module.SubModuleData) {
 
-      for (const subModule of module.SubModuleData) {
+          const subModuleRoute = normalizePath(mapPathToRoute(subModule.Path))
+          if (subModuleRoute && subModuleRoute === normalizedCurrent) {
+            return { module, subModule, subSubModule: null }
+          }
 
-        const subModuleRoute = normalizePath(mapPathToRoute(subModule.Path))
-        if (subModuleRoute && subModuleRoute === normalizedCurrent) {
-          return { module, subModule, subSubModule: null }
-        }
-
-        if (subModule.SubSubModuleData && subModule.SubSubModuleData.length > 0) {
-          for (const subSubModule of subModule.SubSubModuleData) {
-            const subSubRoute = normalizePath(mapPathToRoute(subSubModule.Path))
-            if (subSubRoute && subSubRoute === normalizedCurrent) {
-              return { module, subModule, subSubModule }
+          if (subModule.SubSubModuleData && subModule.SubSubModuleData.length > 0) {
+            for (const subSubModule of subModule.SubSubModuleData) {
+              const subSubRoute = normalizePath(mapPathToRoute(subSubModule.Path))
+              if (subSubRoute && subSubRoute === normalizedCurrent) {
+                return { module, subModule, subSubModule }
+              }
             }
           }
         }
+      }
+
+      const moduleRoute = normalizePath(mapPathToRoute(module.Path || '')) || normalizePath(module.Path || '')
+      if (moduleRoute && moduleRoute === normalizedCurrent) {
+        return { module, subModule: null, subSubModule: null }
       }
     }
     return null
@@ -138,12 +146,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return fallbackIcon
   }
 
+  const isDashboardActive =
+    normalizedLocationPath === '/dashboard' ||
+    normalizedLocationPath.startsWith('/dashboard/')
+
   const menuItems: MenuItem[] = [
 
     {
       id: 'dashboard',
       label: 'Dashboard',
-      icon: renderIcon("assets/sideDrawer/dashboard.svg", <Home className="h-5 w-5" />),
+      icon: renderIcon("assets/sideDrawer/dashboard.svg", <Home className="h-5 w-5" />, {
+        isCollapsed: !isOpen,
+        isActive: isDashboardActive
+      }),
       path: '/dashboard'
     },
 
@@ -186,7 +201,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     if (item.children && item.children.length > 0) {
 
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" ||  item.path === "crmDashboard" ||  item.path === "hireSpaceDashboard" ||  item.path === "visitorManagementDashboard" || item.path === 'teamWorkspaceDashboard') {
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" || item.path === "crmDashboard" || item.path === "hireSpaceDashboard" || item.path === "visitorManagementDashboard" || item.path === 'teamWorkspaceDashboard') {
 
         const route = mapPathToRoute(item.path)
 
@@ -203,7 +218,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     } else {
       if (item.path) {
-       
+
         const route = mapPathToRoute(item.path)
 
         const navigateTo = route || item.path;
@@ -258,16 +273,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const isModule = item.id.startsWith('module-')
     const isSubModule = item.id.startsWith('submodule-')
     const isSubSubModule = item.id.startsWith('subsubmodule-')
+    const isDashboard = item.id === 'dashboard'
+    const isDashboardItemActive = isDashboard && isDashboardActive
 
-    const isCurrentPage = !!(item.path && normalizePath(item.path) === normalizedLocationPath)
+    const isCurrentPage = isDashboardItemActive || !!(item.path && normalizePath(item.path) === normalizedLocationPath)
 
     const activeMenuItem = findActiveMenuItem(location.pathname);
 
-    const isInActivePath = activeMenuItem && (
+    const isInActivePath = isDashboardItemActive || Boolean(activeMenuItem && (
       (isModule && activeMenuItem.module && item.id === `module-${activeMenuItem.module.ModulesMasterId}`) ||
       (isSubModule && activeMenuItem.subModule && item.id === `submodule-${activeMenuItem.subModule.SubModulesMasterId}`) ||
       (isSubSubModule && activeMenuItem.subSubModule && item.id === `subsubmodule-${activeMenuItem.subSubModule.SubSubModulesMasterId}`)
-    )
+    ))
 
     const isParentSelected = selectedModule && (
       (isModule && item.id === `module-${selectedModule.ModulesMasterId}`) ||
@@ -414,10 +431,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }
 
   const emp = LocalStorageHelper.getStoredEmployeeData();
-  
+
   const fullName = (emp?.FullName ?? "").trim();
 
-  const initials =  getNameInitials(fullName!.trim())
+  const initials = getNameInitials(fullName!.trim())
 
   const profilePhotoURL = emp?.ProfilePhotoURL;
 

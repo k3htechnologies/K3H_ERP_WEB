@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Table0 } from "../models/CrmDashboardModel";
+import type { Table0 } from "@/features/crmDashboard/models/CrmDashboardModel";
 import { formatCurrency } from "@/core/utils/comman";
 
 interface Props {
@@ -42,8 +42,8 @@ const AgreementGstTdsTotalReceivedSummary: React.FC<Props> = ({
         <div className="pt-5">
             <div className="border border-gray-100 rounded-lg p-4 bg-white" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
-                <h3 className="font-semibold mb-4">Account Summary</h3>
-                <div className="flex gap-2 mb-3">
+                <h3 className="text-sm font-medium text-gray-500">Account Summary</h3>
+                <div className="flex gap-2 mb-3 mt-4">
                     {(["Agreement", "GST", "TDS"] as const).map((t) => (
                         <button
                             key={t}

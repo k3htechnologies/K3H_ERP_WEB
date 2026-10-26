@@ -79,6 +79,8 @@ export const fetchJobOpeningMasterDropdown = async (
             PageNumber: pageNumber,
             DepartmentMasterId: params?.departmentId,
             RoleName: params?.value || '',
+            ShowAll:true,
+            JobRoleStatus:true
         });
 
         if (E.isLeft(responseEither)) {

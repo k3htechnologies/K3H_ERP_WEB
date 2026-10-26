@@ -73,7 +73,8 @@ export const JobOpening: React.FC = () => {
           PageNumber: pageNumber,
           PageSize: pagination.pageSize,
           DepartmentMasterId: isAllDepartments ? undefined : departmentId,
-          ShowAll: jobRoleStatus !== undefined ? false : isAllDepartments || undefined,
+          ShowAll: jobRoleStatus !== undefined ? false : true,
+          
           WorkMode: filterParams.WorkMode?.trim() || undefined,
           EmploymentType: filterParams.EmploymentType?.trim() || undefined,
           RoleName: searchtext || filterParams.RoleName?.trim() || undefined,
@@ -118,7 +119,7 @@ export const JobOpening: React.FC = () => {
         const response = await fetchDepartmentMasterDropdown(1);
 
         setDepartmentTabList([
-          { id: '0', label: 'All' },
+          { id: '0', label: 'All Openings' },
           ...response.itemList.map((department) => ({ id: department.value, label: department.label })),
         ]);
 
@@ -376,11 +377,19 @@ export const JobOpening: React.FC = () => {
 
           <div className="min-w-0 lg:col-span-3">
             <div className="flex h-full flex-col bg-white p-5 rounded-md border border-gray-200">
+              <div className="mb-4 flex shrink-0 items-center justify-between gap-3 ">
+                <div className="min-w-0">
+                  <h2 className="font-semibold text-gray-900">
+                    {departmentTabList.find((tab) => Number(tab.id) === departmentId)?.label}
+                  </h2>
+                </div>
+              </div>
               <div
                 className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pr-1"
                 onScroll={handleJobOpeningListScroll}
                 style={{ maxHeight: '65vh' }}
               >
+                
                 {jobOpeningList.length === 0 && !isLoading ? (
                   <NoDataView message="No Job Openings Found" />
                 ) : (

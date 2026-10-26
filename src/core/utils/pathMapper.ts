@@ -134,6 +134,12 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //FINANCE
         '/termsheet': '/termSheet',
+
+        // HIRE SPACE / JOB OPENING
+        '/hirespacedashboard': '/hireSpaceDashboard',
+        '/jobrolemaster': '/jobRoleMaster',
+        '/jobopenings': '/jobOpenings',
+        '/scheduleinterview': '/scheduleinterview',
     }
 
 

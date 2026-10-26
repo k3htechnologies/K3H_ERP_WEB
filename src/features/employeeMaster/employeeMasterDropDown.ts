@@ -22,6 +22,7 @@ export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: {
     const itemList = (apiResponse?.Data || []).map((d: any) => ({
       label: d.FullName,
       value: String(d.EmployeeId),
+      EmployeeCode: d.EmployeeCode,
       Department: d.Department,
       Designation: d.Designation,
       Branch: d.Branch,
@@ -82,6 +83,7 @@ export const fetchCollaboratorWithTicketsDropdown = async (pageNumber: number, p
     const itemList = (apiResponse?.Data || []).map((d: any) => ({
       label: formatEmployeeLabelWithTickets(d),
       value: String(d.EmployeeId),
+      EmployeeCode: d.EmployeeCode,
     }));
 
 

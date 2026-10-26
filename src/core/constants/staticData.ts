@@ -182,6 +182,20 @@ export const MASTER_DATA = {
 
   conference_room_name: ["Room 1", "Room 2", "Room 3"],
 
+  workMode: ["On-site", "Hybrid", "Remote"],
+
+  employmentType: ["Full-Time", "Contract", "Internship"],
+
+  experienceYears: ["0-5", "6-10", "11-15", "15+"],
+
+  jobOpeningLockedEditFields: [
+    "JobDescription",
+    "JobResponsibilities",
+    "JobRequirement",
+    "JobQualification",
+    "JobSkills",
+  ],
+
   occupationType: ["Business", "Homemaker", "Professional", "Salaried", "Retired"],
 
   budget: [
@@ -769,6 +783,11 @@ export const ROAD_WIDTH = toOptions(MASTER_DATA.road_width);
 export const CALENDER_VIEW_TYPE = toOptions(MASTER_DATA.calender_view_type);
 export const EVENT_TYPE = toOptions(MASTER_DATA.event_type);
 export const CONFERENCE_ROOM_NAME = toOptions(MASTER_DATA.conference_room_name);
+export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
+export const EMPLOYMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.employmentType);
+export const EXPERIENCE_RANGE_OPTIONS = toOptions(MASTER_DATA.experienceYears);
+
+export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const REASONS_OF_JOB_LEAVING_OPTIONS = toOptions(MASTER_DATA.reasonsOfJobLeaving);
 export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning);
 export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster);

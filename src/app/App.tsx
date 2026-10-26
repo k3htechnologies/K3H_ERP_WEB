@@ -223,6 +223,15 @@ import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask
 import { TaskListStateProvider } from '@/features/task/context/TaskListStateContext';
 import Task from '@/features/task/pages/Task';
 import TeamWorkspaceDashboard from '@/features/teamWorkspaceDashboard/pages/TeamWorkspaceDashboard';
+import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
+import JobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/JobRoleMaster';
+import AddUpdateJobRoleMaster from '@/features/hireSpace/JobRoleMaster/pages/AddUpdateJobRoleMaster';
+import { JobRoleMasterListStateProvider } from '@/features/hireSpace/JobRoleMaster/context/JobRoleMasterListStateContext';
+import JobOpening from '@/features/hireSpace/jobOpening/pages/JobOpening';
+import AddUpdateJobOpening from '@/features/hireSpace/jobOpening/pages/AddUpdateJobOpening';
+import JobApplicationDetails from '@/features/hireSpace/jobOpening/pages/JobApplicationDetails';
+import InterviewSchedule from '@/features/hireSpace/jobOpening/pages/InterviewSchedule';
+import { JobOpeningListStateProvider } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -551,6 +560,16 @@ function App() {
             <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
             <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
+
+            {/* HireSpace & Job Opening */}
+            <Route path="hireSpaceDashboard" element={<JobOpeningListStateProvider><HireSpaceDashboard /></JobOpeningListStateProvider>} />
+            <Route path="jobRoleMaster" element={<JobRoleMasterListStateProvider><JobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobRoleMaster/add/:jobRoleId?" element={<JobRoleMasterListStateProvider><AddUpdateJobRoleMaster /></JobRoleMasterListStateProvider>} />
+            <Route path="jobOpenings" element={<JobOpeningListStateProvider><JobOpening /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/add/:jobOpeningId?" element={<JobOpeningListStateProvider><AddUpdateJobOpening /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/JobApplicationDetails" element={<JobOpeningListStateProvider><JobApplicationDetails /></JobOpeningListStateProvider>} />
+            <Route path="jobOpenings/interviews/schedule" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
+            <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
 
             
           </Route>

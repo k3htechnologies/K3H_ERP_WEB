@@ -149,6 +149,8 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TICKET: 'ticket.listState',
     TERM_SHEET: 'termSheet.listState',
     TAX_TRACKER: 'taxTracker.listState',
+    JOB_ROLE_MASTER: 'jobRoleMaster.listState',
+    JOB_OPENING: 'jobOpening.listState',
     TASK: 'task.listState',
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',

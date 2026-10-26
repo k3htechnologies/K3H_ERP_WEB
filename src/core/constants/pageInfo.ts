@@ -386,6 +386,60 @@ export const getPageInfo = (path: string) => {
                 description: 'Manage and organize company departments with complete CRUD operations',
             }
 
+        case 'jobRoleMaster':
+            if (second === 'add') {
+                return {
+                    title: 'Add Job Role',
+                    description: 'Manage and organize company departments with complete CRUD operations',
+                }
+            }
+            if (second === 'edit') {
+                return {
+                    title: 'Edit Job Role',
+                    description: 'Manage and organize company departments with complete CRUD operations',
+                }
+            }
+            if (second === 'view') {
+                return {
+                    title: 'Job Role Details',
+                    description: 'Manage and organize company departments with complete CRUD operations',
+                }
+            }
+            return {
+                title: 'Job Role Master',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+
+        case 'jobOpenings':
+            if (second === 'add') {
+                return {
+                    title: 'Add Job Opening',
+                    description: 'Manage and organize company departments with complete CRUD operations',
+                }
+            }
+            if (second === 'interviews') {
+                return {
+                    title: 'Schedule Interview',
+                    description: 'Manage and organize company departments with complete CRUD operations',
+                }
+            }
+            return {
+                title: 'Job Openings',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+
+        case 'scheduleinterview':
+            return {
+                title: 'Schedule Interview',
+                description: 'Manage and organize company departments with complete CRUD operations',
+            }
+
+        case 'hireSpaceDashboard':
+            return {
+                title: 'Hire Space Dashboard',
+                description: 'Hire Space Insights, Instantly',
+            }
+
         case 'inwardOutward':
             return {
                 title: 'Inward Outward',

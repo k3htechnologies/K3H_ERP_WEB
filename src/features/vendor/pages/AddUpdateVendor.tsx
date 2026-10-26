@@ -25,6 +25,8 @@ import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { checkDuplicateField } from "@/core/utils/duplicateValidation";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
+import type { filterwithPaginationSpecificationMasterRequest, SpecificationMasterData } from "@/features/specificationMaster/models/SpecificationMasterModel";
+import { specificationMasterService } from "@/features/specificationMaster/services/SpecificationMasterService";
 
 const initialFormState = (): AddUpdateVendorRequest => ({
   VendorId: 0,
@@ -69,6 +71,10 @@ export const AddUpdateVendor: React.FC = () => {
   const [searchMaterial, setSearchMaterial] = useState<string>("");
   const [selectedMaterials, setSelectedMaterials] = useState<Set<number>>(new Set());
 
+  const [contractList, setContractList] = useState<SpecificationMasterData[]>([]);
+  const [searchContract, setSearchContract] = useState<string>("");
+  const [selectedContracts, setSelectedContracts] = useState<Set<number>>(new Set());
+
   const [gstGSTCertificateFiles, setGSTCertificateFiles] = useState<(File | string)[]>([]);
   const [removedGSTCertificateUrls, setRemovedGSTCertificateUrls] = useState<string[]>([]);
   const [gSTCertificateURL, setGSTCertificateURL] = useState<string>();
@@ -80,6 +86,7 @@ export const AddUpdateVendor: React.FC = () => {
   const [aadharCardURLFiles, setAadharCardURLFiles] = useState<(File | string)[]>([]);
   const [removedAadharCardUrls, setRemovedAadharCardUrls] = useState<string[]>([]);
   const [aadharCardURL, setAadharCardURL] = useState<string>();
+
 
   const navigate = useNavigate();
 
@@ -165,6 +172,9 @@ export const AddUpdateVendor: React.FC = () => {
     if (activeTab === "material" && materialsubmaterialList.length === 0) {
       loadMaterialsSubMaterialMasterUOM();
     }
+    else if (activeTab === "contract" && contractList.length === 0) {
+      loadContractData();
+    }
   }, [activeTab, materialsubmaterialList.length]);
 
   const fetchVendorData = async () => {
@@ -244,7 +254,27 @@ export const AddUpdateVendor: React.FC = () => {
             const materialIds = row.AvailableMaterialList.split(",")
               .map((id) => Number(id.trim()))
               .filter((id) => !isNaN(id) && id > 0);
+
             setSelectedMaterials(new Set(materialIds));
+          }
+          else {
+
+            setSelectedMaterials(new Set());
+
+          }
+
+          if (row.AvailableContractList) {
+
+            const contractIds = row.AvailableContractList.split(",")
+              .map((id) => Number(id.trim()))
+              .filter((id) => !isNaN(id) && id > 0);
+
+            setSelectedContracts(new Set(contractIds));
+
+          } else {
+
+            setSelectedContracts(new Set());
+
           }
         }
 
@@ -295,6 +325,37 @@ export const AddUpdateVendor: React.FC = () => {
       "Loading Data"
     );
   };
+
+  const loadContractData = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: filterwithPaginationSpecificationMasterRequest = {
+          PageNumber: 1,
+          PageSize: 1000,
+          IsCheckPermission:false,
+          LevelType: "L1",
+        };
+
+        const response = await specificationMasterService.apiCallPullSpecificationMaster(params);
+
+
+        if (E.isRight(response)) {
+
+          setContractList(response.right.Data);
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+      },
+      undefined,
+      (error: any) =>
+        addToast({ type: 'error', title: error.message }),
+      undefined,
+      'Loading Specification Master'
+    );
+  };
+
 
   const validateAddVendorForm = (): {
 
@@ -402,6 +463,7 @@ export const AddUpdateVendor: React.FC = () => {
   const PushVendorFormData = (): FormData => {
 
     const materialIds = Array.from(selectedMaterials).join(",");
+    const contractIds = Array.from(selectedContracts).join(",");
 
     const fd = new FormData();
 
@@ -425,7 +487,8 @@ export const AddUpdateVendor: React.FC = () => {
     fd.append('DistrictMasterId', String(formData.DistrictMasterId ?? 0));
     fd.append('CityMasterId', String(formData.CityMasterId ?? 0));
     fd.append('AvailableMaterialList', materialIds);
-    fd.append('AvailableContractList', formData.AvailableContractList || '');
+    fd.append('AvailableContractList', contractIds || '');
+
 
     aadharCardURLFiles.forEach((file) => {
       if (file instanceof File) {
@@ -473,6 +536,8 @@ export const AddUpdateVendor: React.FC = () => {
     []
   );
 
+
+
   const filteredMaterialList = useMemo(() => {
 
     if (!searchMaterial.trim()) return materialsubmaterialList;
@@ -490,6 +555,39 @@ export const AddUpdateVendor: React.FC = () => {
 
 
 
+  const handleAddContract = useCallback((contractData: SpecificationMasterData) => {
+
+    const contractId = contractData.SpecificationMasterId;
+
+    setSelectedContracts((prev) => {
+      const newSet = new Set(prev);
+
+      if (newSet.has(contractId)) {
+        newSet.delete(contractId);
+      } else {
+        newSet.add(contractId);
+      }
+
+      return newSet;
+    });
+  },
+    []
+  );
+
+
+  const filteredContractList = useMemo(() => {
+
+    if (!searchContract.trim()) return contractList;
+
+    const searchLower = searchContract.toLowerCase();
+
+    return contractList.filter((item) =>
+
+      item.CategoryName?.toLowerCase().includes(searchLower)
+
+    );
+  }, [contractList, searchContract]);
+
   const handleSubmit = async () => {
     setErrors({})
 
@@ -503,8 +601,28 @@ export const AddUpdateVendor: React.FC = () => {
       return
     }
 
-    if ((formData.VendorType.toUpperCase() === "MATERIAL" || formData.VendorType.toUpperCase() === "BOTH") && selectedMaterials.size === 0) {
+    const vendorType = formData.VendorType?.toUpperCase();
+
+    const needsMaterial = (vendorType === "MATERIAL") && selectedMaterials.size === 0;
+    const needsContract = (vendorType === "CONTRACTOR") && selectedContracts.size === 0;
+    const needsMaterialContract = (vendorType === "BOTH") && (selectedContracts.size === 0 && selectedMaterials.size === 0);
+
+    if (needsMaterial) {
       addToast({ type: "error", title: "Please select at least one material" });
+      return;
+    }
+
+    else if (needsContract) {
+      addToast({ type: "error", title: "Please select at least one contract" });
+      return;
+    }
+
+    else if (needsMaterialContract) {
+      addToast({ type: "error", title: "Please select at least one material & contract" });
+      return;
+    }
+
+    else if (needsMaterial || needsContract) {
       return;
     }
 
@@ -1032,17 +1150,40 @@ export const AddUpdateVendor: React.FC = () => {
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
                 <Input
                   type="text"
-                  placeholder="Search By Contract Name"
-                  value={""}
-                  onChange={() => { }}
-                  disabled
+                  placeholder="Search By Category Name"
+                  value={searchContract}
+                  onChange={(e) => setSearchContract(e.target.value)}
                 />
 
 
-                <div className="flex-1 overflow-y-auto flex items-center justify-center">
-                  <p className="text-center text-gray-400 py-3">
-                    Contract management coming soon
-                  </p>
+                <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
+                  {filteredContractList.length > 0 ? ( filteredContractList.map((item) => {
+
+                      const isSelected = selectedContracts.has(item.SpecificationMasterId);
+                      return (
+
+                        <div key={item.SpecificationMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
+                          <div>
+                            <p className="font-medium text-gray-900">{item.CategoryName}</p>
+                          </div>
+
+                          <Button
+                            type="button"
+                            color="transparent"
+                            onClick={() => handleAddContract(item)}
+                          >
+                            {isSelected ? (<Trash2 className="w-4 h-4" style={{ color: "red" }} />
+                            ) : (<Plus className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="text-center text-gray-400 py-12">
+                      <NoDataView />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

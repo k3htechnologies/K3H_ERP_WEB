@@ -71,7 +71,7 @@ export const ViewTenantBooking: React.FC = () => {
                     PageSize: 1,
                     TenantId: tenantIdToFetch,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    IsCheckPermission: false,
                     BuildingId: buildingId,
                 };
 
@@ -112,7 +112,7 @@ export const ViewTenantBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    IsCheckPermission: false,
                     BookingSearchKey: "TENANT BOOKING",
                 };
 

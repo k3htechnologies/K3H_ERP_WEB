@@ -33,6 +33,9 @@ import { copyToClipboard } from "@/core/utils/comman";
 import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext";
 import CustomTableRowSpan, { type CustomTableRowSpanColumn } from "@/ui/components/DataTable/CustomTableRowSpan";
 import { getRowSpan } from "@/ui/components/DataTable/DataTableRowSpan";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 
 export const Tenant: React.FC = () => {
 
@@ -64,6 +67,12 @@ export const Tenant: React.FC = () => {
   const { listState, updateListState, resetFilters, setBuildingContext } = useTenantListState();
   const { page, filters, sortInfo, searchTerm, buildingId, buildingName } = listState;
   const { updateTenantListState } = useTenantBookingListState();
+
+  const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+  const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+  const [ownerName, setOwnerName] = useState<string | null>("");
+  const [wing, setwing] = useState<string | null>("");
+  const [unitNumber, setUnitNumber] = useState<string | null>("");
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTenants(value);
@@ -281,9 +290,23 @@ export const Tenant: React.FC = () => {
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
+  const handleApprovalLog = (row: TenantData) => {
+    const request: ModulesApprovalStatusRequest = {
+      ModuleName: "TENANT BOOKING APPROVAL",
+      Id: row.BookingId ?? 0,
+      ProjectId: row.ProjectId ?? 0,
+    };
+    setOwnerName(row.ApplicantName ?? "");
+    setwing(row?.Wing)
+    setUnitNumber(row?.Flat);
+
+    setApprovalLogRequest(request);
+    setIsApprovalLogModalOpen(true);
+  };
+
   const tenantColumns = useMemo<CustomTableRowSpanColumn[]>(
     () => [
-      
+
       {
         key: "SystemGeneratedCode",
         label: "Tenant Code",
@@ -365,7 +388,7 @@ export const Tenant: React.FC = () => {
             <div className="flex items-center gap-2">
               {isAllotted && (
                 <TooltipText
-                  text={ row.Flat || "-"}
+                  text={row.Flat || "-"}
                   maxWidth="160px"
                   tooltipThreshold={16}
                 />
@@ -406,7 +429,7 @@ export const Tenant: React.FC = () => {
 
               {!isAllotted && !isBookingDone && (
                 <TooltipText
-                  text={ row.Flat || "-"}
+                  text={row.Flat || "-"}
                   maxWidth="160px"
                   tooltipThreshold={16}
                 />
@@ -730,7 +753,7 @@ export const Tenant: React.FC = () => {
           color: '#60D669'
         },
         children: [
-           {
+          {
             key: "AdjustPurchaseAreaSqFt",
             label: "Adjust Purchase Area (SqFt)",
             width: "12",
@@ -743,7 +766,7 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#F0FDF4'
             },
-             render: (value) => (value ? `${value} SqFt` : "-"),
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "BuildingNumber",
@@ -917,6 +940,26 @@ export const Tenant: React.FC = () => {
           },
         ]
       },
+
+      {
+        key: "BookingApprovalStatus",
+        label: "Booking Approval Status",
+        width: "18",
+        sortable: false,
+        align: "center",
+        render: (value, row) => (
+
+          Number(row.BookingId ?? 0) > 0 ? (
+            <ApprovalActions
+              approvalStatus={value || "-"}
+              isIcons={true}
+              onHistory={() => handleApprovalLog(row)}
+            />
+          ) : "-"
+          
+        )
+      },
+
       {
         key: "actions",
         label: "Actions",
@@ -975,7 +1018,7 @@ export const Tenant: React.FC = () => {
             </div>
           ) : null;
         },
-         rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
+        rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
       }
     ],
     [handleViewTenantDetails, handleViewTenantDocument, handleConfirmationDialogBoxOpen, canAction],
@@ -1386,7 +1429,8 @@ export const Tenant: React.FC = () => {
 
       <ExportImport
         open={showImportModal}
-        isTenantAllotemnt={isTenantAllotemnt}
+        isDisplayYesNoOption={!isTenantAllotemnt}
+        isDisplayCommanNote={!isTenantAllotemnt}
         onClose={() => setShowImportModal(false)}
         onUpload={(file, mergeExisting) => {
           setShowImportModal(false);
@@ -1404,6 +1448,15 @@ export const Tenant: React.FC = () => {
         loading={isLoading}
         pageName="tenant"
       />
+
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        title='Tenant Booking'
+        titleText={ownerName ?? ""}
+        subTitleText={wing ?? ""}
+        subSubTitleText={unitNumber ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest} />
     </div>
   );
 };

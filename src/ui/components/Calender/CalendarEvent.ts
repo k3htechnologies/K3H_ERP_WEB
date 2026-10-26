@@ -9,6 +9,6 @@ export interface CalendarEvent {
   fullname?: string;
   projectName?: string;
   room?: string;
-  CreatedBy?: string
-  CreatedDate?: string | null
+  CreatedBy?: string;
+  CreatedDate?: string | null;
 }

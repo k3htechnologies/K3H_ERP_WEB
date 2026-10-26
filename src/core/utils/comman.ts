@@ -188,10 +188,24 @@ export const getSafeString = (value: any, fallback: string = "-"): string => {
   return String(value);
 };
 
-export const formatCurrency = (value: number | null | undefined): string => {
-  if (value === null || value === undefined) return '-';
-  return `₹${Number(value).toLocaleString('en-IN')}`;
+
+export const formatCurrency = (value: string | number | null | undefined ): string => {
+  if (value === null || value === undefined || value === '') return '-';
+
+  const stringValue = String(value);
+  const [integerPart, decimalPart] = stringValue.split('.');
+
+  const formattedInteger = integerPart.replace(
+    /\B(?=(\d{2})+(?!\d))/g,
+    ','
+  );
+
+  return `₹${formattedInteger}${
+    decimalPart !== undefined ? `.${decimalPart}` : ''
+  }`;
 };
+
+
 
 export const cleanHtml = (html: string) => {
   if (!html) return ''

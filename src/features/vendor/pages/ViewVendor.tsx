@@ -364,12 +364,38 @@ export const ViewVendor: React.FC = () => {
 
               {activeTab === "contract" && (
 
-                <div className="xl:col-span-2 bg-white rounded-3xl pt-5">
+               <div className="xl:col-span-2 bg-white rounded-3xl pt-5">
 
+                  {editVendorMasterData.SpecificationMasterData.length === 0 ? (
+                    <NoDataView message="No materials available" />
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4 max-h-[380px] overflow-y-auto thin-scroll pr-1">
 
-                  <div className="flex-1 overflow-y-auto flex items-center justify-center">
-                    <NoDataView />
-                  </div>
+                      {editVendorMasterData.SpecificationMasterData.map((item) => (
+                        <div
+                          key={item.SpecificationMasterId}
+                          className="border border-gray-200 rounded-xl p-4 hover:border-blue-300"
+                        >
+                          <div className="flex items-center gap-3">
+
+                            <div className="w-11 h-11 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center">
+                              <Package size={18} />
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <h5 className="mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-pre-line min-w-0">
+                                {item.CategoryName}
+                              </h5>
+
+                              
+                            </div>
+
+                          </div>
+                        </div>
+                      ))}
+
+                    </div>
+                  )}
 
                 </div>
 

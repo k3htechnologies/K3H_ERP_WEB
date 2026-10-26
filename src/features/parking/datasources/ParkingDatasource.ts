@@ -85,6 +85,7 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
                 IsAcessOnlyApprovedParking: (params.IsAcessOnlyApprovedParking ?? true).toString(),
+                IsAcessMemberApprovedParking: (params.IsAcessMemberApprovedParking ?? true).toString(),
             })
 
             if (params.Building) queryParams.append('Building', params.Building.toString());

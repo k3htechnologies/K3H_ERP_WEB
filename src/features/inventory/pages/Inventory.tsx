@@ -1608,6 +1608,8 @@ const Inventory = () => {
 
             <ExportImport
                 open={showImportModal}
+                isDisplayYesNoOption={false}
+                isDisplayCommanNote={true}
                 onClose={() => setShowImportModal(false)}
                 onUpload={(file, mergeExisting) => {
                     setShowImportModal(false);

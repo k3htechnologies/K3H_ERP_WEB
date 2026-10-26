@@ -377,7 +377,9 @@ export const MASTER_DATA = {
     "HRA",
     "DA",
     "Conveyance Allowance",
+    "Education Allowance",
     "Medical Allowance",
+    "Attire Allowances",
     "Special Allowance",
     "Other Allowance",
     "LTA",
@@ -397,6 +399,8 @@ export const MASTER_DATA = {
     "Employer PF",
     "Employer ESI",
     "Gratuity",
+    "Gross Amount",
+    "Gross Amount - Earning Component",
     "Superannuation",
     "NPS Employer",
     "Health Insurance",
@@ -405,6 +409,7 @@ export const MASTER_DATA = {
     "Arrears",
     "Ex-Gratia",
     "Relocation Allowance",
+   
   ],
   leaveTypeMaster: [
     "Adoption - Adoption Leave",
@@ -472,7 +477,7 @@ export const MASTER_DATA = {
 
   parkingSize: ["Big", "Small"],
 
-  parkingStatus: ["Available", "Blocked", "Hold", "Member"],
+  parkingStatus: ["Available", "Blocked", "Hold", "Member","Booked"],
 
   // unitLayout: ['Entire Flat','Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
@@ -741,33 +746,7 @@ export const MASTER_DATA = {
 
   employmentType: ["Full-Time", "Contract", "Internship"],
 
-  experienceYears: [
-    "1 Year",
-    "2 Years",
-    "3 Years",
-    "4 Years",
-    "5 Years",
-    "6 Years",
-    "7 Years",
-    "8 Years",
-    "9 Years",
-    "10 Years",
-  ],
-
-  experienceMonths: [
-    "1 Month",
-    "2 Months",
-    "3 Months",
-    "4 Months",
-    "5 Months",
-    "6 Months",
-    "7 Months",
-    "8 Months",
-    "9 Months",
-    "10 Months",
-    "11 Months",
-    "12 Months",
-  ],
+  experienceYears: ["0-5", "6-10", "11-15", "15+"],
 
   jobOpeningLockedEditFields: [
     "JobDescription",
@@ -952,14 +931,8 @@ export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipTy
 export const INVOICE_PAYMENT_TYPE = toOptions(MASTER_DATA.inVoicePaymentType);
 export const EMPLOYMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.employmentType);
 export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
-export const EXPERIENCE_YEAR_OPTIONS: Option[] = MASTER_DATA.experienceYears.map((name, index) => ({
-  id: String(index + 1),
-  name,
-}));
-export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.map((name, index) => ({
-  id: String(index + 1),
-  name,
-}));
+export const EXPERIENCE_RANGE_OPTIONS = toOptions(MASTER_DATA.experienceYears);
+
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);

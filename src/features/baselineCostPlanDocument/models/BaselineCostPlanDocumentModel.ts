@@ -26,6 +26,7 @@ export interface BaselineCostPlanDocumentData {
     IsApproval: boolean;
     UploadedDocumentCount: number;
     IsMaster?: number | 0;
+    ApprovalStatus: string;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

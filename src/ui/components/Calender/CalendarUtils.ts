@@ -1,4 +1,4 @@
-import type { CalendarEvent } from "./CalendarEvent";
+import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
 
 export const getMonthMatrix = (date: Date) => {
 
@@ -30,6 +30,14 @@ export const getWeekDays = (date: Date) => {
 
 export const toLocalDateKey = (date: Date): string =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+export const isSameDate = (first: Date, second?: Date) =>
+    Boolean(
+        second &&
+        first.getFullYear() === second.getFullYear() &&
+        first.getMonth() === second.getMonth() &&
+        first.getDate() === second.getDate(),
+    );
 
 export const getHours = () =>
     [...Array(12)].map((_, i) => `${(i + 8).toString().padStart(2, "0")}:00`);

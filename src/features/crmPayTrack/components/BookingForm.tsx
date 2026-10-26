@@ -553,6 +553,8 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
             value: params?.value || "",
             projectId: projectId || 0,
             displayParkingId: bookingData?.ParkingId || "",
+            isAcessMemberApprovedParking:false,
+            isAcessOnlyApprovedParking:true,
         });
     }, [projectId, bookingData?.ParkingId]);
 

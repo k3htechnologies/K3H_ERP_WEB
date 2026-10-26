@@ -437,7 +437,7 @@ export const ViewTenant: React.FC = () => {
 
                                     {Number(inventoryFlat?.BookingId ?? 0) > 0 && (
                                         <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                            Booking Done
+                                            Booking Done - {inventoryFlat?.BookingApprovalStatus}
                                         </span>
                                     )}
                                 </div>

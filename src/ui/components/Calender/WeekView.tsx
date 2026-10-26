@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
+import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
 import { getWeekDays, getHours, toLocalDateKey } from "@/ui/components/Calender/CalendarUtils";
-import type { CalendarEvent } from "./CalendarEvent";
 
 export interface RenderWeekSlotEventsArgs {
     day: Date;
@@ -24,7 +24,7 @@ export default function WeekView({
     const days = getWeekDays(currentDate);
     const hours = getHours();
     return (
-        <div className="grid grid-cols-[80px_repeat(7,1fr)] h-[80vh] text-xs">
+        <div className="grid h-[80vh] grid-cols-[80px_repeat(7,1fr)] overflow-y-auto thin-scroll text-xs">
 
             {/* HEADER ROW */}
             <div></div>
@@ -61,7 +61,7 @@ export default function WeekView({
                         return (
                             <div
                                 key={`${dateStr}-${h}`}
-                                className="border border-gray-200 relative min-h-[44px]"
+                                className="border border-gray-200 relative min-h-[44px] overflow-hidden"
                             >
                                 {renderWeekSlotEvents
                                     ? renderWeekSlotEvents({ day, slotEvents, onEventClick })

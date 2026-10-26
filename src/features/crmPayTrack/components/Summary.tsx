@@ -362,64 +362,66 @@ export const Summary: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
-            <div className="absolute top-5 right-2 z-10  gap-2">
+            
+            {Number(listState.tenantId) === 0 && (
+                <div className="absolute top-5 right-2 z-10  gap-2">
 
-                {canAction && bookingData  && (!isBookingCancel && !isRefundStatus)  && (
-                    <Button
-                        onClick={() => {
-                            setIsCancelBookingReasonModalOpen(true);
-                        }}
-                        variant="solid"
-                        color="red_light"
-                        disabled={!canAction}
-                        size="md"
-                        style={{ width: '160px', height: '37px', outline: 'none', border: 'none' }}
-                    >
-                        Cancel Booking
-                    </Button>
-                )}
+                    {canAction && bookingData && (!isBookingCancel && !isRefundStatus) && (
+                        <Button
+                            onClick={() => {
+                                setIsCancelBookingReasonModalOpen(true);
+                            }}
+                            variant="solid"
+                            color="red_light"
+                            disabled={!canAction}
+                            size="md"
+                            style={{ width: '160px', height: '37px', outline: 'none', border: 'none' }}
+                        >
+                            Cancel Booking
+                        </Button>
+                    )}
 
-                {canAction && bookingData && !isRefundStatus && isBookingCancel && bookingData.CancelBookingApprovalStatus?.toUpperCase()==="APPROVED"  && (
-                    <>
-                        <div className="flex justify-end items-center gap-3"> 
+                    {canAction && bookingData && !isRefundStatus && isBookingCancel && bookingData.CancelBookingApprovalStatus?.toUpperCase() === "APPROVED" && (
+                        <>
+                            <div className="flex justify-end items-center gap-3">
 
-                            <Button
-                                onClick={async () => {
-                                    await loadPaytrackBookingForSummary();
-                                    setInitiateRefund(true);
-                                }}
-                                color="blue"
-                                variant="solid"
-                                colorMode="extraLight"
-                                size="md"
-                                style={{ width: '160px', height: '37px' }}
-                            >
-                                Initiate Refund
-                            </Button>
-                        </div>
-                    </>
-                )}
+                                <Button
+                                    onClick={async () => {
+                                        await loadPaytrackBookingForSummary();
+                                        setInitiateRefund(true);
+                                    }}
+                                    color="blue"
+                                    variant="solid"
+                                    colorMode="extraLight"
+                                    size="md"
+                                    style={{ width: '160px', height: '37px' }}
+                                >
+                                    Initiate Refund
+                                </Button>
+                            </div>
+                        </>
+                    )}
 
-                {canAction && bookingData && isRefundStatus   && Number(bookingData?.TotalAmountRefundedAgainstBooking || 0) > Number(bookingData?.RefundedAmountOnTillDate || 0) && (
-                    <>
+                    {canAction && bookingData && isRefundStatus && Number(bookingData?.TotalAmountRefundedAgainstBooking || 0) > Number(bookingData?.RefundedAmountOnTillDate || 0) && (
+                        <>
 
-                        <div className="flex justify-end items-center gap-3">
+                            <div className="flex justify-end items-center gap-3">
 
-                            <Button
-                                onClick={() => navigate(`/payTrack/view/addRefundDetails`)}
-                                color="blue"
-                                variant="solid"
-                                size="md"
-                                style={{ width: '160px', height: '37px' }}
+                                <Button
+                                    onClick={() => navigate(`/payTrack/view/addRefundDetails`)}
+                                    color="blue"
+                                    variant="solid"
+                                    size="md"
+                                    style={{ width: '160px', height: '37px' }}
 
-                            >
-                                Make Payment
-                            </Button>
-                        </div>
-                    </>
-                )}
-            </div>
-
+                                >
+                                    Make Payment
+                                </Button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
 
             <div className="pt-5">
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">

@@ -236,6 +236,7 @@ const PayTrack: React.FC = () => {
 
     updateListState({
       bookingId: row.BookingId ?? 0,
+      tenantId:row.TenantId ?? 0,
       bookingName: row.ApplicantName ?? "",
       bookingType: row.BookingType ?? "",
       flat: row.Flat ?? "",

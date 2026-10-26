@@ -1915,7 +1915,8 @@ export const AddUpdateBooking: React.FC = () => {
       projectId: projectId || 0,
       displayParkingId: parkingId || "",
       parkingStatus: "Available",
-      isAcessOnlyApprovedParking: true
+      isAcessOnlyApprovedParking: true,
+      isAcessMemberApprovedParking:false,
     });
   }, [projectId, parkingId]);
 

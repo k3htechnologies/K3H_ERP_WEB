@@ -136,6 +136,10 @@ export const LOCAL_STORAGE_KEYS = {
     TASK_SELECTED_COLUMNS: 'task.selectedColumns',
     AGENDA_TASK_SELECTED_COLUMNS: 'agendaTask.selectedColumns',
 
+    //COST TO COMPANY
+    COST_TO_COMPANY_SELECTED_COLUMNS: 'costToCompany.selectedColumns',
+
+
 
 
 
@@ -177,6 +181,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TASK: 'task.listState',
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
+    COST_TO_COMPANY: 'costToCompany.listState'
 
 
 } as const

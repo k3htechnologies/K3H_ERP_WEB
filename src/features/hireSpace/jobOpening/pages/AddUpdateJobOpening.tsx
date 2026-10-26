@@ -9,15 +9,17 @@ import { Loader } from '@/core/utils/loader';
 import {
   ACTIVE_INACTIVE_OPTIONS,
   EMPLOYMENT_TYPE_OPTIONS,
-  EXPERIENCE_MONTH_OPTIONS,
-  EXPERIENCE_YEAR_OPTIONS,
+  EXPERIENCE_RANGE_OPTIONS,
   WORK_MODE_OPTIONS,
 } from '@/core/constants';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import { filterNumbers } from '@/core/utils/fileValidation';
 import {
   fetchJobOpeningDepartmentDropdown,
   fetchJobOpeningJobTitleDropdown,
 } from '@/features/hireSpace/jobOpening/jobOpeningDropDown';
+import { useJobOpeningListState } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
+import { getExperienceRangeValue, getExperienceYearsFromRange } from '@/features/hireSpace/jobOpening/utils/jobOpeningUtils';
 import type {
   AddUpdateJobOpeningRequest,
   FilterWithPaginationJobOpeningRequest,
@@ -39,16 +41,23 @@ const INITIAL_FORM_STATE: AddUpdateJobOpeningRequest = {
   JobQualification: '',
   JobSkills: '',
   WorkMode: '',
-  ExperienceYears: 0,
-  ExperienceMonths: 0,
+  ExperienceYears: null,
+  ExperienceMonths: null,
   NumberOfOpenings: 0,
   WorkLocation: '',
   EmploymentType: '',
-  JobRoleStatus: true,
+  JobRoleStatus: null,
 }
 
 export const AddUpdateJobOpening: React.FC = () => {
-  const [formData, setFormData] = useState<AddUpdateJobOpeningRequest>(INITIAL_FORM_STATE);
+  const { listState } = useJobOpeningListState();
+  const departmentId = listState.departmentId;
+  const departmentName = departmentId > 0 ? listState.departmentName : '';
+
+  const [formData, setFormData] = useState<AddUpdateJobOpeningRequest>(() => ({
+    ...INITIAL_FORM_STATE,
+    DepartmentMasterId: departmentId,
+  }));
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -57,6 +66,7 @@ export const AddUpdateJobOpening: React.FC = () => {
   const { jobOpeningId } = useParams<{ jobOpeningId?: string }>();
   const JobOpeningId = jobOpeningId ? Number(jobOpeningId) : 0;
   const isAddMode = JobOpeningId === 0;
+  const isDepartmentSelectable = isAddMode && departmentId === 0;
 
   const { addToast } = useToast();
 
@@ -64,7 +74,9 @@ export const AddUpdateJobOpening: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [departments, setDepartments] = useState<{ id: string; label: string; count: number }[]>([]);
-  const [dropdownLabels, setDropdownLabels] = useState<{ jobTitleName?: string }>({});
+  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; jobTitleName?: string }>({
+    departmentName,
+  });
 
 
   const handleFieldChange = (field: keyof AddUpdateJobOpeningRequest, value: any) => {
@@ -74,7 +86,6 @@ export const AddUpdateJobOpening: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
-
 
   const fetchDepartments = async () => {
     await runApiWithLoader(
@@ -95,7 +106,9 @@ export const AddUpdateJobOpening: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchDepartments();
+    if (isDepartmentSelectable) {
+      fetchDepartments();
+    }
   }, []);
 
   useEffect(() => {
@@ -142,6 +155,7 @@ export const AddUpdateJobOpening: React.FC = () => {
               JobRoleStatus: e.JobRoleStatus ?? prev.JobRoleStatus,
             }));
             setDropdownLabels({
+              departmentName: e.DepartmentName,
               jobTitleName: e.JobRoleName,
             });
           }
@@ -200,15 +214,13 @@ export const AddUpdateJobOpening: React.FC = () => {
     }
 
     if (!formData.ExperienceYears) {
-      newErrors.ExperienceYears = 'Experience years is required';
-    }
-
-    if (!formData.ExperienceMonths) {
-      newErrors.ExperienceMonths = 'Experience months is required';
+      newErrors.ExperienceYears = 'Experience is required';
     }
 
     if (!formData.NumberOfOpenings) {
       newErrors.NumberOfOpenings = 'Number of openings is required';
+    } else if (formData.NumberOfOpenings > 50) {
+      newErrors.NumberOfOpenings = 'Number of openings cannot exceed 50';
     }
 
     if (!formData.WorkLocation?.trim()) {
@@ -217,6 +229,10 @@ export const AddUpdateJobOpening: React.FC = () => {
 
     if (!formData.EmploymentType?.trim()) {
       newErrors.EmploymentType = 'Employment type is required';
+    }
+
+    if (formData.JobRoleStatus === null) {
+      newErrors.JobRoleStatus = 'Job role status is required';
     }
 
     return {
@@ -239,11 +255,11 @@ export const AddUpdateJobOpening: React.FC = () => {
       JobSkills: formData.JobSkills,
       WorkMode: formData.WorkMode,
       ExperienceYears: formData.ExperienceYears,
-      ExperienceMonths: formData.ExperienceMonths,
+      ExperienceMonths: 0,
       NumberOfOpenings: formData.NumberOfOpenings,
       WorkLocation: formData.WorkLocation,
       EmploymentType: formData.EmploymentType,
-      JobRoleStatus: formData.JobRoleStatus,
+      JobRoleStatus: formData.JobRoleStatus ?? false,
     };
   };
 
@@ -285,7 +301,7 @@ export const AddUpdateJobOpening: React.FC = () => {
 
 
   return (
-    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
@@ -298,25 +314,36 @@ export const AddUpdateJobOpening: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
               <div>
-                <SinglePageSelection
-                  label="Select Department"
-                  placeholder="Select Department"
-                  value={formData.DepartmentMasterId ? String(formData.DepartmentMasterId) : ''}
-                  valueKey="id"
-                  onChange={(e) => {
-                    handleFieldChange('DepartmentMasterId', Number(e) || 0);
-                    handleFieldChange('JobRoleMasterId', 0);
-                    handleFieldChange('JobDescription', '');
-                    handleFieldChange('JobResponsibilities', '');
-                    handleFieldChange('JobRequirement', '');
-                    handleFieldChange('JobQualification', '');
-                    handleFieldChange('JobSkills', '');
-                    setDropdownLabels((prev) => ({ ...prev, jobTitleName: '' }));
-                  }}
-                  options={departments}
-                  error={errors.DepartmentMasterId}
-                  disabled={!isAddMode}
-                />
+                {isDepartmentSelectable ? (
+                  <SinglePageSelection
+                    label="Select Department"
+                    placeholder="Select Department"
+                    value={formData.DepartmentMasterId ? String(formData.DepartmentMasterId) : ''}
+                    valueKey="id"
+                    onChange={(e) => {
+                      handleFieldChange('DepartmentMasterId', Number(e) || 0);
+                      handleFieldChange('JobRoleMasterId', 0);
+                      handleFieldChange('JobDescription', '');
+                      handleFieldChange('JobResponsibilities', '');
+                      handleFieldChange('JobRequirement', '');
+                      handleFieldChange('JobQualification', '');
+                      handleFieldChange('JobSkills', '');
+                      setDropdownLabels((prev) => ({ ...prev, jobTitleName: '' }));
+                    }}
+                    options={departments}
+                    error={errors.DepartmentMasterId}
+                    required
+                  />
+                ) : (
+                  <Input
+                    label="Department Name"
+                    placeholder="Enter Department Name"
+                    value={dropdownLabels.departmentName || ''}
+                    error={errors.DepartmentMasterId}
+                    required
+                    disabled
+                  />
+                )}
               </div>
 
               <div>
@@ -363,10 +390,11 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Job Description"
-                  placeholder="Pre-filled"
+                  placeholder="Job Description"
                   value={formData.JobDescription}
+                  title={formData.JobDescription}
                   onChange={(e) => handleFieldChange('JobDescription', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobDescription}
                 />
               </div>
@@ -374,10 +402,11 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Job Responsibilities"
-                  placeholder="Pre-filled"
+                  placeholder="Job Responsibilities"
                   value={formData.JobResponsibilities}
+                  title={formData.JobResponsibilities}
                   onChange={(e) => handleFieldChange('JobResponsibilities', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobResponsibilities}
                 />
               </div>
@@ -385,10 +414,11 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Job Requirement"
-                  placeholder="Pre-filled"
+                  placeholder="Job Requirement"
                   value={formData.JobRequirement}
+                  title={formData.JobRequirement}
                   onChange={(e) => handleFieldChange('JobRequirement', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobRequirement}
                 />
               </div>
@@ -396,10 +426,11 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div>
                 <Input
                   label="Qualifications"
-                  placeholder="Pre-filled"
+                  placeholder="Qualifications"
                   value={formData.JobQualification}
+                  title={formData.JobQualification}
                   onChange={(e) => handleFieldChange('JobQualification', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobQualification}
                 />
               </div>
@@ -407,10 +438,11 @@ export const AddUpdateJobOpening: React.FC = () => {
               <div className="md:col-span-2">
                 <Input
                   label="Skills"
-                  placeholder="Pre-filled"
+                  placeholder="Skills"
                   value={formData.JobSkills}
+                  title={formData.JobSkills}
                   onChange={(e) => handleFieldChange('JobSkills', e.target.value)}
-                  disabled={!isAddMode}
+                  disabled
                   error={errors.JobSkills}
                 />
               </div>
@@ -429,43 +461,34 @@ export const AddUpdateJobOpening: React.FC = () => {
                   value={formData.WorkMode}
                   onChange={(e) => handleFieldChange('WorkMode', String(e))}
                   options={WORK_MODE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  searchable={false}
+                  required
                   error={errors.WorkMode}
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-[14px] font-medium text-[#00000080]">Experience</label>
-                <div className="flex flex-col gap-4 min-[420px]:flex-row min-[420px]:items-center">
-                  <div className="flex-1">
-                    <SinglePageSelection
-                      placeholder="Select Years"
-                      value={formData.ExperienceYears ? String(formData.ExperienceYears) : ''}
-                      onChange={(e) => handleFieldChange('ExperienceYears', Number(e) || 0)}
-                      options={EXPERIENCE_YEAR_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                      searchable={false}
-                      error={errors.ExperienceYears}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <SinglePageSelection
-                      placeholder="Select Months"
-                      value={formData.ExperienceMonths ? String(formData.ExperienceMonths) : ''}
-                      onChange={(e) => handleFieldChange('ExperienceMonths', Number(e) || 0)}
-                      options={EXPERIENCE_MONTH_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                      searchable={false}
-                      error={errors.ExperienceMonths}
-                    />
-                  </div>
-                </div>
+                <SinglePageSelection
+                  label="Experience"
+                  placeholder="Select Experience"
+                  value={getExperienceRangeValue(formData.ExperienceYears)}
+                  onChange={(e) => handleFieldChange('ExperienceYears', getExperienceYearsFromRange(String(e)))}
+                  options={EXPERIENCE_RANGE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  searchable={false}
+                  required
+                  error={errors.ExperienceYears}
+                />
               </div>
 
               <div>
                 <Input
                   label="Number Of Openings"
                   placeholder="Enter Number Of Openings"
-                  value={formData.NumberOfOpenings}
-                  onChange={(e) => handleFieldChange('NumberOfOpenings', Number(e.target.value))}
+                  value={formData.NumberOfOpenings || ''}
+                  maxLength={2}
+                  onChange={(e) =>
+                    handleFieldChange('NumberOfOpenings', Number(filterNumbers(e.target.value)) || 0)
+                  }
+                  required
                   error={errors.NumberOfOpenings}
                 />
               </div>
@@ -476,6 +499,7 @@ export const AddUpdateJobOpening: React.FC = () => {
                   placeholder="Enter Location"
                   value={formData.WorkLocation}
                   onChange={(e) => handleFieldChange('WorkLocation', e.target.value)}
+                  required
                   error={errors.WorkLocation}
                 />
               </div>
@@ -487,7 +511,7 @@ export const AddUpdateJobOpening: React.FC = () => {
                   value={formData.EmploymentType}
                   onChange={(e) => handleFieldChange('EmploymentType', String(e))}
                   options={EMPLOYMENT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  searchable={false}
+                  required
                   error={errors.EmploymentType}
                 />
               </div>
@@ -496,10 +520,17 @@ export const AddUpdateJobOpening: React.FC = () => {
                 <SinglePageSelection
                   label="Job Role Status"
                   placeholder="Select Status"
-                  value={formData.JobRoleStatus ? 'Active' : 'Inactive'}
+                  value={
+                    formData.JobRoleStatus === null
+                      ? ''
+                      : formData.JobRoleStatus
+                        ? 'Active'
+                        : 'Inactive'
+                  }
                   onChange={(e) => handleFieldChange('JobRoleStatus', String(e) === 'Active')}
                   options={ACTIVE_INACTIVE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  searchable={false}
+                  required
+                  error={errors.JobRoleStatus}
                 />
               </div>
             </div>

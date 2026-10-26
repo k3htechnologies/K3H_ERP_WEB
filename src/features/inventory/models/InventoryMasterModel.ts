@@ -80,6 +80,7 @@ export interface InventoryFlatData {
     BookingCreatedById: number;
     BookingCreatedBy: string;
     BookingCreatedDate: string | null
+    BookingApprovalStatus?: string | null
 
     TenantId?: number;   
     TenantSystemGeneratedCode?:string;

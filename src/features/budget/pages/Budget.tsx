@@ -1240,7 +1240,7 @@ export const Budget: React.FC = () => {
                 title={
                     editBudgetData
                         ? addLevel === "L1"
-                            ? "Update Category"
+                            ? "Update Cost Head / Description or L1 Catgeory"
                             : addLevel === "L2"
                                 ? "Update Sub Category"
                                 : addLevel === "L3"
@@ -1248,7 +1248,7 @@ export const Budget: React.FC = () => {
                                     : "Update Sub Material"
 
                         : addLevel === "L1"
-                            ? "Add Category"
+                            ? "Add Cost Head / Description or L1 Catgeory"
                             : addLevel === "L2"
                                 ? "Add Sub Category"
                                 : addLevel === "L3"

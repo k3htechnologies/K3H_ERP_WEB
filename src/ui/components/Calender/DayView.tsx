@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
-import type { CalendarEvent } from "./CalendarEvent";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
+import { toLocalDateKey } from "@/ui/components/Calender/CalendarUtils";
 
 export interface RenderDayHourEventsArgs {
   hour: string;
@@ -22,7 +23,7 @@ export default function DayView({
   renderDayHourEvents,
 }: DayViewProps) {
 
-  const dateStr = currentDate.toISOString().slice(0, 10);
+  const dateStr = toLocalDateKey(currentDate);
 
   const hours = Array.from({ length: 24 }, (_, i) =>
     `${String(i).padStart(2, "0")}:00`
@@ -49,8 +50,7 @@ export default function DayView({
     return () => clearInterval(timer);
   }, []);
 
-  const isToday =
-    new Date().toISOString().slice(0, 10) === dateStr;
+  const isToday = toLocalDateKey(new Date()) === dateStr;
 
   const buildLanes = (evts: CalendarEvent[]) => {
 
@@ -128,7 +128,7 @@ export default function DayView({
         <div className="relative">
 
           {hours.map(h => (
-            <div key={h} className="border border-gray-200 h-[60px]">
+            <div key={h} className="border border-gray-200 h-[60px] overflow-hidden">
               {renderDayHourEvents?.({
                 hour: h,
                 hourEvents: dayEvents.filter(e => e.start.slice(11, 13) === h.slice(0, 2)),

@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import MonthView, { type RenderMonthDayEventsArgs } from "./MonthView";
-import WeekView, { type RenderWeekSlotEventsArgs } from "./WeekView";
-import DayView, { type RenderDayHourEventsArgs } from "./DayView";
-import type { CalendarEvent } from "./CalendarEvent";
+import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
+import DayView, { type RenderDayHourEventsArgs } from "@/ui/components/Calender/DayView";
+import MonthView, { type RenderMonthDayEventsArgs } from "@/ui/components/Calender/MonthView";
+import WeekView, { type RenderWeekSlotEventsArgs } from "@/ui/components/Calender/WeekView";
 
 export type CalendarView = "month" | "week" | "day";
 

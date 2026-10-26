@@ -205,14 +205,13 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                 </div>
             )}
 
-            {flat.FlatStatus === "Alloted" && approvalStatus?.toUpperCase() === "APPROVED" && Number(flat.BookingId) === 0 && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && canTenantBookingAction && (
+            {flat.FlatStatus === "Alloted" && approvalStatus?.toUpperCase() === "APPROVED" && Number(flat.TenantId) >0 && Number(flat.BookingId) === 0 && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && canTenantBookingAction && (
                 <div className="flex items-center justify-center mt-2">
                     <Button
                         onClick={handleBook}
                         color="blue"
                         size="sm"
-                        className="w-full"
-                    >
+                        className="w-full">
                         Book
                     </Button>
                 </div>

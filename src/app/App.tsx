@@ -267,6 +267,12 @@ import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/
 import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
 import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
+import { CostToCompanyListStateProvider } from '@/features/costToCompany/context/CostToCompanyListStateContext';
+import CostToCompany from '@/features/costToCompany/pages/CostToCompany';
+import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCostToCompany';
+import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
+import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
+import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -333,6 +339,7 @@ function App() {
             <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
+
 
 
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
@@ -423,6 +430,11 @@ function App() {
             <Route path="payrollReport" element={<PayrollReport />} />
 
             <Route path="attendance" element={<AttendanceCalendar />} />
+
+            <Route path='costToCompany' element={<CostToCompanyListStateProvider><CostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/add/:CostToCompanyId?' element={<CostToCompanyListStateProvider><AddUpdateCostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/view' element={<CostToCompanyListStateProvider><ViewCostToCompany /></CostToCompanyListStateProvider>} />
+
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
@@ -571,6 +583,8 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
+            <Route path="crmDashboard/collectionMilestone/view" element={<CrmMilestoneView />} />
+            <Route path="crmDashboard/collectionSummary/view" element={<CrmCollectionSummaryView />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />

@@ -147,6 +147,7 @@ const ViewDashboardApprovals: React.FC = () => {
 
             // BOOKING & CRM
             case "Booking":
+            case "Tenant Booking":
             case "CRM Payment Ledger":
             case "Booking Applicant Modification":
             case "Flat Alteration":

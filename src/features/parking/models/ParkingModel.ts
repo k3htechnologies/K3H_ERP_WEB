@@ -100,6 +100,7 @@ export interface FilterWithPaginationParkingRequest {
     ParkingStatus?: string
     ApprovalStatus?: string
     IsAcessOnlyApprovedParking?: boolean
+    IsAcessMemberApprovedParking?: boolean
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

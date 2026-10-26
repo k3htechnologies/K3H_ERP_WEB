@@ -88,6 +88,7 @@ export interface TenantData {
 
   BookingId: number | null;
   ApplicantName?: string | null;
+  ApprovalStatus?: string | null;
 
   InventoryFlatData?: InventoryFlatData[] | null;
 }

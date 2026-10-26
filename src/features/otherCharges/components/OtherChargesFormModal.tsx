@@ -60,14 +60,14 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
           </div>
           <div>
             <Input
-              label="Charges"
+              label="Charges Name"
               required
               type="text"
               value={formData.ChargeName ?? ''}
               onChange={e => onFieldChange('ChargeName', e.target.value)}
               error={errors.ChargeName}
               maxLength={50}
-              placeholder="Enter Other Charge Name "
+              placeholder="Enter Charges Name "
             />
           </div>
 

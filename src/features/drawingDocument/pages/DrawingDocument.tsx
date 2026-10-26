@@ -397,7 +397,7 @@ const DrawingDocument: React.FC = () => {
       {
         key: "DrawingDocumentName",
         label: "Drawing Document Name",
-        width: "33",
+        width: "20",
         sortable: true,
         fixed: "left",
         align: "left",
@@ -415,7 +415,7 @@ const DrawingDocument: React.FC = () => {
         width: "30",
         sortable: false,
         align: "center",
-        render: (value) => value || "",
+        render: (value) => value || 0,
       },
       {
         key: "ApprovalPendingApprovalDocumentCount",
@@ -646,8 +646,7 @@ const DrawingDocument: React.FC = () => {
         sortable: false,
         align: "left",
         render: (value) => (
-          value?.length > 15 ?
-            <FieldInfoTooltip value={value} /> : value
+            <FieldInfoTooltip value={value} /> 
         )
       },
       {
@@ -1497,7 +1496,7 @@ const DrawingDocument: React.FC = () => {
               onChange={setDrawingDocumentDWGFiles}
               availableFilesURL={drawingDocumentDWGURL ?? ""}
               allowedTypes={[".dwg"]}
-              maxFiles={1}
+              maxFiles={5}
               error={errors.DrawingDocumentDWGURL}
               onRemoveExisting={(url) => {
                 setRemoveDrawingDocumentDWGUrls((prev) => [...prev, url]);
@@ -1568,7 +1567,7 @@ const DrawingDocument: React.FC = () => {
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        title="Filter - Project Drawing"
+        title="Filter - Drawing Document"
         onSubmit={(e) => {
           e.preventDefault()
           applyFilters()

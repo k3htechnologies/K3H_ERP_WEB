@@ -11,6 +11,7 @@ import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { runApiWithLoader } from "@/core/utils";
 import { deductionMasterService } from "@/features/deductionMaster/services/DeductionMasterService";
+import { formatCurrency } from "@/core/utils/comman";
 
 const ViewDeductionMaster: React.FC = () => {
 
@@ -125,9 +126,9 @@ const ViewDeductionMaster: React.FC = () => {
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                        <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
                                         <FieldItem label="State Name" value={editDeductionMasterData!.StateName} />
 
+                                        <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
                                     </div>
                                 </div>
                             </div>
@@ -144,13 +145,16 @@ const ViewDeductionMaster: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
-                                        <FieldItem label="Value" value={editDeductionMasterData!.Value} />
-                                        <FieldItem label="Min Salary (₹)" value={editDeductionMasterData!.MinSalary} />
+                                        <FieldItem
+                                            label={editDeductionMasterData!.Applicable === "Percentage" ? "Value (%)" : "Value (₹)"}
+                                            value={`${editDeductionMasterData!.Value}${editDeductionMasterData!.Applicable === "Percentage" ? "%" : ""}`} />
+
+                                        <FieldItem label="Min Salary (₹)" value={formatCurrency(editDeductionMasterData!.MinSalary)} />
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Max Salary (₹)" value={editDeductionMasterData!.MaxSalary} />
+                                        <FieldItem label="Max Salary (₹)" value={formatCurrency(editDeductionMasterData!.MaxSalary)} />
                                     </div>
                                 </div>
 

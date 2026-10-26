@@ -12,19 +12,21 @@ export type PayTrackBookingListState = {
   filters: FilterInfo;
   sortInfo: SortInfo | undefined;
   bookingId: number;
+  tenantId: number;
   bookingName: string;
   bookingType: string;
   bookingOtherChargesData?: BookingOtherChargesData[];
   bookingData?: PayTrackBookingData | null;
-  parkingNumber:string;
-  isFinalRegistrationCompleted:boolean;
+  parkingNumber: string;
+  isFinalRegistrationCompleted: boolean;
   totalUnitCost: number;
   bookingApprovalStatus: string;
-  totalAmountRefundedAgainstBooking:number;
+  totalAmountRefundedAgainstBooking: number;
   flat: string;
   activeTab?: string;
   activeSubTab?: string;
   refreshKey: number;
+  
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING;
@@ -38,19 +40,21 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
       filters: {},
       sortInfo: undefined,
       bookingId: 0,
+      tenantId: 0,
       bookingName: "",
       bookingType: "",
       bookingOtherChargesData: [],
       bookingData: null,
-      parkingNumber:"",
-      isFinalRegistrationCompleted:false,
+      parkingNumber: "",
+      isFinalRegistrationCompleted: false,
       totalUnitCost: 0,
-      bookingApprovalStatus:"",
-      totalAmountRefundedAgainstBooking:0,
+      bookingApprovalStatus: "",
+      totalAmountRefundedAgainstBooking: 0,
       flat: "",
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
+      
     };
   }
 
@@ -63,19 +67,21 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
         return {
           ...parsed.state,
           bookingId: parsed.state.bookingId || 0,
+          tenantId: parsed.state.tenantId || 0,
           bookingName: parsed.state.bookingName || "",
           bookingType: parsed.state.bookingType || "",
           flat: parsed.state.flat || "",
           totalUnitCost: parsed.state.totalUnitCost || 0,
-          bookingApprovalStatus:parsed.state.bookingApprovalStatus || "",
-          totalAmountRefundedAgainstBooking:parsed.state.totalAmountRefundedAgainstBooking || 0,
+          bookingApprovalStatus: parsed.state.bookingApprovalStatus || "",
+          totalAmountRefundedAgainstBooking: parsed.state.totalAmountRefundedAgainstBooking || 0,
           bookingOtherChargesData: parsed.state.bookingOtherChargesData || [],
           bookingData: parsed.state.bookingData || null,
-          parkingNumber:parsed.state.parkingNumber || "",
-          isFinalRegistrationCompleted:parsed.state.isFinalRegistrationCompleted || false,
+          parkingNumber: parsed.state.parkingNumber || "",
+          isFinalRegistrationCompleted: parsed.state.isFinalRegistrationCompleted || false,
           activeTab: parsed.state.activeTab,
           activeSubTab: parsed.state.activeSubTab,
           refreshKey: 0,
+          
         };
       }
     }
@@ -90,19 +96,21 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
     filters: {},
     sortInfo: undefined,
     bookingId: 0,
+    tenantId: 0,
     bookingName: "",
     bookingType: "",
     flat: "",
     totalUnitCost: 0,
-    bookingApprovalStatus:"",
-    totalAmountRefundedAgainstBooking:0,
+    bookingApprovalStatus: "",
+    totalAmountRefundedAgainstBooking: 0,
     bookingOtherChargesData: [],
     bookingData: null,
-    parkingNumber:"",
-    isFinalRegistrationCompleted:false,
+    parkingNumber: "",
+    isFinalRegistrationCompleted: false,
     activeTab: undefined,
     activeSubTab: undefined,
     refreshKey: 0,
+   
   };
 };
 
@@ -111,7 +119,7 @@ type PayTrackBookingListStateContextType = {
   updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string,totalAmountRefundedAgainstBooking:number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData,parkingNumber?:string,isFinalRegistrationCompleted?:boolean) => void;
+  setPayTrackBookingContext: (bookingId: number, tenantId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingApprovalStatus: string, totalAmountRefundedAgainstBooking: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData, parkingNumber?: string, isFinalRegistrationCompleted?: boolean) => void;
   clearPayTrackBookingContext: () => void;
   triggerRefresh: () => void;
 };
@@ -132,19 +140,21 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
         filters: {},
         sortInfo: undefined,
         bookingId: 0,
+        tenantId: 0,
         bookingName: "",
         bookingType: "",
         flat: "",
         totalUnitCost: 0,
-        bookingApprovalStatus:"",
-        totalAmountRefundedAgainstBooking:0,
+        bookingApprovalStatus: "",
+        totalAmountRefundedAgainstBooking: 0,
         bookingOtherChargesData: [],
         bookingData: null,
-        parkingNumber:"",
-        isFinalRegistrationCompleted:false,
+        parkingNumber: "",
+        isFinalRegistrationCompleted: false,
         activeTab: undefined,
         activeSubTab: undefined,
         refreshKey: 0,
+        
       };
       setListState(defaultState);
       try {
@@ -192,27 +202,30 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       filters: {},
       sortInfo: undefined,
       bookingId: 0,
+      tenantId: 0,
       bookingName: "",
       bookingType: "",
       flat: "",
       totalUnitCost: 0,
-      bookingApprovalStatus:"",
-      totalAmountRefundedAgainstBooking:0,
+      bookingApprovalStatus: "",
+      totalAmountRefundedAgainstBooking: 0,
       bookingOtherChargesData: [],
       bookingData: null,
-      parkingNumber:"",
-      isFinalRegistrationCompleted:false,
+      parkingNumber: "",
+      isFinalRegistrationCompleted: false,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
+      
     };
     setListState(defaultState);
   }, []);
 
-  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string,totalAmountRefundedAgainstBooking:number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData,parkingNumber?:string,isFinalRegistrationCompleted?:boolean) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number,tenantId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingApprovalStatus: string, totalAmountRefundedAgainstBooking: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData, parkingNumber?: string, isFinalRegistrationCompleted?: boolean) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
+      tenantId,
       bookingName,
       bookingType,
       flat,
@@ -221,8 +234,8 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       totalAmountRefundedAgainstBooking,
       bookingOtherChargesData: bookingOtherChargesData || [],
       bookingData: bookingData || null,
-      parkingNumber:parkingNumber ||"",
-      isFinalRegistrationCompleted:isFinalRegistrationCompleted ||false,
+      parkingNumber: parkingNumber || "",
+      isFinalRegistrationCompleted: isFinalRegistrationCompleted || false,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
@@ -233,19 +246,21 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
     setListState((prev) => ({
       ...prev,
       bookingId: 0,
+      tenantId: 0,
       bookingName: "",
       bookingType: "",
       flat: "",
       totalUnitCost: 0,
-      bookingApprovalStatus:"",
-      totalAmountRefundedAgainstBooking:0,
+      bookingApprovalStatus: "",
+      totalAmountRefundedAgainstBooking: 0,
       bookingOtherChargesData: [],
       bookingData: null,
-      parkingNumber:"",
-      isFinalRegistrationCompleted:false,
+      parkingNumber: "",
+      isFinalRegistrationCompleted: false,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
+      
     }));
   }, []);
 

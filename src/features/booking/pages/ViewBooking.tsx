@@ -71,7 +71,7 @@ export const ViewBooking: React.FC = () => {
                     PageSize: 1,
                     EnquiryId: enquiryIdToFetch,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true
+                    IsCheckPermission: false
                 };
 
                 const response = await EnquiryService.apiCallPullEnquiry(params);
@@ -111,7 +111,7 @@ export const ViewBooking: React.FC = () => {
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
                     BookingSearchKey: "SALE BOOKING",
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true
+                    IsCheckPermission: false
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);

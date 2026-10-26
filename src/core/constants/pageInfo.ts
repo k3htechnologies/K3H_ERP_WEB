@@ -212,6 +212,12 @@ export const getPageInfo = (path: string) => {
         description: "Comprehensive payroll reports for accurate financial tracking",
       };
 
+    case "costToCompany":
+      return {
+        title: "Cost To Company",
+        description: "Overview of your system and key metrics",
+      };
+
     //DOCUMENT MANAGEMENT
     case "category":
       return {

@@ -138,21 +138,14 @@ export const JobRoleMaster: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const response = await fetchJobOpeningDepartmentDropdown();
-        const departmentList = response.itemList;
-        const initialDepartment =
-          departmentList.find((tab) => Number(tab.id) === departmentId) ?? departmentList[0];
+         const response = await fetchJobOpeningDepartmentDropdown();
 
-        setDepartmentTabList(departmentList);
+      setDepartmentTabList([
+        { id: '0', label: 'All Roles' },
+        ...response.itemList,
+      ]);
 
-        if (initialDepartment) {
-          updateListState({
-            departmentId: Number(initialDepartment.id),
-            departmentName: initialDepartment.label || '',
-          });
-        }
-
-        return response;
+      return response;
       },
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
@@ -493,17 +486,10 @@ export const JobRoleMaster: React.FC = () => {
             ) : (
               <div className="flex h-full flex-col bg-white p-5 rounded-md border border-gray-200">
                 <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    {
-                      (departmentId > 0 && departmentName.trim().length > 0) && (
-                        <Breadcrumb isinline items={[
-                          {
-                            id: 'department',
-                            label: departmentName,
-                          },
-                        ]} />
-                      )
-                    }
+                 <div className="min-w-0">
+                    <h2 className="text-base font-semibold text-gray-900">
+                       {departmentName}
+                     </h2>
                   </div>
                   {canAction && (
                     <Button

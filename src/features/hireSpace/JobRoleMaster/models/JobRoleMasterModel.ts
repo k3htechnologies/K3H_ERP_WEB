@@ -18,6 +18,7 @@ export interface JobDepartmentData {
 }
 
 export interface JobRoleMasterData {
+    AllRoles:String
     JobRoleId: number
     UniqueKey: string
     DepartmentId: number

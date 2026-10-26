@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as E from 'fp-ts/Either';
-import {  Mail, Phone, Search,X } from 'lucide-react';
+import {  Mail,  Phone, Search,  X } from 'lucide-react';
 
 import { Button, Input } from '@/ui/components/forms';
 import RadioPill from '@/ui/components/forms/RadioPill';
@@ -1507,6 +1507,11 @@ export const AddUpdateMeeting: React.FC = () => {
                         <div className="flex flex-col gap-4">
                             <MultiFilePicker
                                 placeholder="Select MOM document"
+                                // dropzoneTitle="MOM Document"
+                                // dropzoneDescription="Click or drag to upload Minutes of Meeting"
+                                // dropzoneIcon={<FileText className="h-6 w-6" />}
+                                // dropzoneTone="indigo"
+                                // dropzoneSize="compact"
                                 value={momDocumentURLFiles}
                                 availableFilesURL={momDocumentURL}
                                 onChange={setMomDocumentURLFiles}
@@ -1518,6 +1523,10 @@ export const AddUpdateMeeting: React.FC = () => {
 
                             <MultiFilePicker
                                 placeholder="Select presentation"
+                                // dropzoneTitle="Presentation"
+                                // dropzoneDescription="Click or drag to upload slide deck (PDF/PPT)"
+                                // dropzoneIcon={<SquarePlay className="h-6 w-6" />}
+                                // dropzoneSize="compact"
                                 value={presentationDocumentURLFiles}
                                 availableFilesURL={presentationDocumentURL}
                                 onChange={setPresentationDocumentURLFiles}
@@ -1529,6 +1538,11 @@ export const AddUpdateMeeting: React.FC = () => {
 
                             <MultiFilePicker
                                 placeholder="Select supporting document"
+                                // dropzoneTitle="Supporting Document"
+                                // dropzoneDescription="Click or drag additional evidence/resources"
+                                // dropzoneIcon={<Paperclip className="h-6 w-6" />}
+                                // dropzoneTone="coral"
+                                // dropzoneSize="compact"
                                 value={supportingDocumentURLFiles}
                                 availableFilesURL={supportingDocumentURL}
                                 onChange={setSupportingDocumentURLFiles}

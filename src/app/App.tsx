@@ -101,7 +101,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -247,17 +246,6 @@ import { StockManagementListStateProvider } from '@/features/stockManagement/con
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
-import TeamWorkspaceDashboard from '@/features/teamWorkspaceDashboard/pages/TeamWorkspaceDashboard';
-import { MeetingListStateProvider } from '@/features/meeting/context/MeetingListStateContext';
-import { TaskListStateProvider } from '@/features/task/context/TaskListStateContext';
-import Conference from '@/features/conference/pages/Conference';
-import AddUpdateConference from '@/features/conference/pages/AddUpdateConference';
-import Task from '@/features/task/pages/Task';
-import ViewTask from '@/features/task/pages/ViewTask';
-import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask';
-import Meeting from '@/features/meeting/pages/Meeting';
-import AddUpdateMeeting from '@/features/meeting/pages/AddUpdateMeeting';
-import ViewMeeting from '@/features/meeting/pages/ViewMeeting';
 import TenantBooking from '@/features/tenantBooking/pages/TenantBooking';
 import { TenantBookingListStateProvider } from '@/features/tenantBooking/context/TenantBookingListStateContext';
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
@@ -439,12 +427,12 @@ function App() {
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
 
-            <Route path="inventory" element={ <BookingListStateProvider> <TenantBookingListStateProvider>   <Inventory /> </TenantBookingListStateProvider> </BookingListStateProvider> } />
+            <Route path="inventory" element={<BookingListStateProvider> <TenantBookingListStateProvider>   <Inventory /> </TenantBookingListStateProvider> </BookingListStateProvider>} />
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
-           
-            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider> } />
+
+            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider>} />
 
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
@@ -464,7 +452,6 @@ function App() {
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
             {/* COMMAN */}
-            <Route path="event" element={<Event />} />
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
@@ -638,18 +625,7 @@ function App() {
             <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
 
             {/* {TEAM WORK SPACE} */}
-            <Route path="teamWorkspaceDashboard" element={<TeamWorkspaceDashboard />} />
-            <Route path="calendar" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
-            <Route path="event" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
-            <Route path="conference" element={<Conference />} />
-            <Route path="conference/add" element={<AddUpdateConference />} />
-            <Route path="task" element={<TaskListStateProvider><Task /></TaskListStateProvider>} />
-            <Route path="task/view/:taskId?" element={<TaskListStateProvider><ViewTask /></TaskListStateProvider>} />
-            <Route path="task/add/:taskId?" element={<TaskListStateProvider><AddUpdateTaskOrSubTask /></TaskListStateProvider>} />
-            <Route path="meeting" element={<MeetingListStateProvider><Meeting /></MeetingListStateProvider>} />
-            <Route path="meeting/add/:meetingId?" element={<MeetingListStateProvider><AddUpdateMeeting /></MeetingListStateProvider>} />
-            <Route path="meeting/view" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
-            <Route path="meeting/mom" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
+           
 
             {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />

@@ -400,7 +400,7 @@ export const CompanyBank: React.FC = () => {
          newErrors.Status = 'Status is required.'
       }
       if (!hasAnyDocumentFile(cancelChequeFiles, cancelChequeURL, removeCancelChequeUrls)) {
-         newErrors.CancelChequeURL = "File is required.";
+         newErrors.CancelChequeURL = "Cancel Cheque is required.";
       }
       return {
          isValid: Object.keys(newErrors).length === 0,
@@ -681,7 +681,7 @@ export const CompanyBank: React.FC = () => {
                         value={formData.Branch}
                         maxLength={100}
                         onChange={(e) => handleFieldChange('Branch', e.target.value)}
-                        placeholder="Enter Branch"
+                        placeholder="Enter Branch Name"
                      />
 
                   </div>

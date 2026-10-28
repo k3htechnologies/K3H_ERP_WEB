@@ -553,8 +553,8 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
             value: params?.value || "",
             projectId: projectId || 0,
             displayParkingId: bookingData?.ParkingId || "",
-            isAcessMemberApprovedParking:false,
-            isAcessOnlyApprovedParking:true,
+            isAcessMemberApprovedParking: false,
+            isAcessOnlyApprovedParking: true,
         });
     }, [projectId, bookingData?.ParkingId]);
 
@@ -1613,7 +1613,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
             <Modal
                 isOpen={isUpdateBookingRDPModalOpen}
                 onClose={handleCloseBookingRDPModal}
-                title={"Update Registration Date & Parking"}
+                title={Number(listState.tenantId) === 0 ? "Update Registration Date & Parking" :"Update Registration Date"}
                 onSubmit={handleUpdateBookingRDPSubmit}
                 saveText="Save"
                 loading={isLoading}
@@ -1628,18 +1628,19 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                         error={errors.FinalRegistrationDate}
                         onChange={(val) => handleFieldChange("FinalRegistrationDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} />
 
-                    <MultiSelectPagination
-                        label="Parking"
-                        dataFetchCallBack={fetchParkingProjectWise}
-                        selectedValues={parkingDropdown.selectedValues}
-                        options={parkingDropdown.initialOptions}
-                        onChange={(values) => {
-                            const { idsString } = parkingDropdown.handleChange(values);
-                            setSelectedParkingValues(idsString || null);
-                            handleFieldChange("ParkingId", idsString);
-                        }}
-                    />
-
+                    {Number(listState.tenantId) === 0 && (
+                        <MultiSelectPagination
+                            label="Parking"
+                            dataFetchCallBack={fetchParkingProjectWise}
+                            selectedValues={parkingDropdown.selectedValues}
+                            options={parkingDropdown.initialOptions}
+                            onChange={(values) => {
+                                const { idsString } = parkingDropdown.handleChange(values);
+                                setSelectedParkingValues(idsString || null);
+                                handleFieldChange("ParkingId", idsString);
+                            }}
+                        />
+                    )}
                     <Checkbox
                         label="Mark as Final Registration (Cannot Be Change)"
                         checked={formData.IsFinalRegistrationCompleted}

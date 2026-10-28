@@ -11,7 +11,7 @@ import { vendorService } from "@/features/vendor/services/VendorService";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
-import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { BUSINESS_TYPE_OPTIONS, FIRMS_TYPE_OPTIONS, OWNERSHIP_TYPE_OPTIONS, VENDOR_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
@@ -423,12 +423,6 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.CityMasterId = "City is required.";
     }
 
-    if (!formData.AadharCardNumber?.trim()) {
-      newErrors.AadharCardNumber = "Please enter a valid 12-digit Aadhaar number";
-    } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
-      newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
-    }
-
     if (!formData.GSTNumber?.trim()) {
       newErrors.GSTNumber = "GST Number is required.";
     } else if (!isValidGST(formData.GSTNumber?.trim(), selectedGSTStateCode)) {
@@ -441,9 +435,7 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.PanCardNumber = "Enter a valid PAN Number.";
     }
 
-    if (!hasAnyDocumentFile(aadharCardURLFiles, aadharCardURL, removedAadharCardUrls)) {
-      newErrors.AadharCardURL = "Aadhaar card file is required.";
-    }
+    
 
     if (!hasAnyDocumentFile(panCardURLFiles, panCardURL, removedPanCardUrls)) {
       newErrors.PanCardURL = "PAN card file is required.";
@@ -982,35 +974,7 @@ export const AddUpdateVendor: React.FC = () => {
             Government Identifiers
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Input
-              label="Aadhaar Card Number"
-              required
-              value={formData.AadharCardNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
-              placeholder="Enter Aadhaar Card Number"
-              error={errors.AadharCardNumber}
-            />
-
-            <MultiFilePicker
-              label='Aadhaar Card'
-              placeholder="Select Aadhaar Card"
-              required
-              error={errors.AadharCardURL}
-              value={aadharCardURLFiles}
-              onChange={setAadharCardURLFiles}
-              availableFilesURL={aadharCardURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf"
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedAadharCardUrls((prev) => [...prev, url])
-              }}
-            />
-
+            
             <Input
               label="PAN Card Number"
               required
@@ -1067,6 +1031,34 @@ export const AddUpdateVendor: React.FC = () => {
                 setRemovedGSTCertificateUrls((prev) => [...prev, url])
               }}
             />
+
+            <Input
+              label="Aadhaar Card Number"
+              value={formData.AadharCardNumber}
+              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+              onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
+              placeholder="Enter Aadhaar Card Number"
+              error={errors.AadharCardNumber}
+            />
+
+            <MultiFilePicker
+              label='Aadhaar Card'
+              placeholder="Select Aadhaar Card"
+              error={errors.AadharCardURL}
+              value={aadharCardURLFiles}
+              onChange={setAadharCardURLFiles}
+              availableFilesURL={aadharCardURL ?? ""}
+              allowedTypes={[
+                "image/jpeg",
+                "image/png",
+                "application/pdf"
+              ]}
+              maxFiles={5}
+              onRemoveExisting={(url) => {
+                setRemovedAadharCardUrls((prev) => [...prev, url])
+              }}
+            />
+
           </div>
         </div>
 

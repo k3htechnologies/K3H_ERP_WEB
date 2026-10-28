@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import * as E from 'fp-ts/Either';
-import {  Mail,  Phone, Search,  X } from 'lucide-react';
+import { FileText, Mail, Paperclip, Phone, Search, SquarePlay, X } from 'lucide-react';
 
 import { Button, Input } from '@/ui/components/forms';
 import RadioPill from '@/ui/components/forms/RadioPill';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { TimePicker } from '@/ui/components/TimePicker/TimePicker';
-import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
+import { MeetingFileDropzone } from '@/features/meeting/components/MeetingFileDropzone';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import Checkbox from '@/ui/components/forms/Checkbox';
@@ -149,9 +149,7 @@ export const AddUpdateMeeting: React.FC = () => {
     const { canAction } = useMenuPermissions('/event');
     const isDepartmentMode = formData.MeetingType === 'Department';
     const agendaMeetingId = formData.MeetingId || meetingIdNumber;
-
-    
-    const previewEmployees = selectedEmployeeIds.slice(0, 4).map((id) => {
+const previewEmployees = selectedEmployeeIds.slice(0, 4).map((id) => {
         const emp = employeeForMeeting.find((item) => item.EmployeeId === id);
 
         return {
@@ -477,9 +475,7 @@ export const AddUpdateMeeting: React.FC = () => {
             return;
         }
     }, [meetingIdNumber]);
-
-    
-    const handleFieldChange = (
+const handleFieldChange = (
         field: keyof AddUpdateMeetingMasterRequest,
         value: any,
     ) => {
@@ -520,10 +516,7 @@ export const AddUpdateMeeting: React.FC = () => {
     };
     
     const fetchMeetingDetails = async () => {
-
-
-        
-        await runApiWithLoader(
+await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
@@ -1125,7 +1118,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                     <Input
                                         label="Meeting Subject"
                                         required
-                                        value={formData.MeetingTitle}
+                                                                        value={formData.MeetingTitle}
                                         onChange={(e) =>
                                             handleFieldChange('MeetingTitle', e.target.value)
                                         }
@@ -1138,7 +1131,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                     <DatePickerInput
                                         label="Meeting Date"
                                         required
-                                        value={formatDate_dd_mm_yyyy(formData.MeetingDate)}
+                                                                        value={formatDate_dd_mm_yyyy(formData.MeetingDate)}
                                         onChange={(val) =>
                                             handleFieldChange(
                                                 'MeetingDate',
@@ -1156,7 +1149,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         required
                                         size="sm"
                                         format={24}
-                                        value={formData.MeetingStartTime}
+                                                                        value={formData.MeetingStartTime}
                                         onChange={(val) =>
                                             handleFieldChange('MeetingStartTime', val)
                                         }
@@ -1170,7 +1163,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         required
                                         size="sm"
                                         format={24}
-                                        value={formData.MeetingEndTime}
+                                                                        value={formData.MeetingEndTime}
                                         onChange={(val) =>
                                             handleFieldChange('MeetingEndTime', val)
                                         }
@@ -1202,7 +1195,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         <Input
                                             label="Meeting Link"
                                             required
-                                            value={formData.MeetingLink}
+                                                                            value={formData.MeetingLink}
                                             onChange={(e) =>
                                                 handleFieldChange('MeetingLink', e.target.value)
                                             }
@@ -1215,7 +1208,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         <Input
                                             label="Meeting Location"
                                             required
-                                            value={formData.MeetingLocation}
+                                                                            value={formData.MeetingLocation}
                                             onChange={(e) =>
                                                 handleFieldChange('MeetingLocation', e.target.value)
                                             }
@@ -1228,7 +1221,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         <SinglePageSelection
                                             label="Meeting Location"
                                             required
-                                            value={
+                                                                            value={
                                                 formData.ConferenceRoomId > 0
                                                     ? String(formData.ConferenceRoomId)
                                                     : ''
@@ -1247,7 +1240,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                     <TextArea
                                         label="Remark"
                                         rows={4}
-                                        value={formData.Remark}
+                                                                        value={formData.Remark}
                                         onChange={(e) => handleFieldChange('Remark', e.target.value)}
                                         placeholder="Enter remark"
                                         className="w-full"
@@ -1400,7 +1393,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         <Input
                                             label="Participant Name"
                                             required
-                                            value={externalParticipant.FullName}
+                                                                            value={externalParticipant.FullName}
                                             onChange={(e) =>
                                                 handleExternalParticipantChange(
                                                     'FullName',
@@ -1414,7 +1407,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                     <div>
                                         <Input
                                             label="Company Name"
-                                            value={externalParticipant.OrganizationName}
+                                                                            value={externalParticipant.OrganizationName}
                                             onChange={(e) =>
                                                 handleExternalParticipantChange(
                                                     'OrganizationName',
@@ -1447,7 +1440,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                         <Input
                                             leftIcon="+91"
                                             label="Mobile Number"
-                                            value={externalParticipant.MobileNo}
+                                                                            value={externalParticipant.MobileNo}
                                             rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                                             onChange={(e) =>
                                                 handleExternalParticipantChange(
@@ -1462,7 +1455,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                     <div>
                                         <Input
                                             label="E-Mail ID"
-                                            value={externalParticipant.Email}
+                                                                            value={externalParticipant.Email}
                                             rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                                             onChange={(e) =>
                                                 handleExternalParticipantChange(
@@ -1477,7 +1470,7 @@ export const AddUpdateMeeting: React.FC = () => {
                                     <div>
                                         <Input
                                             label="Remark"
-                                            value={externalParticipant.Remark || ''}
+                                                                            value={externalParticipant.Remark || ''}
                                             onChange={(e) =>
                                                 handleExternalParticipantChange('Remark', e.target.value)
                                             }
@@ -1490,28 +1483,24 @@ export const AddUpdateMeeting: React.FC = () => {
                         )}
                     </div>
                 )}
-
-
-                {activeStep === 'agendas' && (
+{activeStep === 'agendas' && (
                     <MeetingAgendaSection
                         meetingId={agendaMeetingId}
                     />
                 )}
-
-
-                {activeStep === 'documents' && (
+{activeStep === 'documents' && (
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
                             Documents
                         </h3>
                         <div className="flex flex-col gap-4">
-                            <MultiFilePicker
+                            <MeetingFileDropzone
                                 placeholder="Select MOM document"
-                                // dropzoneTitle="MOM Document"
-                                // dropzoneDescription="Click or drag to upload Minutes of Meeting"
-                                // dropzoneIcon={<FileText className="h-6 w-6" />}
-                                // dropzoneTone="indigo"
-                                // dropzoneSize="compact"
+                                dropzoneTitle="MOM Document"
+                                dropzoneDescription="Click or drag to upload Minutes of Meeting"
+                                dropzoneIcon={<FileText className="h-6 w-6" />}
+                                dropzoneTone="indigo"
+                                dropzoneSize="compact"
                                 value={momDocumentURLFiles}
                                 availableFilesURL={momDocumentURL}
                                 onChange={setMomDocumentURLFiles}
@@ -1521,12 +1510,12 @@ export const AddUpdateMeeting: React.FC = () => {
                                 }}
                             />
 
-                            <MultiFilePicker
+                            <MeetingFileDropzone
                                 placeholder="Select presentation"
-                                // dropzoneTitle="Presentation"
-                                // dropzoneDescription="Click or drag to upload slide deck (PDF/PPT)"
-                                // dropzoneIcon={<SquarePlay className="h-6 w-6" />}
-                                // dropzoneSize="compact"
+                                dropzoneTitle="Presentation"
+                                dropzoneDescription="Click or drag to upload slide deck (PDF/PPT)"
+                                dropzoneIcon={<SquarePlay className="h-6 w-6" />}
+                                dropzoneSize="compact"
                                 value={presentationDocumentURLFiles}
                                 availableFilesURL={presentationDocumentURL}
                                 onChange={setPresentationDocumentURLFiles}
@@ -1536,13 +1525,13 @@ export const AddUpdateMeeting: React.FC = () => {
                                 }}
                             />
 
-                            <MultiFilePicker
+                            <MeetingFileDropzone
                                 placeholder="Select supporting document"
-                                // dropzoneTitle="Supporting Document"
-                                // dropzoneDescription="Click or drag additional evidence/resources"
-                                // dropzoneIcon={<Paperclip className="h-6 w-6" />}
-                                // dropzoneTone="coral"
-                                // dropzoneSize="compact"
+                                dropzoneTitle="Supporting Document"
+                                dropzoneDescription="Click or drag additional evidence/resources"
+                                dropzoneIcon={<Paperclip className="h-6 w-6" />}
+                                dropzoneTone="coral"
+                                dropzoneSize="compact"
                                 value={supportingDocumentURLFiles}
                                 availableFilesURL={supportingDocumentURL}
                                 onChange={setSupportingDocumentURLFiles}
@@ -1584,7 +1573,7 @@ export const AddUpdateMeeting: React.FC = () => {
                             <div className="relative min-w-0 w-[526px]">
                                 <Input
                                     type="text"
-                                    value={searchTermForParticipant}
+                                                                    value={searchTermForParticipant}
                                     onChange={(e) => {
                                         const v = e.target.value;
                                         setSearchTermForParticipant(v);

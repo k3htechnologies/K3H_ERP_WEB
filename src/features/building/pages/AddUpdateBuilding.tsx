@@ -39,6 +39,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   CityMasterId: null,
   VillageMasterId: null,
   WardMasterId: null,
+  Address: "",
   TotalNumberOfUnits: null,
 
   TotalUnitsAreaUtilizedSqFt: null,
@@ -220,6 +221,7 @@ const AddUpdateBuilding: React.FC = () => {
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
               VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
               WardMasterId: e.WardMasterId ?? prev.WardMasterId,
+              Address: e.Address ?? prev.Address,
               TotalNumberOfUnits: e.TotalNumberOfUnits ?? prev.TotalNumberOfUnits,
               TotalUnitsAreaUtilizedSqFt: e.TotalUnitsAreaUtilizedSqFt ?? prev.TotalUnitsAreaUtilizedSqFt,
               IsGarden: e.IsGarden ?? prev.IsGarden,
@@ -377,6 +379,12 @@ const AddUpdateBuilding: React.FC = () => {
       newErrors.WardMasterId = "Ward is required";
     }
 
+    if (!formData.Address?.trim()) {
+      newErrors.Address = "Address is required";
+    } else if (formData.Address.trim().length < 25) {
+      newErrors.Address = "Address must be at least 25 characters long.";
+    }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -412,6 +420,8 @@ const AddUpdateBuilding: React.FC = () => {
     fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
 
     fd.append("WardMasterId", String(formData.WardMasterId ?? 0));
+
+    fd.append('Address', formData.Address?.trim() || '');
 
     fd.append("TotalNumberOfUnits", String(formData.TotalNumberOfUnits ?? 0));
 
@@ -1222,6 +1232,19 @@ const AddUpdateBuilding: React.FC = () => {
                 />
 
               </div>
+            </div>
+
+            <div>
+              <TextArea
+                          label="Address"
+                          placeholder="Enter Address"
+                          required
+                          rows={3}
+                          className="thin-scroll"
+                          value={formData.Address}
+                          onChange={(e) => handleFieldChange("Address", e.target.value)}
+                          error={errors.Address}
+                        />
             </div>
           </div>
         </form>

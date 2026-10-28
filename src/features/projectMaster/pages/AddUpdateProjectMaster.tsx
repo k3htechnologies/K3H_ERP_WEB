@@ -92,7 +92,8 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectSubScheme: '',
     GoogleLocation: '',
     IsFederation: false,
-    FederationAmount: 0
+    FederationAmount: 0,
+    IsLockAndKey: false,
 });
 
 const AddUpdateProjectMaster: React.FC = () => {
@@ -295,6 +296,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             GoogleLocation: row.GoogleLocation ?? prev.GoogleLocation ?? '',
                             IsFederation: row.IsFederation ?? prev.IsFederation ?? false,
                             FederationAmount: Number(row.FederationAmount ?? prev.FederationAmount ?? 0),
+                            IsLockAndKey: row.IsLockAndKey ?? prev.IsLockAndKey ?? false,
                         }));
                         setProjectPhotoFiles([]);
                         setProjectPhotoURL(row.ProjectPhotoURL)
@@ -524,6 +526,7 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('GoogleLocation', formData.GoogleLocation ?? '');
         fd.append('IsFederation', String(formData.IsFederation ?? false));
         fd.append('FederationAmount', String(formData.FederationAmount ?? 0));
+        fd.append('IsLockAndKey', String(formData.IsLockAndKey ?? false));
 
         projectPhotoFiles.forEach(file => {
             if (file instanceof File) {
@@ -1563,7 +1566,65 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </div>
                     </div>
 
+                    <div className="space-y-4 pt-5">
+    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+        <Checkbox
+            label="Project Execution Type (Lock & Key)"
+            checked={formData.IsLockAndKey === true}
+            onChange={(e) => {
+                const checked = e.target.checked;
+                handleFieldChange('IsLockAndKey', checked);
+            }}
+        />
+    </h3>
 
+    {formData.IsLockAndKey === true && (
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <h4 className="mb-2 font-semibold text-gray-900">
+                Lock & Key (Turnkey) Contract
+            </h4>
+
+            <p className="mb-3 text-sm text-gray-700">
+                Under a Lock & Key contract, the contractor is responsible
+                for executing the project from start to finish and handing
+                over the completed property in a ready-to-use condition,
+                as per the agreed scope of work and contractual terms.
+            </p>
+
+            <h5 className="mb-2 font-medium text-gray-900">
+                Scope of Work
+            </h5>
+
+            <ul className="list-disc space-y-1 pl-5 text-sm text-gray-700">
+                <li>
+                    <strong>Design & Approvals:</strong> Architectural
+                    drawings, structural designs, and statutory approvals.
+                </li>
+                <li>
+                    <strong>Civil & Structural Construction:</strong>{" "}
+                    Excavation, foundation, RCC work, masonry, plastering,
+                    and waterproofing.
+                </li>
+                <li>
+                    <strong>Finishing & Utilities:</strong> Flooring,
+                    painting, doors, windows, electrical wiring, plumbing,
+                    and sanitary installations.
+                </li>
+            </ul>
+
+            <div className="mt-4 rounded-md border border-amber-300 bg-amber-50 p-3">
+                <p className="text-sm font-medium text-amber-900">
+                    Material Requisition Rule
+                </p>
+                <p className="mt-1 text-sm text-amber-800">
+                    Material requisitions must be raised through
+                    <strong> Indirect Mode only</strong>. Direct Mode is
+                    not permitted for Lock & Key projects.
+                </p>
+            </div>
+        </div>
+    )}
+</div>
 
 
                 </form>

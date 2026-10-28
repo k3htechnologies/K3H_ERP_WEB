@@ -283,24 +283,7 @@ export const CollectionReport: React.FC = () => {
                             </span>
                         )
                     },
-                    {
-                        key: 'DueAmount',
-                        label: 'Due',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#F0FDF4'
-                        },
-                        render: (value) => (
-                            <span className="text-green-600">
-                                {formatCurrency(value)}
-                            </span>
-                        )
-                    },
+
                     {
                         key: 'ReceivedAmount',
                         label: 'Received',
@@ -319,24 +302,7 @@ export const CollectionReport: React.FC = () => {
                             </span>
                         )
                     },
-                    {
-                        key: 'OutstandingAmount',
-                        label: 'Outstanding',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#F0FDF4'
-                        },
-                        render: (value) => (
-                            <span className="text-green-600">
-                                {formatCurrency(value)}
-                            </span>
-                        )
-                    },
+
                     {
                         key: 'BalanceAmount',
                         label: 'Balance',
@@ -606,16 +572,7 @@ export const CollectionReport: React.FC = () => {
                                     </span>
                                 </span>
 
-                                <span className="text-sm text-[#D1D5DB] mt-3">
-                                    |
-                                </span>
 
-                                <span className="text-sm text-gray-500 mt-3">
-                                    Total Wing :{" "}
-                                    <span className="font-semibold text-gray-800">
-                                        {row.Wing}
-                                    </span>
-                                </span>
                             </div>
 
                         </div>
@@ -676,11 +633,9 @@ export const CollectionReport: React.FC = () => {
                             const buildingWings = new Map<string, Set<string>>();
 
                             data.forEach((item) => {
-
                                 if (!item.BuildingNumber || !item.Wing) return;
 
                                 if (!buildingWings.has(item.BuildingNumber)) {
-
                                     buildingWings.set(item.BuildingNumber, new Set());
                                 }
 
@@ -697,220 +652,208 @@ export const CollectionReport: React.FC = () => {
                 }}
 
                 renderExpanded={(expandData: CollectionReportData[]) => {
-
                     if (!expandData?.length) {
                         return (
                             <div className="py-6 text-center text-sm text-gray-500">
-                                <NoDataView message='No Data Found' />
+                                <NoDataView message="No Data Found" />
                             </div>
                         );
                     }
 
-                    const wingMap = new Map<string, CollectionReportData[]>();
+                    // Group report rows by Building Number first.
+                    const buildingMap = new Map<string, CollectionReportData[]>();
 
                     expandData.forEach((item) => {
+                        const buildingNumber = String(item.BuildingNumber ?? "").trim();
 
-                        const wing = item.Wing;
+                        if (!buildingNumber) return;
 
-                        if (!wing) return;
-
-                        if (!wingMap.has(wing)) {
-
-                            wingMap.set(wing, []);
+                        if (!buildingMap.has(buildingNumber)) {
+                            buildingMap.set(buildingNumber, []);
                         }
 
-                        wingMap.get(wing)!.push(item);
+                        buildingMap.get(buildingNumber)!.push(item);
                     });
 
-                    const wings = Array.from(wingMap.entries());
+                    const buildings = Array.from(buildingMap.entries());
 
-                    const sumField = (rows: CollectionReportData[], field: keyof CollectionReportData) =>
-
+                    const sumField = (
+                        rows: CollectionReportData[],
+                        field: keyof CollectionReportData
+                    ) =>
                         rows.reduce(
                             (sum, item) => sum + (Number(item[field]) || 0),
                             0
                         );
 
                     return (
+                        <div className="space-y-4">
+                            {buildings.map(([buildingNumber, buildingRows]) => {
+                                // Within each building, group rows by Wing.
+                                const wingMap = new Map<string, CollectionReportData[]>();
 
-                        <div className="space-y-3">
+                                buildingRows.forEach((item) => {
+                                    const wing = String(item.Wing ?? "").trim();
 
-                            {wings.map(([wing, wingRows], wingIndex) => {
+                                    if (!wing) return;
 
-                                const wingKey = `${wingRows[0]?.ProjectId}-${wing}`;
+                                    if (!wingMap.has(wing)) {
+                                        wingMap.set(wing, []);
+                                    }
 
-                                const isExpanded = expandWings[wingKey] ?? wingIndex === 0;
+                                    wingMap.get(wing)!.push(item);
+                                });
 
-                                const totalRows = wingRows.filter(
-                                    (item) => item.Type === "Total"
-                                );
-
-                                const residentialRows = wingRows.filter(
-                                    (item) => item.UnitType === "Residential"
-                                );
-
-                                const commercialRows = wingRows.filter(
-                                    (item) => item.UnitType === "Commercial"
-                                );
-
-                                const residentialTotal = residentialRows.find(
-                                    (item) => item.Type === "Total"
-                                );
-
-                                const commercialTotal = commercialRows.find(
-                                    (item) => item.Type === "Total"
-                                );
-
-                                const totalUnits = sumField(totalRows, "TotalUnit");
-
-                                const residentialUnits = residentialTotal?.TotalUnit ?? 0;
-
-                                const commercialUnits = commercialTotal?.TotalUnit ?? 0;
-
-                                const wingAgreementAmount = sumField(totalRows, "TotalAgreementValue");
-
-                                const wingReceivedAmount = sumField(totalRows, "ReceivedAmount");
-
-                                const wingBalanceAmount = sumField(totalRows, "BalanceAmount");
-
-                                const renderUnitType = (unitType: string,
-                                    rows: CollectionReportData[],
-                                    total: CollectionReportData | undefined,
-                                    dotcolor: string
-                                ) => {
-
-                                    if (!rows.length) return null;
-
-                                    const allotted = rows.find((item) => item.Type === "Allotted / Member");
-
-                                    const booked = rows.find((item) => item.Type === "Booked / Sale");
-
-                                    return (
-                                        <div className="rounded-md border border-gray-200 bg-white p-3">
-
-                                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span
-                                                        className={`h-2.5 w-2.5 rounded-full ${dotcolor}`}
-                                                    />
-
-                                                    <span className="text-sm font-semibold uppercase text-gray-800">
-                                                        {unitType} Units
-                                                    </span>
-
-                                                    <span className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                                                        {total?.TotalUnit ?? 0} Units
-                                                        {""}
-
-                                                        (Allotted : {allotted?.TotalUnit ?? 0} {""} |
-                                                        Booked : {booked?.TotalUnit ?? 0}   )
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <CustomTable
-                                                data={rows}
-                                                columns={projectWiseCollectionReportColumns}
-                                                emptyMessage="No Data Found"
-                                                fixedHeight
-                                                recordsPerPage={20}
-                                                className="flex-1"
-                                            />
-                                        </div>
-                                    );
-                                };
+                                const wings = Array.from(wingMap.entries());
 
                                 return (
-                                    <div key={wingKey}
-                                        className="overflow-hidden rounded-lg border border-gray-200 bg-white">
+                                    <div
+                                        key={buildingNumber}
+                                        className="rounded-lg border border-blue-200 bg-gray-50 p-3"
+                                    >
+                                        <h3 className="mb-3 font-bold text-blue-900">
+                                           {buildingNumber}
+                                        </h3>
 
-                                        <button
-                                            type="button"
-                                            onClick={() =>
-                                                setExpandWings((prev) => ({
-                                                    ...prev,
-                                                    [wingKey]: !isExpanded,
-                                                }))
-                                            }
-                                            className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 text-left hover:bg-gray-50"
-                                        >
-                                            <div className="flex flex-wrap items-center gap-3">
+                                        <div className="space-y-3">
+                                            {wings.map(([wing, wingRows], wingIndex) => {
+                                                const wingKey = `${wingRows[0]?.ProjectId}-${buildingNumber}-${wing}`;
+                                                const isExpanded = expandWings[wingKey] ?? wingIndex === 0;
 
-                                                <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${isExpanded
-                                                    ? "bg-blue-600 text-white"
-                                                    : "bg-gray-100 text-gray-600"
+                                                const totalRows = wingRows.filter(
+                                                    (item) => item.Type === "Total"
+                                                );
 
-                                                    }`}
-                                                >
-                                                    {wing}
-                                                </span>
+                                                const residentialRows = wingRows.filter(
+                                                    (item) => item.UnitType === "Residential"
+                                                );
 
-                                                <span className="text-sm font-semibold text-gray-900">
-                                                    Wing {wing} - {wingRows[0]?.BuildingNumber}
-                                                </span>
+                                                const commercialRows = wingRows.filter(
+                                                    (item) => item.UnitType === "Commercial"
+                                                );
 
-                                                <span className="rounded bg-slate-100 px-2 py-1 text-xs text-gray-600">
+                                                const wingAgreementAmount = sumField(totalRows, "TotalAgreementValue");
+                                                const wingReceivedAmount = sumField(totalRows, "ReceivedAmount");
+                                                const wingBalanceAmount = sumField(totalRows, "BalanceAmount");
 
-                                                    Total Units : {totalUnits}
-                                                    {" "} (Residential : {residentialUnits}
-                                                    {" "} | Commercial : {commercialUnits})
-                                                </span>
-                                            </div>
+                                                const renderUnitType = (
+                                                    unitType: string,
+                                                    rows: CollectionReportData[],
+                                                    dotcolor: string
+                                                ) => {
+                                                    if (!rows.length) return null;
 
-                                            <div className="flex flex-wrap items-center gap-4">
+                                                    return (
+                                                        <div className="rounded-md border border-gray-200 bg-white p-3">
+                                                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span
+                                                                        className={`h-2.5 w-2.5 rounded-full ${dotcolor}`}
+                                                                    />
+                                                                    <span className="text-sm font-semibold uppercase text-gray-800">
+                                                                        {unitType} Units
+                                                                    </span>
+                                                                </div>
+                                                            </div>
 
-                                                <span className="text-xs text-gray-500">
-                                                    Agreement:{" "}
-                                                    <strong className="text-gray-900">
-                                                        {formatCurrency(wingAgreementAmount)}
-                                                    </strong>
-                                                </span>
+                                                            <CustomTable
+                                                                data={rows}
+                                                                columns={projectWiseCollectionReportColumns}
+                                                                emptyMessage="No Data Found"
+                                                                fixedHeight
+                                                                recordsPerPage={20}
+                                                                className="flex-1"
+                                                            />
+                                                        </div>
+                                                    );
+                                                };
 
-                                                <span className="text-xs text-gray-500">
-                                                    Received:{" "}
-                                                    <strong className="text-gray-900">
-                                                        {formatCurrency(wingReceivedAmount)}
-                                                    </strong>
-                                                </span>
+                                                return (
+                                                    <div
+                                                        key={wingKey}
+                                                        className="overflow-hidden rounded-lg border border-gray-200 bg-white"
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setExpandWings((prev) => ({
+                                                                    ...prev,
+                                                                    [wingKey]: !isExpanded,
+                                                                }))
+                                                            }
+                                                            className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 text-left hover:bg-gray-50"
+                                                        >
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                <span
+                                                                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                                                                        isExpanded
+                                                                            ? "bg-blue-600 text-white"
+                                                                            : "bg-gray-100 text-gray-600"
+                                                                    }`}
+                                                                >
+                                                                    {wing}
+                                                                </span>
 
-                                                <span className="text-xs text-gray-500">
-                                                    Balance:{" "}
-                                                    <strong className="text-gray-900">
-                                                        {formatCurrency(wingBalanceAmount)}
-                                                    </strong>
-                                                </span>
+                                                                <span className="text-sm font-semibold text-gray-900">
+                                                                    Wing : {wing}
+                                                                </span>
+                                                            </div>
 
-                                                {isExpanded ? (
-                                                    <ChevronUp
-                                                        size={18}
-                                                        className="text-blue-600"
-                                                    />
-                                                ) : (
-                                                    <ChevronDown
-                                                        size={18}
-                                                        className="text-blue-600"
-                                                    />
-                                                )}
-                                            </div>
-                                        </button>
+                                                            <div className="flex flex-wrap items-center gap-8">
+                                                                <span className="text-xs text-gray-500">
+                                                                    Agreement:{" "}
+                                                                    <strong className="text-gray-900">
+                                                                        {formatCurrency(wingAgreementAmount)}
+                                                                    </strong>
+                                                                </span>
 
-                                        {isExpanded && (
-                                            <div className="max-h-[400px] overflow-y-auto overflow-x-auto thin-scroll space-y-4 p-3 sm:p-4">
-                                                {renderUnitType(
-                                                    "Residential",
-                                                    residentialRows,
-                                                    residentialTotal,
-                                                    "bg-indigo-500"
-                                                )}
+                                                                <span className="text-xs text-gray-500">
+                                                                    Received:{" "}
+                                                                    <strong className="text-gray-900">
+                                                                        {formatCurrency(wingReceivedAmount)}
+                                                                    </strong>
+                                                                </span>
 
-                                                {renderUnitType(
-                                                    "Commercial",
-                                                    commercialRows,
-                                                    commercialTotal,
-                                                    "bg-amber-500"
-                                                )}
-                                            </div>
-                                        )}
+                                                                <span className="text-xs text-gray-500">
+                                                                    Balance:{" "}
+                                                                    <strong className="text-gray-900">
+                                                                        {formatCurrency(wingBalanceAmount)}
+                                                                    </strong>
+                                                                </span>
+
+                                                                {isExpanded ? (
+                                                                    <ChevronUp
+                                                                        size={18}
+                                                                        className="text-blue-600"
+                                                                    />
+                                                                ) : (
+                                                                    <ChevronDown
+                                                                        size={18}
+                                                                        className="text-blue-600"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        </button>
+
+                                                        {isExpanded && (
+                                                            <div className="max-h-[400px] overflow-y-auto overflow-x-auto thin-scroll space-y-4 p-3 sm:p-4">
+                                                                {renderUnitType(
+                                                                    "Residential",
+                                                                    residentialRows,
+                                                                    "bg-indigo-500"
+                                                                )}
+
+                                                                {renderUnitType(
+                                                                    "Commercial",
+                                                                    commercialRows,
+                                                                    "bg-amber-500"
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 );
                             })}

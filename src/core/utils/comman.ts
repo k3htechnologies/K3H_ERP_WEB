@@ -189,23 +189,14 @@ export const getSafeString = (value: any, fallback: string = "-"): string => {
 };
 
 
-export const formatCurrency = (value: string | number | null | undefined ): string => {
-  if (value === null || value === undefined || value === '') return '-';
+export const formatCurrency = ( value: string | number | null | undefined): string => {
 
-  const stringValue = String(value);
-  const [integerPart, decimalPart] = stringValue.split('.');
-
-  const formattedInteger = integerPart.replace(
-    /\B(?=(\d{2})+(?!\d))/g,
-    ','
-  );
-
-  return `₹${formattedInteger}${
-    decimalPart !== undefined ? `.${decimalPart}` : ''
-  }`;
+    if (value === null || value === undefined || value === '') return '-';
+    const stringValue = String(value);
+    const [integerPart, decimalPart] = stringValue.split('.');
+    const formattedInteger = Number(integerPart).toLocaleString('en-IN');
+    return `₹${formattedInteger}${decimalPart !== undefined ? `.${decimalPart.slice(0, 2).padEnd(2, '0')}` : ''}`;
 };
-
-
 
 export const cleanHtml = (html: string) => {
   if (!html) return ''

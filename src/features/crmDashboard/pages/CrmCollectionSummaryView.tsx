@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { CrmMilestoneSummary } from "@/features/crmDashboard/models/CrmMilestoneModel";
 import { runApiWithLoader } from "@/core/utils";
 import { crmMilestoneService } from "@/features/crmDashboard/services/CrmMilestoneService";
@@ -7,6 +7,8 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Loader } from "@/core/utils/loader";
 import * as E from "fp-ts/Either";
 import { formatToKLCr } from "@/core/utils/comman";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 interface NavigationFilterState {
     filterType?: "TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE" | "OVERALL";
@@ -15,13 +17,14 @@ interface NavigationFilterState {
 }
 
 const CrmCollectionSummaryView: React.FC = () => {
+
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
 
     const { projectId } = useProject();
     const location = useLocation();
 
-    // Read inherited filter from router state, with safe fallbacks
     const navState = (location.state as NavigationFilterState) || {};
     const filterType = navState.filterType ?? "TODAY";
     const fromDate = navState.fromDate ?? null;
@@ -83,12 +86,15 @@ const CrmCollectionSummaryView: React.FC = () => {
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-800">Collection Summary</h2>
-                <span className="text-xs font-medium px-2.5 py-1 rounded bg-gray-200 text-gray-700">
-                    Filtered by: {filterType} {filterType === "DATEWISE" && fromDate && toDate ? `(${fromDate} - ${toDate})` : ""}
-                </span>
-            </div>
+            <HeaderActionBar
+                titleText="Collection Summary"
+                subTitleText={`: Filtered by - ${filterType}${filterType === "DATEWISE" && fromDate && toDate ? ` (${formatDate_dd_MonthName_yy(fromDate)} - ${formatDate_dd_MonthName_yy(toDate)})` : ""}`}
+                cancelText="Back"
+                onCancel={() => {
+                    navigate('/crmDashboard');
+                }}
+            />
+
 
             <div className="bg-white border border-gray-100 rounded-xl p-4 space-y-4 mt-4" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 <div className="grid grid-cols-4 gap-3">
@@ -139,10 +145,10 @@ const CrmCollectionSummaryView: React.FC = () => {
                                 <div key={i} className="flex flex-col items-center gap-1 flex-shrink-0 w-[100px]">
                                     <div
                                         className={`p-3 rounded-md flex items-end justify-center text-white text-xs ${active === "Agreement"
-                                                ? "bg-gradient-to-b from-blue-800 to-blue-500"
-                                                : active === "GST"
-                                                    ? "bg-gradient-to-b from-green-600 to-green-400"
-                                                    : "bg-gradient-to-b from-yellow-500 to-orange-400"
+                                            ? "bg-gradient-to-b from-blue-800 to-blue-500"
+                                            : active === "GST"
+                                                ? "bg-gradient-to-b from-green-600 to-green-400"
+                                                : "bg-gradient-to-b from-yellow-500 to-orange-400"
                                             }`}
                                         style={{ height: `${height}%` }}
                                     >

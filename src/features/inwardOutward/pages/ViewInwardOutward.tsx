@@ -346,7 +346,7 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Name" value={inwardOutwardData?.SenderName} />
-                                        <FieldItem label="Mobile Number" value={`${inwardOutwardData?.SenderMobileNumberCountryCode} ${inwardOutwardData?.SenderMobileNumber}`} />
+                                        <FieldItem label="Mobile Number" value={inwardOutwardData?.SenderMobileNumber?.trim() ? `${inwardOutwardData?.SenderMobileNumberCountryCode} ${inwardOutwardData?.SenderMobileNumber}`: "-"} />
                                         <FieldItem label="E-mail ID" value={inwardOutwardData?.SenderEmailId} />
                                         <FieldItem label="Address" value={inwardOutwardData?.SenderAddress} />
                                     </div>
@@ -363,7 +363,7 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
                                         <FieldItem label="Name" value={inwardOutwardData?.ReceiverName} />
-                                        <FieldItem label="Mobile Number" value={`${inwardOutwardData?.ReceiverMobileNumberCountryCode} ${inwardOutwardData?.ReceiverMobileNumber}`} />
+                                        <FieldItem label="Mobile Number" value={inwardOutwardData?.ReceiverMobileNumber?.trim() ? `${inwardOutwardData?.ReceiverMobileNumberCountryCode} ${inwardOutwardData?.ReceiverMobileNumber}` : "-"} />
                                         <FieldItem label="E-mail ID" value={inwardOutwardData?.ReceiverEmailId} />
                                         <FieldItem label="Address" value={inwardOutwardData?.ReceiverAddress} />
 

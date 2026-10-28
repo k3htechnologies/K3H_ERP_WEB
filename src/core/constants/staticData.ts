@@ -545,7 +545,7 @@ export const MASTER_DATA = {
 
   monthsShots: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 
-  activeInactive: ["Active", "Inactive"],
+  activeInactive: ["Active","Closed", "Inactive"],
 
   paymentFor: [
     "Stamp Duty",
@@ -654,7 +654,7 @@ export const MASTER_DATA = {
     "Assessment Bill",
     "Consent For Cluster (If Applicable)",
     "Developer Format Consent",
-    "Electric NOC",
+    "Electricity NOC",
     "Electricity Bill",
     "Eligible / Non Eligible (Form 3 & 4)",
     "Extra Area Purchase Letter",
@@ -680,9 +680,13 @@ export const MASTER_DATA = {
     "Vacant Possession Letter",
     "Vacating Consent Letter",
     "Yadi Slip",
+    "Slum Dweller's Consent",
+    "Slum Agreement",
+    "Taba Patra"
+
   ],
 
-  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30"],
+  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30", "2030-31","2031-32","2032-33","2033-34"],
 
   termSheetDocument: [
     "Board Resolution",
@@ -781,6 +785,18 @@ export const MASTER_DATA = {
     "Salary Revision Letter",
     "Employment Agreement",
   ],
+
+  companyDocument: [
+    "AOA",
+    "Certificate of Incorporation",
+    "MOA",
+    "Balance Sheet",
+    "Tax Return",
+    "Net Worth Certificate",
+    "Provisional Balance Sheet",
+    "Solvency Certificate",
+    "Tax Audit Report"
+],
 } as const;
 
 // ============================================================================
@@ -939,6 +955,7 @@ export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materia
 export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);
 export const EMPLOYEE_LETTER_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeLetterType);
+export const COMPANY_DOCUMENT = toOptions(MASTER_DATA.companyDocument);
 
 
 

@@ -38,6 +38,7 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
+                IsDisplayBankDetails: (params.IsDisplayBankDetails ?? false).toString(),
             })
 
             if (params.CompanyId) queryParams.append('CompanyId', params.CompanyId.toString());

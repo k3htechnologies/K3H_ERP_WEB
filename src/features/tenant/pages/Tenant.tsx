@@ -978,14 +978,20 @@ export const Tenant: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+
+                  if (isDeleteDisabled) return;
+
                   handleViewTenantDocument(row);
                 }}
                 color="transparent"
                 isborderRadius
+                disabled={isDeleteDisabled}
                 size="sm"
                 style={{
-                  color: "green",
+                  color: isDeleteDisabled ? "#9CA3AF" :"green",
                   padding: "4px 8px",
+                  cursor: isDeleteDisabled ? "not-allowed" : "pointer",
+                  opacity: isDeleteDisabled ? 0.5 : 1,
                 }}
                 title="Tenant Document">
                 <FileText className="h-4 w-4" />

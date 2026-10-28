@@ -1753,6 +1753,8 @@ export const LocalStorageHelper = {
 
   clearLocalStorageData: (): void => {
     try {
+
+      document.title = "H. RISHABRAJ ERP";
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_PROJECT);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);

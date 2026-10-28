@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
-import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
-import DayView, { type RenderDayHourEventsArgs } from "@/ui/components/Calender/DayView";
-import MonthView, { type RenderMonthDayEventsArgs } from "@/ui/components/Calender/MonthView";
-import WeekView, { type RenderWeekSlotEventsArgs } from "@/ui/components/Calender/WeekView";
+import MonthView, { type CalendarLayout, type RenderMonthDayEventsArgs } from "./MonthView";
+import WeekView, { type RenderWeekSlotEventsArgs } from "./WeekView";
+import DayView, { type RenderDayHourEventsArgs } from "./DayView";
+import type { CalendarEvent } from "./CalendarEvent";
 
 export type CalendarView = "month" | "week" | "day";
+export type { CalendarLayout };
 
 interface Props {
   view: CalendarView;
@@ -16,6 +17,7 @@ interface Props {
   renderDayEvents?: (args: RenderMonthDayEventsArgs) => ReactNode;
   renderWeekSlotEvents?: (args: RenderWeekSlotEventsArgs) => ReactNode;
   renderDayHourEvents?: (args: RenderDayHourEventsArgs) => ReactNode;
+  layout?: CalendarLayout;
 }
 
 export default function CustomCalendar({
@@ -28,6 +30,7 @@ export default function CustomCalendar({
   renderDayEvents,
   renderWeekSlotEvents,
   renderDayHourEvents,
+  layout = "fixed",
 }: Props) {
   if (view === "week") {
     return <WeekView {...{ currentDate, events, onEventClick, renderWeekSlotEvents }} />;
@@ -45,6 +48,7 @@ export default function CustomCalendar({
       onDateChange={onDateChange}
       onEventClick={onEventClick}
       renderDayEvents={renderDayEvents}
+      layout={layout}
     />
   );
 }

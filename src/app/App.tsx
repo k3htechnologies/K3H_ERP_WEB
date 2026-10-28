@@ -24,7 +24,6 @@ import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMapping
 import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMaster';
 import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
 import Vendor from '@/features/vendor/pages/Vendor';
-import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
@@ -261,6 +260,8 @@ import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCost
 import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
 import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
 import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
+import CompanyDocument from '@/features/companyMaster/pages/CompanyDocument';
+import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompanyMasterWithBank';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -330,10 +331,12 @@ function App() {
 
 
 
-            <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster" element={<CompanyListStateProvider><ViewCompanyMasterWithBank /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
             <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
+            
+            <Route path='companyMaster/document' element={<CompanyListStateProvider><CompanyDocument /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 

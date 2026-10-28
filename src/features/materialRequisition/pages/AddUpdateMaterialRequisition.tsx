@@ -1294,7 +1294,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 RequiredDate: "",
                                             }));
                                         }}
-                                        initialValue={createDropdownInitialValue(materialData.MaterialMasterId, dropdownLabels.materialName || materialData.MaterialName)}
+                                        initialValue={createDropdownInitialValue(materialData.MaterialMasterId, materialData.MaterialName || dropdownLabels.materialName)}
                                         error={errors.MaterialMasterId}
                                     />
 

@@ -10,7 +10,9 @@ import { formatCurrency } from "@/core/utils/comman";
 import { Button } from "@/ui/components/forms";
 import { Download } from "lucide-react";
 import { handleExportFile } from "@/core/utils/exportFile";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 interface NavigationFilterState {
     filterType?: "TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE" | "OVERALL";
@@ -19,6 +21,8 @@ interface NavigationFilterState {
 }
 
 const CrmMilestoneView: React.FC = () => {
+
+    const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const { addToast } = useToast();
@@ -96,11 +100,14 @@ const CrmMilestoneView: React.FC = () => {
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
-            <div className="flex items-center justify-between">
-                <span className="text-xs font-medium px-2.5 py-1 rounded bg-gray-200 text-gray-700">
-                    Filtered by: {filterType} {filterType === "DATEWISE" && fromDate && toDate ? `(${fromDate} - ${toDate})` : ""}
-                </span>
-            </div>
+            <HeaderActionBar
+                titleText="Milestone"
+                subTitleText={`: Filtered by - ${filterType}${filterType === "DATEWISE" && fromDate && toDate ? ` (${formatDate_dd_MonthName_yy(fromDate)} - ${formatDate_dd_MonthName_yy(toDate)})` : ""}`}
+                cancelText="Back"
+                onCancel={() => {
+                    navigate('/crmDashboard');
+                }}
+            />
 
             <div className="pt-5">
                 <div className="bg-white p-4 rounded-xl border border-gray-100">
@@ -173,11 +180,17 @@ const CrmMilestoneView: React.FC = () => {
                                                 : 0;
 
                                             return (
-                                                <div className="w-full bg-gray-200 h-2 rounded">
-                                                    <div
-                                                        className="bg-green-500 h-2 rounded"
-                                                        style={{ width: `${totalPercent}%` }}
-                                                    />
+                                                
+                                                <div className="flex items-center gap-2 min-w-[120px]">
+                                                    <div className="flex-1 bg-gray-200 h-2 rounded overflow-hidden">
+                                                        <div
+                                                            className="bg-green-500 h-2 rounded"
+                                                            style={{ width: `${Math.min(totalPercent, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">
+                                                        {totalPercent.toFixed(0)}%
+                                                    </span>
                                                 </div>
                                             );
                                         })()}
@@ -193,12 +206,20 @@ const CrmMilestoneView: React.FC = () => {
                                             <td className="px-2 py-2">{formatCurrency(d.Expected || 0)}</td>
                                             <td className="px-2 py-2 text-green-600">{formatCurrency(d.Received || 0)}</td>
                                             <td className="px-2 py-2 text-red-500">{formatCurrency(d.Pending || 0)}</td>
-                                            <td>
-                                                <div className="w-full bg-gray-200 h-2 rounded">
-                                                    <div
-                                                        className="bg-green-500 h-2 rounded"
-                                                        style={{ width: `${percent}%` }}
-                                                    />
+                                            <td className="px-2 py-2">
+                                                <div className="flex items-center gap-2 min-w-[120px]">
+                                                    <div className="flex-1 bg-gray-200 h-2 rounded overflow-hidden">
+                                                        <div
+                                                            className="bg-green-500 h-2 rounded"
+                                                            style={{
+                                                                width: `${Math.min(percent, 100)}%`
+                                                            }}
+                                                        />
+                                                    </div>
+
+                                                    <span className="text-xs font-semibold text-gray-700 whitespace-nowrap">
+                                                        {percent.toFixed(0)}%
+                                                    </span>
                                                 </div>
                                             </td>
                                         </tr>

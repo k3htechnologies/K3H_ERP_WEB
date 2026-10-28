@@ -31,7 +31,7 @@ export const ViewPayTrack: React.FC = () => {
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [ownerName, setOwnerName] = useState<string | null>("");
 
-  
+
 
   const { projectId } = useProject();
 
@@ -101,7 +101,7 @@ export const ViewPayTrack: React.FC = () => {
 
 
   return (
-   <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
       <div className="flex items-center justify-between">
         <div className="flex-1">
@@ -112,8 +112,8 @@ export const ViewPayTrack: React.FC = () => {
             subSubSubTitleText={bookingApprovalStatus.toUpperCase() === "APPROVED" ? "" : bookingApprovalStatus}
             cancelText="Back"
 
-            EditText="Update Registration Date & Parking"
-            canAction={Number(listState.tenantId) === 0 && canAction  && activeTab === "BookingForm" && !isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
+            EditText={Number(listState.tenantId) === 0 ? "Update Registration Date & Parking" : "Update Registration Date"}
+            canAction={canAction && activeTab === "BookingForm" && !isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
             onEdit={() => {
               setIsModalOpen(true);
             }}

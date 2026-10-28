@@ -46,7 +46,7 @@ export const getPageInfo = (path: string) => {
       };
     case "companyMaster":
       return {
-        title: "Company Master",
+        title: "Company Details",
         description: "Single source of truth for company information",
       };
 

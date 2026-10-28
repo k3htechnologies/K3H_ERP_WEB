@@ -147,13 +147,9 @@ const ViewDashboardApprovals: React.FC = () => {
 
             // BOOKING & CRM
             case "Booking":
-            case "Tenant Booking":
-            case "CRM Payment Ledger":
             case "Booking Applicant Modification":
-            case "Flat Alteration":
             case "Parking Modification":
             case "Refund Payment Ledger":
-            case "Flat Handover":
             case "Cancel Booking":
                 return [
                     {
@@ -168,6 +164,78 @@ const ViewDashboardApprovals: React.FC = () => {
                     },
                     { key: "Flat", label: "Flat", render: renderText },
                     { key: "ApplicantName", label: "Applicant", render: renderText },
+                ];
+
+                
+            case "Flat Alteration":
+                return [
+                    {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
+                    { key: "Flat", label: "Flat", render: renderText },
+                    { key: "ApplicantName", label: "Applicant", render: renderText },
+                    { key: "FlatAlterationRemark", label: "Flat Alteration Remark", render: renderText },
+
+                ];
+
+                 
+            case "Flat Handover":
+                return [
+                    {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
+                    { key: "Flat", label: "Flat", render: renderText },
+                    { key: "ApplicantName", label: "Applicant", render: renderText },
+                    { key: "FileName", label: "File Name", render: renderText },
+                ];
+
+                
+            case "CRM Payment Ledger":
+                return [
+                    {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
+                    { key: "Flat", label: "Flat", render: renderText },
+                    { key: "ApplicantName", label: "Applicant", render: renderText },
+                    { key: "PaymentFor", label: "Payment For", render: renderText },
+                ];
+
+                case "Tenant Booking":
+                return [
+                      {
+                        key: "ProjectName", label: "Project", render: (value) => (
+                            <TooltipText
+                                text={value || ""}
+                                tooltipThreshold={25}
+                                maxWidth="250px"
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+                        )
+                    },
+                    { key: "Flat", label: "Flat", render: renderText },
+                    { key: "ApplicantName", label: "Applicant", render: renderText },
+                     { key: "SystemGeneratedCode", label: "Tenant Code", render: renderText },
                 ];
 
             // DOCUMENT / RERA / APPROVAL DOCUMENT

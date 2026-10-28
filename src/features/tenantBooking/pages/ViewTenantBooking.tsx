@@ -661,11 +661,6 @@ export const ViewTenantBooking: React.FC = () => {
                                                 <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
                                             </div>
 
-
-                                            <div className="py-4">
-                                                <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
-                                            </div>
-
                                             <div className="py-4">
                                                 <FieldItem label="TDS (₹)" value={formatCurrency(bookingData.AgreementValueTDS)} isRow />
                                             </div>

@@ -177,7 +177,7 @@ export const ViewTenant: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
-                canAction={canAction && !(activeTab === "Overview" && !editTenantData?.FlatIsEditDelete)}
+                canAction={canAction && editTenantData?.FlatIsEditDelete}
                 onEdit={() => {
 
                     if (activeTab === "Overview") {
@@ -186,7 +186,11 @@ export const ViewTenant: React.FC = () => {
                         if (editTenantData) {
                             handleEditTenant(editTenantData);
                         }
+                        
                     } else if (activeTab === "Document") {
+
+                         if (!editTenantData?.FlatIsEditDelete) return;
+
                         handleViewTenantDocument();
                     }
                 }}

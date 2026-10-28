@@ -236,14 +236,18 @@ export const AddUpdateInwardOutward: React.FC = () => {
         if (!formData.SenderName) {
             newErrors.SenderName = "Sender Name is required";
         }
-        if (!formData.SenderMobileNumber) {
+
+        const isCourier = formData.DeliveryMode?.toUpperCase() === "COURIER";
+
+        if (!isCourier && !formData.SenderMobileNumber) {
             newErrors.SenderMobileNumber = 'Sender Mobile Number is required.'
-        } else if (!isValidMobile(formData.SenderMobileNumber.trim(), formData.SenderMobileNumberCountryCode!)) {
+        } else if (formData.SenderMobileNumber?.trim() && !isValidMobile(formData.SenderMobileNumber.trim(), formData.SenderMobileNumberCountryCode!)) {
             newErrors.SenderMobileNumber = 'Enter a valid Mobile Number'
         }
-        if (!formData.SenderEmailId?.trim()) {
+
+        if (!isCourier && !formData.SenderEmailId?.trim()) {
             newErrors.SenderEmailId = 'Sender E-Mail ID is required'
-        } else if (!isValidEmail(formData.SenderEmailId.trim())) {
+        } else if (formData.SenderEmailId?.trim() && !isValidEmail(formData.SenderEmailId.trim())) {
             newErrors.SenderEmailId = 'Enter a Valid E-Mail ID'
         }
         if (!formData.SenderAddress) {
@@ -252,21 +256,22 @@ export const AddUpdateInwardOutward: React.FC = () => {
         if (!formData.ReceiverName) {
             newErrors.ReceiverName = "Receiver Name is required";
         }
-        if (!formData.ReceiverMobileNumber) {
+
+        if (!isCourier && !formData.ReceiverMobileNumber) {
             newErrors.ReceiverMobileNumber = 'Receiver Mobile Number is required.'
-        } else if (!isValidMobile(formData.ReceiverMobileNumber.trim(), formData.ReceiverMobileNumberCountryCode!)) {
+        } else if (formData.ReceiverMobileNumber?.trim() && !isValidMobile(formData.ReceiverMobileNumber.trim(), formData.ReceiverMobileNumberCountryCode!)) {
             newErrors.ReceiverMobileNumber = 'Enter a valid Mobile Number'
         }
-        if (!formData.ReceiverEmailId?.trim()) {
+        if (!isCourier && !formData.ReceiverEmailId?.trim()) {
             newErrors.ReceiverEmailId = 'Receiver E-Mail ID is required'
-        } else if (!isValidEmail(formData.ReceiverEmailId.trim())) {
+        } else if (formData.ReceiverEmailId?.trim() && !isValidEmail(formData.ReceiverEmailId.trim())) {
             newErrors.ReceiverEmailId = 'Enter a Valid E-Mail ID'
         }
+
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
         }
 
-        // Data Duplicacy Checks
 
         if (formData.SenderMobileNumber?.trim() && formData.ReceiverMobileNumber?.trim() && formData.SenderMobileNumber.trim() === formData.ReceiverMobileNumber.trim()) {
             newErrors.ReceiverMobileNumber = "Sender and Receiver mobile numbers should not be the same";
@@ -596,11 +601,13 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             mobileNumber={formData.SenderMobileNumber ?? ''}
                             countryCode={formData.SenderMobileNumberCountryCode ?? "+91"}
                             disabled={Number(formData.InwardOutwardId) > 0}
-                            required
+                            required={formData.DeliveryMode?.toUpperCase() === "COURIER" ? false : true}
                             onMobileChange={(value) => {
                                 handleFieldChange("SenderMobileNumber", value);
 
-                                fetchSenderReceiverByMobileNoData(value, "sender");
+                                if (value.trim()) {
+                                    fetchSenderReceiverByMobileNoData(value, "sender");
+                                }
                                 setFormData(prev => ({
                                     ...prev,
                                     SenderName: "",
@@ -632,7 +639,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <Input
                             label="E-Mail ID"
                             value={formData.SenderEmailId ?? ''}
-                            required
+                            required={formData.DeliveryMode?.toUpperCase() === "COURIER" ? false : true}
                             onChange={(e) => {
                                 const emailId = filterEmail(e.target.value);
                                 handleFieldChange("SenderEmailId", emailId);
@@ -666,10 +673,13 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             mobileNumber={formData.ReceiverMobileNumber ?? ''}
                             countryCode={formData.ReceiverMobileNumberCountryCode ?? "+91"}
                             disabled={Number(formData.InwardOutwardId) > 0}
-                            required
+                            required={formData.DeliveryMode?.toUpperCase() === "COURIER" ? false : true}
                             onMobileChange={(value) => {
                                 handleFieldChange("ReceiverMobileNumber", value);
-                                fetchSenderReceiverByMobileNoData(value, "receiver");
+                                
+                                if (value.trim()) {
+                                    fetchSenderReceiverByMobileNoData(value, "receiver");
+                                }
                                 setFormData(prev => ({
                                     ...prev,
                                     ReceiverName: "",
@@ -701,7 +711,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <Input
                             label="E-Mail ID"
                             value={formData.ReceiverEmailId ?? ''}
-                            required
+                            required={formData.DeliveryMode?.toUpperCase() === "COURIER" ? false : true}
                             onChange={(e) => {
                                 const emailId = filterEmail(e.target.value);
                                 handleFieldChange("ReceiverEmailId", emailId);

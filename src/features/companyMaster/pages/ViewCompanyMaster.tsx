@@ -16,6 +16,8 @@ import Tabs from "@/ui/components/Tab/Tab";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { getSafeString } from "@/core/utils/comman";
+import type { CompanyDocumentData, FilterWithPaginationCompanyDocumentRequest } from "@/features/companyMaster/models/CompanyDocumentModel";
+import { companyDocumentService } from "@/features/companyMaster/services/CompanyDocumentService";
 
 export const ViewCompanyMaster: React.FC = () => {
     //#region STATE MANAGEMENT
@@ -23,7 +25,7 @@ export const ViewCompanyMaster: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [editCompanyData, setEditCompanyData] = useState<CompanyMasterData | null>(null);
     const [companyMasterWithBankDetailsList, setCompanyMasterWithBankDetailsList] = useState<CompanyMasterWithBankDetails[]>([]);
-
+    const [companyDocumentList, setCompanyDocumentList] = useState<CompanyDocumentData[]>([]);
     const { canAction } = useMenuPermissions('/companyMaster');
     const { addToast } = useToast();
 
@@ -35,21 +37,19 @@ export const ViewCompanyMaster: React.FC = () => {
 
     const CompanyMasterTablist = [
         { id: "Overview", label: "Overview" },
-        { id: "Bank Details", label: "Bank Details" }
+        { id: "Bank Details", label: "Bank Details" },
+        { id: "Document", label: "Document" }
     ]
 
     const [activeTab, setActiveTab] = useState<string>(CompanyMasterTablist[0].id);
 
-    //#region INIT - Load Company Data
     useEffect(() => {
 
         if (listState.companyId) {
             loadCompany();
         }
     }, [listState.companyId]);
-    //#endregion
 
-    //#region LOAD COMPANY DATA
     const loadCompany = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -84,7 +84,7 @@ export const ViewCompanyMaster: React.FC = () => {
             'Loading Company Data'
         );
     };
-    //#endregion
+
 
     const loadCompanyMasterWithBankDetails = async () => {
         runApiWithLoader(
@@ -116,7 +116,43 @@ export const ViewCompanyMaster: React.FC = () => {
         );
     };
 
-    //#region EDIT COMPANY
+    const loadCompanyDocuments = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+
+                const params: FilterWithPaginationCompanyDocumentRequest = {
+                    PageNumber: 1,
+                    PageSize: 500,
+                    IsCheckPermission: true,
+                    CompanyId: listState.companyId!,
+                    DocumentName: undefined
+                }
+
+                const response = await companyDocumentService.apiCallPullCompanyDocument(params);
+
+                if (E.isRight(response)) {
+
+                    setCompanyDocumentList(response.right.Data);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+
+                }
+
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Company Document'
+        )
+    }
 
     const handleEditCompany = (row: CompanyMasterData) => {
         if (!row?.CompanyId) return;
@@ -128,19 +164,30 @@ export const ViewCompanyMaster: React.FC = () => {
         navigate('/companyMaster/bank');
     };
 
-    //#endregion
+    const handleEditCompanyDocument = (row: CompanyMasterData) => {
+        if (!row?.CompanyId) return;
+        navigate('/companyMaster/document');
+    };
 
-    //#region BACK COMPANY MASTER PAGE
+
     const handleBackToListCompanyMaster = () => {
         navigate('/companyMaster');
     };
-    //#endregion
+
+
+    const docsWithUrls = companyDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
 
-            {/* Header */}
+
             <HeaderActionBar
                 titleText={'Company Details : '}
                 subTitleText={companyName}
@@ -150,9 +197,16 @@ export const ViewCompanyMaster: React.FC = () => {
                 canAction={canAction}
                 onEdit={() => {
                     if (activeTab === "Overview") {
+
                         if (editCompanyData) handleEditCompany(editCompanyData);
-                    } else {
+
+                    } else if (activeTab === "Bank Details") {
+
                         if (editCompanyData) handleEditCompanyBank(editCompanyData);
+                    }
+                    else if (activeTab === "Company Document") {
+
+                        if (editCompanyData) handleEditCompanyDocument(editCompanyData);
                     }
                 }}
                 isLoading={isLoading}
@@ -171,6 +225,9 @@ export const ViewCompanyMaster: React.FC = () => {
                             loadCompany();
                         } else if (t.id === "Bank Details") {
                             loadCompanyMasterWithBankDetails();
+                        }
+                        else if (t.id === "Company Document") {
+                            loadCompanyDocuments();
                         }
                     }}
                 />
@@ -459,6 +516,68 @@ export const ViewCompanyMaster: React.FC = () => {
                         </section>
                     )}
                 </div>
+            )}
+
+            {activeTab === 'Document' && (
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-5">
+
+                    {docsWithUrls.length === 0 && (
+                        <section className="md:col-span-4 bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Documents Found" />
+                        </section>
+                    )}
+
+                    {docsWithUrls.map(d => {
+                        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                            .filter(x => x?.trim()?.length);
+
+                        return (
+                            <div className="border border-gray-200 rounded-lg  flex flex-col h-full">
+
+                                <div className="flex items-start justify-between p-2 gap-2">
+                                    <div className="flex flex-col">
+
+
+                                        <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                            {d.DocumentName}
+                                        </span>
+                                        <span className="text-sm text-gray-500 mt-1"> Financial Year: {d.FinancialYear} </span>
+                                        <span className="text-sm text-gray-500 mt-1"> Document Count: {urls.length} </span>
+                                    </div>
+
+                                    <MultiImageViewer
+                                        images={urls}
+                                        title={d.DocumentName ?? "Document"}
+                                        triggerLabel="View"
+                                        isIcon={false}
+                                    />
+
+
+                                </div>
+
+
+                                <div className="flex-grow" />
+
+                                <div className="bg-gray-50 p-2 mt-auto">
+                                    <FieldItem
+                                        label="Uploaded By / Date"
+                                        value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                            ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                            : d?.CreatedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                : '-'
+                                            }`}
+                                    />
+                                </div>
+
+                            </div>
+
+                        );
+                    })}
+
+                </div>
+
             )}
 
         </div>

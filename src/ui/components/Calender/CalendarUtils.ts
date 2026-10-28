@@ -1,4 +1,4 @@
-import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
+import type { CalendarEvent } from "./CalendarEvent";
 
 export const getMonthMatrix = (date: Date) => {
 
@@ -15,7 +15,7 @@ export const getMonthMatrix = (date: Date) => {
     }
 
     return matrix;
-}
+};
 
 export const getWeekDays = (date: Date) => {
     const start = new Date(date);
@@ -40,7 +40,29 @@ export const isSameDate = (first: Date, second?: Date) =>
     );
 
 export const getHours = () =>
-    [...Array(12)].map((_, i) => `${(i + 8).toString().padStart(2, "0")}:00`);
+    [...Array(24)].map((_, i) => `${i.toString().padStart(2, "0")}:00`);
+
+export const parseEventDateTime = (
+    start?: string,
+): { dateStr: string; hourStr: string | null } => {
+    if (!start) return { dateStr: "", hourStr: null };
+    const parts = start.split("T");
+    const dateStr = parts[0]?.trim() || "";
+    const timeRaw = parts[1]?.trim();
+    if (!timeRaw) return { dateStr, hourStr: null };
+
+    const isPM = /pm/i.test(timeRaw);
+    const isAM = /am/i.test(timeRaw);
+    const cleanTime = timeRaw.replace(/[ap]m/gi, "").trim();
+    const timeSegments = cleanTime.split(":");
+    let hourNum = parseInt(timeSegments[0], 10);
+    if (Number.isNaN(hourNum)) return { dateStr, hourStr: null };
+
+    if (isPM && hourNum < 12) hourNum += 12;
+    else if (isAM && hourNum === 12) hourNum = 0;
+
+    return { dateStr, hourStr: String(hourNum).padStart(2, "0") };
+};
 
 export const getEventColorClass = (event: CalendarEvent) => {
     switch (event.color) {

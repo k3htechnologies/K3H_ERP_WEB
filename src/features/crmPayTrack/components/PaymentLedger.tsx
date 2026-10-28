@@ -564,7 +564,10 @@ export const PaymentLedger: React.FC = () => {
     const validation = validateAddPaymentLedger();
 
     if (!validation.isValid) {
+
       setErrors(validation.errors);
+      
+      addToast({ type: "error", title: "Please fill the required filed" });
       return;
     }
 

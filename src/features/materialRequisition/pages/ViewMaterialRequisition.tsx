@@ -25,9 +25,10 @@ import type { RevokeFinalizationVendorRequest } from "@/features/materialRequisi
 import { vendorFinalizationService } from "../services/VendorFinalizationService";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Button } from "@/ui/components/forms";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 export const ViewMaterialRequisition: React.FC = () => {
-
+    const emp = LocalStorageHelper.getStoredEmployeeData();
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [materialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([]);
@@ -52,7 +53,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<CloseMaterialRequisitionRequest | null>(null);
     const [closeCompletedRemarkError, setCloseCompletedRemarkError] = useState("");
 
-    const { canAction: canMaterialRequisitionView } = useMenuPermissions('/materialRequisition');
+    const { canAction: canMaterialRequisitionView } = useMenuPermissions('Get Material Requisition');
     const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
@@ -268,6 +269,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                         canAction={activeTab === "Overview" &&
                             canMaterialRequisitionView &&
+                            Number(matrialRequisitionData?.CreatedById) === Number(emp?.EmployeeId) &&
                             !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
                             !["COMPLETED", "CLOSED"].includes(listState?.MaterialRequisitionStage?.toUpperCase() ?? "") &&
                             ["GET QUOTATION"].includes(listState?.MaterialRequisitionStage?.toUpperCase())}
@@ -284,7 +286,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                 </div>
 
                   <div className="flex justify-end gap-2">
-                    {matrialRequisitionData?.IsCopy && (
+                    {matrialRequisitionData?.IsCopy &&
+                    !["CLOSED", "COMPLETED"].includes( matrialRequisitionData?.MaterialRequisitionStatus?.trim().toUpperCase() ?? "" ) && (
                         <Button
                             size="sm"
                             style={{
@@ -306,8 +309,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                         </Button>
                     )}
 
-                    {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && (
-                        <div className="flex justify-end pb-2 gap-2">
+                    {!["Completed", "Closed"].includes( matrialRequisitionData?.MaterialRequisitionStatus?.trim() ?? "" ) && (
+                        <div className="flex justify-end pb-2 pl-2 gap-2">
                             <Button
                                 size="sm"
                                 style={{

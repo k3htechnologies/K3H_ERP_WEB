@@ -101,10 +101,13 @@ const ViewShiftMaster: React.FC = () => {
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
                     <div className="lg:col-span-2 space-y-6">
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                            <div className='bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex justify-between'>
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
                                 Shift Details
                             </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3">
@@ -115,12 +118,17 @@ const ViewShiftMaster: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </section>
                         {/* ================= SHIFT DURATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
                                 Time Details
-                            </h4>
+                               </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
@@ -137,12 +145,17 @@ const ViewShiftMaster: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </section>
                         {/* ================= BREAK DETAILS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                            <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#7B6B28]">
                                 Break Details
-                            </h4>
+                           </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3">
@@ -154,12 +167,17 @@ const ViewShiftMaster: React.FC = () => {
                                 </div>
 
                             </div>
+                            </div>
                         </section>
                         {/* ================= HALF DAY AND ABSENCE RULES================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#C2410C]">
                                 Advance Setting
-                            </h4>
+                              </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
@@ -185,12 +203,17 @@ const ViewShiftMaster: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </section>
 
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#D0D7DE] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#12A3DD]">
                                 Time Allowed for Late Entry Details
-                            </h4>
+                             </h4>
+                            </div>
+                            <div className="p-4 bg-white">
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
@@ -210,13 +233,18 @@ const ViewShiftMaster: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
 
                         </section>
 
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D1D1D]">
                                 Remarks
                             </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3">
@@ -225,6 +253,7 @@ const ViewShiftMaster: React.FC = () => {
 
                                     </div>
                                 </div>
+                            </div>
                             </div>
                         </section>
 
@@ -235,39 +264,43 @@ const ViewShiftMaster: React.FC = () => {
                     <div className="lg:col-span-1 space-y-6">
 
                         {/* ================= AUDIT TRAIL ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Created By" value={editShiftMasterData!.CreatedBy} />
-                                        <FieldItem
-                                            label="Created Date"
-                                            value={
-                                                editShiftMasterData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editShiftMasterData!.CreatedDate)
-                                                    : "-"
-                                            }
+                            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#333333]">
+                                    Action Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Created By" value={editShiftMasterData!.CreatedBy} />
+                                            <FieldItem
+                                                label="Created Date"
+                                                value={
+                                                    editShiftMasterData!.CreatedDate
+                                                        ? formatDate_dd_MonthName_yy(editShiftMasterData!.CreatedDate)
+                                                        : "-"
+                                                }
 
-                                        />
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Modified By" value={editShiftMasterData!.ModifiedBy} />
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={
-                                                editShiftMasterData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editShiftMasterData!.ModifiedDate)
-                                                    : "-"
-                                            }
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Modified By" value={editShiftMasterData!.ModifiedBy} />
+                                            <FieldItem
+                                                label="Modified Date"
+                                                value={
+                                                    editShiftMasterData!.ModifiedDate
+                                                        ? formatDate_dd_MonthName_yy(editShiftMasterData!.ModifiedDate)
+                                                        : "-"
+                                                }
 
-                                        />
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

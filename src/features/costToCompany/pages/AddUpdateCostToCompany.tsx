@@ -123,8 +123,8 @@ export const AddUpdateCostToCompany: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {}
 
-        if (!formData.AnnualCTC) {
-            newErrors.AnnualCTC = "Annual CTC is required";
+        if (!formData.MonthlyCTC) {
+            newErrors.MonthlyCTC = "Monthly CTC is required";
         }
 
         if (!formData.EmployeeId) {
@@ -196,8 +196,8 @@ export const AddUpdateCostToCompany: React.FC = () => {
                 ...prev, [field]: value,
             };
 
-            if (field === "AnnualCTC") {
-                updatedData.MonthlyCTC = Number(value || 0) / 12;
+            if (field === "MonthlyCTC") {
+                updatedData.AnnualCTC = Number(value || 0) * 12;
             }
 
             return updatedData;
@@ -207,8 +207,8 @@ export const AddUpdateCostToCompany: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
 
-        if (field === "AnnualCTC" && errors.MonthlyCTC) {
-            setErrors((prev) => ({ ...prev, MonthlyCTC: "" }));
+        if (field === "MonthlyCTC" && errors.AnnualCTC) {
+            setErrors((prev) => ({ ...prev, AnnualCTC: "" }));
         }
     };
 
@@ -244,20 +244,21 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
                     <div>
                         <Input
-                            label="Annual CTC"
-                            value={formData.AnnualCTC || ""}
-                            onChange={e => handleFieldChange('AnnualCTC', Number(filterNumbers(e.target.value) || 0))}
-                            placeholder="Enter Annual CTC"
+                            label='Monthly CTC'
+                            value={formData.MonthlyCTC || "0"}
+                            onChange={e => handleFieldChange('MonthlyCTC', Number(filterNumbers(e.target.value) || 0))}
+                            placeholder="Enter Monthly CTC"
                             required
                             maxLength={9}
-                            error={errors.AnnualCTC}
+                            error={errors.MonthlyCTC}
                         />
+                       
                     </div>
 
                     <div>
                         <Input
-                            label='Monthly CTC'
-                            value={formData.MonthlyCTC || "0"}
+                            label='Annual CTC'
+                            value={formData.AnnualCTC || "0"}
                             disabled
                             required
                         />

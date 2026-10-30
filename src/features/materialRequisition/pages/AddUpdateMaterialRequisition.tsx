@@ -37,6 +37,7 @@ import { fetchSubMaterialMasterById, fetchSubMaterialMasterDropdown } from "@/fe
 import { calculateRequiredDate } from "../utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { fetchMaterialMasterDropdown } from "@/features/materialMaster/materialMasterDropdown";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -88,7 +89,7 @@ export const AddUpdateMaterialRequisition = () => {
     const [documentFiles, setdocumentFiles] = useState<(File | string)[]>([]);
     const [removeddocumentFilesURLs, setRemoveddocumentFilesURLs] = useState<string[]>([]);
     const [documentURL, setDocumentURL] = useState<string>("");
-    const canAction = true;
+     const {canAction} = useMenuPermissions('Get Material Requisition');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "", level1Name: "", level2Name: "", level3Name: "", level4Name: "" });

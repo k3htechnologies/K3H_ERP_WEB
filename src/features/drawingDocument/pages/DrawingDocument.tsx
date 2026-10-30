@@ -147,6 +147,8 @@ const DrawingDocument: React.FC = () => {
     setExpandedParentRow(null);
     setExpandedParentId(null);
 
+    setTempFilters({});
+
     setActiveTab("");
 
     setDrawingDocumentList([]);

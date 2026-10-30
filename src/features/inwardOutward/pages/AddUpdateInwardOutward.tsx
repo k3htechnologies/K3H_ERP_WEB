@@ -594,7 +594,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2 pt-5">Sender Details</h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <MobileNumberInput
                             label="Mobile No."
@@ -650,23 +650,26 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
-
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 pt-3">
                     <div>
-                        <Input
+                        <TextArea
                             label="Address"
                             value={formData.SenderAddress ?? ''}
                             required
                             onChange={e => handleFieldChange("SenderAddress", e.target.value)}
                             error={errors.SenderAddress}
-                            maxLength={250}
                             placeholder="Enter Sender Address"
+
                             disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
+
                     </div>
                 </div>
 
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2 pt-5">Receiver Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         <MobileNumberInput
                             label="Mobile No."
@@ -676,7 +679,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             required={formData.DeliveryMode?.toUpperCase() === "COURIER" ? false : true}
                             onMobileChange={(value) => {
                                 handleFieldChange("ReceiverMobileNumber", value);
-                                
+
                                 if (value.trim()) {
                                     fetchSenderReceiverByMobileNoData(value, "receiver");
                                 }
@@ -722,22 +725,24 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
                     </div>
-
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 gap-6 pt-3">
                     <div>
-                        <Input
+                        <TextArea
                             label="Address"
                             value={formData.ReceiverAddress ?? ''}
                             required
                             onChange={e => handleFieldChange("ReceiverAddress", e.target.value)}
                             error={errors.ReceiverAddress}
-                            maxLength={250}
                             placeholder="Enter Receiver Address"
                             disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
+
                     </div>
                 </div>
 
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2 pt-5">Document Details</h3>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                     <div>
@@ -759,16 +764,17 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     </div>
 
                     <div>
-                        <Input
+
+                        <TextArea
                             label="Document Description"
                             value={formData.DocumentDescription ?? ''}
                             required
                             onChange={e => handleFieldChange("DocumentDescription", e.target.value)}
                             error={errors.DocumentDescription}
-                            maxLength={500}
                             placeholder="Enter Document Description"
                             disabled={!(canEdit || canActionInwardOutward || canActionAdministrativeAccess)}
                         />
+
                     </div>
                 </div>
 
@@ -868,7 +874,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <div className="mt-2">
                         <Input
@@ -917,7 +923,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             value={formData.AcknowledgementRemark ?? ''}
                             onChange={e => handleFieldChange("AcknowledgementRemark", e.target.value)}
                             placeholder="Enter Remark"
-                            maxLength={500}
                         />
                     </div>
                 </div>

@@ -179,11 +179,6 @@ export const ViewBooking: React.FC = () => {
         );
     };
 
-
-    //#endregion
-
-    //#endregion
-
     const paymentScheduleDataWithTotal = useMemo(() => {
         const data = bookingData?.BookingPaymentScheduleData || [];
 

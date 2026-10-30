@@ -236,7 +236,7 @@ const PayTrack: React.FC = () => {
 
     updateListState({
       bookingId: row.BookingId ?? 0,
-      tenantId:row.TenantId ?? 0,
+      tenantId: row.TenantId ?? 0,
       bookingName: row.ApplicantName ?? "",
       bookingType: row.BookingType ?? "",
       flat: row.Flat ?? "",
@@ -546,7 +546,7 @@ const PayTrack: React.FC = () => {
 
             <div className="col-span-12 lg:col-span-8">
 
-                <div className="bg-white rounded-2xl h-[calc(100vh-190px)] overflow-y-auto thin-scroll">
+              <div className="bg-white rounded-2xl h-[calc(100vh-190px)] overflow-y-auto thin-scroll">
 
                 <div className="p-6">
 
@@ -657,7 +657,10 @@ const PayTrack: React.FC = () => {
                           Received Amount
                         </p>
                         <p className="text-2xl font-medium mt-2">
-                          {formatCurrency(selectedBooking?.ReceivedAgreementValue)}
+
+                          {formatCurrency(Number(selectedBooking?.ReceivedAgreementValue || 0) + Number(selectedBooking?.ReceivedAgreementValueTDS || 0))}
+
+
                         </p>
                       </div>
 

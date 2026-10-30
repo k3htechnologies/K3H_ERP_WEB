@@ -262,6 +262,7 @@ import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
 import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
 import CompanyDocument from '@/features/companyMaster/pages/CompanyDocument';
 import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompanyMasterWithBank';
+import { DarAllocation } from '@/features/darAllocation/pages/DarAllocation';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -335,7 +336,7 @@ function App() {
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
             <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
-            
+
             <Route path='companyMaster/document' element={<CompanyListStateProvider><CompanyDocument /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
@@ -516,7 +517,7 @@ function App() {
 
             <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
-
+            <Route path="darAllocation" element={<DarAllocation />} />
             {/* REDEVELOPMENT */}
 
             <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
@@ -628,7 +629,7 @@ function App() {
             <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
 
             {/* {TEAM WORK SPACE} */}
-           
+
 
             {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />

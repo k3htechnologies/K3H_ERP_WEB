@@ -108,27 +108,31 @@ const ViewDeductionMaster: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* ================= BASIC INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Basic Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                            <div className='bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex justify-between'>
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Basic Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Name" value={editDeductionMasterData!.Name} />
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Name" value={editDeductionMasterData!.Name} />
 
-                                        <FieldItem label="Type" value={editDeductionMasterData!.Type} />
-                                        <FieldItem label="Gender" value={editDeductionMasterData!.Gender} />
+                                            <FieldItem label="Type" value={editDeductionMasterData!.Type} />
+                                            <FieldItem label="Gender" value={editDeductionMasterData!.Gender} />
 
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                        <FieldItem label="State Name" value={editDeductionMasterData!.StateName} />
+                                            <FieldItem label="State Name" value={editDeductionMasterData!.StateName} />
 
-                                        <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
+                                            <FieldItem label="Branch Name" value={editDeductionMasterData!.BranchName} />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -136,28 +140,33 @@ const ViewDeductionMaster: React.FC = () => {
 
                         {/* ================= DEDUCTION DETAILS ================= */}
 
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Deduction Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
-                                        <FieldItem
-                                            label={editDeductionMasterData!.Applicable === "Percentage" ? "Value (%)" : "Value (₹)"}
-                                            value={`${editDeductionMasterData!.Value}${editDeductionMasterData!.Applicable === "Percentage" ? "%" : ""}`} />
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                    Deduction Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                        <FieldItem label="Min Salary (₹)" value={formatCurrency(editDeductionMasterData!.MinSalary)} />
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
+                                            <FieldItem
+                                                label={editDeductionMasterData!.Applicable === "Percentage" ? "Value (%)" : "Value (₹)"}
+                                                value={`${editDeductionMasterData!.Value}${editDeductionMasterData!.Applicable === "Percentage" ? "%" : ""}`} />
+
+                                            <FieldItem label="Min Salary (₹)" value={formatCurrency(editDeductionMasterData!.MinSalary)} />
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Max Salary (₹)" value={formatCurrency(editDeductionMasterData!.MaxSalary)} />
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Max Salary (₹)" value={formatCurrency(editDeductionMasterData!.MaxSalary)} />
+                                        </div>
                                     </div>
-                                </div>
 
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -166,39 +175,43 @@ const ViewDeductionMaster: React.FC = () => {
                     <div className="lg:col-span-1 space-y-6">
 
                         {/* ================= AUDIT TRAIL ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Created By" value={editDeductionMasterData!.CreatedBy} />
-                                        <FieldItem
-                                            label="Created Date"
-                                            value={
-                                                editDeductionMasterData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.CreatedDate)
-                                                    : "-"
-                                            }
+                            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#333333]">
+                                    Action Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Created By" value={editDeductionMasterData!.CreatedBy} />
+                                            <FieldItem
+                                                label="Created Date"
+                                                value={
+                                                    editDeductionMasterData!.CreatedDate
+                                                        ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.CreatedDate)
+                                                        : "-"
+                                                }
 
-                                        />
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Modified By" value={editDeductionMasterData!.ModifiedBy} />
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={
-                                                editDeductionMasterData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.ModifiedDate)
-                                                    : "-"
-                                            }
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Modified By" value={editDeductionMasterData!.ModifiedBy} />
+                                            <FieldItem
+                                                label="Modified Date"
+                                                value={
+                                                    editDeductionMasterData!.ModifiedDate
+                                                        ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.ModifiedDate)
+                                                        : "-"
+                                                }
 
-                                        />
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

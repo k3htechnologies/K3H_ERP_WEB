@@ -348,6 +348,8 @@ const ViewInwardOutward: React.FC = () => {
                                         <FieldItem label="Name" value={inwardOutwardData?.SenderName} />
                                         <FieldItem label="Mobile Number" value={inwardOutwardData?.SenderMobileNumber?.trim() ? `${inwardOutwardData?.SenderMobileNumberCountryCode} ${inwardOutwardData?.SenderMobileNumber}`: "-"} />
                                         <FieldItem label="E-mail ID" value={inwardOutwardData?.SenderEmailId} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-3">
                                         <FieldItem label="Address" value={inwardOutwardData?.SenderAddress} />
                                     </div>
                                 </div>
@@ -365,8 +367,10 @@ const ViewInwardOutward: React.FC = () => {
                                         <FieldItem label="Name" value={inwardOutwardData?.ReceiverName} />
                                         <FieldItem label="Mobile Number" value={inwardOutwardData?.ReceiverMobileNumber?.trim() ? `${inwardOutwardData?.ReceiverMobileNumberCountryCode} ${inwardOutwardData?.ReceiverMobileNumber}` : "-"} />
                                         <FieldItem label="E-mail ID" value={inwardOutwardData?.ReceiverEmailId} />
-                                        <FieldItem label="Address" value={inwardOutwardData?.ReceiverAddress} />
 
+                                    </div>
+                                     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-3">
+                                        <FieldItem label="Address" value={inwardOutwardData?.ReceiverAddress} />
                                     </div>
                                 </div>
                             </section>

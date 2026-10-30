@@ -150,7 +150,7 @@ export const ViewCompanyMaster: React.FC = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Loading Company Document'
+            'Loading Document'
         )
     }
 
@@ -204,7 +204,7 @@ export const ViewCompanyMaster: React.FC = () => {
 
                         if (editCompanyData) handleEditCompanyBank(editCompanyData);
                     }
-                    else if (activeTab === "Company Document") {
+                    else if (activeTab === "Document") {
 
                         if (editCompanyData) handleEditCompanyDocument(editCompanyData);
                     }
@@ -226,7 +226,7 @@ export const ViewCompanyMaster: React.FC = () => {
                         } else if (t.id === "Bank Details") {
                             loadCompanyMasterWithBankDetails();
                         }
-                        else if (t.id === "Company Document") {
+                        else if (t.id === "Document") {
                             loadCompanyDocuments();
                         }
                     }}
@@ -455,14 +455,19 @@ export const ViewCompanyMaster: React.FC = () => {
                                                     {b.BeneficiaryAccountHolderName ?? "Account Details"}
                                                 </h4>
 
+
                                                 <span
-                                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border ${b.Status === "Active"
-                                                        ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                                                        : "bg-red-100 text-red-700 border-red-300"
+                                                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold border ${b.Status?.toLowerCase() === "active"
+                                                            ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+                                                            : b.Status?.toLowerCase() === "inactive"
+                                                                ? "bg-gray-100 text-gray-600 border-gray-300"
+                                                                : "bg-red-100 text-red-700 border-red-300"
                                                         }`}
                                                 >
-                                                    ● {b.Status}
+                                                    ● {b.Status || "-"}
                                                 </span>
+
+
                                             </div>
 
                                             <div>

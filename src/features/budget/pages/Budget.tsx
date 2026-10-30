@@ -302,7 +302,7 @@ export const Budget: React.FC = () => {
                 newErrors.Quantity = "Quantity is Required";
             }
 
-            if (isEmpty(formData.MaterialCost)) {
+            if (!formData.MaterialCost) {
                 newErrors.MaterialCost = "Material Rate is Required";
             }
         }
@@ -1051,7 +1051,7 @@ export const Budget: React.FC = () => {
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
 
-                isShowAddExtraButton
+                isShowAddExtraButton={Number(projectId) > 0}
                 addExtraTitle="Summary"
                 onAddExtra={() => {
                     setISWingBudgetIsModalOpen(true)
@@ -1240,7 +1240,7 @@ export const Budget: React.FC = () => {
                 title={
                     editBudgetData
                         ? addLevel === "L1"
-                            ? "Update Cost Head / Description or L1 Catgeory"
+                            ? "Update Cost Head / Description"
                             : addLevel === "L2"
                                 ? "Update Sub Category"
                                 : addLevel === "L3"
@@ -1248,7 +1248,7 @@ export const Budget: React.FC = () => {
                                     : "Update Sub Material"
 
                         : addLevel === "L1"
-                            ? "Add Cost Head / Description or L1 Catgeory"
+                            ? "Add Cost Head / Description"
                             : addLevel === "L2"
                                 ? "Add Sub Category"
                                 : addLevel === "L3"

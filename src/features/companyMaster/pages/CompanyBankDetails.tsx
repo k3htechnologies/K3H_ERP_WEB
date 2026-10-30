@@ -11,8 +11,6 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import usePagination from "@/core/hooks/usePagination";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { handleExportFile } from "@/core/utils/exportFile";
 import { useNavigate } from "react-router-dom";
 import { useCompanyListState } from "@/features/companyMaster/context/CompanyListStateContext";
 
@@ -25,7 +23,6 @@ export const CompanyBankDetails: React.FC = () => {
     const { pagination, setPagination } = usePagination(20);
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [searchTerm, setSearchTerm] = useState('');
-    const { canExport } = useMenuPermissions("/companyMaster");
     const navigate = useNavigate();
     const { updateListState } = useCompanyListState();
 
@@ -124,7 +121,7 @@ export const CompanyBankDetails: React.FC = () => {
                 key: "BankDetailsGroup",
                 label: "Bank Details",
                 align: "left",
-                width: "1000px",
+                width: "clamp(350px, 65vw, 1200px)",
                 sortable: false,
                 render: (_value, row) => {
 
@@ -133,26 +130,31 @@ export const CompanyBankDetails: React.FC = () => {
                     };
 
                     return (
-                        <div className="flex w-full flex-nowrap items-start gap-3 overflow-x-auto overflow-y-hidden thin-scroll">
-                            {company.BankDetails && company.BankDetails.length > 0 &&(
+                        <div className="flex w-full flex-nowrap items-start gap-3 overflow-x-visible overflow-y-hidden thin-scroll">
+                            {company.BankDetails && company.BankDetails.length > 0 ? (
                                 company.BankDetails.map((bank, index) => (
                                     <div
                                         key={bank.CompanyWithBankDetailsId ?? index}
-                                        className="my-2 box-border flex w-[500px] min-w-[500px] shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
+                                        className="my-2 box-border flex w-[min(500px,80vw)] min-w-[280px] shrink-0 flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white"
                                     >
                                         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 border-b border-slate-200 bg-[#F8FAFC] px-4 py-3">
                                             <h4 className="min-w-0 whitespace-normal break-all font-semibold text-[#193B7D]">
                                                 {bank.BankName || "-"}
                                             </h4>
 
+
                                             <span
                                                 className={`shrink-0 whitespace-nowrap rounded-full border px-2 py-1 text-xs font-medium ${bank.Status?.toLowerCase() === "active"
-                                                    ? "bg-emerald-100 text-emerald-700 border-emerald-300"
-                                                    : "bg-red-100 text-red-700 border-red-300"
+                                                        ? "bg-emerald-100 text-emerald-700 border-emerald-300"
+                                                        : bank.Status?.toLowerCase() === "inactive"
+                                                            ? "bg-gray-100 text-gray-600 border-gray-300"
+                                                            : "bg-red-100 text-red-700 border-red-300"
                                                     }`}
                                             >
                                                 {bank.Status || "-"}
                                             </span>
+
+
                                         </div>
 
                                         <div className="grid flex-1 grid-cols-2 content-start gap-x-3 gap-y-5 bg-white p-3">
@@ -174,6 +176,9 @@ export const CompanyBankDetails: React.FC = () => {
                                         </div>
                                     </div>
                                 ))
+                            ) : 
+                            (
+                               <div className="italic text-gray-500 ml-4">No bank details added</div>
                             )}
                         </div>
 
@@ -217,35 +222,7 @@ export const CompanyBankDetails: React.FC = () => {
     )
     const CompanyBankDetailsForTable = useMemo(() => companyBankList, [companyBankList]);
 
-    const handleExportCompanyBankDetails = async (exportType: 'Excel' | 'PDF') => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationCompanyMasterRequest = {
-                    PageNumber: 1,
-                    PageSize: pagination.totalRecords,
-                    IsCheckPermission: true,
-                    IsDisplayBankDetails: true,
-                    SortBy: getSortByParam(sortInfo ?? null, CompanyBankDetailsColumns),
-                    ExportType: exportType
-                }
-
-                const response = await companyMasterService.apiCallPullCompanyMaster(params);
-
-                handleExportFile(response, exportType, "Company Bank Details", addToast);
-
-                return response
-            },
-            undefined,
-            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
-            undefined,
-            'Preparing Export'
-        );
-    };
-
-    const handleExportCompanyBankDetailsExcel = () => handleExportCompanyBankDetails("Excel");
-    const habndleExportCompanyBankDetailsPdf = () => handleExportCompanyBankDetails("PDF");
+   
 
     return (
         <div >
@@ -257,22 +234,20 @@ export const CompanyBankDetails: React.FC = () => {
                 onClearSearch={handlClearSearch}
                 onSearchChange={handleSearch}
 
-                isShowExportButton={canExport && CompanyBankDetailsForTable.length > 0}
-                onExportExcel={handleExportCompanyBankDetailsExcel}
-                onExportPdf={habndleExportCompanyBankDetailsPdf}
             />
-
-            <DataTable
-                data={CompanyBankDetailsForTable}
-                columns={CompanyBankDetailsColumns}
-                pagination={CompanyBankDetailsPaginationInfo}
-                emptyMessage="No company Bank Data Found"
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-            />
-
+            <div className="w-full overflow-x-auto thin-scroll">
+                <DataTable
+                    data={CompanyBankDetailsForTable}
+                    columns={CompanyBankDetailsColumns}
+                    pagination={CompanyBankDetailsPaginationInfo}
+                    emptyMessage="No company Bank Data Found"
+                    fixedHeight
+                    recordsPerPage={20}
+                    className="flex-1"
+                    sortInfo={sortInfo}
+                    onSort={handleSortColumn}
+                />
+            </div>
         </div>
     )
 }

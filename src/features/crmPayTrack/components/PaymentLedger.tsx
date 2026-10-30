@@ -101,7 +101,7 @@ export const PaymentLedger: React.FC = () => {
   const { projectId } = useProject();
 
   const { listState } = usePayTrackBookingListState();
-  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus, bookingData } = listState;
+  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus } = listState;
 
   const { addToast } = useToast();
 
@@ -797,13 +797,9 @@ export const PaymentLedger: React.FC = () => {
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
-        isShowAddButton={canAction
-          && (
-            Number(bookingData?.AgreementValue) -
-            Number(bookingData?.ReceivedAgreementValue) -
-            Number(bookingData?.ReceivedAgreementValueTDS)
-          ) > 0
-          && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
+        isShowAddButton={canAction&& 
+         Number(totals.PendingAmount || 0) > 0 &&
+         bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
         addTitle="Add"
         onAdd={handlePaymentLedgerCrmModal} />
 

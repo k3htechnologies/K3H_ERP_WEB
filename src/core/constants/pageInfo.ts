@@ -539,6 +539,11 @@ export const getPageInfo = (path: string) => {
         title: "AOP Achievement",
         description: "Recognize and Reward Top Performers",
       };
+      case "darAllocation":
+      return {
+        title: "DAR Allocation",
+        description: "Recognize and Reward Top Performers",
+      };
 
     // MARKETING
     case "content":

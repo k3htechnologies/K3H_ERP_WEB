@@ -99,6 +99,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paymentschedules': '/paymentSchedules',
         '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
+        '/darallocation':'darAllocation',
 
 
         // INVENTORY
@@ -169,7 +170,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/constructionarea': '/constructionArea',
 
         //PAYROLL
-        '/costToCompany': '/CostToCompany',
+        '/costtocompany': '/costToCompany',
 
     }
 

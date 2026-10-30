@@ -269,7 +269,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onApprovalSucc
     const saveData = async (vendor: any, term: any, lines: any[]) => {
 
         if (computeLinesTotal(lines) === 0) {
-            addToast({ type: "error", title: "Please add price at least one quotation item." });
+            
+            addToast({ type: "error", title: "Please add a price for atleast one quotation item." });
             return;
         }
 

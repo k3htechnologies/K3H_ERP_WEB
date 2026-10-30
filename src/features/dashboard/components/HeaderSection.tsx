@@ -29,7 +29,7 @@ export const HeaderSection = ({ approvalCount = 0 }: HeaderSectionProps) => {
                     </p>
                 </div>
 
-                
+                {approvalCount > 0 && (
                 <div className="p-1">
                     <Button
                         onClick={handleDashboardModuleApprovalModal}
@@ -44,14 +44,15 @@ export const HeaderSection = ({ approvalCount = 0 }: HeaderSectionProps) => {
                                 My Approvals
                             </span>
 
-                            {approvalCount > 0 && (
+                            
                                 <span className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-blue-600 text-base font-bold">
                                     {approvalCount > 99 ? '99+' : approvalCount}
                                 </span>
-                            )}
+                            
                         </span>
                     </Button>
                 </div>
+                )}
             </div>
         </div>
     );

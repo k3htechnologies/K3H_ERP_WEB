@@ -50,7 +50,7 @@ export const AddUpdateGRN = () => {
     const [removedProofOfDocumentUrls, setRemovedProofOfDocumentUrls] = useState<string[]>([]);
     const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
 
-    const { canAction } = useMenuPermissions("/materialRequisition");
+    const { canAction } = useMenuPermissions('Get Material Requisition');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const navigate = useNavigate();
     const { projectId } = useProject();

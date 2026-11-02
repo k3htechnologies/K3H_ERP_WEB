@@ -70,7 +70,7 @@ import AddUpdateBuilding from '@/features/building/pages/AddUpdateBuilding';
 import Tenant from '@/features/tenant/pages/Tenant';
 import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
 import ViewTenant from '@/features/tenant/pages/ViewTenant';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
+import { AddUpdateVendor } from '@/features/vendor/pages/AddUpdateVendor';
 import { ChannelPartner } from '@/features/ChannelPartner/pages/ChannelPartner';
 import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpdateChannelPartner';
 import { ChannelPartnerSourcing } from '@/features/ChannelPartnerSourcing/pages/ChannelPartnerSourcing';

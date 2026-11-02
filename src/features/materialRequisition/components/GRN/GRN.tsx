@@ -26,6 +26,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { handleExportFile } from "@/core/utils/exportFile";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
@@ -49,7 +50,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
     const [, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
-    const canAction = true;
+    const { canAction } = useMenuPermissions('Get Material Requisition');
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
 

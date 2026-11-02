@@ -162,7 +162,7 @@ export const SpecificationMaster: React.FC = () => {
             if (!formData.CategoryName?.trim()) {
                 newErrors.CategoryName = `${fieldName} is required`;
 
-            } else if (formData.CategoryName.length > 100) {
+            } else if (activeTab !== "L3" && formData.CategoryName.length > 100) {
                 newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
             }
         } else {
@@ -441,7 +441,13 @@ export const SpecificationMaster: React.FC = () => {
             width: '50',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || "-"}
+                    maxWidth="900px"
+                    tooltipThreshold={100}
+                />
+            ),
         },
         {
             key: 'ModifiedBy',
@@ -612,12 +618,18 @@ export const SpecificationMaster: React.FC = () => {
         {
             key: 'CategoryName',
             label: showL4 ? 'Sub Material Name' : showUomColumn ? 'Description' : 'Sub Category Name ',
-            width: '25',
+            width: '40',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || "-"}
+                    maxWidth="300px"
+                    tooltipThreshold={37}
+                />
+            ),
         },
-        
+
         ...(showL4
             ? [
                 {
@@ -655,10 +667,10 @@ export const SpecificationMaster: React.FC = () => {
                 align: "left" as const,
                 render: (value: any) => value || "-"
             },
-        ]
+            ]
             : []),
 
-            {
+        {
             key: 'ModifiedBy',
             label: 'Last Modified By',
             width: '33',
@@ -991,7 +1003,7 @@ export const SpecificationMaster: React.FC = () => {
                                         handleFieldChange("CategoryName", e.target.value)
                                     }
                                     error={errors.CategoryName}
-                                    maxLength={100}
+                                    maxLength={activeTab !== "L3" ? 100 : undefined}
                                     required
                                 />
                             )}

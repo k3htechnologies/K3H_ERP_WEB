@@ -13,7 +13,8 @@ import { CustomTable, type PaginationInfo, type TableColumn } from "@/ui/compone
 import { formatCurrency } from "@/core/utils/comman";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { handleExportFile } from "@/core/utils/exportFile";
-
+import { ChevronDown, ChevronUp } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 export const CollectionReport: React.FC = () => {
 
@@ -24,6 +25,7 @@ export const CollectionReport: React.FC = () => {
     const { pagination, setPagination } = usePagination(20);
     const { addToast } = useToast();
     const { canExport } = useMenuPermissions();
+    const [expandWings, setExpandWings] = useState<Record<string, boolean>>({});
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
         loadPullProjectWiseCollectionReport(1, value)
@@ -132,7 +134,6 @@ export const CollectionReport: React.FC = () => {
     const handleExportProjectWiseCollectionReportExcelFile = () => handleExportProjectWiseCollectionReport('Excel');
     const handleExportProjectWiseCollectionReportPdfFile = () => handleExportProjectWiseCollectionReport('PDF');
 
-
     const projectWiseCollectionReportColumns = useMemo<TableColumn[]>(() => {
 
         const boldIfTotal = (row: any) => (row.ProjectName || "").toUpperCase() === "TOTAL" ? 'font-bold text-gray-500' : '';
@@ -154,122 +155,6 @@ export const CollectionReport: React.FC = () => {
                         {value || ""}
                     </span>
                 )
-            },
-
-            {
-                key: 'TotalUnitDetailsGroup',
-                label: 'Total Unit Details',
-                align: 'center',
-                theadStyle: {
-                    backgroundColor: '#EEF5FF',
-                    color: '#135BEC'
-                },
-
-                children: [
-                    {
-                        key: 'TotalUnit',
-                        label: 'Units',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#EEF5FF'
-                        },
-                        render: (value) => (
-                            <span className="text-blue-600">
-                                {value ?? '-'}
-                            </span>
-                        )
-                    },
-                    {
-                        key: 'TotalUnitRERACarpetAreaSqFt',
-                        label: 'RERA Carpet Area (SqFt)',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                         tdStyle: {
-                            backgroundColor: '#EEF5FF'
-                        },
-                         render: (value) => (
-                            <span className="text-blue-600">
-                                {value ?? '-'}
-                            </span>
-                        )
-                    },
-                ]
-            },
-
-            {
-                key: 'RegistrationGroup',
-                label: 'Registration Details',
-                align: 'center',
-                theadStyle: {
-                    backgroundColor: '#FFF1D6',
-                    color: '#7E4604'
-                },
-                children: [
-                    {
-                        key: 'RegistrationCompleted',
-                        label: 'Completed',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#FFF1D6'
-                        },
-                        
-                        render: (value) => (
-                            <span className="text-amber-800">
-                                {value ?? '-'}
-                            </span>
-                        )
-                    },
-                    {
-                        key: 'RegistrationPending',
-                        label: 'Pending',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#FFF1D6'
-                        },
-                        render: (value) => (
-                            <span className="text-amber-800">
-                                {value ?? '-'}
-                            </span>
-                        )
-                    },
-                    {
-                        key: 'TotalCount',
-                        label: 'Count',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                         tdStyle: {
-                            backgroundColor: '#FFF1D6'
-                        },
-                        render: (value) => (
-                            <span className="text-amber-800">
-                                {value ?? '-'}
-                            </span>
-                        )
-                    }
-                ]
             },
 
             {
@@ -323,8 +208,57 @@ export const CollectionReport: React.FC = () => {
             },
 
             {
+                key: 'RegistrationGroup',
+                label: 'Registration Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#FFF1D6',
+                    color: '#7E4604'
+                },
+                children: [
+                    {
+                        key: 'RegistrationCompleted',
+                        label: 'Completed',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#FFF1D6'
+                        },
+
+                        render: (value) => (
+                            <span className="text-amber-800">
+                                {value ?? '-'}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'RegistrationPending',
+                        label: 'Pending',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#FFF1D6'
+                        },
+                        render: (value) => (
+                            <span className="text-amber-800">
+                                {value ?? '-'}
+                            </span>
+                        )
+                    },
+                ]
+            },
+
+            {
                 key: 'AmountGroup',
-                label: 'Amount Details',
+                label: 'Agreement Amount Details',
                 align: 'center',
                 theadStyle: {
                     backgroundColor: '#F0FDF4',
@@ -349,24 +283,7 @@ export const CollectionReport: React.FC = () => {
                             </span>
                         )
                     },
-                    {
-                        key: 'DueAmount',
-                        label: 'Due',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                         tdStyle: {
-                            backgroundColor: '#F0FDF4'
-                        },
-                        render: (value) => (
-                            <span className="text-green-600">
-                                {formatCurrency(value)}
-                            </span>
-                        )
-                    },
+
                     {
                         key: 'ReceivedAmount',
                         label: 'Received',
@@ -385,24 +302,7 @@ export const CollectionReport: React.FC = () => {
                             </span>
                         )
                     },
-                    {
-                        key: 'OutstandingAmount',
-                        label: 'Outstanding',
-                        width: '14',
-                        align: 'right',
-                        theadStyle: {
-                            backgroundColor: '#FFF',
-                            color: '#64748B'
-                        },
-                        tdStyle: {
-                            backgroundColor: '#F0FDF4'
-                        },
-                        render: (value) => (
-                            <span className="text-green-600">
-                                {formatCurrency(value)}
-                            </span>
-                        )
-                    },
+
                     {
                         key: 'BalanceAmount',
                         label: 'Balance',
@@ -421,6 +321,207 @@ export const CollectionReport: React.FC = () => {
                             </span>
                         )
                     }
+                ]
+            },
+            {
+                key: 'GSTAmountGroup',
+                label: 'GST Amount Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#F0FDF4',
+                    color: '#60D669'
+                },
+                children: [
+                    {
+                        key: 'TotalGSTValue',
+                        label: 'GST',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+
+                    {
+                        key: 'GSTReceivedAmount',
+                        label: 'Received',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'GSTBalanceAmount',
+                        label: 'Balance',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+
+                ]
+            },
+            {
+                key: 'TDSAmountGroup',
+                label: 'TDS Amount Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#F0FDF4',
+                    color: '#60D669'
+                },
+                children: [
+                    {
+                        key: 'TotalTDSValue',
+                        label: 'TDS',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+
+                    {
+                        key: 'TDSReceivedAmount',
+                        label: 'Received',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'TDSBalanceAmount',
+                        label: 'Balance',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+
+                ]
+            },
+            {
+                key: 'StampDutyAmountGroup',
+                label: 'Stamp Duty Amount Details',
+                align: 'center',
+                theadStyle: {
+                    backgroundColor: '#F0FDF4',
+                    color: '#60D669'
+                },
+                children: [
+                    {
+                        key: 'TotalStampDutyValue',
+                        label: 'Stamp Duty',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+
+                    {
+                        key: 'StampDutyReceivedAmount',
+                        label: 'Received',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+                    {
+                        key: 'StampDutyBalanceAmount',
+                        label: 'Balance',
+                        width: '14',
+                        align: 'right',
+                        theadStyle: {
+                            backgroundColor: '#FFF',
+                            color: '#64748B'
+                        },
+                        tdStyle: {
+                            backgroundColor: '#F0FDF4'
+                        },
+                        render: (value) => (
+                            <span className="text-green-600">
+                                {formatCurrency(value)}
+                            </span>
+                        )
+                    },
+
                 ]
             }
         ];
@@ -463,12 +564,16 @@ export const CollectionReport: React.FC = () => {
                                 {row.ProjectName}
                             </span>
 
-                            <span className="text-sm text-gray-500 mt-3">
-                                Total Unit :{" "}
-                                <span className="font-semibold text-gray-800">
-                                    {row.TotalUnit}
+                            <div className="flex items-center gap-4 shrink-0">
+                                <span className="text-sm text-gray-500 mt-3">
+                                    Total Unit :{" "}
+                                    <span className="font-semibold text-gray-800">
+                                        {row.TotalUnit}
+                                    </span>
                                 </span>
-                            </span>
+
+
+                            </div>
 
                         </div>
 
@@ -486,7 +591,7 @@ export const CollectionReport: React.FC = () => {
                             </div>
 
                             <div>
-                                <p className="text-sm text-gray-500 mb-1 text-left">
+                                <p className="text-sm- text-gray-500 mb-1 text-left">
                                     Total Received Amount
                                 </p>
 
@@ -506,50 +611,255 @@ export const CollectionReport: React.FC = () => {
                             </div>
 
                         </div>
-
                     </div>
-
                 )}
 
                 fetchExpandedData={async (row) => {
                     setIsLoading(true);
-                    setLoadingMessage('Loading Details');
+                    setLoadingMessage("Loading Details");
 
-                    const params: FilterWithPaginationCollectionReportRequest = {
-                        ProjectId: row.ProjectId ?? 0,
-                        ProjectName: row.ProjectName
-                    };
+                    try {
+                        const params: FilterWithPaginationCollectionReportRequest = {
+                            ProjectId: row.ProjectId ?? 0,
+                            ProjectName: row.ProjectName,
+                        };
 
-                    const response = await collectionReportService.apiCallPullCollectionReport(params);
+                        const response = await collectionReportService.apiCallPullCollectionReport(params);
 
-                    setIsLoading(false);
-                    if (E.isRight(response)) {
-                        return response.right.Data || [];
+                        if (E.isRight(response)) {
+
+                            const data = response.right.Data || [];
+
+                            const buildingWings = new Map<string, Set<string>>();
+
+                            data.forEach((item) => {
+                                if (!item.BuildingNumber || !item.Wing) return;
+
+                                if (!buildingWings.has(item.BuildingNumber)) {
+                                    buildingWings.set(item.BuildingNumber, new Set());
+                                }
+
+                                buildingWings.get(item.BuildingNumber)!.add(item.Wing);
+                            });
+
+                            return data;
+                        }
+                        return [];
+
+                    } finally {
+                        setIsLoading(false);
                     }
-
-                    return [];
                 }}
 
-                renderExpanded={(expandedData) => {
+                renderExpanded={(expandData: CollectionReportData[]) => {
+                    if (!expandData?.length) {
+                        return (
+                            <div className="py-6 text-center text-sm text-gray-500">
+                                <NoDataView message="No Data Found" />
+                            </div>
+                        );
+                    }
+
+                    // Group report rows by Building Number first.
+                    const buildingMap = new Map<string, CollectionReportData[]>();
+
+                    expandData.forEach((item) => {
+                        const buildingNumber = String(item.BuildingNumber ?? "").trim();
+
+                        if (!buildingNumber) return;
+
+                        if (!buildingMap.has(buildingNumber)) {
+                            buildingMap.set(buildingNumber, []);
+                        }
+
+                        buildingMap.get(buildingNumber)!.push(item);
+                    });
+
+                    const buildings = Array.from(buildingMap.entries());
+
+                    const sumField = (
+                        rows: CollectionReportData[],
+                        field: keyof CollectionReportData
+                    ) =>
+                        rows.reduce(
+                            (sum, item) => sum + (Number(item[field]) || 0),
+                            0
+                        );
 
                     return (
-                        <div className="space-y-6">
+                        <div className="space-y-4">
+                            {buildings.map(([buildingNumber, buildingRows]) => {
+                                // Within each building, group rows by Wing.
+                                const wingMap = new Map<string, CollectionReportData[]>();
 
-                            <div className="pt-2">
-                                <CustomTable
-                                    data={expandedData}
-                                    columns={projectWiseCollectionReportColumns}
-                                    emptyMessage="No Data Found"
-                                    fixedHeight
-                                    recordsPerPage={20}
-                                    className="flex-1"
-                                />
-                            </div>
+                                buildingRows.forEach((item) => {
+                                    const wing = String(item.Wing ?? "").trim();
 
+                                    if (!wing) return;
+
+                                    if (!wingMap.has(wing)) {
+                                        wingMap.set(wing, []);
+                                    }
+
+                                    wingMap.get(wing)!.push(item);
+                                });
+
+                                const wings = Array.from(wingMap.entries());
+
+                                return (
+                                    <div
+                                        key={buildingNumber}
+                                        className="rounded-lg border border-blue-200 bg-gray-50 p-3"
+                                    >
+                                        <h3 className="mb-3 font-bold text-blue-900">
+                                           {buildingNumber}
+                                        </h3>
+
+                                        <div className="space-y-3">
+                                            {wings.map(([wing, wingRows], wingIndex) => {
+                                                const wingKey = `${wingRows[0]?.ProjectId}-${buildingNumber}-${wing}`;
+                                                const isExpanded = expandWings[wingKey] ?? wingIndex === 0;
+
+                                                const totalRows = wingRows.filter(
+                                                    (item) => item.Type === "Total"
+                                                );
+
+                                                const residentialRows = wingRows.filter(
+                                                    (item) => item.UnitType === "Residential"
+                                                );
+
+                                                const commercialRows = wingRows.filter(
+                                                    (item) => item.UnitType === "Commercial"
+                                                );
+
+                                                const wingAgreementAmount = sumField(totalRows, "TotalAgreementValue");
+                                                const wingReceivedAmount = sumField(totalRows, "ReceivedAmount");
+                                                const wingBalanceAmount = sumField(totalRows, "BalanceAmount");
+
+                                                const renderUnitType = (
+                                                    unitType: string,
+                                                    rows: CollectionReportData[],
+                                                    dotcolor: string
+                                                ) => {
+                                                    if (!rows.length) return null;
+
+                                                    return (
+                                                        <div className="rounded-md border border-gray-200 bg-white p-3">
+                                                            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 pb-3">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span
+                                                                        className={`h-2.5 w-2.5 rounded-full ${dotcolor}`}
+                                                                    />
+                                                                    <span className="text-sm font-semibold uppercase text-gray-800">
+                                                                        {unitType} Units
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+
+                                                            <CustomTable
+                                                                data={rows}
+                                                                columns={projectWiseCollectionReportColumns}
+                                                                emptyMessage="No Data Found"
+                                                                fixedHeight
+                                                                recordsPerPage={20}
+                                                                className="flex-1"
+                                                            />
+                                                        </div>
+                                                    );
+                                                };
+
+                                                return (
+                                                    <div
+                                                        key={wingKey}
+                                                        className="overflow-hidden rounded-lg border border-gray-200 bg-white"
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setExpandWings((prev) => ({
+                                                                    ...prev,
+                                                                    [wingKey]: !isExpanded,
+                                                                }))
+                                                            }
+                                                            className="flex w-full flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-4 py-3 text-left hover:bg-gray-50"
+                                                        >
+                                                            <div className="flex flex-wrap items-center gap-3">
+                                                                <span
+                                                                    className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
+                                                                        isExpanded
+                                                                            ? "bg-blue-600 text-white"
+                                                                            : "bg-gray-100 text-gray-600"
+                                                                    }`}
+                                                                >
+                                                                    {wing}
+                                                                </span>
+
+                                                                <span className="text-sm font-semibold text-gray-900">
+                                                                    Wing : {wing}
+                                                                </span>
+                                                            </div>
+
+                                                            <div className="flex flex-wrap items-center gap-8">
+                                                                <span className="text-xs text-gray-500">
+                                                                    Agreement:{" "}
+                                                                    <strong className="text-gray-900">
+                                                                        {formatCurrency(wingAgreementAmount)}
+                                                                    </strong>
+                                                                </span>
+
+                                                                <span className="text-xs text-gray-500">
+                                                                    Received:{" "}
+                                                                    <strong className="text-gray-900">
+                                                                        {formatCurrency(wingReceivedAmount)}
+                                                                    </strong>
+                                                                </span>
+
+                                                                <span className="text-xs text-gray-500">
+                                                                    Balance:{" "}
+                                                                    <strong className="text-gray-900">
+                                                                        {formatCurrency(wingBalanceAmount)}
+                                                                    </strong>
+                                                                </span>
+
+                                                                {isExpanded ? (
+                                                                    <ChevronUp
+                                                                        size={18}
+                                                                        className="text-blue-600"
+                                                                    />
+                                                                ) : (
+                                                                    <ChevronDown
+                                                                        size={18}
+                                                                        className="text-blue-600"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        </button>
+
+                                                        {isExpanded && (
+                                                            <div className="max-h-[400px] overflow-y-auto overflow-x-auto thin-scroll space-y-4 p-3 sm:p-4">
+                                                                {renderUnitType(
+                                                                    "Residential",
+                                                                    residentialRows,
+                                                                    "bg-indigo-500"
+                                                                )}
+
+                                                                {renderUnitType(
+                                                                    "Commercial",
+                                                                    commercialRows,
+                                                                    "bg-amber-500"
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     );
                 }}
-
             />
         </div>
     )

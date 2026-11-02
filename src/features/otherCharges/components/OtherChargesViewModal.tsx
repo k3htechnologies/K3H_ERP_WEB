@@ -10,7 +10,8 @@ interface OtherChargesViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: OtherChargesData | null;
-  canAction: boolean;
+  canActionSale: boolean;
+  canActionTenant: boolean;
   onEdit: (data: OtherChargesData) => void;
   onDelete: (data: OtherChargesData) => void;
 }
@@ -19,11 +20,17 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
   isOpen,
   onClose,
   data,
-  canAction,
+  canActionSale,
+  canActionTenant,
   onEdit,
   onDelete
 }) => {
   if (!data) return null;
+
+  const canAction =
+    data.ApplicableFor?.trim().toUpperCase() === 'SALE' ? canActionSale
+      : data.ApplicableFor?.trim().toUpperCase() === 'TENANT' ? canActionTenant
+        : false;
 
   const handleEdit = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -54,6 +61,17 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
     >
       <div className="space-y-6">
         <div className="space-y-4">
+
+          <FieldItem
+            label="Applicable For"
+            value={
+              <span className="inline-flex items-center rounded-md bg-blue-100 px-2 py-1 text-xs font-semibold text-blue-700">
+                {data.ApplicableFor}
+              </span>
+            }
+            isRow
+            withBorder={true}
+          />
 
           <FieldItem
             label="Charges"

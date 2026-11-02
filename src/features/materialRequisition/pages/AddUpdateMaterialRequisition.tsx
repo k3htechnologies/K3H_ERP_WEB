@@ -10,7 +10,6 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterMaterialRequisitionDetails } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { Input } from "@/ui/components/forms/Input";
@@ -38,6 +37,7 @@ import { fetchSubMaterialMasterById, fetchSubMaterialMasterDropdown } from "@/fe
 import { calculateRequiredDate } from "../utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { fetchMaterialMasterDropdown } from "@/features/materialMaster/materialMasterDropdown";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -89,7 +89,7 @@ export const AddUpdateMaterialRequisition = () => {
     const [documentFiles, setdocumentFiles] = useState<(File | string)[]>([]);
     const [removeddocumentFilesURLs, setRemoveddocumentFilesURLs] = useState<string[]>([]);
     const [documentURL, setDocumentURL] = useState<string>("");
-    const { canAction } = useMenuPermissions("/materialRequisition");
+     const {canAction} = useMenuPermissions('Get Material Requisition');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "", level1Name: "", level2Name: "", level3Name: "", level4Name: "" });
@@ -1295,7 +1295,7 @@ export const AddUpdateMaterialRequisition = () => {
                                                 RequiredDate: "",
                                             }));
                                         }}
-                                        initialValue={createDropdownInitialValue(materialData.MaterialMasterId, dropdownLabels.materialName || materialData.MaterialName)}
+                                        initialValue={createDropdownInitialValue(materialData.MaterialMasterId, materialData.MaterialName || dropdownLabels.materialName)}
                                         error={errors.MaterialMasterId}
                                     />
 

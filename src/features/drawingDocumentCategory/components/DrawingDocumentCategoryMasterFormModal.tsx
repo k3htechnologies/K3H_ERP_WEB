@@ -47,7 +47,7 @@ export const DrawingDocumentCategoryMasterFormModal: React.FC<DrawingDocumentCat
               error={errors.projectDocumentCategory}
               type="text"
               value={formData.DrawingDocumentCategory}
-              maxLength={200}
+              maxLength={60}
               onChange={e => onFieldChange('DrawingDocumentCategory', e.target.value)}
               placeholder="Enter Drawing Document Category"
             />

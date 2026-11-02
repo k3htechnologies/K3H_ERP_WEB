@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePagination } from "@/core/hooks/usePagination";
-import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
@@ -21,7 +21,7 @@ import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchBuildingDropdown } from "@/features/building/buildingDropdown";
-import { Copy, FileText, Trash2 } from "lucide-react";
+import { CircleCheck, Copy, FileText, House, Trash2, UserRound } from "lucide-react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
@@ -30,7 +30,12 @@ import { useTenantListState } from "@/features/tenant/context/TenantListStateCon
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { copyToClipboard } from "@/core/utils/comman";
-import { CustomTable } from "@/ui/components/DataTable/CustomTable";
+import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext";
+import CustomTableRowSpan, { type CustomTableRowSpanColumn } from "@/ui/components/DataTable/CustomTableRowSpan";
+import { getRowSpan } from "@/ui/components/DataTable/DataTableRowSpan";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 
 export const Tenant: React.FC = () => {
 
@@ -49,6 +54,7 @@ export const Tenant: React.FC = () => {
   const [isShowCustomizeTenantColumnsModal, setIsShowCustomizeTenantColumnsModal] = useState(false);
 
   const [showImportModal, setShowImportModal] = useState(false);
+  const [isTenantAllotemnt, setIsTenantAllotemnt] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
 
@@ -60,6 +66,13 @@ export const Tenant: React.FC = () => {
 
   const { listState, updateListState, resetFilters, setBuildingContext } = useTenantListState();
   const { page, filters, sortInfo, searchTerm, buildingId, buildingName } = listState;
+  const { updateTenantListState } = useTenantBookingListState();
+
+  const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+  const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+  const [ownerName, setOwnerName] = useState<string | null>("");
+  const [wing, setwing] = useState<string | null>("");
+  const [unitNumber, setUnitNumber] = useState<string | null>("");
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTenants(value);
@@ -277,8 +290,23 @@ export const Tenant: React.FC = () => {
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
-  const tenantColumns = useMemo<TableColumn[]>(
+  const handleApprovalLog = (row: TenantData) => {
+    const request: ModulesApprovalStatusRequest = {
+      ModuleName: "TENANT BOOKING APPROVAL",
+      Id: row.BookingId ?? 0,
+      ProjectId: row.ProjectId ?? 0,
+    };
+    setOwnerName(row.ApplicantName ?? "");
+    setwing(row?.Wing)
+    setUnitNumber(row?.Flat);
+
+    setApprovalLogRequest(request);
+    setIsApprovalLogModalOpen(true);
+  };
+
+  const tenantColumns = useMemo<CustomTableRowSpanColumn[]>(
     () => [
+
       {
         key: "SystemGeneratedCode",
         label: "Tenant Code",
@@ -320,6 +348,7 @@ export const Tenant: React.FC = () => {
             </div>
           );
         },
+        rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
       },
       {
         key: "UnitAnnexureSurveyNumber",
@@ -329,9 +358,86 @@ export const Tenant: React.FC = () => {
         fixed: "left",
         align: "left",
         truncate: false,
-        render: (value, row) => (
-          <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} onClick={() => handleViewTenantDetails(row)} />
-        ),
+        render: (value, row) => {
+          return (
+            <div className="flex items-center gap-2">
+              <TooltipText
+                text={value || "-"}
+                maxWidth="160px"
+                tooltipThreshold={16}
+                onClick={() => handleViewTenantDetails(row)}
+              />
+            </div>
+          );
+        },
+        rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
+      },
+      {
+        key: "AllotedUnit",
+        label: "Alloted Unit",
+        width: "12",
+        sortable: false,
+        align: "center",
+
+        render: (_value, row) => {
+
+          const isAllotted = !!row.Flat?.toString().trim();
+          const isBookingDone = Number(row.BookingId ?? 0) > 0;
+
+          return (
+            <div className="flex items-center gap-2">
+              {isAllotted && (
+                <TooltipText
+                  text={row.Flat || "-"}
+                  maxWidth="160px"
+                  tooltipThreshold={16}
+                />
+              )}
+
+              {isAllotted && !isBookingDone && (
+                <div
+                  title="Allotted"
+                  className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-purple-100"
+                >
+                  <CircleCheck
+                    size={15}
+                    color="#9333EA"
+                    strokeWidth={2}
+                  />
+                </div>
+              )}
+
+              {isBookingDone && (
+                <div
+                  title="Booking Done"
+                  className="relative flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-green-100"
+                >
+                  <UserRound
+                    size={17}
+                    color="#16A34A"
+                    strokeWidth={2}
+                  />
+
+                  <House
+                    size={10}
+                    color="#EA580C"
+                    className="absolute bottom-1 right-1"
+                    fill="#FDE68A"
+                  />
+                </div>
+              )}
+
+              {!isAllotted && !isBookingDone && (
+                <TooltipText
+                  text={row.Flat || "-"}
+                  maxWidth="160px"
+                  tooltipThreshold={16}
+                />
+              )}
+            </div>
+          );
+        },
+
       },
       {
         key: "ExisitingUnitGroup",
@@ -355,6 +461,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => value ?? "-",
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
           {
@@ -370,6 +477,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "UnitConfiguration",
@@ -385,6 +493,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "UnitCarpetAreaSqFt",
@@ -400,6 +509,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "UnitFacing",
@@ -415,6 +525,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#EEF5FF'
             },
             render: (value) => value || "-",
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
         ]
       },
@@ -441,6 +552,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} %` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "FreeMOFACarpetAreaSqFt",
@@ -456,6 +568,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "NewEligibilityMOFACarpetAreaSqFt",
@@ -471,6 +584,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "NewEligibilityRERACarpetAreaSqFt",
@@ -486,6 +600,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "MOFACarpetAreaPurchasedSqFt",
@@ -501,6 +616,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "RERACarpetAreaPurchasedSqFt",
@@ -516,6 +632,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "TotalNewMOFACarpetAreaSqFt",
@@ -531,6 +648,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
 
@@ -548,6 +666,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "DeckAreaSqFt",
@@ -563,6 +682,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "ExistingTerraceAreaSqFt",
@@ -578,6 +698,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
           {
             key: "AreaAgainstTerraceSqFt",
@@ -593,6 +714,7 @@ export const Tenant: React.FC = () => {
               backgroundColor: '#FBF5FF'
             },
             render: (value) => (value ? `${value} SqFt` : "-"),
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
 
@@ -617,6 +739,7 @@ export const Tenant: React.FC = () => {
 
               return total > 0 ? `${total.toFixed(2)} SqFt` : "-";
             },
+            rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
           },
 
         ]
@@ -630,6 +753,21 @@ export const Tenant: React.FC = () => {
           color: '#60D669'
         },
         children: [
+          {
+            key: "AdjustPurchaseAreaSqFt",
+            label: "Adjust Purchase Area (SqFt)",
+            width: "12",
+            sortable: false,
+            align: "center",
+            theadStyle: {
+              backgroundColor: '#FFF',
+              color: '#64748B'
+            },
+            tdStyle: {
+              backgroundColor: '#F0FDF4'
+            },
+            render: (value) => (value ? `${value} SqFt` : "-"),
+          },
           {
             key: "BuildingNumber",
             label: "Building Number",
@@ -707,7 +845,7 @@ export const Tenant: React.FC = () => {
             render: (value) => value || "-",
           },
           {
-            key: "InventoryFlatType",
+            key: "FlatType",
             label: "Unit Type",
             width: "12",
             sortable: false,
@@ -722,7 +860,7 @@ export const Tenant: React.FC = () => {
             render: (value) => value || "-",
           },
           {
-            key: "InventoryFlatConfiguration",
+            key: "FlatConfiguration",
             label: "Configuration",
             width: "12",
             sortable: false,
@@ -751,7 +889,75 @@ export const Tenant: React.FC = () => {
             },
             render: (value) => value || "-",
           },
+          {
+            key: "BookingStatus",
+            label: "Status",
+            width: "10",
+            sortable: false,
+            align: "center",
+            theadStyle: {
+              backgroundColor: "#FFF",
+              color: "#64748B",
+            },
+            render: (_value, row) => {
+              const bookingId = Number(row.BookingId ?? 0);
+
+              if (bookingId <= 0) {
+                return "-";
+              }
+
+
+              return (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+
+                    updateTenantListState({
+                      bookingId: row.BookingId,
+                      bookingName: row.OwnerName || "",
+                    });
+
+
+                    navigate(
+                      "/tenantBooking/view"
+                      ,
+                      {
+                        state: {
+                          sourcePage: "tenant",
+                        },
+                      }
+                    );
+                  }}
+                  className="text-blue-600 underline font-medium cursor-pointer"
+                >
+                  Booking Done
+                </button>
+              );
+            },
+          },
         ]
+      },
+
+      {
+        key: "BookingApprovalStatus",
+        label: "Booking Approval Status",
+        width: "18",
+        sortable: false,
+        align: "center",
+        render: (value, row) => (
+
+          Number(row.BookingId ?? 0) > 0 ? (
+            <ApprovalActions
+              approvalStatus={value || "-"}
+              isIcons={true}
+              onHistory={() => handleApprovalLog(row)}
+            />
+          ) : "-"
+          
+        )
       },
 
       {
@@ -760,24 +966,34 @@ export const Tenant: React.FC = () => {
         width: "12",
         fixed: "right",
         align: "center",
-        render: (_value, row) =>
-          canAction ? (
+        render: (_value, row) => {
+
+          const isDeleteDisabled = !canAction || !row.FlatIsEditDelete;
+
+          return canAction ? (
+
             <div className="flex items-center justify-center gap-2">
+
               <Button
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+
+                  if (isDeleteDisabled) return;
+
                   handleViewTenantDocument(row);
                 }}
                 color="transparent"
                 isborderRadius
+                disabled={isDeleteDisabled}
                 size="sm"
                 style={{
-                  color: "green",
+                  color: isDeleteDisabled ? "#9CA3AF" :"green",
                   padding: "4px 8px",
+                  cursor: isDeleteDisabled ? "not-allowed" : "pointer",
+                  opacity: isDeleteDisabled ? 0.5 : 1,
                 }}
-                title="Tenant Document"
-              >
+                title="Tenant Document">
                 <FileText className="h-4 w-4" />
               </Button>
 
@@ -785,22 +1001,31 @@ export const Tenant: React.FC = () => {
                 onClick={(e) => {
                   e.preventDefault();
                   e.stopPropagation();
+
+                  if (isDeleteDisabled) return;
+
                   handleConfirmationDialogBoxOpen(row);
                 }}
                 color="transparent"
                 isborderRadius
+                disabled={isDeleteDisabled}
                 size="sm"
                 style={{
-                  color: "red",
+                  color: isDeleteDisabled ? "#9CA3AF" : "red",
                   padding: "4px 8px",
+                  cursor: isDeleteDisabled ? "not-allowed" : "pointer",
+                  opacity: isDeleteDisabled ? 0.5 : 1,
                 }}
-                title="Delete Tenant"
+                title={Number(row.BookingId ?? 0) > 0 ? "Tenant cannot be deleted because Booking exists" : "Delete Tenant"}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
+
             </div>
-          ) : null,
-      },
+          ) : null;
+        },
+        rowSpan: (_row, index, data) => getRowSpan(data, index, ['TenantId'])
+      }
     ],
     [handleViewTenantDetails, handleViewTenantDocument, handleConfirmationDialogBoxOpen, canAction],
   );
@@ -817,6 +1042,7 @@ export const Tenant: React.FC = () => {
     "BuildingNumber",
     "Wing",
     "Flat",
+    "AllotedUnit",
     "actions",
   ];
 
@@ -831,7 +1057,6 @@ export const Tenant: React.FC = () => {
         return withRequired.filter((k) => allTenantColumnKeys.includes(k));
       }
     } catch {
-      // ignore
     }
     return allTenantColumnKeys;
   });
@@ -899,7 +1124,7 @@ export const Tenant: React.FC = () => {
 
   const handleDownloadExcelSampleTenant = () => downloadExcelSampleTenant();
 
-  const uploadExcel = async (file: File, mergeExisting: string) => {
+  const uploadExcel = async (file: File, mergeExisting: string, isTenantAllotemnt: boolean) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -911,13 +1136,12 @@ export const Tenant: React.FC = () => {
         fd.append("TableName", "Tenant");
         fd.append("ProjectId", String(projectId));
         fd.append("BuildingId", String(buildingId));
+        fd.append("IsTenantAlloted", String(isTenantAllotemnt || false));
 
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
           addToast({ type: "success", title: "Excel imported sucessfully" });
-
-          // Reload tenants with current state
           if (buildingId && buildingId > 0) {
             if (searchTerm && searchTerm.trim()) {
               loadTenants(page, { FlatNumber: searchTerm.trim() }, buildingId);
@@ -1030,24 +1254,29 @@ export const Tenant: React.FC = () => {
         }}
         isShowCustomizeButton={Number(buildingId) > 0 ? true : false}
         onCustomize={() => setIsShowCustomizeTenantColumnsModal(true)}
-        // ADD
         isShowAddButton={canAction && Number(buildingId) > 0 ? true : false}
         addTitle="Add"
         onAdd={handleAddTenantModal}
-        // IMPORT
         isShowImportButton={canAction && Number(buildingId) > 0 ? true : false}
-        onUploadExcel={() => setShowImportModal(true)}
+        onUploadExcel={() => {
+          setIsTenantAllotemnt(false);
+          setShowImportModal(true);
+        }}
         onDownloadSampleExcel={handleDownloadExcelSampleTenant}
-        // EXPORT
         isShowExportButton={canExport && Number(buildingId) > 0 && tenantsForTable.length > 0 ? true : false}
         onExportExcel={handleExportTenantExcel}
         onExportPdf={handleExportTenantPdf}
+
+        onUploadTenantAllotedExcel={() => {
+          setIsTenantAllotemnt(true);
+          setShowImportModal(true);
+        }}
         exportLoading={isLoading}
       />
 
       <div className="pb-5 flex">
         <div className="relative min-w-0 w-[526px]">
-          
+
           <SingleSelectDropdownWithPagination
             key={projectId}
             label="Building"
@@ -1066,7 +1295,7 @@ export const Tenant: React.FC = () => {
         </div>
       </div>
 
-      <CustomTable
+      <CustomTableRowSpan
         data={tenantsForTable}
         columns={visibleTenantColumns}
         pagination={tenantPaginationInfo}
@@ -1087,7 +1316,6 @@ export const Tenant: React.FC = () => {
           try {
             LocalStorageHelper.storeTenantTableColumns?.(JSON.stringify(withRequired));
           } catch {
-            // ignore
           }
         }}
         columns={tenantColumns}
@@ -1207,10 +1435,12 @@ export const Tenant: React.FC = () => {
 
       <ExportImport
         open={showImportModal}
+        isDisplayYesNoOption={!isTenantAllotemnt}
+        isDisplayCommanNote={!isTenantAllotemnt}
         onClose={() => setShowImportModal(false)}
         onUpload={(file, mergeExisting) => {
           setShowImportModal(false);
-          uploadExcel(file, mergeExisting);
+          uploadExcel(file, mergeExisting, isTenantAllotemnt);
         }}
       />
 
@@ -1224,6 +1454,15 @@ export const Tenant: React.FC = () => {
         loading={isLoading}
         pageName="tenant"
       />
+
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        title='Tenant Booking'
+        titleText={ownerName ?? ""}
+        subTitleText={wing ?? ""}
+        subSubTitleText={unitNumber ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest} />
     </div>
   );
 };

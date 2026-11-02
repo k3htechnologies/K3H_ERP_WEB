@@ -49,81 +49,41 @@ const initialFormState = (): AddUpdateTenantDocumentRequest => ({
 });
 
 export const TenantDocument: React.FC = () => {
-
-  //#region STATE MANAGEMENT
   const [tenantDocumentList, setTenantDocumentList] = useState<TenantDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
-
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
-  // TOAST
   const { addToast } = useToast()
-
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('')
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTenantDocuments(value)
   }, 350)
-
-
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  // EDIT TENANT DOCUMENT
   const [editingTenantDocumentData, setEditingTenantDocumentData] = useState<TenantDocumentData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-
-  //ADD UPDATE TENANT DOCUMENT
   const [formData, setFormData] = useState<AddUpdateTenantDocumentRequest>(() => initialFormState());
-
-  //DELETE TENANT DOCUMENT STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteTenantDocumentDetailsData, setDeleteTenantDocumentDetailsData] = useState<TenantDocumentData | null>(null)
-
-  //FILE STATES
   const [documentFiles, setDocumentFiles] = useState<(File | string)[]>([]);
   const [removedDocumentURLs, setRemovedDocumentURLs] = useState<string[]>([]);
   const [documentURL, setDocumentURL] = useState<string>();
-
-  // NAVIGATION
   const navigate = useNavigate();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
-
-  //#region TENANT LIST STATE CONTEXT
   const { listState } = useTenantListState();
   const { tenantId, buildingId, tenantName, buildingName } = listState;
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
 
-  //#region INITIALIZATION
   useEffect(() => {
     if (!projectId || !buildingId || !tenantId) return;
     fetchTenantDocumentList();
   }, [projectId, buildingId, tenantId])
-
-
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -160,10 +120,6 @@ export const TenantDocument: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingTenantDocumentData, tenantId, buildingId, projectId]);
-
-  //#endregion
-
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchTenantDocumentList = async (page: number = pagination.currentPage) => {
     return await loadTenantDocuments(page, filters);
@@ -216,9 +172,6 @@ export const TenantDocument: React.FC = () => {
       'Loading Tenant Document'
     )
   }
-  //#endregion
-
-  //#region SERACH TENANT DOCUMENT 
   const searchTenantDocuments = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -237,18 +190,11 @@ export const TenantDocument: React.FC = () => {
     await loadTenantDocuments(1, filterParams)
 
   }
-  //#endregion
-
-  //#region CLEAR SERACH TENANT DOCUMENT 
   const clearsearchTenantDocuments = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     loadTenantDocuments(1, { DocumentName: '' }, sortInfo, undefined);
   }
-
-  //#endregion
-
-  //#region EXPORT EXCEL | PDF
   const handleExportTenantDocuments = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -437,7 +383,6 @@ export const TenantDocument: React.FC = () => {
               : '-'
       },
     ],
-    // dependencies: include everything used inside that might change
     [canAction, handleEditTenantDocument, handleConfirmationDialogBoxOpen]
   )
 
@@ -484,8 +429,6 @@ export const TenantDocument: React.FC = () => {
     setRemovedDocumentURLs([]);
     setIsAddUpdateModalOpen(true);
   }
-
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddTenantDocumentForm = (): {
 
     isValid: boolean
@@ -730,15 +673,10 @@ export const TenantDocument: React.FC = () => {
           setShowFilterPopup(true)
         }}
         isShowCustomizeButton={false}
-        // ADD
         isShowAddButton={canAction}
         addTitle="Add"
         onAdd={handleAddTenantDocumentModal}
-
-        // IMPORT
         isShowImportButton={false}
-
-        // EXPORT
         isShowExportButton={false}
         onExportExcel={handleExportTenantDocumentExcel}
         onExportPdf={handleExportTenantDocumentPdf}
@@ -879,8 +817,6 @@ export const TenantDocument: React.FC = () => {
         loading={isLoading}
         pageName='tenant document'
       />
-
-
     </div>
   )
 }

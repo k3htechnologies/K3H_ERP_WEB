@@ -10,11 +10,13 @@ import type {
     FilterPaymentScheduleStagesRequest,
     PaymentScheduleStagesResponse,
     BookingUpdateegistrationDateParkingResponse,
+    DeleteBookingRequest,
 } from '@/features/booking/models/BookingModel'
 
 export abstract class BookingDatasource {
     abstract pullBooking(params: FilterWithPaginationBookingRequest, signal?: AbortSignal): Promise<BookingListResponse>;
     abstract addUpdateBooking(data: FormData): Promise<BookingSaveResponse>;
+    abstract deleteBooking(params: DeleteBookingRequest): Promise<BookingDeleteResponse>;
     abstract cancelBooking(formData: FormData): Promise<BookingDeleteResponse>;
     abstract pullChannelPartnerBooking(params: FilterWithPaginationChannelPartnerBookingRequest, signal?: AbortSignal): Promise<BookingListResponse>;
     abstract pullPaymentScheduleStages(params: FilterPaymentScheduleStagesRequest): Promise<PaymentScheduleStagesResponse>;
@@ -49,6 +51,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
             if (params.AgreementValue) queryParams.append('AgreementValue', params.AgreementValue.toString());
             if (params.BookingType?.trim()) queryParams.append('BookingType', params.BookingType.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.BookingSearchKey?.trim()) queryParams.append('BookingSearchKey', params.BookingSearchKey.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -88,6 +91,36 @@ export class BookingDatasourceImpl implements BookingDatasource {
             throw error
         }
     }
+
+    async deleteBooking(params: DeleteBookingRequest): Promise<BookingDeleteResponse> {
+            try {
+                const queryParams = new URLSearchParams({
+                    BookingId: (params.BookingId ?? 0).toString(),
+                    Uniquekey: params.Uniquekey ?? '',
+                    ProjectId: (params.ProjectId ?? 0).toString(),
+                    InventoryFlatId: (params.InventoryFlatId ?? 0).toString(),
+                    ParkingId: params.ParkingId ?? '',
+                })
+    
+                return await this.k3hHttpClient.deleteRequestWithAuthentication(
+                    `${BookingApi.DELETE}?${queryParams.toString()}`
+                )
+    
+                
+    
+            } catch (error) {
+    
+                console.error('ERROR: DELETE BOOKING :', error);
+    
+                if (error instanceof TokenExpiredException) {
+    
+                    return await this.deleteBooking(params);
+    
+                }
+    
+                throw error
+            }
+        }
 
     async cancelBooking(formData: FormData): Promise<BookingDeleteResponse> {
         try {

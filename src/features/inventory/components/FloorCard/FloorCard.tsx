@@ -28,10 +28,11 @@ interface FloorCardProps {
     isLastFloor?: boolean;
     canAction?: boolean;
     canBookingAction?: boolean;
+    canTenantBookingAction?: boolean;
     approvalStatus?: string
 }
 
-export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction, approvalStatus }: FloorCardProps) => {
+export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction, canTenantBookingAction, approvalStatus }: FloorCardProps) => {
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -250,6 +251,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                     buildingNumber={building?.BuildingNumber ?? ""}
                                     canAction={canAction}
                                     canBookingAction={canBookingAction}
+                                    canTenantBookingAction={canTenantBookingAction}
                                     approvalStatus={approvalStatus}
                                 />
 

@@ -229,7 +229,7 @@ export const FlatHandoverChecklist: React.FC = () => {
 
             {filteredFlatHandoverChecklistData.map((item, index) => {
                 return (
-                    <div key={index} className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+                    <div key={index} className="gap-x-4 rounded-lg border border-gray-300 p-4 mb-4">
 
                         <div className="flex justify-between items-start gap-4">
                             <FieldItem label="Items" value={item.Items} className="font-bold" />

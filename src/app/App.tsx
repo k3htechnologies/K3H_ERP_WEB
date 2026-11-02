@@ -24,7 +24,6 @@ import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMapping
 import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMaster';
 import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
 import Vendor from '@/features/vendor/pages/Vendor';
-import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
@@ -101,7 +100,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -247,17 +245,6 @@ import { StockManagementListStateProvider } from '@/features/stockManagement/con
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
-import TeamWorkspaceDashboard from '@/features/teamWorkspaceDashboard/pages/TeamWorkspaceDashboard';
-import { MeetingListStateProvider } from '@/features/meeting/context/MeetingListStateContext';
-import { TaskListStateProvider } from '@/features/task/context/TaskListStateContext';
-import Conference from '@/features/conference/pages/Conference';
-import AddUpdateConference from '@/features/conference/pages/AddUpdateConference';
-import Task from '@/features/task/pages/Task';
-import ViewTask from '@/features/task/pages/ViewTask';
-import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask';
-import Meeting from '@/features/meeting/pages/Meeting';
-import AddUpdateMeeting from '@/features/meeting/pages/AddUpdateMeeting';
-import ViewMeeting from '@/features/meeting/pages/ViewMeeting';
 import { ContractRequisition } from '@/features/contractRequisition/pages/ContractRequisition';
 import { ContractRequisitionListStateProvider } from '@/features/contractRequisition/context/ContractRequisitionListStateContext';
 import { AddUpdateContractRequisition } from '@/features/contractRequisition/pages/AddUpdateContractRequisition';
@@ -266,6 +253,24 @@ import { ContractMaster } from '@/features/contractMaster/pages/ContractMaster';
 import AddUpdateContractInvoice from '@/features/contractRequisition/components/invoice/AddUpdateContractInvoice';
 import AddUpdateContractInvoicePayment from '@/features/contractRequisition/components/invoice/AddUpdateContractInvoicePayment';
 import ViewContractInvoicePayment from '@/features/contractRequisition/components/invoice/ViewContractInvoicePayment';
+import TenantBooking from '@/features/tenantBooking/pages/TenantBooking';
+import { TenantBookingListStateProvider } from '@/features/tenantBooking/context/TenantBookingListStateContext';
+import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
+import ViewTenantBooking from '@/features/tenantBooking/pages/ViewTenantBooking';
+import VisitorManagementDashboard from '@/features/visitorManagementDashboard/pages/VisitorManagementDashboard';
+import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/BaselineCostPlanDocument';
+import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
+import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
+import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
+import { CostToCompanyListStateProvider } from '@/features/costToCompany/context/CostToCompanyListStateContext';
+import CostToCompany from '@/features/costToCompany/pages/CostToCompany';
+import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCostToCompany';
+import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
+import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
+import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
+import CompanyDocument from '@/features/companyMaster/pages/CompanyDocument';
+import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompanyMasterWithBank';
+import { DarAllocation } from '@/features/darAllocation/pages/DarAllocation';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -287,7 +292,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     return <Navigate to="/sign-in" replace />
   }
-
 
   return <>{children}</>
 }
@@ -317,6 +321,7 @@ function App() {
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="dashboard/view" element={<ViewDashboardApprovals />} />
             <Route path="erpRoadmap" element={<ErpRoadmap />} />
 
             {/* SETTING -> COMPANY SETUP */}
@@ -331,11 +336,16 @@ function App() {
             <Route path="employeeMaster/view" element={<EmployeeListStateProvider><ViewEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
+            <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
 
-            <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
+
+
+            <Route path="companyMaster" element={<CompanyListStateProvider><ViewCompanyMasterWithBank /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
             <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
+
+            <Route path='companyMaster/document' element={<CompanyListStateProvider><CompanyDocument /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -422,12 +432,21 @@ function App() {
 
             <Route path="attendance" element={<AttendanceCalendar />} />
 
+            <Route path='costToCompany' element={<CostToCompanyListStateProvider><CostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/add/:CostToCompanyId?' element={<CostToCompanyListStateProvider><AddUpdateCostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/view' element={<CostToCompanyListStateProvider><ViewCostToCompany /></CostToCompanyListStateProvider>} />
+
+
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
+
+            <Route path="inventory" element={<BookingListStateProvider> <TenantBookingListStateProvider>   <Inventory /> </TenantBookingListStateProvider> </BookingListStateProvider>} />
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="inventory/projectDrawing" element={<ProjectDrawing></ProjectDrawing>}></Route>
-            <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+
+            <Route path="parking" element={<BookingListStateProvider> <TenantBookingListStateProvider><Parking></Parking></TenantBookingListStateProvider></BookingListStateProvider>} />
+
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}
@@ -446,7 +465,6 @@ function App() {
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
             {/* COMMAN */}
-            <Route path="event" element={<Event />} />
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
@@ -487,7 +505,7 @@ function App() {
 
             <Route path="otherCharges" element={<OtherCharges />} />
 
-            <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
+            <Route path="paymentSchedules" element={<PaymentScheduleMaster />} />
             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
 
             <Route path="target" element={<Target />} />
@@ -508,7 +526,7 @@ function App() {
 
             <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
-
+            <Route path="darAllocation" element={<DarAllocation />} />
             {/* REDEVELOPMENT */}
 
             <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
@@ -519,10 +537,10 @@ function App() {
             <Route path="building/description" element={<BuildingListStateProvider><BuildingDescription /></BuildingListStateProvider>} />
             <Route path="building/document" element={<BuildingListStateProvider><BuildingDocument /></BuildingListStateProvider>} />
 
-            <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
-            <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
-            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
-            <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
+            <Route path="tenant" element={<TenantListStateProvider><TenantBookingListStateProvider><Tenant /></TenantBookingListStateProvider></TenantListStateProvider>} />
+            <Route path="tenant/view" element={<TenantListStateProvider><TenantBookingListStateProvider><ViewTenant /></TenantBookingListStateProvider></TenantListStateProvider>} />
+            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><TenantBookingListStateProvider><AddUpdateTenant /></TenantBookingListStateProvider></TenantListStateProvider>} />
+            <Route path="tenant/document" element={<TenantListStateProvider><TenantBookingListStateProvider><TenantDocument /></TenantBookingListStateProvider></TenantListStateProvider>} />
 
             <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
             <Route path="rent/pay/:PayTrackRentId?" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
@@ -531,6 +549,10 @@ function App() {
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
             <Route path="proposedPlan" element={<ProposedPlan />} />
+
+            <Route path="tenantBooking" element={<TenantBookingListStateProvider><TenantBooking /></TenantBookingListStateProvider>} />
+            <Route path="tenantBooking/view" element={<TenantBookingListStateProvider><ViewTenantBooking /></TenantBookingListStateProvider>} />
+            <Route path="tenantBooking/add" element={<TenantBookingListStateProvider><AddUpdateTenantBooking /></TenantBookingListStateProvider>} />
 
 
             {/* OPERATION */}
@@ -561,6 +583,8 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
+            <Route path="crmDashboard/collectionMilestone/view" element={<CrmMilestoneView />} />
+            <Route path="crmDashboard/collectionSummary/view" element={<CrmCollectionSummaryView />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
@@ -581,6 +605,8 @@ function App() {
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
+            <Route path="baselineCostPlan" element={<BaselineCostPlanDocument />} />
+            <Route path="constructionArea" element={<ConstructionAreaDetails />} />
 
             {/* FINANCE */}
             <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />
@@ -592,10 +618,10 @@ function App() {
 
             {/* VISITOR MANAGEMENT */}
             <Route path='gatePass' element={<GatePass />} />
+            <Route path='visitorManagementDashboard' element={<VisitorManagementDashboard />} />
 
             {/* PROJECT LAND */}
-            <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider>
-              <ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
+            <Route path='projectLead' element={<ProjectLandListStateProvider><ProjectRedevelopmentListStateProvider><ViewProjectLead /></ProjectRedevelopmentListStateProvider></ProjectLandListStateProvider>} />
             <Route path="projectLead/addProjectLand/:ProjectLandId?" element={<ProjectLandListStateProvider><AddUpdateProjectLand /></ProjectLandListStateProvider>} />
             <Route path="projectLead/addProjectRedevelopment/:ProjectRedevelopmentId?" element={<ProjectRedevelopmentListStateProvider><AddUpdateProjectRedevelopment /></ProjectRedevelopmentListStateProvider>} />
             <Route path="projectLead/viewProjectLand" element={<ProjectLandListStateProvider><ViewProjectLand /></ProjectLandListStateProvider>} />
@@ -612,18 +638,7 @@ function App() {
             <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
 
             {/* {TEAM WORK SPACE} */}
-            <Route path="teamWorkspaceDashboard" element={<TeamWorkspaceDashboard />} />
-            <Route path="calendar" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
-            <Route path="event" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
-            <Route path="conference" element={<Conference />} />
-            <Route path="conference/add" element={<AddUpdateConference />} />
-            <Route path="task" element={<TaskListStateProvider><Task /></TaskListStateProvider>} />
-            <Route path="task/view/:taskId?" element={<TaskListStateProvider><ViewTask /></TaskListStateProvider>} />
-            <Route path="task/add/:taskId?" element={<TaskListStateProvider><AddUpdateTaskOrSubTask /></TaskListStateProvider>} />
-            <Route path="meeting" element={<MeetingListStateProvider><Meeting /></MeetingListStateProvider>} />
-            <Route path="meeting/add/:meetingId?" element={<MeetingListStateProvider><AddUpdateMeeting /></MeetingListStateProvider>} />
-            <Route path="meeting/view" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
-            <Route path="meeting/mom" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
+
 
             {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />

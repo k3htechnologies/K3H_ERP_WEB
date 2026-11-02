@@ -17,6 +17,7 @@ interface TabsProps {
   isvertical?: boolean;
   istoggleTab?: boolean;
   tabWidth?: number;
+  isShowCount?: boolean;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -27,7 +28,8 @@ export const Tabs: React.FC<TabsProps> = ({
   isChips = false,
   isvertical = false,
   istoggleTab = false,
-  tabWidth=20
+  tabWidth = 20,
+  isShowCount = true
 }) => {
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
@@ -111,7 +113,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (isvertical) {
     return (
-      <div className="w-full overflow-y-auto thin-scroll" style={{ maxHeight: verticalTabHeight}} >
+      <div className="w-full overflow-y-auto thin-scroll" style={{ maxHeight: verticalTabHeight }} >
         <div className="flex flex-col gap-2 w-full">
           {tabs.map((tab) => {
 
@@ -125,11 +127,13 @@ export const Tabs: React.FC<TabsProps> = ({
                   className={`w-full flex items-center justify-between text-left px-4 py-3 rounded-lg text-sm transition
                                     ${isActive ? "bg-[#2563EB] text-white font-medium" : "text-gray-700 font-normal"}`}>
                   <span>{tab.label}</span>
-
-                  <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>
-                    {tab.count ?? 0}
-                  </span>
                   
+                  {isShowCount && (
+                    <span className={`text-xs ${isActive ? "text-white font-medium" : "text-gray-400"}`}>
+                      {tab.count ?? 0}
+                    </span>
+                  )}
+
                 </button>
               </div>
             );

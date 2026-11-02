@@ -17,6 +17,7 @@ export interface UserDashboardDataset {
   Table13: Table13[];
 }
 
+
 export interface Table0 {
   Name: string | null;
   Department: string | null;
@@ -149,15 +150,7 @@ export interface Table12 {
 
 }
 export interface Table13 {
-  ModuleName: string | null;
-  ProjectName: string | null;
-  BuildingNumber: string | null;
-  Wing: string | null;
-  Floor: string | null;
-  Flat: string | null;
-  ApplicantName: string | null;
-  ModulePath: string | null;
-
+  MyApprovalCount: number | 0;
 }
 
 export type UserDashboardDatasetResponse = ApiResponse<UserDashboardDataset>;

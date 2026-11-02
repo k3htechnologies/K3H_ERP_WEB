@@ -15,8 +15,15 @@ export const EmployeeMasterApi = {
     DELETE_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/DeleteEmployeeEducationDetails',
 
     SET_EMPLOYEE_MPIN: '/Employee/SetEmployeeMPIN',
-     UPDATE:'/Employee/UpdateEmployee',
-    
+    UPDATE: '/Employee/UpdateEmployee',
+
+    PULL_EMPLOYEE_LETTER: '/EmployeeLetter/PullEmployeeLetter',
+    ADD_UPDATE_EMPLOYEE_LETTER: '/EmployeeLetter/AddUpdateEmployeeLetter',
+    ADD_UPDATE_EMPLOYEE_LETTER_SHOW_EMPLOYEE: '/EmployeeLetter/AddUpdateEmployeeLetterShowEmployee',
+    ADD_UPDATE_EMPLOYEE_LETTER_ACCEPT_EMPLOYEE: '/EmployeeLetter/AddUpdateEmployeeLetterAcceptEmployee',
+    DELETE_EMPLOYEE_LETTER: '/EmployeeLetter/DeleteEmployeeLetter'
+
+
 } as const
 
 export type EmployeeMasterApiKeys = keyof typeof EmployeeMasterApi

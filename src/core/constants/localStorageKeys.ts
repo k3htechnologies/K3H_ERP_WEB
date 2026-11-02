@@ -111,6 +111,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     //ESTIMATION AND BUDGET
     BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
+    CONSTRUCTION_AREA_SELECTED_COLUMNS: 'constructionArea.selectedColumns',
 
     //TERM SHEET
     TERM_SHEET_SELECTED_COLUMNS: 'termSheet.selectedColumns',
@@ -138,6 +139,8 @@ export const LOCAL_STORAGE_KEYS = {
     //CONTRACT
     CONTRACT_REQUISITION_SELECTED_COLUMNS: 'contractRequisition.selectedColumns',
 
+    //COST TO COMPANY
+    COST_TO_COMPANY_SELECTED_COLUMNS: 'costToCompany.selectedColumns',
 
 } as const
 
@@ -160,6 +163,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     CHANNEL_PARTNER_UNIVERSE: 'channelPartnerUniverse.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
+    TENANT_BOOKING: 'tenantBooking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
     PAY_TRACK_REPORT: 'payTrackReport.listState',
     INWARD_OUTWARD: 'inwardOutward.listState',
@@ -176,6 +180,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TASK: 'task.listState',
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
-    CONTRACT_REQUISITION: 'contractRequisition.listState'
+    CONTRACT_REQUISITION: 'contractRequisition.listState',
+    COST_TO_COMPANY: 'costToCompany.listState'
 
 } as const

@@ -138,7 +138,7 @@ export const ApprovedBankFolder: React.FC = () => {
     };
 
     //#region MENU PERMISSIONS
-    const { canAction,canExport } = useMenuPermissions();
+    const { canAction,canExport,canView } = useMenuPermissions();
     //#endregion
 
     //#region APPROVED BANK LIST STATE CONTEXT
@@ -228,7 +228,7 @@ export const ApprovedBankFolder: React.FC = () => {
                 const params: FilterWithPaginationApprovedBankFileRequest = {
 
                     PageNumber: 1,
-                    PageSize: pagination.totalRecords,
+                    PageSize: row.NumberOfApprovedBankFile || 0,
                     ProjectId: Number(projectId) || 0,
                     ApprovedBankFolderId: row.ApprovedBankFolderId,
                     ExportType: exportType,
@@ -491,7 +491,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
                         addToast({
                             type: 'success',
-                            title: response.right.SuccessMessage[0]
+                            title: canView ? response.right.SuccessMessage[0] : "Bank added successfully"
                         });
                     } else {
                         const updatedRecord =
@@ -512,6 +512,7 @@ export const ApprovedBankFolder: React.FC = () => {
                             title: response.right.SuccessMessage[0]
                         });
                     }
+                    
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }

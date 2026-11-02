@@ -377,7 +377,9 @@ export const MASTER_DATA = {
     "HRA",
     "DA",
     "Conveyance Allowance",
+    "Education Allowance",
     "Medical Allowance",
+    "Attire Allowances",
     "Special Allowance",
     "Other Allowance",
     "LTA",
@@ -397,6 +399,8 @@ export const MASTER_DATA = {
     "Employer PF",
     "Employer ESI",
     "Gratuity",
+    "Gross Amount",
+    "Gross Amount - Earning Component",
     "Superannuation",
     "NPS Employer",
     "Health Insurance",
@@ -405,6 +409,7 @@ export const MASTER_DATA = {
     "Arrears",
     "Ex-Gratia",
     "Relocation Allowance",
+   
   ],
   leaveTypeMaster: [
     "Adoption - Adoption Leave",
@@ -472,7 +477,7 @@ export const MASTER_DATA = {
 
   parkingSize: ["Big", "Small"],
 
-  parkingStatus: ["Available", "Blocked", "Hold", "Member"],
+  parkingStatus: ["Available", "Blocked", "Hold", "Member","Booked"],
 
   // unitLayout: ['Entire Flat','Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
@@ -540,7 +545,7 @@ export const MASTER_DATA = {
 
   monthsShots: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 
-  activeInactive: ["Active", "Inactive"],
+  activeInactive: ["Active","Closed", "Inactive"],
 
   paymentFor: [
     "Stamp Duty",
@@ -635,7 +640,7 @@ export const MASTER_DATA = {
     "Other",
   ],
 
-  budgetLevelType: ["L1", "L2", "L3"],
+  budgetLevelType: ["L1", "L2", "L3", "L4"],
 
   aopStatus: ["AOP", "NON - AOP", "EXPIRED", "EXPIRE SOON"],
 
@@ -649,7 +654,7 @@ export const MASTER_DATA = {
     "Assessment Bill",
     "Consent For Cluster (If Applicable)",
     "Developer Format Consent",
-    "Electric NOC",
+    "Electricity NOC",
     "Electricity Bill",
     "Eligible / Non Eligible (Form 3 & 4)",
     "Extra Area Purchase Letter",
@@ -675,9 +680,13 @@ export const MASTER_DATA = {
     "Vacant Possession Letter",
     "Vacating Consent Letter",
     "Yadi Slip",
+    "Slum Dweller's Consent",
+    "Slum Agreement",
+    "Taba Patra"
+
   ],
 
-  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30"],
+  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30", "2030-31","2031-32","2032-33","2033-34"],
 
   termSheetDocument: [
     "Board Resolution",
@@ -741,33 +750,7 @@ export const MASTER_DATA = {
 
   employmentType: ["Full-Time", "Contract", "Internship"],
 
-  experienceYears: [
-    "1 Year",
-    "2 Years",
-    "3 Years",
-    "4 Years",
-    "5 Years",
-    "6 Years",
-    "7 Years",
-    "8 Years",
-    "9 Years",
-    "10 Years",
-  ],
-
-  experienceMonths: [
-    "1 Month",
-    "2 Months",
-    "3 Months",
-    "4 Months",
-    "5 Months",
-    "6 Months",
-    "7 Months",
-    "8 Months",
-    "9 Months",
-    "10 Months",
-    "11 Months",
-    "12 Months",
-  ],
+  experienceYears: ["0-5", "6-10", "11-15", "15+"],
 
   jobOpeningLockedEditFields: [
     "JobDescription",
@@ -786,6 +769,37 @@ export const MASTER_DATA = {
   contractRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Work Order', 'Add Invoice', 'Make Payments'],
 
   contractRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
+  applicableFor: ['Sale', 'Tenant'],
+
+  employeeLetterType: [
+    "Offer Letter",
+    "Appointment Letter",
+    "Joining Letter",
+    "Confirmation Letter",
+    "Increment Letter",
+    "Appraisal Letter",
+    "Promotion Letter",
+    "Transfer Letter",
+    "Relieving Letter",
+    "Experience Letter",
+    "Warning Letter",
+    "Termination Letter",
+    "Resignation Acceptance Letter",
+    "Salary Revision Letter",
+    "Employment Agreement",
+  ],
+
+  companyDocument: [
+    "AOA",
+    "Certificate of Incorporation",
+    "MOA",
+    "Balance Sheet",
+    "Tax Return",
+    "Net Worth Certificate",
+    "Provisional Balance Sheet",
+    "Solvency Certificate",
+    "Tax Audit Report"
+],
 } as const;
 
 // ============================================================================
@@ -936,20 +950,19 @@ export const LAND_OWNERSHIP_TYPE_OPTIONS = toOptions(MASTER_DATA.landOwnerShipTy
 export const INVOICE_PAYMENT_TYPE = toOptions(MASTER_DATA.inVoicePaymentType);
 export const EMPLOYMENT_TYPE_OPTIONS = toOptions(MASTER_DATA.employmentType);
 export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
-export const EXPERIENCE_YEAR_OPTIONS: Option[] = MASTER_DATA.experienceYears.map((name, index) => ({
-  id: String(index + 1),
-  name,
-}));
-export const EXPERIENCE_MONTH_OPTIONS: Option[] = MASTER_DATA.experienceMonths.map((name, index) => ({
-  id: String(index + 1),
-  name,
-}));
+export const EXPERIENCE_RANGE_OPTIONS = toOptions(MASTER_DATA.experienceYears);
+
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 export const CONTRACT_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.contractRequisitionStages);
 export const CONTRACT_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.contractRequisitionStatus);
+export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);
+export const EMPLOYEE_LETTER_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeLetterType);
+export const COMPANY_DOCUMENT = toOptions(MASTER_DATA.companyDocument);
+
+
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

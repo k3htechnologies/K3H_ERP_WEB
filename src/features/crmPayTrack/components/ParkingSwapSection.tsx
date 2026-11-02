@@ -673,14 +673,14 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                             </div>
                         </div>
 
-                        <div className="p-5">
+                        
                             <DataTableWithHeaderRowDivider
                                 columns={parkingColumns}
                                 data={tableData}
                                 fixedHeight={true}
                                 className="flex-1"
                             />
-                        </div>
+                        
                     </section>
                 </div>
             )}

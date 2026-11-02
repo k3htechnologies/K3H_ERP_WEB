@@ -421,6 +421,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (!formData.OfficeAddress) {
       newErrors.OfficeAddress = "Office Address is required";
+    }else if (formData.OfficeAddress.trim().length < 25) {
+      newErrors.OfficeAddress = "Office Address must be at least 25 characters long.";
     }
 
     if (formData.IsRERANumber === 1 && !formData.RERANumber) {

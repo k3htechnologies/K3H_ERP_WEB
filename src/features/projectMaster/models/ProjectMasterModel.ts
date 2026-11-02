@@ -113,8 +113,9 @@ export interface ProjectMasterData {
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
 
-    IsFederation: boolean | false;
-    FederationAmount: number | 0;
+    IsFederation:boolean | false;
+    FederationAmount:number | 0;
+    IsLockAndKey:boolean | false;
 
     // Notification
     NotificationCount: number | 0;
@@ -133,7 +134,6 @@ export interface ProjectMasterData {
     ModifiedDate: string | null
     LastModifiedBy: string | ''
     LastModifiedDate: string | null
-    IsLockAndKey: boolean;
 }
 
 export interface ProjectWithBankDetails {
@@ -235,9 +235,9 @@ export interface AddUpdateProjectMasterRequest {
     ProjectSubScheme: string | '';
     GoogleLocation: string | '';
 
-    IsFederation: boolean | false;
-    FederationAmount: number | 0;
-    IsLockAndKey: boolean;
+    IsFederation:boolean | false;
+    FederationAmount:number | 0;
+    IsLockAndKey:boolean | false;
 }
 
 export interface AddUpdateProjectMasterWithEmployeeRequest {

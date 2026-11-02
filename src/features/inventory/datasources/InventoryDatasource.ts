@@ -119,6 +119,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
                 PageNumber: (params.PageNumber ?? 0).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
                 IsAcessOnlyLienToSociety: (params.IsAcessOnlyLienToSociety ?? false).toString(),
+                IsAllotedBookingDone: (params.IsAllotedBookingDone ?? false).toString(),
             });
 
             if (params.InventoryFlatId) queryParams.append("InventoryFlatId", params.InventoryFlatId.toString());
@@ -163,9 +164,8 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
             if (params.Floor) queryParams.append('Floor', params.Floor);
             if (params.BuildingNumberWingFloor) queryParams.append('BuildingNumberWingFloor', params.BuildingNumberWingFloor);
             if (params.ApprovalStatus) queryParams.append('ApprovalStatus', params.ApprovalStatus);
-           
-
             return await this.k3hHttpClient.getRequestWithAuthentication(`${InventoryApis.PULL_PAGINATED_FLOOR}?${queryParams.toString()}`, { signal });
+
         } catch (error: any) {
 
             console.error('ERROR: PULL PAGINATED FLOOR:', error);

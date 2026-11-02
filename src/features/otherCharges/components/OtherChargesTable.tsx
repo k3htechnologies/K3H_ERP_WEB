@@ -13,7 +13,8 @@ interface OtherChargesTableProps {
   onSort: (sort: SortInfo) => void;
   onView: (row: OtherChargesData) => void;
   onDelete: (row: OtherChargesData) => void;
-  canAction: boolean;
+  canActionSale: boolean;
+  canActionTenant: boolean;
   loading: boolean;
 }
 
@@ -25,21 +26,32 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
   onSort,
   onView,
   onDelete,
-  canAction,
+  canActionSale,
+  canActionTenant,
   loading
 }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map(col => {
+
       if (col.key === 'Actions') {
         return {
           ...col,
-          render: (_value, row: OtherChargesData) =>
+          render: (_value, row: OtherChargesData) => {
+
+            const canAction =
+              row.ApplicableFor?.trim().toUpperCase() === 'SALE' ? canActionSale
+                : row.ApplicableFor?.trim().toUpperCase() === 'TENANT' ? canActionTenant
+                  : false;
+
+            return (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
-                     if (!canAction) return;
+
+                    if (!canAction) return;
+
                     onDelete(row);
                   }}
                   color="transparent"
@@ -57,6 +69,15 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
+            );
+          }
+        };
+      }
+
+      if (col.key === 'ApplicableFor') {
+        return {
+          ...col,
+          render: (value: string | null) => value || ''
         };
       }
 
@@ -74,7 +95,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
       if (col.key === 'Value') {
         return {
           ...col,
-          render: (value: number) => formatCurrency(value)?? '0'
+          render: (value: number) => formatCurrency(value) ?? '0'
         };
       }
 
@@ -95,7 +116,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
       if (col.key === 'GSTValue') {
         return {
           ...col,
-          render: (value: number) => formatCurrency(value)?? '0'
+          render: (value: number) => formatCurrency(value) ?? '0'
         };
       }
 
@@ -112,7 +133,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
 
       return col;
     });
-  }, [columns, canAction, onView, onDelete]);
+  }, [columns, canActionSale, canActionTenant, onView, onDelete]);
 
   return (
     <DataTable

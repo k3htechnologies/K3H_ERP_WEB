@@ -46,7 +46,7 @@ export const getPageInfo = (path: string) => {
       };
     case "companyMaster":
       return {
-        title: "Company Master",
+        title: "Company Details",
         description: "Single source of truth for company information",
       };
 
@@ -212,6 +212,12 @@ export const getPageInfo = (path: string) => {
         description: "Comprehensive payroll reports for accurate financial tracking",
       };
 
+    case "costToCompany":
+      return {
+        title: "Cost To Company",
+        description: "Overview of your system and key metrics",
+      };
+
     //DOCUMENT MANAGEMENT
     case "category":
       return {
@@ -326,7 +332,7 @@ export const getPageInfo = (path: string) => {
     //REDEVELOPMENT
     case "redevelopmentDashboard":
       return {
-        title: "Redevelopment Dashboard",
+        title: "Business Development Dashboard",
         description: "Structured redevelopment workflows for efficient execution",
       };
     case "building":
@@ -353,6 +359,12 @@ export const getPageInfo = (path: string) => {
       return {
         title: "Proposed Plan",
         description: "Proposed Plan",
+      };
+
+    case "tenantBooking":
+      return {
+        title: "Tenant Booking",
+        description: "Manage tenant bookings efficiently with clear visibility and control",
       };
 
     //COMMAN MODULES
@@ -462,9 +474,9 @@ export const getPageInfo = (path: string) => {
         title: "Other Charges",
         description: "Clear Breakdown of All Extra Charges",
       };
-    case "paymentSchedule":
+    case "paymentSchedules":
       return {
-        title: "Payment Schedule",
+        title: "Payment Schedules",
         description: "Structured Payment Schedules for Smooth Cash Flow",
       };
     case "paymentScheduleScheme":
@@ -525,6 +537,11 @@ export const getPageInfo = (path: string) => {
     case "aopAchievement":
       return {
         title: "AOP Achievement",
+        description: "Recognize and Reward Top Performers",
+      };
+      case "darAllocation":
+      return {
+        title: "DAR Allocation",
         description: "Recognize and Reward Top Performers",
       };
 
@@ -604,6 +621,19 @@ export const getPageInfo = (path: string) => {
         description: "Overview of your system and key metrics",
       };
 
+    case "baselineCostPlan":
+      return {
+        title: "Baseline Cost Plan Document",
+        description: "Overview of your system and key metrics",
+      };
+    case "constructionArea":
+      return {
+        title: "Construction Area",
+        description: "Overview of your system and key metrics",
+      };
+
+
+
     //FINANCE
     case "termSheet":
       return {
@@ -623,6 +653,13 @@ export const getPageInfo = (path: string) => {
         title: "Gate Pass",
         description: "Gate Pass",
       };
+
+    case "visitorManagementDashboard":
+      return {
+        title: "Visitor Management Dashboard",
+        description: "Dashboard for managing visitor access and entries",
+      };
+
 
     //PROJECT LEAD
     case "projectLead":

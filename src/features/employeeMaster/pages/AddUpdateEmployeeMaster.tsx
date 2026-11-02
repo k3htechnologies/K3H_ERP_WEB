@@ -376,14 +376,14 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
     if (!formData.CommunicationAddress?.trim()) {
       newErrors.CommunicationAddress = "Communication Address is required";
-    } else if (formData.CommunicationAddress.trim().length > 500) {
-      newErrors.CommunicationAddress = "Communication Address must be at most 500 characters";
+    } else if (formData.CommunicationAddress.trim().length < 25) {
+      newErrors.CommunicationAddress = "Communication Address must be at least 25 characters long.";
     }
 
     if (!formData.PermanentAddress?.trim()) {
       newErrors.PermanentAddress = "Permanent Address Name is required";
-    } else if (formData.PermanentAddress.trim().length > 500) {
-      newErrors.PermanentAddress = "Permanent Address must be at most 500 characters";
+    } else if (formData.PermanentAddress.trim().length < 25) {
+      newErrors.PermanentAddress = "Permanent Address must be at least 25 characters long.";
     }
 
     if (!formData.CountryMasterId) {

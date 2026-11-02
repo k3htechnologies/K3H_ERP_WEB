@@ -66,7 +66,7 @@ export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
   return (
     <div>
       <div className="flex items-center justify-between gap-4 flex-wrap">
-        <div className="relative min-w-0 w-[526px]">
+        <div className="relative min-w-0 w-[400px]">
           <DateRangeSelector
             fromDate={fromDate}
             toDate={toDate}

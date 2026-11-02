@@ -473,10 +473,15 @@ export const ViewBuilding: React.FC = () => {
                                     <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
 
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                     <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
                                     <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
                                     <FieldItem label="Ward" value={buildingData?.WardName ?? '-'} />
+
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-4">
+                                    <FieldItem label="Address" value={buildingData?.Address ?? '-'} />
 
                                 </div>
                             </div>

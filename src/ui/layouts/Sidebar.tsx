@@ -186,7 +186,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     if (item.children && item.children.length > 0) {
 
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" ||  item.path === "crmDashboard" ||  item.path === "hireSpaceDashboard" || item.path === '/teamWorkspaceDashboard') {
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" ||  item.path === "crmDashboard" ||  item.path === "hireSpaceDashboard" ||  item.path === "visitorManagementDashboard" || item.path === 'teamWorkspaceDashboard') {
 
         const route = mapPathToRoute(item.path)
 
@@ -203,7 +203,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     } else {
       if (item.path) {
-
+       
         const route = mapPathToRoute(item.path)
 
         const navigateTo = route || item.path;
@@ -548,7 +548,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </button>
                 <div className="text-center">
                   <p className="text-xs text-gray-400">
-                    Version 1.0.2
+                    Version 2.0.1
                   </p>
                 </div>
               </div>
@@ -562,7 +562,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <LogOut className="h-4 w-4 text-white" />
                 </button>
                 <p className="text-xs text-gray-400">
-                  v1.0.2
+                  v2.0.1
                 </p>
               </div>
             )}

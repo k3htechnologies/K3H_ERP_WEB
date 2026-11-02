@@ -2,7 +2,7 @@ import * as E from "fp-ts/Either";
 import { inventoryService } from "@/features/inventory/services/InventoryServices";
 import type { InventoryFlatData } from "./models/InventoryMasterModel";
 
-export const fetchPaginatedInventoryFlatDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number; flat?: string; flatStatus?: string }) => {
+export const fetchPaginatedInventoryFlatDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number; flat?: string; flatStatus?: string,approvalStatus?: string,isAllotedBookingDone?: boolean ,displayInventoryFlatId?: string }) => {
   try {
     const responseEither = await inventoryService.apiCallPullPaginatedFlats({
       PageSize: 40,
@@ -10,6 +10,10 @@ export const fetchPaginatedInventoryFlatDropdown = async (pageNumber: number, pa
       ProjectId: Number(params?.projectId),
       Flat: params?.flat?.trim() || "",
       FlatStatus: params?.flatStatus || "",
+      ApprovalStatus: params?.approvalStatus || "",
+      IsAllotedBookingDone: params?.isAllotedBookingDone || false,
+      DisplayInventoryFlatId: params?.displayInventoryFlatId || "",
+
     });
 
     if (E.isLeft(responseEither)) {
@@ -56,4 +60,51 @@ export const fetchInventoryFlatDetails = async (projectId: number, inventoryFlat
   if (E.isLeft(responseEither)) return null;
 
   return responseEither.right.Data?.[0] ?? null;
+};
+
+export const fetchPaginatedInventoryFlatWithBuildingNameDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number; flat?: string; flatStatus?: string,approvalStatus?: string,isAllotedBookingDone?: boolean ,displayInventoryFlatId?: string }) => {
+  try {
+    const responseEither = await inventoryService.apiCallPullPaginatedFlats({
+      PageSize: 40,
+      PageNumber: pageNumber,
+      ProjectId: Number(params?.projectId),
+      Flat: params?.flat?.trim() || "",
+      FlatStatus: params?.flatStatus || "",
+      ApprovalStatus: params?.approvalStatus || "",
+      IsAllotedBookingDone: params?.isAllotedBookingDone || false,
+      DisplayInventoryFlatId: params?.displayInventoryFlatId || "",
+
+    });
+
+    if (E.isLeft(responseEither)) {
+      return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+    }
+
+    const apiResponse = responseEither.right;
+
+    const itemList = (apiResponse?.Data || []).map((d: any) => ({
+      label: d.BuildingNumber +' - '+ d.Flat,
+      value: String(d.InventoryFlatId),
+      BuildingNumber: d.BuildingNumber,
+      Wing: d.Wing,
+      Floor: d.Floor,
+      Flat: d.Flat,
+      RERACarpetAreaSqFt: d.RERACarpetAreaSqFt,
+      FlatType: d.FlatType,
+      FlatConfiguration: d.FlatConfiguration,
+      FlatFacing: d.FlatFacing,
+      FlatStatus: d.FlatStatus,
+      OwnerName: d.OwnerName,
+      BookingCreatedBy: d.BookingCreatedBy,
+      BookingCreatedDate: d.BookingCreatedDate,
+    }));
+
+    return {
+      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
+      itemList,
+    };
+  } catch (err) {
+    console.error("FETCH PAGINATED INVENTORY FLAT DROPDOWN ERROR", err);
+    return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+  }
 };

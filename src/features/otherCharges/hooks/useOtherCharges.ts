@@ -34,39 +34,26 @@ export const useOtherCharges = () => {
   const [viewOtherChargesData, setViewOtherChargesData] = useState<OtherChargesData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
-  // FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // ADD / EDIT OTHER CHARGES
   const [editingOtherChargesData, setEditingOtherChargesData] = useState<OtherChargesData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
   const [formData, setFormData] = useState<AddUpdateOtherChargesRequest>(() => getInitialFormState());
 
-  // DELETE OTHER CHARGES
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
   const [deleteOtherChargesData, setDeleteOtherChargesData] = useState<OtherChargesData | null>(null);
 
-  //#endregion
-
-  //#region MENU PERMISSIONS
-  const { canAction, canExport } = useMenuPermissions();
-  //#endregion
-
-  //#region PROJECT
+  const { canAction: canActionSale, canExport: canExportSale } = useMenuPermissions('/saleOtherCharges');
+  const { canAction: canActionTenant, canExport: canExportTenant } = useMenuPermissions('/tenantOtherCharges');
+  
   const { projectId } = useProject();
-  //#endregion
-
-  //#region TABLE COLUMN DEFINITION
-  const otherChargesColumns = useMemo<TableColumn[]>(() => getOtherChargesColumns(),[]);
-  //#endregion
-
-  //#region INITIALIZATION
-
+  
+  const otherChargesColumns = useMemo<TableColumn[]>(() => getOtherChargesColumns(), []);
+ 
   const loadOtherCharges = useCallback(
     async (
       page: number,
@@ -85,6 +72,7 @@ export const useOtherCharges = () => {
             PageSize: pagination.pageSize,
             ProjectId: Number(projectId),
             ChargeName: filterParams.ChargeName?.toString().trim() || searchText?.trim() || undefined,
+            ApplicableFor: filterParams.ApplicableFor?.toString().trim() || undefined,
             SortBy: getSortByParam(sort ?? null, otherChargesColumns)
           };
 
@@ -113,7 +101,7 @@ export const useOtherCharges = () => {
   );
 
   useEffect(() => {
-    
+
     if (!projectId) return;
     loadOtherCharges(1, {}, undefined, undefined);
 
@@ -135,6 +123,7 @@ export const useOtherCharges = () => {
         setFormData({
           OtherChargesId: editingOtherChargesData.OtherChargesId || 0,
           Uniquekey: editingOtherChargesData.Uniquekey || getInitialFormState().Uniquekey,
+          ApplicableFor: editingOtherChargesData.ApplicableFor || '',
           ChargeName: editingOtherChargesData.ChargeName || '',
           ProjectId: Number(projectId),
           CalculatedOn: editingOtherChargesData.CalculatedOn || '',
@@ -185,6 +174,7 @@ export const useOtherCharges = () => {
             PageSize: pagination.totalRecords,
             ProjectId: Number(projectId),
             ChargeName: filters.ChargeName?.toString().trim() || undefined,
+            ApplicableFor: filters.ApplicableFor?.toString().trim() || undefined,
             SortBy: getSortByParam(sortInfo ?? null, otherChargesColumns),
             ExportType: exportType
           };
@@ -254,7 +244,6 @@ export const useOtherCharges = () => {
     setFilters({});
     setPagination({ currentPage: 1 });
     loadOtherCharges(1, {}, sortInfo, searchTerm);
-    setShowFilterPopup(false);
   };
 
   const handleFilterChange = (key: string, value: string) => {
@@ -301,6 +290,10 @@ export const useOtherCharges = () => {
   } => {
     const newErrors: { [key: string]: string } = {};
 
+    if (!formData.ApplicableFor || formData.ApplicableFor.trim() === '') {
+      newErrors.ApplicableFor = 'Applicable For is required.';
+    }
+
     if (!formData.ChargeName || formData.ChargeName.trim() === '') {
       newErrors.ChargeName = 'Charge Name is required.';
     } else if (formData.ChargeName.trim().length < 3) {
@@ -311,8 +304,10 @@ export const useOtherCharges = () => {
       newErrors.Value = 'Value is required.';
     }
 
-    if (!formData.GSTPercentage || formData.GSTPercentage < 0) {
+    if (formData.GSTPercentage === null || formData.GSTPercentage === undefined || String(formData.GSTPercentage).trim() === '') {
       newErrors.GSTPercentage = 'GST Percentage is required.';
+    } else if (Number(formData.GSTPercentage) < 0) {
+      newErrors.GSTPercentage = 'GST Percentage cannot be negative.';
     }
 
     if (!formData.CalculatedOn || formData.CalculatedOn.trim() === '') {
@@ -329,11 +324,12 @@ export const useOtherCharges = () => {
     OtherChargesId: formData.OtherChargesId,
     Uniquekey: formData.Uniquekey,
     ProjectId: Number(projectId),
+    ApplicableFor: formData.ApplicableFor,
     ChargeName: formData.ChargeName,
     CalculatedOn: formData.CalculatedOn,
-    Value: formData.Value,
-    GSTValue: formData.GSTValue,
-    GSTPercentage: formData.GSTPercentage
+    Value: Number(formData.Value),
+    GSTValue: Number(formData.GSTValue),
+    GSTPercentage: Number(formData.GSTPercentage)
   });
 
   const handleAddUpdateOtherCharges = async (e: React.FormEvent) => {
@@ -468,8 +464,10 @@ export const useOtherCharges = () => {
     formData,
     isConfirmationDialogBoxOpen,
     deleteOtherChargesData,
-    canAction,
-    canExport,
+    canActionSale,
+    canExportSale,
+    canActionTenant,
+    canExportTenant,
     otherChargesColumns,
 
     // Setters

@@ -12,9 +12,9 @@ const BrokerageSummary: React.FC<Props> = ({ summary, topBroker }) => {
 
     return (
         <div className="pt-5">
-            <div className="bg-white p-4 rounded-xl border border-gray-100 space-y-3">
+            <div className="bg-white p-4 rounded-xl border border-gray-100 space-y-3 h-[265px]">
 
-                <h3 className="font-semibold">Brokerage Summary</h3>
+                <h3 className="text-sm font-medium text-gray-500">Brokerage Summary</h3>
 
                 {/* Header */}
                 <div className="flex justify-between items-center text-sm font-medium text-gray-600 border-b pb-2" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>

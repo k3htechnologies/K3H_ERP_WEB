@@ -64,7 +64,7 @@ export interface VendorData {
     
     MaterialRequisitionQuotationTermsData: any[] | []
     SubMaterialMasterData: any[] | []
-    ContractTypeMasterData: any[] | []
+    SpecificationMasterData: any[] | []
 
     MagicLinkURL: string | ''
     ProjectName: string | ''

@@ -5,10 +5,14 @@ import RadioPill from "../forms/RadioPill";
 
 export default function ExportImport({
   open,
+  isDisplayYesNoOption=true,
+  isDisplayCommanNote=true,
   onClose,
   onUpload
 }: {
   open: boolean;
+  isDisplayYesNoOption?: boolean;
+  isDisplayCommanNote?: boolean;
   onClose: () => void;
   onUpload: (file: File, mergeExisting: string) => void;
 }) {
@@ -91,40 +95,59 @@ export default function ExportImport({
           maxFiles={1}
           error={errorMessage}
         />
+        {isDisplayYesNoOption && (
+          <div>
+            <p className="text-sm text-gray-600 mb-2">
+              Do you want to upload the file with existing record?
+            </p>
 
-        <div>
-          <p className="text-sm text-gray-600 mb-2">
-            Do you want to upload the file with existing record?
-          </p>
+            <div className="flex gap-3">
+              <RadioPill
+                name="mergeExisting"
+                label="Yes"
+                value="1"
+                checked={mergeExisting === "0"}
+                onChange={() => setMergeExisting("0")}
+              />
 
-          <div className="flex gap-3">
-            <RadioPill
-              name="mergeExisting"
-              label="Yes"
-              value="1"
-              checked={mergeExisting === "0"}
-              onChange={() => setMergeExisting("0")}
-            />
-
-            <RadioPill
-              name="mergeExisting"
-              label="No"
-              value="0"
-              checked={mergeExisting === "1"}
-              onChange={() => setMergeExisting("1")}
-            />
+              <RadioPill
+                name="mergeExisting"
+                label="No"
+                value="0"
+                checked={mergeExisting === "1"}
+                onChange={() => setMergeExisting("1")}
+              />
+            </div>
           </div>
-        </div>
+
+        )}
+
         <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-sm text-gray-700 space-y-2">
           <p className="font-medium text-gray-800">Notes:</p>
 
           <ul className="list-disc list-inside space-y-1">
-            <li>
-              If <span className="font-medium">Yes</span> is selected, existing records will be kept and new data will be merged.
-            </li>
-            <li>
-              If <span className="font-medium text-red-600">No</span> is selected, all existing records will be permanently deleted before uploading new data.
-            </li>
+            {isDisplayCommanNote ? (
+              <>
+                <li>
+                  If <span className="font-medium">Yes</span> is selected, existing records will be kept and new data will be merged.
+                </li>
+                <li>
+                  If <span className="font-medium text-red-600">No</span> is selected, all existing records will be permanently deleted before uploading new data.
+                </li>
+              </>
+            ) :
+              <>
+                <li>
+                  Ensure that the Excel file includes the details of <span className="font-semibold text-blue-600">already allotted tenants</span> along with their respective <span className="font-semibold">New Unit No</span> before uploading.
+                </li>
+                <li>
+                  Once allotted, member data should not be re-uploaded via Excel.
+                </li>
+                <li>
+                  The <span className="font-semibold">New Unit No</span> must be provided in the Excel file.
+                </li>
+              </>
+            }
             <li>
               Only <span className="font-medium">.xlsx, .xls, or .csv</span> files are allowed.
             </li>

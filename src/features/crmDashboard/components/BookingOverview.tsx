@@ -39,12 +39,12 @@ const BookingOverview: React.FC<Props> = ({ bookingRegisteredData }) => {
 
     return (
         <div className="pt-5">
-            <h2 className="text-lg font-semibold text-gray-800">Booking Overview</h2>
-            <div className="bg-white p-4 rounded-lg border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
+            <div className="bg-white p-4 rounded-lg border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                <h2 className="text-sm font-medium text-gray-500">Booking Overview</h2>
 
                 {/* ================= PIE CHART ================= */}
-                <div className="relative h-[170px] w-full max-w-[280px]">
+                <div className="relative h-[150px] w-full max-w-[280px]">
 
                     {total === 0 ? (
                         <div className="flex justify-center items-center h-full">

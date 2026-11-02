@@ -55,6 +55,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/siteprogress': '/siteProgress',
         '/building': '/building',
         '/tenant': '/tenant',
+        '/tenantbooking': '/tenantBooking',
         '/proposedoffer': '/proposedOffer',
         '/proposedplan': '/proposedPlan',
         '/rent': '/rent',
@@ -96,9 +97,10 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/target': '/target',
         '/incentivereport': '/incentiveReport',
         '/paymentschedulereport': '/paymentScheduleReport',
-        '/paymentschedule': '/paymentSchedule',
+        '/paymentschedules': '/paymentSchedules',
         '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
+        '/darallocation': 'darAllocation',
 
 
         // INVENTORY
@@ -139,6 +141,7 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //VISITOR MANAGEMENT
         '/gatepass': '/gatePass',
+        '/visitormanagementdashboard': '/visitorManagementDashboard',
 
         //PROJECT LAND
         '/projectlead': '/projectLead',
@@ -165,6 +168,14 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //CONTRACT REQUISITION
         '/contractrequisition': '/contractRequisition',
+
+        //ESTIMATION & BUDGET
+        '/baselinecostplan': '/baselineCostPlan',
+        '/constructionarea': '/constructionArea',
+
+        //PAYROLL
+        '/costtocompany': '/costToCompany',
+
     }
 
 

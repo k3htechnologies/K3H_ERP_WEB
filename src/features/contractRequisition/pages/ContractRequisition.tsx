@@ -30,9 +30,13 @@ import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeCol
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants";
+import { CONTRACT_REQUISITION_STAGES_OPTIONS, CONTRACT_REQUISITION_STATUS_OPTIONS } from "@/core/constants";
 import { DateInput } from "@/ui/components/forms/DateInput";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import { formatCurrency } from "@/core/utils/comman";
 
 export const ContractRequisition: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -42,6 +46,9 @@ export const ContractRequisition: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
   const [deleteData, setDeleteData] = useState<ContractRequisitionData | null>(null);
+  const [vendorName, setVendorName] = useState<string | null>("");
+  const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+  const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
 
   const { addToast } = useToast();
   const { pagination, setPagination } = usePagination(20);
@@ -144,8 +151,11 @@ export const ContractRequisition: React.FC = () => {
         IsLockAndKeyContract: row.IsLockAndKey,
         SystemGeneratedCode: row.SystemGeneratedCode,
         ContractRequisitionStatus: row.ContractStatus,
+        ContractRequisitionStage: row.ContractRequisitionStage,
         VendorFinalizationApprovalStatus: row.VendorFinalizationApprovalStatus,
         VendorName: row.FinalVendor,
+        CompanyGSTNumber: row.CompanyGSTNumber,
+        IsBOQCreated: row.IsBOQCreated
       });
       navigate("/contractRequisition/view");
     },
@@ -296,18 +306,28 @@ export const ContractRequisition: React.FC = () => {
   const getContractRequisitionStatusColor = (status: string = "") => {
     const map: Record<string, { bg: string; text: string }> = {
       "Completed": { bg: "#51E5514A", text: "#48C848" },
-      "Closed": { bg: "#FF003726", text: "#FF0037" },
+      "CLOSED": { bg: "#FF003726", text: "#FF0037" },
       "Ongoing": { bg: "#DBEAFE", text: "#2563EB" },
     };
     return map[status] ?? { bg: "#F3F4F6", text: "#111827" };
   };
 
+  const handleApprovalLog = (row: ContractRequisitionData) => {
+    const request: ModulesApprovalStatusRequest = {
+      ModuleName: "CONTRACT - FINALIZED VENDOR",
+      Id: row.ContractRequisitionId ?? 0,
+      ProjectId: projectId ?? 0,
+    };
+    setVendorName(row.FinalVendor);
+    setApprovalLogRequest(request);
+    setIsApprovalLogModalOpen(true);
+  };
 
   const ContractRequisitionColumns = useMemo<TableColumn[]>(
     () => [
       {
         key: "SystemGeneratedCode",
-        label: "Unique Id",
+        label: "CR Code",
         width: "20",
         sortable: true,
         fixed: "left",
@@ -352,6 +372,14 @@ export const ContractRequisition: React.FC = () => {
         },
       },
       {
+        key: 'ContractRequisitionStage',
+        label: 'Stage',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => (value) || '-'
+      },
+      {
         key: "EstimatedDate",
         label: "Start Date",
         width: "15",
@@ -359,6 +387,55 @@ export const ContractRequisition: React.FC = () => {
         align: "left",
         render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
 
+      },
+      {
+        key: 'FinalVendor',
+        label: 'Vendor Name',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.ContractRequisitionWorkOrderURL)}
+              title={`Purchase Order - ${row.FinalVendor ?? ""}`}
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
+      },
+      {
+        key: 'FinalVendorCompanyName',
+        label: 'Vendor Company Name',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => (value) || '-'
+      },
+      {
+        key: "VendorFinalizationApprovalStatus",
+        label: "Vendor Finalization Status",
+        width: "18",
+        sortable: false,
+        align: "center",
+        render: (value, row) => (
+
+          <ApprovalActions
+            approvalStatus={value || "-"}
+            showApproval={row.IsApproval}
+            isIcons={true}
+
+            onHistory={
+              ["PARTIAL APPROVED", "APPROVED"].includes(value?.toUpperCase())
+                ? () => handleApprovalLog(row)
+                : value?.toUpperCase() === "PENDING" &&
+                  !["GET QUOTATION", "GET COMPARE"].includes(row?.ContractRequisitionStage?.toUpperCase())
+                  ? () => handleApprovalLog(row)
+                  : undefined
+            }
+          />
+        )
       },
       {
         key: "WorkOrderURL",
@@ -385,6 +462,22 @@ export const ContractRequisition: React.FC = () => {
         },
       },
       {
+        key: 'WorkOrderAmount',
+        label: 'Total WO Amount (₹)',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => formatCurrency(value) || 0
+      },
+      {
+        key: 'InvoiceAmount',
+        label: 'Total Invoice Amount (₹)',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => formatCurrency(value) || 0
+      },
+      {
         key: "Actions",
         label: "Actions",
         width: "20",
@@ -392,11 +485,9 @@ export const ContractRequisition: React.FC = () => {
         align: "center",
         render: (_value, row) => {
           const isLockAndKeyContract = row.ContractType === "lock and key";
-          const canActionStage =
-            canAction &&
+          const canActionStage = canAction &&
             !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
-          !["COMPLETED", "CLOSED"].includes(row.ContractStatus?.toUpperCase())
-
+            !["COMPLETED", "CLOSED"].includes(row.ContractStatus?.toUpperCase())
 
           return (
             <div className="flex items-center justify-center gap-1">
@@ -406,12 +497,12 @@ export const ContractRequisition: React.FC = () => {
                     type="button"
                     color="transparent"
                     size="sm"
-                    disabled={isLockAndKeyContract}
+                    disabled={isLockAndKeyContract || !canActionStage}
                     style={{
-                      color: isLockAndKeyContract ? "#9CA3AF" : "#2563eb",
+                      color: (isLockAndKeyContract || !canActionStage) ? "#9CA3AF" : "#2563eb",
                       padding: "4px 8px",
-                      cursor: isLockAndKeyContract ? "not-allowed" : "pointer",
-                      opacity: isLockAndKeyContract ? 0.5 : 1,
+                      cursor: (isLockAndKeyContract || !canActionStage) ? "not-allowed" : "pointer",
+                      opacity: (isLockAndKeyContract || !canActionStage) ? 0.5 : 1,
                     }}
                     onClick={(e) => {
                       e.preventDefault();
@@ -490,7 +581,7 @@ export const ContractRequisition: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Unique Id"
+        searchPlaceholder="Search By CR Code"
         onSearchChange={(v) => {
           updateListState({ searchTerm: v });
           debouncedSearch(v);
@@ -559,11 +650,11 @@ export const ContractRequisition: React.FC = () => {
         <div className="space-y-4">
           <div>
             <Input
-              label='Contract Requisition Id'
+              label='CR Code'
               type="text"
-              value={tempFilters.ContractRequisitionId || ''}
-              onChange={e => handleFilterChange('ContractRequisitionId', e.target.value)}
-              placeholder="Contract Requisition Id"
+              value={tempFilters.SystemGeneratedCode || ''}
+              onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+              placeholder="Enter CR Code"
             />
           </div>
           <div>
@@ -571,7 +662,7 @@ export const ContractRequisition: React.FC = () => {
               label="Contract Requisition Stage"
               placeholder="Select Stage"
               value={tempFilters?.ContractRequisitionStage || ""}
-              options={MATERIAL_REQUISITION_STAGES_OPTIONS.map((stage) => ({ label: stage.name, value: stage.id }))}
+              options={CONTRACT_REQUISITION_STAGES_OPTIONS.map((stage) => ({ label: stage.name, value: stage.id }))}
               onChange={(value) => handleFilterChange("ContractRequisitionStage", String(value))}
             />
           </div>
@@ -580,13 +671,13 @@ export const ContractRequisition: React.FC = () => {
               label="Contract Requisition Status"
               placeholder="Select Status"
               value={tempFilters?.ContractRequisitionStatus || ""}
-              options={MATERIAL_REQUISITION_STATUS_OPTIONS.map((status) => ({ label: status.name, value: status.id }))}
+              options={CONTRACT_REQUISITION_STATUS_OPTIONS.map((status) => ({ label: status.name, value: status.id }))}
               onChange={(value) => handleFilterChange("ContractRequisitionStatus", String(value))}
             />
           </div>
           <div>
             <DateInput
-              label="Start Date"
+              label="From Date"
               value={tempFilters?.FromDate || ""}
               onChange={(value: any) => handleFilterChange("FromDate", value)}
               placeholder="DD/MM/YYYY"
@@ -613,6 +704,15 @@ export const ContractRequisition: React.FC = () => {
         loading={isLoading}
         pageName="Contract Requisition"
       />
+
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        title='Finalized Vendor'
+        titleText={vendorName ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest}
+      />
+
     </div>
   );
 };

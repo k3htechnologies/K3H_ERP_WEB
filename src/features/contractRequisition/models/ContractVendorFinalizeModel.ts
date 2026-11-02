@@ -12,7 +12,7 @@ export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
   VendorId?: number;
   ClientRegistrationId?: string;
   ProjectId: number | 0;
-  ExportType?: "Excel";
+  ExportType?: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART';
 }
 
 export interface SelectedVendorData {

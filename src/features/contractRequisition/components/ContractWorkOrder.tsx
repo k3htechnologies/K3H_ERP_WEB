@@ -7,7 +7,7 @@ import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { Button, Input } from "@/ui/components/forms";
+import { Button } from "@/ui/components/forms";
 import { useContractRequisitionListState } from "@/features/contractRequisition/context/ContractRequisitionListStateContext";
 import { runApiWithLoader } from "@/core/utils";
 import type { AddUpdateContractRequisitionWorkOrderRequest, ContractRequisitionWorkOrderData, DeleteContractRequisitionWorkOrder, FilterWithPaginationContractRequisitionWorkOrder, GenerateContractRequisitionWorkOrderPdfData } from "@/features/contractRequisition/models/ContractRequisitionWorkOrderModel";
@@ -47,7 +47,7 @@ export const ContractWorkOrder: React.FC = () => {
   const [contractRequisitionWorkOrder, setContractRequisitionWorkOrder] = useState<ContractRequisitionWorkOrderData | null>(null);
   const [isWorkOrderLoaded, setIsWorkOrderLoaded] = useState(false);
   const [formData, setFormData] = useState<GenerateContractRequisitionWorkOrderPdfData>(() => initialGenerateFormState());
-  const [uploadData, setUploadData] = useState<AddUpdateContractRequisitionWorkOrderRequest>(() => InitialUploadFormState());
+  const [uploadData, _] = useState<AddUpdateContractRequisitionWorkOrderRequest>(() => InitialUploadFormState());
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -119,13 +119,6 @@ export const ContractWorkOrder: React.FC = () => {
 
   const handleFieldChange = (field: keyof GenerateContractRequisitionWorkOrderPdfData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-
-  const handleFieldChangeUploadWorkOrder = (field: keyof AddUpdateContractRequisitionWorkOrderRequest, value: any) => {
-    setUploadData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
@@ -218,7 +211,6 @@ export const ContractWorkOrder: React.FC = () => {
     fd.append("ContractRequisitionWorkOrderId", uploadData.ContractRequisitionWorkOrderId.toString());
     fd.append("UniqueKey", uploadData.UniqueKey ?? "");
     fd.append("ProjectId", projectId!.toString());
-    fd.append("TotalAmount", uploadData.TotalAmount.toString());
     fd.append("ContractRequisitionId", (ContractRequisitionId ?? 0).toString());
 
     workOrderFiles.forEach(file => {
@@ -346,7 +338,7 @@ export const ContractWorkOrder: React.FC = () => {
                 defineWidth
                 style={{ width: '100px' }}
               >
-                Upload PO
+                Upload WO
               </Button>
             </>
           )}
@@ -482,18 +474,6 @@ export const ContractWorkOrder: React.FC = () => {
                   onRemoveExisting={(url) => {
                     setRemovedWorkOrderUrls((prev) => [...prev, url])
                   }}
-                />
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label='Work Order Amount'
-                  value={uploadData.TotalAmount ?? ""}
-                  onChange={(e) => handleFieldChangeUploadWorkOrder("TotalAmount", e.target.value)}
-                  placeholder="Enter Work Order Amount"
-                  maxLength={15}
-                  error={errors.TotalAmount}
                 />
               </div>
             </>

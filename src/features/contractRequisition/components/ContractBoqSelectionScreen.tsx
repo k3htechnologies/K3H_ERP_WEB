@@ -21,7 +21,11 @@ const budgetConfig = {
   titleKey: (row) => `${row.WBSCode} ${row.CategoryName}`
 } satisfies LevelTreeConfig<ContractBoqData>
 
-export default function ContractBOQSelectionScreen() {
+interface ContractBOQSelectionScreenProps {
+  onSaveSuccess?: () => Promise<void>;
+}
+
+export const ContractBOQSelectionScreen: React.FC<ContractBOQSelectionScreenProps> = ({ onSaveSuccess }) => {
 
   const [, setLoadingMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -55,7 +59,7 @@ export default function ContractBOQSelectionScreen() {
           const selectedIds: RowId[] = boqData
             .filter((item) => item.IsSelected === true)
             .map((item) => item.BudgetId);
-            
+
           setContractRequisitionBoqResponse(boqData);
           setInitialSelectedIds(selectedIds);
           setIsSelectionLocked(selectedIds.length > 0);
@@ -97,6 +101,8 @@ export default function ContractBOQSelectionScreen() {
 
         if (E.isRight(response)) {
           setIsSelectionLocked(true);
+          addToast({ type: "success", title: "BOQ Data saved successfully" });
+          await onSaveSuccess?.();
         } else {
           addToast({ type: "error", title: response.left.message });
         }

@@ -701,7 +701,7 @@ export const getPageInfo = (path: string) => {
       };
 
     //CONTRACT REQUISITION
-    case 'contractrequisition':
+    case 'contractRequisition':
       return {
         title: "Contract Requisition",
         description: "Manage and organize company departments with complete CRUD operations",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type React from "react";
 import * as E from "fp-ts/Either";
-import { CheckLine, MessageSquareQuote, Scale } from "lucide-react";
+import { ArrowLeft, CheckLine, MessageSquareQuote, Scale } from "lucide-react";
 
 import { useContractRequisitionListState } from "@/features/contractRequisition/context/ContractRequisitionListStateContext";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -28,6 +28,7 @@ import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import QuotationCard, { type QuotationSavePatch } from "@/features/contractRequisition/components/Quotationcard";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { contractRequisitionQuotationService } from "@/features/contractRequisition/services/ContractRequisitionQuotationService";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 interface FinalizedContractVendorProps {
   onApprovalSuccess?: () => Promise<void>;
@@ -39,6 +40,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
   const [contractRequisitionVendorSelectedList, setContractRequisitionVendorSelectedList] = useState<SelectedVendorData[]>([]);
   const [contractRequisitionVendorFinalizedList, setContractRequisitionVendorFinalizedList] = useState<any[]>([]);
   const [selectedVendorIds, setSelectedVendorIds] = useState<number[]>([]);
+  const [isExpandableOpen, setExpandableOpen] = useState(false);
   const [searchVendor, setSearchVendor] = useState("");
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -49,7 +51,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
   const [isFinalizeConfirmationOpen, setIsFinalizeConfirmationOpen] = useState(false);
 
   const { listState, updateListState } = useContractRequisitionListState();
-  const { ContractRequisitionId, Uniquekey } = listState;
+  const { ContractRequisitionId, Uniquekey, CompanyGSTNumber, IsBOQCreated} = listState;
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions("/contractRequisition");
@@ -211,7 +213,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
     );
   };
 
-  const handleCompareVendor = async (exportType: 'Excel') => {
+  const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -226,7 +228,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
         const response = await contractVendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
 
         if (E.isRight(response)) {
-          handleExportFile(response, exportType, "Vendor Comparison", addToast);
+          handleExportFile(response, "Excel", "Vendor Comparison", addToast);
         }
         return response;
       },
@@ -255,7 +257,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
     setIsApprovalActionModalOpen(true);
   };
 
-  const handleExportCompareVendorExcel = () => handleCompareVendor('Excel');
+  const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART');
 
   const handleConfirmFinalizeVendor = async () => {
 
@@ -344,87 +346,103 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
 
   return (
     <div className="space-y-4">
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>{" "}
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
+
+      {isAnyFinalized && (
+        <ApprovalLogModal
+          isOpen={isApprovalLogModalOpen}
+          title="Finalized Vendor"
+          onClose={() => setIsApprovalLogModalOpen(false)}
+          request={approvalLogRequest}
+        />
+      )}
 
       <div className="flex justify-end gap-2">
-
-        {isAnyFinalized && (
-          <ApprovalLogModal
-            isOpen={isApprovalLogModalOpen}
-            title="Finalized Vendor"
-            onClose={() => setIsApprovalLogModalOpen(false)}
-            request={approvalLogRequest}
-          />
-        )}
-
-        {!isAnyFinalized && cangetCompare && (
-          <Button
-            size="sm"
-            style={{
-              color: "#135BEC",
-              backgroundColor: "#E8F0FF",
-              padding: "4px 8px",
-            }}
-            leftIcon={<Scale size={20} />}
-            onClick={() => handleExportCompareVendorExcel()}
-          >
-            Compare
-          </Button>
-        )}
-
-        {!isAnyFinalized && canfinalizeVendor && (
-          <Button
-            size="sm"
-            style={{
-              color: "#00A800",
-              backgroundColor: "#E8FBE8",
-              padding: "4px 8px",
-            }}
-            leftIcon={<CheckLine size={20} />}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              finalizeVendor();
-            }}
-          >
-            Finalize Vendor
-          </Button>
-        )}
+        <button
+          type="button"
+          onClick={() => setExpandableOpen(prev => !prev)}
+          className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-[#135BEC30] text-blue-600 transition-all duration-1000 ease-in-out hover:bg-[#135BEC50]"
+          aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}>
+          <span className={`inline-flex transition-transform duration-1000 ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"}`}>
+            <ArrowLeft className="h-5 w-5" />
+          </span>
+        </button>
+        <div
+          className={`flex gap-2 overflow-hidden transition-all duration-1000 ease-in-out ${isExpandableOpen
+            ? "max-w-[1000px] opacity-100 translate-x-0"
+            : "max-w-0 opacity-0 translate-x-4 pointer-events-none"
+            }`}>
+          {!isAnyFinalized && cangetCompare && contractRequisitionVendorSelectedList.length > 1 && (
+            <Button
+              type="button"
+              size="sm"
+              style={{
+                color: '#135BEC',
+                backgroundColor: '#E8F0FF',
+                padding: '4px 8px',
+              }}
+              leftIcon={<Scale size={15} />}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleExportCompareVendorExcel();
+              }}
+            >
+              Compare
+            </Button>
+          )}
+          {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
+            <Button
+              type="button"
+              size="sm"
+              style={{
+                color: '#00A800',
+                backgroundColor: '#E8FBE8',
+                padding: '4px 8px',
+              }}
+              leftIcon={<CheckLine size={15} />}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                finalizeVendor();
+              }}
+            >
+              Finalize Vendor
+            </Button>
+          )}
+          {!isAnyFinalized && cangetQuotation && IsBOQCreated && (
+            <Button
+              size="sm"
+              style={{
+                color: '#d35400',
+                backgroundColor: '#FDE6D3',
+                padding: '4px 8px',
+              }}
+              leftIcon={<MessageSquareQuote size={15} />}
+              onClick={() => setQuotationAvailable(true)}
+            >
+              Get Quotation
+            </Button>
+          )}
+        </div>
 
         <ApprovalActionModal
-          title="Document"
+          title="Finalize Vendor"
           isOpen={isApprovalActionModalOpen}
           onClose={() => setIsApprovalActionModalOpen(false)}
           actionType={approvalActionType}
-          titleText={"Finalized Vendor"}
-          subTitleText={""}
+          titleText={finalizedVendor?.VendorName}
           onSubmit={handleApprovalSubmit}
           loading={isLoading}
         />
-
-        {!isAnyFinalized && cangetQuotation && (
-          <Button
-            size="sm"
-            style={{
-              color: "#d35400",
-              backgroundColor: "#FDE6D3",
-              padding: "4px 8px",
-            }}
-            leftIcon={<MessageSquareQuote size={20} />}
-            onClick={() => setQuotationAvailable(true)}
-          >
-            Get Quotation
-          </Button>
-        )}
       </div>
 
       {
         contractRequisitionVendorSelectedList.length === 0 ?
           <section className="md:col-span-4 bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-            <NoDataView />
+            <NoDataView
+              message="No Vendor Data Found"
+            />
           </section> :
           contractRequisitionVendorSelectedList.map((vendor) => (
             <QuotationCard
@@ -447,18 +465,22 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
               checked={checkedFinalVendor === vendor.VendorId}
               checkDisabled={isAnyFinalized || !canAction}
               onCheckedChange={(checked, vendor) => {
-                if (checked) {
-                  setCheckedFinalVendor(Number(vendor.VendorId));
-                }
+                if (isAnyFinalized) return;
+                setCheckedFinalVendor(checked ? Number(vendor.VendorId) : null);
               }}
               readOnly={!canAction || isAnyFinalized}
               onSave={async (patch) => {
-                handleSavequotation(vendor.VendorId ?? 0, patch);
+                if (!patch.hasQuotedItem) {
+                  addToast({ type: "error", title: "Please add price at least one quotation item." })
+                  throw new Error("Enter a quotation for at least one line item")
+                }
+                await handleSavequotation(vendor.VendorId ?? 0, patch);
               }}
               canApprove={canfinalizeVendor}
               onApprove={() => handleApproveRejectVendor("approve")}
               onReject={() => handleApproveRejectVendor("reject")}
               onApprovalHistory={handleApprovalLog}
+              taxMode={vendor.GSTNumber?.trim().substring(0, 2) === CompanyGSTNumber?.trim().substring(0, 2) ? "CGST_SGST" : "IGST"}
             />
           ))
       }
@@ -478,7 +500,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
 
       <Modal
         isOpen={isQuotationAvailable}
-        saveText="Add"
+        saveText={contractRequisitionVendorFinalizedList.length > 0 ? "Add" : ""}
         resetText=""
         onSubmit={addSelectedVendors}
         onClose={() => {
@@ -525,7 +547,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
                   return (
                     <div
                       key={vendor.VendorId}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
+                      className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-200"
                       onClick={() => cangetQuotation && toggleVendor(vendor.VendorId)}
                     >
                       <Checkbox
@@ -535,18 +557,33 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
                         onClick={(e) => e.stopPropagation()}
                       />
 
-                      <div className="flex justify-between items-start w-full">
-                        <div>
-                          <div className="font-medium">{vendor.VendorName}</div>
+                      <div className="flex justify-between items-start w-full gap-8">
 
-                          <div className="text-sm text-gray-500">{vendor.CompanyName}</div>
+                        <div className="space-y-1">
+                          <div className="font-medium">
+                            <FieldItem label="Vendor Name" value={vendor?.VendorName ?? '-'} isRow isUsedForInventoryFlat />
+                          </div>
+
+                          <div className="text-sm text-gray-500">
+
+                            <FieldItem label="Company Name" value={vendor?.CompanyName ?? '-'} isRow isUsedForInventoryFlat />
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            <FieldItem label="Mobile Number" value={vendor?.MobileNumber ? `${vendor?.MobileNumberCountryCode || "+91"} ${vendor.MobileNumber}` : "-"} isRow isUsedForInventoryFlat />
+
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            <FieldItem label="E-Mail ID" value={vendor?.EmailId ?? '-'} isRow isUsedForInventoryFlat />
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            <FieldItem label="GST Number" value={vendor?.GSTNumber ?? '-'} isRow isUsedForInventoryFlat />
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            <FieldItem label="Address" value={vendor?.Address ?? '-'} isRow isUsedForInventoryFlat />
+                          </div>
                         </div>
 
-                        <div className="text-right">
-                          <div className="text-sm text-gray-500">{vendor.MobileNumber}</div>
 
-                          <div className="text-sm text-gray-500">{vendor.EmailId}</div>
-                        </div>
                       </div>
                     </div>
                   );

@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { X } from "lucide-react";
 import * as E from "fp-ts/Either";
 
 import { Loader } from "@/core/utils/loader";
@@ -22,11 +21,11 @@ import { ContractOverview } from "@/features/contractRequisition/components/Cont
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { runApiWithLoader } from "@/core/utils";
 import { contractRequisitionService } from "@/features/contractRequisition/services/ContractRequisitionService";
-import ContractBOQSelectionScreen from "@/features/contractRequisition/components/ContractBoqSelectionScreen";
 import type { RevokeFinalizationContractVendorRequest } from "@/features/contractRequisition/models/ContractVendorFinalizeModel";
 import { contractVendorFinalizationService } from "@/features/contractRequisition/services/ContractVendorFinalizationService";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import { ContractBOQSelectionScreen } from "../components/ContractBoqSelectionScreen";
 
 export const ViewContractRequisition: React.FC = () => {
   const [contractRequisitionData, setContractRequisitionData] = useState<ContractRequisitionData | null>(null);
@@ -45,6 +44,8 @@ export const ViewContractRequisition: React.FC = () => {
   const { listState, updateListState } = useContractRequisitionListState();
   const { ContractRequisitionId, SystemGeneratedCode, ContractRequisitionStatus, VendorName } = listState;
   const location = useLocation();
+
+  const { canAction: canContractRequisitionView } = useMenuPermissions('/contractRequisition');
   const { canView: canFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
   const { canView: canGenerateWorkOrder } = useMenuPermissions('Contract - Generate Work Order');
   const { canView: canAddInvoice } = useMenuPermissions('Contract - Add Invoice');
@@ -84,7 +85,11 @@ export const ViewContractRequisition: React.FC = () => {
           Uniquekey: item.UniqueKey,
           SystemGeneratedCode: item.SystemGeneratedCode,
           ContractRequisitionStatus: item.ContractStatus,
-          VendorFinalizationApprovalStatus: item.VendorFinalizationApprovalStatus
+          VendorFinalizationApprovalStatus: item.VendorFinalizationApprovalStatus,
+          ContractRequisitionStage: item.ContractRequisitionStage,
+          VendorName: item.FinalVendor,
+          CompanyGSTNumber: item.CompanyGSTNumber,
+          IsBOQCreated: item.IsBOQCreated
         })
       } else {
         addToast({ type: "error", title: response.left.message });
@@ -92,6 +97,11 @@ export const ViewContractRequisition: React.FC = () => {
       return response;
     });
   };
+
+  const handleContractRequisitionEdit = useCallback((row: ContractRequisitionData) => {
+    updateListState({ ContractRequisitionId: row.ContractRequisitionId });
+    navigate(`/contractRequisition/add/${row.ContractRequisitionId}`);
+  }, [navigate, updateListState]);
 
   const handleCloseRequisition = async (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -196,13 +206,24 @@ export const ViewContractRequisition: React.FC = () => {
           onCancel={() => {
             navigate("/contractRequisition");
           }}
+          EditText="Edit"
+          canAction={activeTab === "Overview" &&
+            canContractRequisitionView &&
+            !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
+            !["COMPLETED", "CLOSED"].includes(listState?.ContractRequisitionStage?.toUpperCase() ?? "") &&
+            ["GET QUOTATION"].includes(listState?.ContractRequisitionStage?.toUpperCase())}
+          onEdit={() => {
+            if (activeTab === "Overview") {
+              if (contractRequisitionData) handleContractRequisitionEdit(contractRequisitionData);
+            }
+          }}
         />
 
         <div className="flex justify-end gap-4">
           {
-            (contractRequisitionData?.IsVendorFinalizationApproved && !contractRequisitionData.IsWorkOrderAvailable) ?
+            (contractRequisitionData?.IsVendorFinalizationApproved && !contractRequisitionData.IsWorkOrderAvailable) && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ?
               <Button
-                size="mxs"
+                size="sm"
                 style={{
                   color: '#135BEC',
                   padding: '4px 8px',
@@ -215,15 +236,14 @@ export const ViewContractRequisition: React.FC = () => {
                 Revoke Finalization
               </Button> : <></>
           }
-          {contractRequisitionData?.ContractStatus !== "Completed" && (
-            <div className="flex justify-end">
+          {contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" && (
+            <div className="flex justify-end pb-2 gap-2">
               <Button
-                size="mxs"
-                color="transparent"
+                size="sm"
                 style={{
-                  color: "#E92C2C",
-                  padding: "4px 8px",
-                  backgroundColor: "#FFF2F2",
+                  color: '#E92C2C',
+                  padding: '4px 8px',
+                  backgroundColor: '#FFF2F2'
                 }}
                 onClick={() => {
                   setSelectedContractRequisitionItem({
@@ -236,10 +256,31 @@ export const ViewContractRequisition: React.FC = () => {
                   setIsCloseRequisitionDialogOpen(true);
                 }}
               >
-                <X className="h-4 w-4" color="red" />
                 Close Requisition
               </Button>
             </div>
+          )}
+          {listState.VendorName?.trim() !== "" && contractRequisitionData?.ContractStatus !== 'Completed' && (
+            <Button
+              size="sm"
+              style={{
+                color: '#008A00',
+                padding: '4px 8px',
+                backgroundColor: '#E8F7E8'
+              }}
+              onClick={() => {
+                // setSelectedMaterialRequisitionItem({
+                //   MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
+                //   Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
+                //   ProjectId: Number(projectId),
+                //   Type: "Completed",
+                //   CloseCompletionRemark: ""
+                // });
+                setIsCloseRequisitionDialogOpen(true);
+              }}
+            >
+              Completed
+            </Button>
           )}
         </div>
       </div>
@@ -249,7 +290,7 @@ export const ViewContractRequisition: React.FC = () => {
       </div>
 
       {activeTab === "Overview" && <ContractOverview contractRequisitionData={contractRequisitionData} />}
-      {activeTab === "boq" && <ContractBOQSelectionScreen />}
+      {activeTab === "boq" && <ContractBOQSelectionScreen onSaveSuccess={loadContractRequisition} />}
       {activeTab === "Finalized Vendor" && <FinalizedContractVendor onApprovalSuccess={loadContractRequisition} />}
       {activeTab === "Work Order" && <ContractWorkOrder />}
       {activeTab === "Invoice" && <ContractInvoice />}
@@ -327,9 +368,9 @@ export const ViewContractRequisition: React.FC = () => {
           setIsRevokeFinalizationVendorDialogOpen(false);
         }}
         onConfirm={handleRevokeFinalizationVendor}
-        title="Reopen Vendor Finalization"
-        message="Are you sure you want to reopen the vendor finalization? This will allow you to select and finalize another vendor."
-        confirmText="Reopen"
+        title="Revoke Vendor Finalization"
+        message="Are you sure you want to revoke the vendor finalization? This will allow you to select and finalize another vendor."
+        confirmText="Revoke"
         cancelText="Cancel"
         loading={isLoading}
       />

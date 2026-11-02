@@ -164,7 +164,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/task': '/task',
 
         //CONTRACT REQUISITION
-        '/contractRequisition': '/contractRequisition',
+        '/contractrequisition': '/contractRequisition',
     }
 
 

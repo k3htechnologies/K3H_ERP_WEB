@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  AlertCircle, Check, ChevronDown, ChevronRight, Copy, Info, Loader2, Pencil, Save, X
+  AlertCircle, ChevronDown, ChevronRight, Info
 } from 'lucide-react'
 
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
@@ -22,7 +22,6 @@ export const LINE_FIELDS = {
   remarks: 'Remark',
   cgst: 'CGST',
   sgst: 'SGST',
-  ugst: 'UGST',
   igst: 'IGST'
 } as const
 
@@ -91,7 +90,6 @@ export interface QuotationLineLike {
   Remark?: string | null
   CGST?: number | null
   SGST?: number | null
-  UGST?: number | null
   IGST?: number | null
   /** Rows with IsSelected === false are not shown. */
   IsSelected?: boolean
@@ -135,7 +133,8 @@ export interface QuotationSavePatch {
   /** Whole days; 0 = not entered */
   ExpectedCompletionInDays: number
   ExpectedPaymentInDays: number
-  summary: { taxable: number; cgst: number; sgst: number; ugst: number; igst: number; grandTotal: number }
+  hasQuotedItem: boolean
+  summary: { taxable: number; cgst: number; sgst: number; igst: number; grandTotal: number }
 }
 
 /** Merges a save patch into the vendor object (handy for local state / optimistic updates). */
@@ -198,7 +197,7 @@ function getQuotationLines(
 
 export type EditableField =
   | 'labour' | 'material' | 'pnm' | 'contractRate'
-  | 'cgst' | 'sgst' | 'ugst' | 'igst'
+  | 'cgst' | 'sgst' | 'igst'
 
 export type FieldErrors = Partial<Record<EditableField, string>>
 type Draft = Record<EditableField, string>
@@ -209,6 +208,13 @@ interface QuotationCardProps {
   checked?: boolean
   checkDisabled?: boolean
   canApprove?: boolean
+  /**
+   * Which GST the user may enter:
+   *  'CGST_SGST' - vendor and company are in the same state (IGST is disabled)
+   *  'IGST'      - different states (CGST and SGST are disabled)
+   *  undefined   - no restriction (IGST just can't be combined with CGST/SGST)
+   */
+  taxMode?: QuotationTaxMode
   onApprove?: (vendor: VendorQuotationLike) => void
   onReject?: (vendor: VendorQuotationLike) => void
   onApprovalHistory?: (vendor: VendorQuotationLike) => void
@@ -230,9 +236,15 @@ interface QuotationCardProps {
 }
 
 const EDITABLE_FIELDS: EditableField[] = [
-  'labour', 'material', 'pnm', 'contractRate', 'cgst', 'sgst', 'ugst', 'igst'
+  'labour', 'material', 'pnm', 'contractRate', 'cgst', 'sgst', 'igst'
 ]
-const TAX_FIELDS: EditableField[] = ['cgst', 'sgst', 'ugst', 'igst']
+const TAX_FIELDS: EditableField[] = ['cgst', 'sgst', 'igst']
+
+/** Which GST applies: same state -> CGST + SGST, different states -> IGST. undefined = no restriction. */
+export type QuotationTaxMode = 'CGST_SGST' | 'IGST'
+
+const isTaxApplicable = (f: EditableField, mode?: QuotationTaxMode) =>
+  !mode || !TAX_FIELDS.includes(f) || (mode === 'IGST' ? f === 'igst' : f !== 'igst')
 const BREAKUP_FIELDS: EditableField[] = ['labour', 'material', 'pnm']
 
 const MAX_TAX_PCT = 40
@@ -242,7 +254,7 @@ const MAX_AMOUNT = 999_999_999.99
 
 const FIELD_LABEL: Record<EditableField, string> = {
   labour: 'Labour', material: 'Material', pnm: 'P&M', contractRate: 'Contract rate',
-  cgst: 'CGST', sgst: 'SGST', ugst: 'UGST', igst: 'IGST'
+  cgst: 'CGST', sgst: 'SGST', igst: 'IGST'
 }
 
 type GroupKey = 'item' | 'boq' | 'contract' | 'tax' | 'summary'
@@ -256,11 +268,11 @@ interface ColumnDef {
 }
 
 const GROUPS: { key: GroupKey; label: string; bg: string }[] = [
-  { key: 'item', label: 'ITEM INFORMATION', bg: '#12284C' },
-  { key: 'boq', label: 'BOQ', bg: '#1E3A6E' },
-  { key: 'contract', label: 'CONTRACT PRICING', bg: '#12284C' },
-  { key: 'tax', label: 'TAX BREAKDOWN', bg: '#1E3A6E' },
-  { key: 'summary', label: 'SUMMARY', bg: '#12284C' }
+  { key: 'item', label: 'ITEM INFORMATION', bg: '#0F2744' },
+  { key: 'boq', label: 'BOQ', bg: '#1A3560' },
+  { key: 'contract', label: 'CONTRACT PRICING', bg: '#0F2744' },
+  { key: 'tax', label: 'TAX BREAKDOWN', bg: '#1A3560' },
+  { key: 'summary', label: 'SUMMARY', bg: '#0F2744' }
 ]
 
 const COLUMNS: ColumnDef[] = [
@@ -273,7 +285,6 @@ const COLUMNS: ColumnDef[] = [
   { key: 'contractRate', label: 'CONTRACT RATE (₹)', group: 'contract', width: '140px', align: 'right' },
   { key: 'cgst', label: 'CGST', group: 'tax', width: '90px', align: 'center' },
   { key: 'sgst', label: 'SGST', group: 'tax', width: '90px', align: 'center' },
-  { key: 'ugst', label: 'UGST', group: 'tax', width: '90px', align: 'center' },
   { key: 'igst', label: 'IGST', group: 'tax', width: '90px', align: 'center' },
   { key: 'contractAmount', label: 'CONTRACT AMOUNT (WITH TAX) (₹)', group: 'summary', width: '190px', align: 'right' },
   { key: 'variance', label: 'VAR. VS BOQ', group: 'summary', width: '110px', align: 'right' }
@@ -373,15 +384,20 @@ const naturalCompare = (a: string, b: string) => {
   return 0
 }
 
-function buildTree(lines: QuotationLineLike[], gstPct: number | null): TreeModel {
+function buildTree(lines: QuotationLineLike[], gstPct: number | null, taxMode?: QuotationTaxMode): TreeModel {
   const raw = lines as unknown as Record<string, unknown>[]
   const str = (v: unknown) => (typeof v === 'string' ? v.trim() : v == null ? '' : String(v).trim())
 
   const gst = toNum(gstPct)
-  const defaultTax: Pick<LeafValues, 'cgst' | 'sgst' | 'ugst' | 'igst'> =
+  // GSTPercentage fallback: split into CGST + SGST, or the full rate as IGST for inter-state
+  const defaultTax: Pick<LeafValues, 'cgst' | 'sgst' | 'igst'> =
     gst !== null && gst > 0
-      ? { cgst: round2(gst / 2), sgst: round2(gst / 2), ugst: null, igst: null }
-      : { cgst: null, sgst: null, ugst: null, igst: null }
+      ? taxMode === 'IGST'
+        ? { cgst: null, sgst: null, igst: round2(gst) }
+        : { cgst: round2(gst / 2), sgst: round2(gst / 2), igst: null }
+      : { cgst: null, sgst: null, igst: null }
+  // Taxes that do not apply for the selected mode are always empty
+  const mask = (f: 'cgst' | 'sgst' | 'igst', v: number | null) => (isTaxApplicable(f, taxMode) ? v : null)
 
   const seen = new Set<string>()
   const nodes: LineNode[] = raw.map((l, index) => {
@@ -403,7 +419,7 @@ function buildTree(lines: QuotationLineLike[], gstPct: number | null): TreeModel
     const pnm = pos(rd(l, 'pnm'))
     const breakup = n0(labour) + n0(material) + n0(pnm)
     const ownRate = pos(rd(l, 'contractRate'))
-    const hasOwnTax = (['cgst', 'sgst', 'ugst', 'igst'] as const).some(k => rd(l, k) !== undefined)
+    const hasOwnTax = (['cgst', 'sgst', 'igst'] as const).some(k => rd(l, k) !== undefined)
 
     return {
       key, index, code, pathKey, parentPathKey,
@@ -415,11 +431,11 @@ function buildTree(lines: QuotationLineLike[], gstPct: number | null): TreeModel
       remarks: str(rd(l, 'remarks')) || null,
       values: {
         labour, material, pnm,
-        contractRate: ownRate ?? (breakup > 0 ? round2(breakup) : null),
-        cgst: hasOwnTax ? pos(rd(l, 'cgst')) : defaultTax.cgst,
-        sgst: hasOwnTax ? pos(rd(l, 'sgst')) : defaultTax.sgst,
-        ugst: hasOwnTax ? pos(rd(l, 'ugst')) : defaultTax.ugst,
-        igst: hasOwnTax ? pos(rd(l, 'igst')) : defaultTax.igst
+        // calculated: Labour + Material + P&M. The API's own rate is only used when there is no breakup.
+        contractRate: breakup > 0 ? round2(breakup) : ownRate,
+        cgst: mask('cgst', hasOwnTax ? pos(rd(l, 'cgst')) : defaultTax.cgst),
+        sgst: mask('sgst', hasOwnTax ? pos(rd(l, 'sgst')) : defaultTax.sgst),
+        igst: mask('igst', hasOwnTax ? pos(rd(l, 'igst')) : defaultTax.igst)
       },
       children: [],
       isGroup: false,
@@ -506,12 +522,12 @@ interface Totals {
   boq: number // full BOQ budget
   boqQuoted: number // BOQ budget of items the vendor actually priced (like-for-like variance)
   contractBase: number // pre-tax
-  cgst: number; sgst: number; ugst: number; igst: number // tax AMOUNTS
+  cgst: number; sgst: number; igst: number // tax AMOUNTS
   contract: number // base + taxes
 }
 const emptyTotals = (): Totals => ({
   qty: 0, labour: 0, material: 0, pnm: 0, contractRate: 0, boq: 0, boqQuoted: 0,
-  contractBase: 0, cgst: 0, sgst: 0, ugst: 0, igst: 0, contract: 0
+  contractBase: 0, cgst: 0, sgst: 0, igst: 0, contract: 0
 })
 const addTotals = (a: Totals, b: Totals): Totals => {
   const out = emptyTotals()
@@ -539,13 +555,13 @@ function leafTotals(node: LineNode, v: LeafValues): Totals {
   const rate = n0(v.contractRate)
   const base = round2(qty * rate)
   const tax = (pct: number | null) => round2((base * n0(pct)) / 100)
-  const cgst = tax(v.cgst), sgst = tax(v.sgst), ugst = tax(v.ugst), igst = tax(v.igst)
+  const cgst = tax(v.cgst), sgst = tax(v.sgst), igst = tax(v.igst)
   return {
     qty, labour: n0(v.labour), material: n0(v.material), pnm: n0(v.pnm), contractRate: rate,
     boq: node.budget,
     boqQuoted: rate > 0 ? node.budget : 0,
-    contractBase: base, cgst, sgst, ugst, igst,
-    contract: round2(base + cgst + sgst + ugst + igst)
+    contractBase: base, cgst, sgst, igst,
+    contract: round2(base + cgst + sgst + igst)
   }
 }
 
@@ -584,32 +600,28 @@ function validateLeaf(d: Draft): FieldErrors {
     val[f] = n
   })
 
-  const anyRate = (['labour', 'material', 'pnm', 'contractRate'] as EditableField[]).some(f => d[f].trim() !== '')
-  if (anyRate && !errors.contractRate) {
-    if (d.contractRate.trim() === '') errors.contractRate = 'Required'
-    else if (!(val.contractRate! > 0)) errors.contractRate = 'Must be above 0'
-    else if (!BREAKUP_FIELDS.some(f => errors[f]) && BREAKUP_FIELDS.some(f => d[f].trim() !== '')) {
-      const sum = round2(BREAKUP_FIELDS.reduce((s, f) => s + n0(val[f]), 0))
-      if (Math.abs(sum - val.contractRate!) > 0.005) errors.contractRate = `Breakup adds up to ${formatCurrency(sum)}`
-    }
+  // Contract rate is calculated (Labour + Material + P&M). A row with nothing typed is "not quoted" and valid;
+  // once any breakup value is typed, the total has to be above 0.
+  if (BREAKUP_FIELDS.some(f => d[f].trim() !== '') && !BREAKUP_FIELDS.some(f => errors[f])) {
+    const sum = round2(BREAKUP_FIELDS.reduce((acc, f) => acc + n0(val[f]), 0))
+    if (!(sum > 0)) errors.labour = 'Enter a rate above 0'
   }
 
-  const cgst = n0(val.cgst), sgst = n0(val.sgst), ugst = n0(val.ugst), igst = n0(val.igst)
-  if (!errors.igst && igst > 0 && (cgst > 0 || sgst > 0 || ugst > 0)) {
-    errors.igst = 'IGST cannot be combined with CGST/SGST/UGST'
+  // Only relevant without a taxMode: with one, the non-applicable GST fields are not editable at all
+  const cgst = n0(val.cgst), sgst = n0(val.sgst), igst = n0(val.igst)
+  if (!errors.igst && igst > 0 && (cgst > 0 || sgst > 0)) {
+    errors.igst = 'IGST cannot be combined with CGST/SGST'
   }
-  if (!errors.ugst && !errors.sgst && sgst > 0 && ugst > 0) errors.ugst = 'Use either SGST or UGST'
   return errors
 }
 
-function isFieldDisabled(f: EditableField, d: Draft): boolean {
-  if (!isTaxField(f) || Number(d[f]) > 0) return false
+function isFieldDisabled(f: EditableField, d: Draft, mode?: QuotationTaxMode): boolean {
+  if (!isTaxField(f)) return false
+  if (mode) return !isTaxApplicable(f, mode)
+  // no mode: still keep IGST and CGST/SGST apart (a field that already has a value stays editable so it can be cleared)
+  if (Number(d[f]) > 0) return false
   const has = (k: EditableField) => Number(d[k]) > 0
-  if (f === 'igst') return has('cgst') || has('sgst') || has('ugst')
-  if (has('igst')) return true
-  if (f === 'sgst') return has('ugst')
-  if (f === 'ugst') return has('sgst')
-  return false
+  return f === 'igst' ? has('cgst') || has('sgst') : has('igst')
 }
 
 interface EditableCellProps {
@@ -666,26 +678,24 @@ interface TaxSummaryProps {
   taxable: number
   cgst: number
   sgst: number
-  ugst: number
   igst: number
   grandTotal: number
 }
 
-const TaxSummary: React.FC<TaxSummaryProps> = ({ taxable, cgst, sgst, ugst, igst, grandTotal }) => {
+const TaxSummary: React.FC<TaxSummaryProps> = ({ taxable, cgst, sgst, igst, grandTotal }) => {
   const cells: { label: string; value: number; always?: boolean }[] = [
     { label: 'Taxable Amount', value: taxable, always: true },
     { label: 'CGST', value: cgst },
     { label: 'SGST', value: sgst },
-    { label: 'UGST', value: ugst },
     { label: 'IGST', value: igst }
   ]
   return (
     <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row">
       <div className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
         <h4 className="text-xs font-medium text-blue-600">Contract Value Summary</h4>
-        <div className="mt-2 grid grid-cols-2 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="mt-2 grid grid-cols-2 gap-y-3 sm:grid-cols-4">
           {cells.map((c, i) => (
-            <div key={c.label} className={`${i > 0 ? 'lg:border-l lg:border-gray-200 lg:pl-4' : ''} min-w-0`}>
+            <div key={c.label} className={`${i > 0 ? 'sm:border-l sm:border-gray-200 sm:pl-4' : ''} min-w-0`}>
               <p className="text-xs text-gray-400">{c.label}</p>
               <p className="mt-1 truncate text-sm font-semibold tabular-nums text-gray-900">
                 {c.always || c.value > 0 ? formatMoney(c.value) : '—'}
@@ -733,7 +743,7 @@ const skeletonCell = (key: string, group: boolean, align: ColumnDef['align']): R
   switch (key) {
     case 'unit': return <Bar className={`h-3 w-8 ${a}`} />
     case 'quantity': return <Bar className={`h-3 w-10 ${a}`} />
-    case 'cgst': case 'sgst': case 'ugst': case 'igst': return <Bar className={`h-3 w-8 ${a}`} />
+    case 'cgst': case 'sgst': case 'igst': return <Bar className={`h-3 w-8 ${a}`} />
     default: return <Bar className={`h-3 w-16 ${a}`} />
   }
 }
@@ -799,9 +809,9 @@ const TaxSummarySkeleton: React.FC = () => (
   <div className="flex flex-col gap-3 px-4 py-3 lg:flex-row" aria-hidden="true">
     <div className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-white px-4 py-3 shadow-sm">
       <Bar className="h-3 w-36" />
-      <div className="mt-3 grid grid-cols-2 gap-y-3 sm:grid-cols-3 lg:grid-cols-5">
-        {[0, 1, 2, 3, 4].map(i => (
-          <div key={i} className={`${i > 0 ? 'lg:border-l lg:border-gray-200 lg:pl-4' : ''}`}>
+      <div className="mt-3 grid grid-cols-2 gap-y-3 sm:grid-cols-4">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className={`${i > 0 ? 'sm:border-l sm:border-gray-200 sm:pl-4' : ''}`}>
             <Bar className="h-3 w-16" />
             <Bar className="mt-2 h-4 w-20" />
           </div>
@@ -819,7 +829,7 @@ type DayField = 'completion' | 'payment'
 type DayDraft = Record<DayField, string>
 type DayValues = Record<DayField, number | null>
 
-const MAX_DAYS = 999
+const MAX_DAYS = 9999
 const DAYS_INPUT = new RegExp(`^\\d{0,${String(MAX_DAYS).length}}$`)
 
 const DAY_ROWS: { key: DayField; label: string; bg: string }[] = [
@@ -913,6 +923,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   checked,
   checkDisabled = false,
   canApprove = false,
+  taxMode,
   onApprove,
   onReject,
   onApprovalHistory,
@@ -940,7 +951,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const [innerChecked, setInnerChecked] = useState(false)
   const isExpanded = expanded ?? innerExpanded
   const isChecked = checked ?? innerChecked
-  const [copied, setCopied] = useState(false)
 
   const toggleExpanded = () => {
     const next = !isExpanded
@@ -954,15 +964,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const handleChecked = (next: boolean) => {
     if (checked === undefined) setInnerChecked(next)
     onCheckedChange?.(next, vendor)
-  }
-  const handleCopy = async (e: React.MouseEvent) => {
-    e.stopPropagation()
-    try {
-      await navigator.clipboard.writeText(String(vendor.SystemGeneratedCode ?? vendor.VendorId ?? ''))
-      setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
-    } catch {
-    }
   }
 
   const vendorTerms = vendor.ContractRequisitionQuotationTermsData
@@ -1033,7 +1034,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   }, [activeTerms, fallbackLines, isEditing])
 
   const viewLines = useMemo(() => enrichLines(lines, boqLineItems), [lines, boqLineItems])
-  const tree = useMemo(() => buildTree(viewLines, gstPct), [viewLines, gstPct])
+  const tree = useMemo(() => buildTree(viewLines, gstPct, taxMode), [viewLines, gstPct, taxMode])
 
   const status =
     vendor.QuotationStatus ??
@@ -1104,6 +1105,23 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const isLocked = readOnly || !!vendor.IsFinalized || !!vendor.IsApproval || !editableStatuses.includes(status)
 
   /* ---- edit lifecycle ---- */
+  useEffect(() => {
+    if (!isEditing || !taxMode) return
+    setDrafts(prev => {
+      let changed = false
+      const next = { ...prev }
+      Object.keys(next).forEach(k => {
+        TAX_FIELDS.forEach(f => {
+          if (!isTaxApplicable(f, taxMode) && next[k][f] !== '') {
+            next[k] = { ...next[k], [f]: '' }
+            changed = true
+          }
+        })
+      })
+      return changed ? next : prev
+    })
+  }, [taxMode, isEditing])
+
   const startEdit = () => {
     const initial: Record<string, Draft> = {}
     tree.leafKeys.forEach(k => { initial[k] = toDraft(tree.byKey.get(k)!.values) })
@@ -1156,7 +1174,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
       out[kf('material')] = v.material ?? 0
       out[kf('pnm')] = v.pnm ?? 0
       out[kf('contractRate')] = v.contractRate ?? 0
-      TAX_FIELDS.forEach(f => { out[kf(f as 'cgst')] = v[f] ?? 0 })
+      TAX_FIELDS.forEach(f => { out[kf(f as 'cgst')] = isTaxApplicable(f, taxMode) ? v[f] ?? 0 : 0 })
       if (LINE_AMOUNT_KEY in line) out[LINE_AMOUNT_KEY] = totals.get(node.key)?.contractBase ?? 0
       return out
     })
@@ -1166,9 +1184,10 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
       Total: grand.contract,
       ExpectedCompletionInDays: draftToDays(dayDrafts.completion) ?? 0,
       ExpectedPaymentInDays: draftToDays(dayDrafts.payment) ?? 0,
+      hasQuotedItem: tree.leafKeys.some(k => n0(totals.get(k)?.contractRate) > 0),
       summary: {
         taxable: grand.contractBase, cgst: grand.cgst, sgst: grand.sgst,
-        ugst: grand.ugst, igst: grand.igst, grandTotal: grand.contract
+        igst: grand.igst, grandTotal: grand.contract
       }
     }
   }
@@ -1197,6 +1216,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   }
 
   const handleFieldChange = (key: string, field: EditableField, raw: string) => {
+    if (field === 'contractRate') return // calculated, never typed
     const value = raw.replace(/,/g, '').replace(/\s/g, '')
     if (!isAllowedInput(field, value)) return
     setDrafts(prev => {
@@ -1257,12 +1277,39 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     const field = col.key as EditableField
     const draft = drafts[row.key]
 
+    if (isEditing && draft && field === 'contractRate') {
+      const rate = draft.contractRate.trim() === '' ? null : Number(draft.contractRate)
+      return (
+        <div
+          title="Calculated: Labour + Material + P&M"
+          className="flex h-8 items-center justify-end rounded-md bg-gray-50 px-2 text-xs font-medium tabular-nums text-gray-700"
+        >
+          {isNum(rate) && rate > 0 ? formatCurrency(rate) : '—'}
+        </div>
+      )
+    }
+
+    if (isEditing && draft && isTaxField(field) && !isTaxApplicable(field, taxMode)) {
+      return (
+        <span
+          className="text-gray-300"
+          title={
+            taxMode === 'IGST'
+              ? 'Not applicable: IGST is charged for a vendor in a different state'
+              : 'Not applicable: CGST + SGST are charged for a vendor in the same state'
+          }
+        >
+          —
+        </span>
+      )
+    }
+
     if (isEditing && draft && EDITABLE_FIELDS.includes(field)) {
       return (
         <EditableCell
           value={draft[field]}
           error={errors[row.key]?.[field]}
-          disabled={saving || isFieldDisabled(field, draft)}
+          disabled={saving || isFieldDisabled(field, draft, taxMode)}
           placeholder={isTaxField(field) ? '0' : '0.00'}
           ariaLabel={`${FIELD_LABEL[field]} for ${row.node.name}`}
           onChange={(v) => handleFieldChange(row.key, field, v)}
@@ -1283,7 +1330,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
         return isNum(values[field]) ? formatCurrency(values[field]) : '—'
       case 'cgst':
       case 'sgst':
-      case 'ugst':
       case 'igst':
         return isNum(values[field]) && values[field]! > 0 ? formatPct(values[field]) : '—'
       case 'contractAmount':
@@ -1378,7 +1424,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     <div className={`rounded-lg border border-gray-200 bg-white shadow-sm ${className}`}>
       <div
         className="flex cursor-pointer flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3"
-        onClick={toggleExpanded}
       >
         <div className="flex min-w-[200px] items-start gap-3" onClick={(e) => e.stopPropagation()}>
           <input
@@ -1392,14 +1437,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <span className="truncate text-base font-medium text-gray-900">{vendor.VendorName || '—'}</span>
-              <button
-                type="button"
-                onClick={handleCopy}
-                aria-label="Copy quotation code"
-                className="rounded p-0.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-              >
-                {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
-              </button>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
               {vendor.CompanyName && <span className="truncate text-xs text-gray-600">{vendor.CompanyName}</span>}
@@ -1421,6 +1458,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
           { label: 'Contract Value', value: dash ? '—' : formatCurrency(grand.contract), cls: 'text-blue-600' },
           { label: 'BOQ Base Value', value: dash ? '—' : formatCurrency(grand.boq), cls: 'text-amber-600' },
           { label: 'VAR. VS BOQ', value: dash ? '—' : varianceText(totalVar), cls: dash ? 'text-gray-500' : varianceClass(totalVar) },
+          { label: 'EST. Delivery', value: dash ? '—' : formatDays(savedDays.completion), cls: 'text-green-700' },
           ...(vendor.ValidTill ? [{ label: 'Valid Till', value: formatDate(vendor.ValidTill), cls: 'text-green-700' }] : [])
         ].map(stat => (
           <div key={stat.label} className="min-w-[120px] border-l border-gray-100 pl-4">
@@ -1468,18 +1506,17 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                     type="button"
                     onClick={cancelEdit}
                     disabled={saving}
-                    className="inline-flex h-8 items-center gap-1 rounded-md border border-gray-300 px-3 text-xs font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="px-4 py-2 text-md bg-gray-200 hover:bg-gray-300 rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <X className="h-3.5 w-3.5" /> Cancel
+                    Cancel
                   </button>
                   <button
                     type="button"
                     onClick={handleSave}
                     disabled={saving || !isDirty}
-                    className="inline-flex h-8 items-center gap-1 rounded-md bg-blue-600 px-3 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="px-4 py-2 text-md bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
-                    {saving ? 'Saving…' : 'Save changes'}
+                    {saving ? 'Saving…' : 'Save'}
                   </button>
                 </>
               ) : (
@@ -1488,9 +1525,9 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                   onClick={startEdit}
                   disabled={isLocked || isTableLoading || !!fetchError || tree.leafKeys.length === 0}
                   title={isLocked ? 'This quotation can no longer be edited' : undefined}
-                  className="inline-flex h-8 items-center gap-1 rounded-md bg-blue-600 px-5 text-xs font-medium text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  <Pencil className="h-3.5 w-3.5" /> Edit
+                  Edit
                 </button>
               )}
             </div>
@@ -1503,11 +1540,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                 {saveError ?? `Fix ${errorCount} highlighted ${errorCount === 1 ? 'field' : 'fields'} before saving.`}
               </span>
             </div>
-          )}
-          {isEditing && !(errorCount > 0 && showErrors) && !saveError && (
-            <p className="mx-4 mb-3 text-xs text-gray-500">
-              Edit rates and tax on item rows, and the expected days below the table. Contract rate follows the Labour + Material + P&amp;M breakup; group totals recalculate as you type.
-            </p>
           )}
 
           <div
@@ -1532,7 +1564,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                     </th>
                   ))}
                 </tr>
-                <tr className="h-10">
+                <tr className="h-10 border border-t-white">
                   {COLUMNS.map(col => {
                     const group = GROUPS.find(g => g.key === col.group)!
                     const isWbs = col.key === 'wbs'
@@ -1549,7 +1581,9 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                           backgroundColor: isWbs ? '#1E3A6E' : group.bg
                         }}
                       >
-                        {col.label}
+                        <span className={isTaxField(col.key as EditableField) && !isTaxApplicable(col.key as EditableField, taxMode) ? 'opacity-40' : ''}>
+                          {col.label}
+                        </span>
                       </th>
                     )
                   })}
@@ -1594,6 +1628,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                     {COLUMNS.map(col => {
                       let content: React.ReactNode = null
                       switch (col.key) {
+                        case 'wbs': content = "Total"; break
                         case 'quantity': content = formatQty(grand.qty); break
                         case 'labour': content = grand.labour > 0 ? formatCurrency(grand.labour) : '—'; break
                         case 'material': content = grand.material > 0 ? formatCurrency(grand.material) : '—'; break
@@ -1601,16 +1636,16 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                         case 'contractRate': content = grand.contractRate > 0 ? formatCurrency(grand.contractRate) : '—'; break
                         case 'cgst':
                         case 'sgst':
-                        case 'ugst':
                         case 'igst': {
-                          const pct = grand.contractBase > 0
-                            ? (grand[col.key as 'cgst'] / grand.contractBase) * 100
-                            : 0
-                          content = (
-                            <span className="rounded bg-yellow-400/90 px-1.5 py-0.5 text-[11px] text-yellow-950">
-                              {formatPct(pct)}
-                            </span>
-                          )
+                          // const pct = grand.contractBase > 0
+                          //   ? (grand[col.key as 'cgst'] / grand.contractBase) * 100
+                          //   : 0
+                          // content = (
+                          //   <span className="rounded bg-yellow-400/90 px-1.5 py-0.5 text-[11px] text-yellow-950">
+                          //     {formatPct(pct)}
+                          //   </span>
+                          // )
+                          content = <></>
                           break
                         }
                         case 'contractAmount': content = formatCurrency(grand.contract); break
@@ -1625,7 +1660,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
                       return (
                         <td
                           key={col.key}
-                          className={`px-3 tabular-nums ${alignClass(col.align === 'right' ? 'center' : col.align)}
+                          className={`px-3 tabular-nums ${alignClass(col.align)}
                             ${col.key === 'wbs' ? 'sticky left-0 z-20' : ''}`}
                           style={{ backgroundColor: '#12284C', borderTop: '2px solid #2F5BEA' }}
                         >
@@ -1660,7 +1695,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
               taxable={grand.contractBase}
               cgst={grand.cgst}
               sgst={grand.sgst}
-              ugst={grand.ugst}
               igst={grand.igst}
               grandTotal={grand.contract}
             />

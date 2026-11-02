@@ -36,13 +36,14 @@ export const ContractInvoice: React.FC = () => {
   const [deleteContractInvoiceData, setDeleteContractInvoiceData] = useState<ContractRequisitionInvoiceData | null>(null)
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+  const [invoiceNumber, setInvoiceNumber] = useState<string | null>("");
   const [invoiceAmount, setInvoiceAmount] = useState<number | null>(0);
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [approvalRowData, setApprovalRowData] = useState<ContractRequisitionInvoiceData | null>(null);
 
   const navigate = useNavigate();
-  const { canAction } = useMenuPermissions('/invoice');
+  const { canAction } = useMenuPermissions('Contract - Add Invoice');
   const { canAction: canMakePaymentAction } = useMenuPermissions('Contract - Make Payments');
   const { projectId } = useProject();
   const { addToast } = useToast();
@@ -74,6 +75,11 @@ export const ContractInvoice: React.FC = () => {
 
         if (E.isRight(response)) {
           setContractInvoiceList(response.right.Data);
+          setPagination({
+            currentPage: page,
+            totalRecords: response.right.TotalNumberOfRecord,
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+          });
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -183,7 +189,7 @@ export const ContractInvoice: React.FC = () => {
             totalPages: newTotalPages
           });
           await loadContractInvoice(pageToShow);
-
+          await loadContractRequisitionInvoiceSummary();
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -208,6 +214,7 @@ export const ContractInvoice: React.FC = () => {
       SubId: row.ContractRequisitionInvoiceId ?? 0,
       ProjectId: Number(projectId),
     };
+    setInvoiceNumber(row.InvoiceNumber);
     setInvoiceAmount(row?.InvoiceAmount ?? 0);
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
@@ -215,11 +222,19 @@ export const ContractInvoice: React.FC = () => {
 
   const handleApproveRejectDocument = (row: ContractRequisitionInvoiceData, approvalType: "approve" | "reject") => {
     setApprovalRowData(row);
+    setInvoiceNumber(row.InvoiceNumber);
     setInvoiceAmount(row?.InvoiceAmount ?? 0);
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 
   };
+
+  const handleViewPayment = (row: ContractRequisitionInvoiceData) => {
+    updateListState({
+      ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId
+    });
+    navigate(`/contractInvoicePayment/invoicePayment`);
+  }
 
   const contractInvoiceColumns = useMemo<TableColumn[]>(
     () => [
@@ -230,17 +245,14 @@ export const ContractInvoice: React.FC = () => {
         sortable: false,
         fixed: 'left',
         align: 'left',
-        render: (value: string, row: any) => {
+        render: (value: string, row: ContractRequisitionInvoiceData) => {
           return (
             <TooltipText
               text={value || '-'}
               maxWidth="250px"
               tooltipThreshold={25}
               onClick={() => {
-                updateListState({
-                  ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId
-                });
-                navigate(`/contractInvoicePayment/invoicePayment`);
+                handleViewPayment(row);
               }}
             />
           );
@@ -259,6 +271,46 @@ export const ContractInvoice: React.FC = () => {
               <MultiImageViewer
                 images={parseDocumentUrls(row.UploadInvoiceURL)}
                 title="Invoice Document"
+                triggerLabel={value || '-'}
+                isIcon={false}
+              />
+            </div>
+          );
+        }
+      },
+      {
+        key: 'PhotoURL',
+        label: 'Photographs Document',
+        width: '30',
+        sortable: false,
+        fixed: 'left',
+        align: 'left',
+        render: (value: string, row: any) => {
+          return (
+            <div className="flex items-center justify-between w-full">
+              <MultiImageViewer
+                images={parseDocumentUrls(row.PhotoURL)}
+                title="Photographs Document"
+                triggerLabel={value || '-'}
+                isIcon={false}
+              />
+            </div>
+          );
+        }
+      },
+      {
+        key: 'CertificateURL',
+        label: 'Completion Certificate Document',
+        width: '30',
+        sortable: false,
+        fixed: 'left',
+        align: 'left',
+        render: (value: string, row: any) => {
+          return (
+            <div className="flex items-center justify-between w-full">
+              <MultiImageViewer
+                images={parseDocumentUrls(row.CertificateURL)}
+                title="Completion Certificate Document"
                 triggerLabel={value || '-'}
                 isIcon={false}
               />
@@ -296,8 +348,9 @@ export const ContractInvoice: React.FC = () => {
         width: "14",
         sortable: false,
         align: "right",
-        render: (_, row) => {
+        render: (_, row: ContractRequisitionInvoiceData) => {
           const invoice = Number(row.InvoiceAmount || 0);
+          // const tds = Number(row. || 0)
           const paid = Number(row.PaymentAmount || 0);
           const pending = invoice - paid;
 
@@ -334,6 +387,7 @@ export const ContractInvoice: React.FC = () => {
           const status = row.InvoiceStatus?.toUpperCase() || "";
           const isApproved = status.includes("APPROVED");
           const isLocked = !canAction || isApproved;
+          const isFullyPaid = row.InvoiceAmount === row.InvoiceAmountPaidTillDate;
 
           return (
             <div className="flex items-center justify-center">
@@ -377,19 +431,33 @@ export const ContractInvoice: React.FC = () => {
                       leftIcon={<Trash2 className="h-4 w-4" />}
                     />
                   </> :
-                  <Button
-                    color="green"
-                    size="md"
-                    disabled={!canMakePaymentAction}
-                    onClick={() => {
-                      updateListState({
-                        ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId ?? 0,
-                      });
-                      navigate('/contractInvoicePayment/add');
-                    }}
-                  >
-                    Make Payment
-                  </Button>
+                  <>
+                    {
+                      isFullyPaid ?
+                        <Button
+                          color="blue"
+                          variant="solid"
+                          colorMode="extraLight"
+                          size="sm"
+                        >
+                          Fully Paid
+                        </Button>
+                        : <Button
+                          color="green"
+                          size="sm"
+                          disabled={!canMakePaymentAction}
+                          onClick={() => {
+                            updateListState({
+                              ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId ?? 0,
+                            });
+                            navigate('/contractInvoicePayment/add');
+                          }}
+                        >
+                          Make Payment
+                        </Button>
+                    }
+
+                  </>
               }
             </div>
           )
@@ -448,15 +516,19 @@ export const ContractInvoice: React.FC = () => {
     <div className="pt-2">
       <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
       <div className="flex justify-end gap-2">
-        <Button
-          color="blue"
-          size="sm"
-          onClick={() => {
-            navigate(`/contractInvoice/add`);
-          }}
-        >
-          Create Invoice
-        </Button>
+        {
+          canAction && invoiceSummaryData?.TotalRequisitionAmount !== invoiceSummaryData?.PaidRequisitionAmount ?
+            <Button
+              color="blue"
+              size="sm"
+              onClick={() => {
+                navigate(`/contractInvoice/add`);
+              }}
+            >
+              Create Invoice
+            </Button> : <></>
+        }
+
       </div>
       <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 my-4">
         <div className="lg:col-span-5 pb-3">
@@ -521,17 +593,19 @@ export const ContractInvoice: React.FC = () => {
       />
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        title='Invoice'
-        subSubTitleText={invoiceAmount?.toString() ?? ""}
+        titleText={invoiceNumber ?? ""}
+        subTitleText={String(invoiceAmount ?? 0)}
+        title='Invoice Approval'
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest} />
 
       <ApprovalActionModal
-        title="Invoice"
+        title="Invoice Approval"
+        titleText={invoiceNumber ?? ""}
+        subTitleText={String(invoiceAmount ?? 0)}
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        subSubTitleText={invoiceAmount?.toString() ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

@@ -36,6 +36,7 @@ import type { FilterWithPaginationProjectMasterRequest } from "@/features/projec
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import type { BudgetData } from "@/features/budget/models/BudgetModel";
 import { fetchProjectBudget, getBudgetL1Dropdown, getBudgetL2Dropdown } from "@/features/budget/budgetDropdown";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const initialFormStateContractRequisition = (): AddUpdateContractRequisitionRequest => ({
   ContractRequisitionId: 0,
@@ -77,12 +78,14 @@ export const AddUpdateContractRequisition: React.FC = () => {
     contractName?: string;
   }>({});
   const [showAddLevelPopup, setShowAddLevelPopup] = useState(false);
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteContractDetailsData, setDeleteContractDetailsData] = useState<number | null>(null);
 
   const navigate = useNavigate();
   const { ContractRequisitionId } = useParams<{ ContractRequisitionId?: string }>();
   const contractId = ContractRequisitionId ? Number(ContractRequisitionId) : 0;
   const isAddMode = contractId === 0;
-  const { addToast } = useToast();
+  const { addToast, showError } = useToast();
   const { projectId } = useProject();
   const { canAction } = useMenuPermissions("/contractRequisition");
 
@@ -330,7 +333,10 @@ export const AddUpdateContractRequisition: React.FC = () => {
     }
     if (!formData.Remark) {
       newErrors.Remark = " Remark is required.";
+    } else if (formData.Remark.trim().length < 25) {
+      newErrors.Remark = "Remark must be at least 25 characters";
     }
+
     if (!hasAnyDocumentFile(documentFiles, documentURL, removeddocumentFilesURLs)) {
       newErrors.AttachmentsURL = "File is required.";
     }
@@ -362,11 +368,47 @@ export const AddUpdateContractRequisition: React.FC = () => {
     setShowAddLevelPopup(true);
   }
 
+  const canAddDirectContract = (levelFormData: AddUpdateContractLevelRequest) => {
+    const toIds = (value: string) =>
+      value.split(",")
+        .map((id) => id.trim())
+        .filter(Boolean);
+
+    const newIds = toIds(levelFormData.SubLevelId ?? "");
+
+    if (newIds && newIds.length === 0) return false;
+    const usedIds = new Set(
+      levelDetailsList
+        .filter((c) => c.ContractMasterId === levelFormData.ContractMasterId)
+        .flatMap((c) => toIds(c.SubLevelId ?? ""))
+    );
+
+    const hasDuplicate = newIds.some((id) => usedIds.has(id));
+
+    return !hasDuplicate;
+  }
+
+  const canAddIndirectContract = (levelFormData: AddUpdateContractLevelRequest) => {
+    const hasDuplicate = levelDetailsList.some(levelDetail => levelDetail.ContractMasterId === levelFormData.ContractMasterId);
+
+    return !hasDuplicate;
+  }
+
   const saveLevels = () => {
     setErrors({});
     const validation = validateLevelForm();
     if (!validation.isValid) {
       setErrors(validation.errors);
+      return;
+    }
+    let canAdd = false;
+    if (formData.ContractType === "direct") {
+      canAdd = canAddDirectContract(levelFormData);
+    } else {
+      canAdd = canAddIndirectContract(levelFormData);
+    }
+    if (!canAdd) {
+      showError("already added");
       return;
     }
     if (editIndex !== null) {
@@ -418,6 +460,12 @@ export const AddUpdateContractRequisition: React.FC = () => {
   };
 
   const handleSave = async () => {
+
+    if (levelDetailsList.length === 0) {
+      addToast({ type: "error", title: "Please select at least one Contract Details" });
+      return;
+    }
+
     setErrors({});
     const validation = validateContractRequisitionForm();
     if (!validation.isValid) {
@@ -449,6 +497,30 @@ export const AddUpdateContractRequisition: React.FC = () => {
     );
   };
 
+  const handleConfirmationDialogBoxOpen = (index: number) => {
+    setDeleteContractDetailsData(index);
+    setIsConfirmationDialogBoxOpen(true);
+  };
+
+  const handleDeleteContractDetails = () => {
+
+    if (deleteContractDetailsData === null) return;
+
+    const removeIndex = deleteContractDetailsData;
+
+    if (removeIndex < 0) {
+      setIsConfirmationDialogBoxOpen(false);
+      setDeleteContractDetailsData(null);
+      addToast({ type: "error", title: "Unable to find the selected contract details to delete" });
+      return;
+    }
+
+    setLevelDetailsList((prev) => prev.filter((_, i) => i !== removeIndex));
+    setIsConfirmationDialogBoxOpen(false);
+    setDeleteContractDetailsData(null);
+    addToast({ type: "success", title: "Contract Details Removed" });
+  };
+
   const ContractLevelDetailsColumns = useMemo<TableColumn[]>(() => [
     {
       key: "ContractMasterName",
@@ -469,7 +541,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       align: "left",
       render: () => (
         <TooltipText
-          text={formData.ContractType || "-"}
+          text={formData.ContractType.charAt(0).toUpperCase() + formData.ContractType.slice(1) || "-"}
           maxWidth="250px"
           tooltipThreshold={25}
         />
@@ -492,7 +564,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
         {
           key: "action",
           label: "Action",
-          align: "right",
+          align: "left",
           render: (_value: unknown, row: typeof levelDetailsList[number], index: number) => {
             if (!canAction) return null;
 
@@ -521,13 +593,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-
-                    setLevelDetailsList((prev) =>
-                      prev.filter(
-                        (level) =>
-                          level.ContractMasterId !== row.ContractMasterId
-                      )
-                    );
+                    handleConfirmationDialogBoxOpen(index);
                   }}
                   color="transparent"
                   isborderRadius
@@ -540,16 +606,14 @@ export const AddUpdateContractRequisition: React.FC = () => {
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              </div>
+              </div >
             );
           },
         } satisfies TableColumn,
       ]
       : []) as TableColumn[]),
   ], [
-    canAction,
-    isLockAndKeyContractCreating,
-    levelDetailsList,
+    canAction, isLockAndKeyContractCreating, levelDetailsList, handleConfirmationDialogBoxOpen
   ]);
 
   const BudgetDetailsColumns = useMemo<TableColumn[]>(() => [
@@ -629,10 +693,10 @@ export const AddUpdateContractRequisition: React.FC = () => {
                 onClick={handleAddLevel}
                 leftIcon={<Plus className="h-4 w-4" />}
               >
-                Add Level
+                Add Contract
               </Button>
             </div>
-            {levelDetailsList.length > 0 && (
+            {levelDetailsList.length > 0 ? (
               <div className="pb-2">
                 <DataTable
                   data={levelDetailsList}
@@ -642,6 +706,10 @@ export const AddUpdateContractRequisition: React.FC = () => {
                   recordsPerPage={5}
                   className="flex-1"
                 />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <span className="text-gray-500 text-sm font-medium">No Contract Details Found</span>
               </div>
             )}
             {
@@ -662,6 +730,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
                 <DatePickerInput
                   label="Estimated Start Date"
                   required
+                  minDate={new Date(new Date().setDate(new Date().getDate()))}
                   value={formatDate_dd_mm_yyyy(formData.EstimatedDate)}
                   onChange={(value) =>
                     handleFieldChange("EstimatedDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(value))
@@ -675,16 +744,24 @@ export const AddUpdateContractRequisition: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
             <div className="flex items-center justify-between pb-3">
               <MultiFilePicker
-                label="Upload Document"
-                placeholder="Upload Document"
+                label="Upload Attachment"
+                placeholder="Upload Attachment"
                 value={documentFiles}
                 onChange={setdocumentFiles}
                 availableFilesURL={documentURL}
-                allowedTypes={["image/jpeg", "image/png"]}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "image/jpg",
+                  "application/pdf",
+                  "application/vnd.ms-excel",
+                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  "application/msword",
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                ]}
                 required
-                maxFiles={1}
+                maxFiles={5}
                 error={errors.AttachmentsURL}
-                maxSizeMB={5}
                 onRemoveExisting={(url) => setRemoveddocumentFilesURLs((prev) => [...prev, url])}
               />
             </div>
@@ -722,20 +799,19 @@ export const AddUpdateContractRequisition: React.FC = () => {
       <Modal
         isOpen={showAddLevelPopup}
         onClose={() => setShowAddLevelPopup(false)}
-        title="Add Level"
+        title={editIndex !== null ? "Update Level" : "Add Level"}
         onSubmit={e => {
           e.preventDefault();
           saveLevels();
         }}
-        saveText="Save"
-        cancelText="Cancel"
-        onCancel={() => setShowAddLevelPopup(false)}
+        saveText={editIndex !== null ? "Update" : "Add"}
         size="small-half"
       >
         <Tabs
           tabs={ContractTypeTabList}
           defaultActive={formData.ContractType}
           islarge
+          istoggleTab
           onTabChange={(t) => {
             const { id } = t;
             handleLevelFieldChange("ContractMasterId", 0);
@@ -749,9 +825,9 @@ export const AddUpdateContractRequisition: React.FC = () => {
           formData.ContractType === "direct" ?
             <>
               <SingleSelectDropdownWithPagination
-                label="Select Contract"
+                label="Select Level (L1)"
                 required
-                title="Select Contract"
+                title="Select Level (L1)"
                 size="lg"
                 disabled={!(editIndex === null)}
                 dataFetchCallBack={async () => {
@@ -780,7 +856,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
               />
               <MultiSelectPagination
                 required
-                label="Contract"
+                label="Select Level (L2)"
                 disabled={levelFormData.ContractMasterId === 0}
                 dataFetchCallBack={memoizedfetchSpecificationMasterDropdown}
                 selectedValues={levelDropdown.selectedValues}
@@ -824,6 +900,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
         <TextArea
           label="Remark"
           className="thin-scroll"
+          required
           value={levelFormData.LevelRemark}
           onChange={(e) =>
             handleLevelFieldChange("LevelRemark", e.target.value)
@@ -832,6 +909,18 @@ export const AddUpdateContractRequisition: React.FC = () => {
           error={errors.LevelRemark}
         />
       </Modal>
+
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpen}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false);
+          setDeleteContractDetailsData(null);
+        }}
+        onConfirm={handleDeleteContractDetails}
+        loading={isLoading}
+        title="You are about to delete a Contract Details"
+        pageName={"Contract Details"}
+      />
     </div>
   );
 };

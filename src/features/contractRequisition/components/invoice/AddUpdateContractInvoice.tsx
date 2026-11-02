@@ -3,7 +3,7 @@ import * as E from "fp-ts/Either";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import type { AddUpdateContractRequisitionInvoiceRequest, FilterWithPaginationContractRequisitionInvoice } from "@/features/contractRequisition/models/ContractRequisitionInvoiceModel";
+import type { AddUpdateContractRequisitionInvoiceRequest, ContractRequisitionInvoiceSummaryData, FilterWithPaginationContractRequisitionInvoice, FilterWithPaginationContractRequisitionInvoiceSummary } from "@/features/contractRequisition/models/ContractRequisitionInvoiceModel";
 import { runApiWithLoader } from "@/core/utils";
 import { contractRequisitionInvoiceService } from "@/features/contractRequisition/services/ContractRequisitionInvoiceService";
 import { useContractRequisitionListState } from "@/features/contractRequisition/context/ContractRequisitionListStateContext";
@@ -12,19 +12,20 @@ import { Loader } from "@/core/utils/loader";
 import { Input } from "@/ui/components/forms";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 const initialFormState = (): AddUpdateContractRequisitionInvoiceRequest => ({
   ProjectId: 0,
   ContractRequisitionId: 0,
   ContractRequisitionInvoiceId: 0,
   UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  InvoiceNumber: 0,
+  InvoiceNumber: "",
   InvoiceDate: '',
   UploadInvoiceURL: '',
   RemoveUploadInvoiceURL: '',
@@ -40,7 +41,9 @@ const initialFormState = (): AddUpdateContractRequisitionInvoiceRequest => ({
 const AddUpdateContractInvoice = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [invoiceSummaryData, setInvoiceSummaryData] = useState<ContractRequisitionInvoiceSummaryData | null>(null);
   const [formData, setFormData] = useState<AddUpdateContractRequisitionInvoiceRequest>(() => initialFormState());
+  const [editInvoiceAmount, setEditInvoiceAmount] = useState<number>();
 
   const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
   const [removeUploadInvoiceUrls, setRemoveUploadInvoiceUrls] = useState<string[]>([]);
@@ -69,6 +72,11 @@ const AddUpdateContractInvoice = () => {
   //#region INITIALIZATION
   useEffect(() => {
     if (!projectId) return;
+    loadContractRequisitionInvoiceSummary();
+  }, [projectId, ContractRequisitionId]);
+
+  useEffect(() => {
+    if (!projectId) return;
     setFormData(prev => ({
       ...prev,
       ContractInvoiceId: contractInvoiceId,
@@ -82,6 +90,35 @@ const AddUpdateContractInvoice = () => {
   //#endregion
 
   //#region FETCH Contract INVOICE DETAILS
+  const loadContractRequisitionInvoiceSummary = async () => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationContractRequisitionInvoiceSummary = {
+          ContractRequisitionId: ContractRequisitionId,
+        };
+
+        const response = await contractRequisitionInvoiceService.apiCallPullContractRequisitionInvoiceSummary(params);
+
+        if (E.isRight(response)) {
+
+          setInvoiceSummaryData(response.right.Data[0] ?? null);
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      "Loading Invoice Summary",
+    );
+  };
+
   const fetchContractInvoiceDetails = async () => {
 
     await runApiWithLoader(
@@ -115,6 +152,7 @@ const AddUpdateContractInvoice = () => {
               Remarks: e.Remarks ?? prev.Remarks
             }))
           }
+          setEditInvoiceAmount(e.InvoiceAmount);
           setUploadInvoiceURL(e.UploadInvoiceURL);
           setUploadInvoiceURLFiles([]);
           setRemoveUploadInvoiceUrls([]);
@@ -125,6 +163,7 @@ const AddUpdateContractInvoice = () => {
           setUploadCompletionCertificateURLFiles([]);
           setRemoveUploadCompletionCertificateUrls([]);
         } else {
+          setEditInvoiceAmount(0);
           addToast({ type: 'error', title: response.left.message });
         }
         return response;
@@ -195,6 +234,8 @@ const AddUpdateContractInvoice = () => {
 
     if (!formData.Remarks) {
       newErrors.Remarks = 'Remark is required.';
+    } else if (formData.Remarks.trim().length < 25) {
+      newErrors.Remarks = "Remark must be at least 25 characters";
     }
 
     return {
@@ -296,10 +337,49 @@ const AddUpdateContractInvoice = () => {
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
+        <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 my-4">
+          <div className="lg:col-span-5 pb-3">
+            <div className="mb-5">
+              <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                Contract Details
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <FieldItem label="Vendor Name" value={invoiceSummaryData?.FinalVendor} />
+                <FieldItem label="Vendor Company" value={invoiceSummaryData?.FinalVendorCompanyName} />
+                <FieldItem label="Mobile Number" value={`${invoiceSummaryData?.FinalVendorMobileNumberCountryCode} ${invoiceSummaryData?.FinalVendorMobileNumber}`} />
+                <FieldItem label="GST Number" value={invoiceSummaryData?.FinalVendorGSTNumber} />
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                Work Order Details (₹)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <FieldItem label="Total (₹)" value={`₹ ${invoiceSummaryData?.TotalRequisitionAmount?.toFixed(2) ?? ''}`} />
+                <FieldItem label="Paid (₹)" value={`₹ ${invoiceSummaryData?.PaidRequisitionAmount?.toFixed(2) ?? ''}`} />
+                <FieldItem label="Pending (₹)" value={`₹ ${invoiceSummaryData?.PendingRequisitionAmount?.toFixed(2) ?? ''}`} />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 border-b border-gray-200 pb-2 mb-3">
+                Invoice Details (₹)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <FieldItem label="Total (₹)" value={`₹ ${invoiceSummaryData?.TotalInvoiceAmount?.toFixed(2) ?? ''}`} />
+                <FieldItem label="Paid (₹)" value={`₹ ${invoiceSummaryData?.TotalAmountPaid?.toFixed(2) ?? ''}`} />
+                <FieldItem label="TDS Paid (₹)" value={`₹ ${invoiceSummaryData?.TotalTDSAmountPaid?.toFixed(2) ?? ''}`} />
+                <FieldItem label="Pending (₹)" value={`₹ ${invoiceSummaryData?.RemainingInvoiceAmount?.toFixed(2) ?? ''}`} />
+              </div>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleAddUpdateContractInvoice}>
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Add Invoice</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">{isAddMode ? "Add Invoice" : "Update Invoice / Edit Invoice"}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
               <div>
@@ -327,14 +407,13 @@ const AddUpdateContractInvoice = () => {
                 <MultiFilePicker
                   label="Upload Invoice"
                   required
-                  placeholder='Select Files'
+                  placeholder='Select Invoice'
                   error={errors.UploadInvoiceURL}
                   value={uploadInvoiceURLFiles}
                   onChange={setUploadInvoiceURLFiles}
                   availableFilesURL={uploadInvoiceURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                  maxFiles={3}
-                  maxSizeMB={10}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  maxFiles={5}
                   onRemoveExisting={(url) => {
                     setRemoveUploadInvoiceUrls((prev) => [...prev, url])
                   }}
@@ -347,11 +426,28 @@ const AddUpdateContractInvoice = () => {
                 <Input
                   type="text"
                   required
-                  label='Invoice Amount'
+                  label='Invoice Amount (₹)'
+                  rightIcon="(₹)"
                   value={formData.InvoiceAmount ?? ""}
-                  onChange={(e) => handleFieldChange("InvoiceAmount", e.target.value)}
+                  onChange={(e) => {
+                    const value = filterNumbersWithDecimal(e.target.value);
+
+                    const totalRequisitionAmount = Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0);
+
+                    const totalInvoiceAmount = Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0);
+
+                    const currentInvoiceAmount = Number(editInvoiceAmount);
+
+                    const maxInvoiceAmount = Number(formData.ContractRequisitionInvoiceId) > 0 ? totalRequisitionAmount - totalInvoiceAmount + currentInvoiceAmount : totalRequisitionAmount - totalInvoiceAmount;
+
+                    if (Number(value) <= maxInvoiceAmount) {
+                      handleFieldChange("InvoiceAmount", value);
+                    }
+                  }}
                   placeholder="Enter Invoice Amount"
                   maxLength={15}
+                  max={Number(formData.ContractRequisitionInvoiceId) > 0 ? (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0) + Number(editInvoiceAmount))
+                    : (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
                   error={errors.InvoiceAmount}
                 />
               </div>
@@ -369,7 +465,7 @@ const AddUpdateContractInvoice = () => {
                 <MultiFilePicker
                   label="Upload Photographs"
                   required
-                  placeholder='Select Files'
+                  placeholder='Select Photographs'
                   error={errors.PhotoURL}
                   value={uploadPhotographsURLFiles}
                   onChange={setUploadPhotographsURLFiles}
@@ -386,14 +482,13 @@ const AddUpdateContractInvoice = () => {
                 <MultiFilePicker
                   label="Upload Completion Certificate"
                   required
-                  placeholder='Select Files'
+                  placeholder='Select Completion Certificate'
                   error={errors.CertificateURL}
                   value={uploadCompletionCertificateURLFiles}
                   onChange={setUploadCompletionCertificateURLFiles}
                   availableFilesURL={uploadCompletionCertificateURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                  maxFiles={3}
-                  maxSizeMB={10}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  maxFiles={5}
                   onRemoveExisting={(url) => {
                     setRemoveUploadCompletionCertificateUrls((prev) => [...prev, url])
                   }}

@@ -24,6 +24,8 @@ export type ContractRequisitionListState = {
   VendorFinalizationApprovalStatus: string;
   ContractRequisitionInvoiceId: number;
   VendorName: string;
+  CompanyGSTNumber: string;
+  IsBOQCreated: boolean;
 };
 
 export type ContractRequisitionDetailItem = {};
@@ -58,7 +60,9 @@ const INITIAL_STATE: ContractRequisitionListState = {
   ContractRequisitionStatus: "",
   VendorFinalizationApprovalStatus: "",
   ContractRequisitionInvoiceId: 0,
-  VendorName: ""
+  VendorName: "",
+  CompanyGSTNumber: "",
+  IsBOQCreated: false
 };
 
 function getInitialState(currentProjectId: number | null): ContractRequisitionListState {

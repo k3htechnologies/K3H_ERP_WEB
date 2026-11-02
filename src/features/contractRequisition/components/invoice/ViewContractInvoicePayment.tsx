@@ -177,7 +177,7 @@ const ViewContractInvoicePayment: React.FC = () => {
 
       <div className="pb-4">
         <HeaderActionBar
-          titleText={'Make Payment :'}
+          titleText={'View Payment :'}
           subTitleText={SystemGeneratedCode ?? "-"}
           subSubTitleText={ContractRequisitionStatus ?? ''}
           subSubSubTitleText={VendorName ?? ''}

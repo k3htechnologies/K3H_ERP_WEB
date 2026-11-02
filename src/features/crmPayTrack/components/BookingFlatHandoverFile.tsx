@@ -664,7 +664,6 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
             <DataTable
                 columns={bankDocumentColumns}
                 emptyMessage={`No ${pageName} Found`}
-                fixedHeight
                 className="flex-1"
                 data={bankDocumentListForTable}
                 pagination={bankDocumentPaginationInfo}

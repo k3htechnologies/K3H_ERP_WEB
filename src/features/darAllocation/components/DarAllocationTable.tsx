@@ -42,25 +42,27 @@ export const DarAllocationTable: React.FC<DarAllocationTableProps> =
                         )
                     };
                 }
+
                 if (col.key === 'VillageName') {
                     return {
                         ...col,
-                        render: (value: number) => (value ? `${value}` : '-')
+                        render: (value: string) => (
+                            <div className="whitespace-normal break-words">
+                                {value || '-'}
+                            </div>
+                        )
                     };
                 }
 
-                if (col.key === 'EmployeeId') {
+
+
+                if (col.key === 'NumberOfChannelPartner') {
                     return {
                         ...col,
                         render: (value: number) => value ?? '0'
                     };
                 }
-                if (col.key === 'VillageMasterId') {
-                    return {
-                        ...col,
-                        render: (value: number) => value ?? '0'
-                    };
-                }
+
 
                 if (col.key === 'Actions') {
 
@@ -84,7 +86,7 @@ export const DarAllocationTable: React.FC<DarAllocationTableProps> =
                                             color: 'red',
                                             padding: '4px 8px'
                                         }}
-                                        title="Delete Dar Allocation"
+                                        title="Delete DAR Allocation"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </Button>
@@ -103,7 +105,7 @@ export const DarAllocationTable: React.FC<DarAllocationTableProps> =
                 data={data}
                 columns={tableColumns}
                 pagination={pagination}
-                emptyMessage="No Dar Allocation Data Found"
+                emptyMessage="No DAR Allocation Data Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"

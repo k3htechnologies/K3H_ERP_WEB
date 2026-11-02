@@ -271,7 +271,7 @@ const ProjectDrawing: React.FC = () => {
 
 
             <HeaderActionBar
-                titleText={`Project Drawing Details : ${flatData?.BuildingNumber || "-"} :`}
+                titleText={`Drawing Document Details : ${flatData?.BuildingNumber || "-"} :`}
                 subTitleText={flatData?.Wing}
                 subSubSubTitleText={flatData?.Floor}
                 cancelText="Cancel"

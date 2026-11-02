@@ -21,6 +21,6 @@ export const createFormResetHandler = (
     setErrors({});
     setDropdownLabels({});
     setDropdownResetKey(prev => prev + 1);
-    setApplicable("Percenatge");
+    setApplicable("Percentage");
   };
 };

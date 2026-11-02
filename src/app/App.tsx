@@ -24,7 +24,6 @@ import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMapping
 import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMaster';
 import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
 import Vendor from '@/features/vendor/pages/Vendor';
-import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
@@ -101,7 +100,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -247,17 +245,6 @@ import { StockManagementListStateProvider } from '@/features/stockManagement/con
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 import { ErpRoadmap } from '@/features/erpRoadmap/pages/ErpRoadmap';
-import TeamWorkspaceDashboard from '@/features/teamWorkspaceDashboard/pages/TeamWorkspaceDashboard';
-import { MeetingListStateProvider } from '@/features/meeting/context/MeetingListStateContext';
-import { TaskListStateProvider } from '@/features/task/context/TaskListStateContext';
-import Conference from '@/features/conference/pages/Conference';
-import AddUpdateConference from '@/features/conference/pages/AddUpdateConference';
-import Task from '@/features/task/pages/Task';
-import ViewTask from '@/features/task/pages/ViewTask';
-import AddUpdateTaskOrSubTask from '@/features/task/pages/AddUpdateTaskOrSubTask';
-import Meeting from '@/features/meeting/pages/Meeting';
-import AddUpdateMeeting from '@/features/meeting/pages/AddUpdateMeeting';
-import ViewMeeting from '@/features/meeting/pages/ViewMeeting';
 import TenantBooking from '@/features/tenantBooking/pages/TenantBooking';
 import { TenantBookingListStateProvider } from '@/features/tenantBooking/context/TenantBookingListStateContext';
 import { AddUpdateTenantBooking } from '@/features/tenantBooking/pages/AddUpdateTenantBooking';
@@ -267,8 +254,14 @@ import BaselineCostPlanDocument from '@/features/baselineCostPlanDocument/pages/
 import ConstructionAreaDetails from '@/features/constructionArea/pages/ConstructionAreaDetails';
 import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardApprovals';
 import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
+import { CostToCompanyListStateProvider } from '@/features/costToCompany/context/CostToCompanyListStateContext';
+import CostToCompany from '@/features/costToCompany/pages/CostToCompany';
+import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCostToCompany';
+import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
 import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
 import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
+import CompanyDocument from '@/features/companyMaster/pages/CompanyDocument';
+import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompanyMasterWithBank';
 import { DarAllocation } from '@/features/darAllocation/pages/DarAllocation';
 import VendorManagementDashboard from '@/features/vendorManagementDashboard/pages/VendorManagementDashboard';
 import ClientLoanReport from '@/features/clientLoanReport/pages/ClientLoanReport';
@@ -340,10 +333,13 @@ function App() {
             <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
 
 
-            <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
+
+            <Route path="companyMaster" element={<CompanyListStateProvider><ViewCompanyMasterWithBank /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
             <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
+
+            <Route path='companyMaster/document' element={<CompanyListStateProvider><CompanyDocument /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -436,6 +432,11 @@ function App() {
 
             <Route path="attendance" element={<AttendanceCalendar />} />
 
+            <Route path='costToCompany' element={<CostToCompanyListStateProvider><CostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/add/:CostToCompanyId?' element={<CostToCompanyListStateProvider><AddUpdateCostToCompany /></CostToCompanyListStateProvider>} />
+            <Route path='costToCompany/view' element={<CostToCompanyListStateProvider><ViewCostToCompany /></CostToCompanyListStateProvider>} />
+
+
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
 
@@ -464,7 +465,6 @@ function App() {
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
             {/* COMMAN */}
-            <Route path="event" element={<Event />} />
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
@@ -531,7 +531,7 @@ function App() {
 
             <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
-
+            <Route path="darAllocation" element={<DarAllocation />} />
             {/* REDEVELOPMENT */}
 
             <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
@@ -645,18 +645,7 @@ function App() {
             <Route path="scheduleinterview" element={<JobOpeningListStateProvider><InterviewSchedule /></JobOpeningListStateProvider>} />
 
             {/* {TEAM WORK SPACE} */}
-            <Route path="teamWorkspaceDashboard" element={<TeamWorkspaceDashboard />} />
-            <Route path="calendar" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
-            <Route path="event" element={<MeetingListStateProvider><TaskListStateProvider><Event /></TaskListStateProvider></MeetingListStateProvider>} />
-            <Route path="conference" element={<Conference />} />
-            <Route path="conference/add" element={<AddUpdateConference />} />
-            <Route path="task" element={<TaskListStateProvider><Task /></TaskListStateProvider>} />
-            <Route path="task/view/:taskId?" element={<TaskListStateProvider><ViewTask /></TaskListStateProvider>} />
-            <Route path="task/add/:taskId?" element={<TaskListStateProvider><AddUpdateTaskOrSubTask /></TaskListStateProvider>} />
-            <Route path="meeting" element={<MeetingListStateProvider><Meeting /></MeetingListStateProvider>} />
-            <Route path="meeting/add/:meetingId?" element={<MeetingListStateProvider><AddUpdateMeeting /></MeetingListStateProvider>} />
-            <Route path="meeting/view" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
-            <Route path="meeting/mom" element={<MeetingListStateProvider><ViewMeeting /></MeetingListStateProvider>} />
+
 
             {/* MATERIAL REQUISITION */}
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />

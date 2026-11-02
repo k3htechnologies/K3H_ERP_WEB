@@ -602,9 +602,9 @@ export const ViewProjectMaster: React.FC = () => {
                                                 </span>
 
                                                 <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${editProjectData?.Category?.toLowerCase() === "tender"
-                                                        ? "bg-[#4346551F] text-[#434655]"
-                                                        : "bg-green-100 text-green-700"
-                                                        }`}
+                                                    ? "bg-[#4346551F] text-[#434655]"
+                                                    : "bg-green-100 text-green-700"
+                                                    }`}
                                                 >
                                                     {editProjectData?.Category || "-"}
                                                 </span>
@@ -631,6 +631,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             <FieldItem label="Business Category" value={editProjectData?.BussinessCategory} isRow />
                                             <FieldItem label="Federation" value={editProjectData?.IsFederation ? "YES" : "NO"} isRow />
                                             <FieldItem label="Federation Amount" value={formatCurrency(editProjectData?.FederationAmount ?? 0)} isRow />
+                                            <FieldItem label="Lock And Key" value={editProjectData?.IsLockAndKey ? "YES" : "NO"} isRow />
                                         </div>
 
                                         <div className="w-full xl:w-[400px] space-y-4">
@@ -1261,7 +1262,7 @@ export const ViewProjectMaster: React.FC = () => {
                                                                     </div>
 
                                                                     <div>
-                                                                       <h5 className="text-md font-semibold text-gray-900 break-words">
+                                                                        <h5 className="text-md font-semibold text-gray-900 break-words">
                                                                             {member.FullName || "-"}
                                                                         </h5>
 

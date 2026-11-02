@@ -71,7 +71,7 @@ export const ViewTenantBooking: React.FC = () => {
                     PageSize: 1,
                     TenantId: tenantIdToFetch,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    IsCheckPermission: false,
                     BuildingId: buildingId,
                 };
 
@@ -112,7 +112,7 @@ export const ViewTenantBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    IsCheckPermission: false,
                     BookingSearchKey: "TENANT BOOKING",
                 };
 
@@ -656,11 +656,6 @@ export const ViewTenantBooking: React.FC = () => {
                                             <div className="py-4">
                                                 <FieldItem label="Adjust Purchase Area" value={`${bookingData?.AdjustPurchaseAreaSqFt ?? 0} SqFt`} isRow />
                                             </div>
-
-                                            <div className="py-4">
-                                                <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
-                                            </div>
-
 
                                             <div className="py-4">
                                                 <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />

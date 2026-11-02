@@ -46,7 +46,7 @@ export const getPageInfo = (path: string) => {
       };
     case "companyMaster":
       return {
-        title: "Company Master",
+        title: "Company Details",
         description: "Single source of truth for company information",
       };
 
@@ -210,6 +210,12 @@ export const getPageInfo = (path: string) => {
       return {
         title: "Payroll Report",
         description: "Comprehensive payroll reports for accurate financial tracking",
+      };
+
+    case "costToCompany":
+      return {
+        title: "Cost To Company",
+        description: "Overview of your system and key metrics",
       };
 
     //DOCUMENT MANAGEMENT
@@ -531,6 +537,11 @@ export const getPageInfo = (path: string) => {
     case "aopAchievement":
       return {
         title: "AOP Achievement",
+        description: "Recognize and Reward Top Performers",
+      };
+      case "darAllocation":
+      return {
+        title: "DAR Allocation",
         description: "Recognize and Reward Top Performers",
       };
 

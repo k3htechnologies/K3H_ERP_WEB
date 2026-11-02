@@ -177,7 +177,7 @@ export const ViewTenant: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
-                canAction={canAction && !(activeTab === "Overview" && !editTenantData?.FlatIsEditDelete)}
+                canAction={canAction && editTenantData?.FlatIsEditDelete}
                 onEdit={() => {
 
                     if (activeTab === "Overview") {
@@ -186,7 +186,11 @@ export const ViewTenant: React.FC = () => {
                         if (editTenantData) {
                             handleEditTenant(editTenantData);
                         }
+                        
                     } else if (activeTab === "Document") {
+
+                         if (!editTenantData?.FlatIsEditDelete) return;
+
                         handleViewTenantDocument();
                     }
                 }}
@@ -437,7 +441,7 @@ export const ViewTenant: React.FC = () => {
 
                                     {Number(inventoryFlat?.BookingId ?? 0) > 0 && (
                                         <span className="inline-flex items-center rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
-                                            Booking Done
+                                            Booking Done - {inventoryFlat?.BookingApprovalStatus}
                                         </span>
                                     )}
                                 </div>

@@ -36,10 +36,11 @@ import ApprovalActions from "@/features/modulesWorkflowApproval/components/Appro
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 
 export const MaterialRequisition: React.FC = () => {
-
+    const emp = LocalStorageHelper.getStoredEmployeeData();
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
@@ -55,8 +56,7 @@ export const MaterialRequisition: React.FC = () => {
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const [vendorName, setVendorName] = useState<string | null>("");
-    const canAction = true;
-    const canExport = true;
+    const {canAction,canExport} = useMenuPermissions('Get Material Requisition');
 
 
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -138,7 +138,7 @@ export const MaterialRequisition: React.FC = () => {
             SystemGeneratedCode: row.SystemGeneratedCode ?? "",
             VendorFinalizationApprovalStatus: row.VendorFinalizationApprovalStatus,
             VendorName: row.FinalVendor,
-            CompanyGSTNumber:row.CompanyGSTNumber ?? "",
+            CompanyGSTNumber: row.CompanyGSTNumber ?? "",
             Uniquekey: row.Uniquekey ?? ""
         });
         navigate('/materialRequisition/view');
@@ -279,7 +279,7 @@ export const MaterialRequisition: React.FC = () => {
 
             )
         },
-        
+
         {
             key: 'MaterialRequisitionStatus',
             label: 'Status',
@@ -357,6 +357,7 @@ export const MaterialRequisition: React.FC = () => {
 
                 const canActionStage =
                     canAction &&
+                    Number(row.CreatedById) === Number(emp?.EmployeeId) &&
                     !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
                     !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase()) &&
                     ["GET QUOTATION"].includes(row?.MaterialRequisitionStage?.toUpperCase());

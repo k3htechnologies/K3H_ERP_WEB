@@ -1,7 +1,7 @@
 import * as E from 'fp-ts/Either';
 import { parkingService } from '@/features/parking/services/ParkingService';
 
-export const fetchParkingDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number,displayParkingId?: string,parkingStatus?:string,isAcessOnlyApprovedParking?:boolean,approvalStatus?:string }) => {
+export const fetchParkingDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number,displayParkingId?: string,parkingStatus?:string,isAcessOnlyApprovedParking?:boolean,isAcessMemberApprovedParking?:boolean,approvalStatus?:string }) => {
     try {
         const responseEither = await parkingService.apiCallPullParkingWithPagination({
             PageSize: 20,
@@ -11,7 +11,8 @@ export const fetchParkingDropdown = async (pageNumber: number, params?: { value?
             DisplayParkingId: params?.displayParkingId || "",
             ParkingStatus:params?.parkingStatus || "",
             ApprovalStatus:params?.approvalStatus || "",
-            IsAcessOnlyApprovedParking:params?.isAcessOnlyApprovedParking ?? true
+            IsAcessOnlyApprovedParking:params?.isAcessOnlyApprovedParking ?? true,
+            IsAcessMemberApprovedParking:params?.isAcessMemberApprovedParking ?? true
         });
 
         if (E.isLeft(responseEither)) {

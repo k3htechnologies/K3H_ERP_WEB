@@ -8,6 +8,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
+import { SkillBadges } from '@/features/hireSpace/jobOpening/components';
 import { fetchJobOpeningDepartmentDropdown } from '@/features/hireSpace/jobOpening/jobOpeningDropDown';
 import { useJobRoleMasterListState } from '@/features/hireSpace/JobRoleMaster/context/JobRoleMasterListStateContext';
 import type {
@@ -208,10 +209,17 @@ export const JobRoleMaster: React.FC = () => {
   };
 
   const handleDepartmentChange = (tab: TabItem) => {
-    setJobRoleMasterList([]);
+    const nextDepartmentId = Number(tab.id);
+
     setSelectedJobRole(null);
+
+    if (nextDepartmentId === departmentId) {
+      return;
+    }
+
+    setJobRoleMasterList([]);
     updateListState({
-      departmentId: Number(tab.id),
+      departmentId: nextDepartmentId,
       departmentName: tab.label,
     });
   };
@@ -325,10 +333,14 @@ export const JobRoleMaster: React.FC = () => {
   };
 
   const detailBreadcrumbItems = [
-    { id: 'job-roles', label: 'Job Roles', onClick: handleBackToListJobRoleMaster },
     {
       id: 'department',
-      label: selectedJobRole?.DepartmentName || departmentName || '-',
+      label: departmentName || selectedJobRole?.DepartmentName || '-',
+      onClick: handleBackToListJobRoleMaster,
+    },
+    {
+      id: 'role',
+      label: selectedJobRole?.RoleName || '-',
     },
   ];
 
@@ -356,7 +368,6 @@ export const JobRoleMaster: React.FC = () => {
     );
   };
 
-  
   return (
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
     <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
@@ -373,7 +384,7 @@ export const JobRoleMaster: React.FC = () => {
           isShowFilterButton={false}
           isShowCustomizeButton={false}
           isShowAddButton={false}
-          isShowExportButton={canExport}
+          isShowExportButton={canExport && jobRoleMasterList.length !== 0}
           onExportExcel={() => handleExportJobRoleMaster('Excel')}
           onExportPdf={() => handleExportJobRoleMaster('PDF')}
       />
@@ -381,9 +392,9 @@ export const JobRoleMaster: React.FC = () => {
         {departmentTabList.length === 0 && !isLoading ? (
           <NoDataView message="No Departments Found" />
         ) : (
-        <div className="grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-4">
-          <div className="min-w-0 lg:col-span-1">
-            <aside className="flex flex-col rounded-lg border border-gray-200 p-4">
+        <div className=" grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-4">
+          <div className="bg-white min-w-0 lg:col-span-1">
+            <aside className="flex h-full flex-col rounded-lg border border-gray-200 p-4">
               <h2 className="shrink-0 pb-3 text-base font-semibold text-gray-900">Department</h2>
               <Tabs
                 tabs={departmentTabList}
@@ -391,7 +402,6 @@ export const JobRoleMaster: React.FC = () => {
                 isvertical
                 onTabChange={handleDepartmentChange}
               />
-              
             </aside>
           </div>
 
@@ -403,9 +413,6 @@ export const JobRoleMaster: React.FC = () => {
                     className="thin-scroll min-h-0 flex-1 overflow-y-auto pr-1"
                     style={{ maxHeight: '65vh' }}
                   >
-                    <h1 className="mb-4 text-lg font-semibold text-gray-900">
-                      {selectedJobRole.RoleName || '-'}
-                    </h1>
 
                     <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-3">
                       <div className="min-w-0 lg:col-span-2">
@@ -415,7 +422,7 @@ export const JobRoleMaster: React.FC = () => {
                               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
                                 <ListChecks className="h-4 w-4 text-blue-600" />
                               </div>
-                              <div className="min-w-0 flex-1">
+                              <div className="min-w-0 flex-1 mt-1.5">
                                 <FieldItem label="Description" value={selectedJobRole.RoleDescription} />
                               </div>
                             </div>
@@ -442,7 +449,7 @@ export const JobRoleMaster: React.FC = () => {
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                               <FieldItem label="Education" value={selectedJobRole.RoleQualification} />
-                              <FieldItem label="Technical" value={selectedJobRole.JobRequirement} />
+                              <FieldItem label="Qualifications" value={selectedJobRole.JobRequirement} />
                             </div>
                           </div>
                         </section>
@@ -452,34 +459,19 @@ export const JobRoleMaster: React.FC = () => {
                         <aside className="flex min-w-0 w-full flex-col gap-4">
                           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white p-4 sm:p-5">
                             <div className="mb-4 flex items-center gap-2">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-50">
-                                <Braces className="h-4 w-4 text-blue-600" />
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-100">
+                                <Braces className="h-4 w-4 text-gray-600" />
                               </div>
-                              <h3 className="text-sm font-semibold text-gray-900">Tech Stack</h3>
+                              <h3 className="text-sm font-semibold text-gray-900">Skills</h3>
                             </div>
 
-                              <div>
-                                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-gray-400">
-                                  Technical Skills
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                
-                                    <span
-                                  
-                                      className="rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-600"
-                                    >
-                                      {selectedJobRole.RoleSkills}
-                                    </span>
-                                
-                                </div>
-                              </div>
-                           
+                            <SkillBadges skills={selectedJobRole.RoleSkills} />
                           </div>
 
                         
-                            <div className="rounded-lg bg-gray-900 px-4 py-4 text-center text-white">
+                            <div className="rounded-lg bg-gray-700 px-4 py-4 text-center text-white">
                               <p className="mb-3 text-xs leading-4 text-gray-400">
-                                Need to duplicate this role for another department?
+                               Need to duplicate this role for another department? as Need to duplicate this role?
                               </p>
                               <Button
                                 onClick={() => setIsDuplicateDialogOpen(true)}
@@ -499,8 +491,8 @@ export const JobRoleMaster: React.FC = () => {
                   </div>
               </>
             ) : (
-              <>
-                <div className="mb-3 flex items-center justify-between gap-3">
+              <div className="flex h-full flex-col bg-white p-5 rounded-md border border-gray-200">
+                <div className="mb-3 flex shrink-0 items-center justify-between gap-3">
                   <div className="min-w-0">
                     {
                       (departmentId > 0 && departmentName.trim().length > 0) && (
@@ -527,8 +519,8 @@ export const JobRoleMaster: React.FC = () => {
                 </div>
              {   jobRoleMasterList.length === 0 && !isLoading ? (
                   <NoDataView message="No Job Roles Found" />
-                ) :    <div
-                  className="thin-scroll min-h-0 space-y-3 overflow-y-auto pr-1"
+                ) : <div
+                  className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pr-1"
                   onScroll={handleJobRoleMasterListScroll}
                   style={{ maxHeight: '65vh' }}
                 >
@@ -537,7 +529,7 @@ export const JobRoleMaster: React.FC = () => {
                     return (
                         <div
                           key={jobRole.JobRoleId}
-                          className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-blue-300 hover:bg-gray-50"
+                          className="flex items-center justify-between gap-4 rounded-lg border border-gray-200 px-4 py-3"
                         >
                           <div className="min-w-0 flex-1">
                             <TooltipText
@@ -548,30 +540,28 @@ export const JobRoleMaster: React.FC = () => {
                             />
                           </div>
 
-                          <div className="flex shrink-0 items-center justify-end gap-2">
-                         
-
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  color="transparent"
-                                  size="sm"
-                                  isborderRadius
-                                  title="Edit"
-                                  onClick={() => handleEditJobRoleMaster(jobRole)}
-                                >
-                                  <Edit className="h-4 w-4 text-blue-700" />
-                                </Button>
-                                <Button
-                                  color="transparent"
-                                  size="sm"
-                                  isborderRadius
-                                  title="Delete"
-                                  onClick={() => handleConfirmationDialogBoxOpen(jobRole)}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
-                          </div>
+                          {canAction && (
+                            <div className="flex shrink-0 items-center gap-2">
+                              <Button
+                                color="transparent"
+                                size="sm"
+                                isborderRadius
+                                title="Edit"
+                                onClick={() => handleEditJobRoleMaster(jobRole)}
+                              >
+                                <Edit className="h-4 w-4 text-blue-700" />
+                              </Button>
+                              <Button
+                                color="transparent"
+                                size="sm"
+                                isborderRadius
+                                title="Delete"
+                                onClick={() => handleConfirmationDialogBoxOpen(jobRole)}
+                              >
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       );
                     })}
@@ -580,7 +570,7 @@ export const JobRoleMaster: React.FC = () => {
                     <div className="py-3 text-center text-gray-400 text-sm">Loading more...</div>
                   )}
                 </div>}
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -606,7 +596,7 @@ export const JobRoleMaster: React.FC = () => {
         title="Duplicate Job Role?"
         message={`This will create a copy of "${selectedJobRole?.RoleName}".`}
         confirmText="Duplicate"
-        variant="info"
+        variant="generate"
       />
     </div>
   );

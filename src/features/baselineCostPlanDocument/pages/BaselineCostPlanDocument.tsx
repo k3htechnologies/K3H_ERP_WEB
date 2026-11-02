@@ -37,6 +37,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateBaselineCostPlanDocumentRequest => ({
   BaselineCostPlanDocumentId: 0,
@@ -265,7 +266,7 @@ const BaselineCostPlanDocument: React.FC = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      "Loading BaselineCostPlan Document",
+      "Loading Baseline Cost Plan Document",
     );
   };
 
@@ -385,7 +386,7 @@ const BaselineCostPlanDocument: React.FC = () => {
         align: "center",
         render: (_value, row) => {
           const showEdit = canAction ? true : false;
-          const showDelete = canAction ? (row.UploadedApprovalDocumentCount || 0) === 0 : false;
+          const showDelete = canAction ? (row.UploadedDocumentCount || 0) === 0 : false;
 
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
@@ -493,7 +494,7 @@ const BaselineCostPlanDocument: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value) => (value !== null ? value : 0),
+        render: (value) => (value !== null ? formatCurrency(value) : 0),
       },
       {
         key: "BaselineCostPlanDocumentRemark",
@@ -502,8 +503,8 @@ const BaselineCostPlanDocument: React.FC = () => {
         sortable: false,
         align: "left",
         render: (value) => (
-          value?.length > 15 ?
-            <FieldInfoTooltip value={value} /> : value
+
+          <FieldInfoTooltip value={value} />
         )
       },
 
@@ -688,8 +689,8 @@ const BaselineCostPlanDocument: React.FC = () => {
       fd.append("BaselineCostPlanDocumentName", expandHeaderBaselineCostPlanDocumentName ?? ""),
       fd.append("ProjectId", String(projectId)),
       fd.append("BaselineCostPlanDocumentCategoryId", String(getActiveTabId() ?? 0)),
-      fd.append("BaselineCostPlanValue", String(Number(formData.BaselineCostPlanValue ?? 0))),
-      fd.append("BaselineCostPlanDocumentRemark", formData.BaselineCostPlanDocumentRemark ?? ""),
+      fd.append("BaselineCostPlanValue", String(formData.BaselineCostPlanValue ?? 0)),
+      fd.append("BaselineCostPlanDocumentRemark", formData.BaselineCostPlanDocumentRemark?.trim() ?? ""),
       fd.append("IsMaster", String(0)),
       baselineCostPlanDocumentFiles.forEach((file) => {
         if (file instanceof File) {
@@ -909,7 +910,7 @@ const BaselineCostPlanDocument: React.FC = () => {
 
         const response = await technicalService.apiCallPullExcelSample(params);
 
-        handleExportFile(response, "Excel", "BaselineCostPlan Document", addToast, "Sample file download successfully");
+        handleExportFile(response, "Excel", "Baseline Cost Plan Document", addToast, "Sample file download successfully");
 
         return response;
       },
@@ -981,7 +982,7 @@ const BaselineCostPlanDocument: React.FC = () => {
           pagination={baselineCostPlanDocumentPaginationInfo}
           sortInfo={sortInfo}
           onSort={handleSortColumn}
-          emptyMessage="No BaselineCostPlan Document Data Found"
+          emptyMessage="No Baseline Cost Plan Document Data Found"
           loading={isLoading}
           fixedHeight
           recordsPerPage={20}
@@ -1018,7 +1019,7 @@ const BaselineCostPlanDocument: React.FC = () => {
                 <DataTableWithOutBorder
                   data={details}
                   columns={baselineCostPlanDocumentDetailsColumns}
-                  emptyMessage="No BaselineCostPlan Document Data Found"
+                  emptyMessage="No Baseline Cost Plan Document Data Found"
                   fixedHeight={true}
                   recordsPerPage={20}
                   className="flex-1"
@@ -1097,14 +1098,15 @@ const BaselineCostPlanDocument: React.FC = () => {
         <div className="space-y-4 p-6 bg-blue-100">
           {editingDocumentData ? (
             <div>
-              <Input
+              <TextArea
                 label="Document"
+                placeholder="Enter Document"
                 required
                 disabled
-                type="text"
+                className="thin-scroll"
                 value={formData.BaselineCostPlanDocumentName}
+                onChange={(e) => handleFieldChange("BaselineCostPlanDocumentRemark", e.target.value)}
                 maxLength={250}
-                placeholder="Enter Document"
               />
             </div>
           ) : (
@@ -1137,8 +1139,8 @@ const BaselineCostPlanDocument: React.FC = () => {
               value={baselineCostPlanDocumentFiles}
               onChange={setBaselineCostPlanDocumentFiles}
               availableFilesURL={baselineCostPlanDocumentURL ?? ""}
-              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel",".dwg"]}
-                         
+              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel", ".dwg"]}
+              maxFiles={5}
               error={errors.BaselineCostPlanDocumentURL}
               onRemoveExisting={(url) => {
                 setRemoveBaselineCostPlanDocumentUrls((prev) => [...prev, url]);

@@ -123,17 +123,21 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
 
     // ✅ Auto-resize textarea
     useEffect(() => {
-      if (autoResize && internalRef.current) {
-        const el = internalRef.current
-        const resize = () => {
-          el.style.height = 'auto'
-          el.style.height = `${el.scrollHeight}px`
-        }
-        resize()
-        el.addEventListener('input', resize)
-        return () => el.removeEventListener('input', resize)
+      const el = internalRef.current
+      if (!el || !autoResize) return
+
+      const resize = () => {
+        el.style.height = 'auto'
+        el.style.height = `${el.scrollHeight}px`
       }
-    }, [autoResize])
+      resize()
+
+      el.addEventListener('input', resize)
+
+      return () => {
+        el.removeEventListener('input', resize)
+      }
+    }, [autoResize, props.value])
 
     // =========================
     // VOICE RECOGNITION
@@ -257,13 +261,13 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             }}
             {...props}
           />
-          
+
           <button
             type="button"
             onClick={
               handleVoiceRecognition
             }
-            disabled={ disabled || loading}
+            disabled={disabled || loading}
             style={{
               position: "absolute",
 

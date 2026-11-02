@@ -75,9 +75,8 @@ export const DarAllocationFormModal: React.FC<DarAllocationFormModalProps> = ({
                         />
                     </div>
 
-                    {/* SELECTED EMPLOYEE DETAILS */}
                     {employeeDetails && (
-                        <section className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <section className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <FieldItem label="Department" value={employeeDetails.Department} />
                                 <FieldItem label="Designation" value={employeeDetails.Designation} />
@@ -94,6 +93,7 @@ export const DarAllocationFormModal: React.FC<DarAllocationFormModalProps> = ({
                             label="Location"
                             key={dropdownResetKey}
                             dataFetchCallBack={fetchVillageDropdown}
+                            style={{ height: 80 }}
                             required
                             selectedValues={villageDropdown.selectedValues}
                             options={villageDropdown.initialOptions}

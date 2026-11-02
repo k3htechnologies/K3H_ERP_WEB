@@ -36,7 +36,7 @@ const CrmDashboard: React.FC = () => {
     const { projectId } = useProject();
     const navigate = useNavigate();
 
-    const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE" | "OVERALL">("TODAY")
+    const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE" | "OVERALL">("MONTHLY")
     const [fromDate, setFromDate] = useState<string | null>(null);
     const [toDate, setToDate] = useState<string | null>(null);
     const [overViewCardData, setOverViewCardData] = useState<Table0[]>([]);
@@ -123,6 +123,7 @@ const CrmDashboard: React.FC = () => {
                     </div>
 
                     {filterType.toUpperCase() === "DATEWISE" && (
+
                         <DateRangeWithActions
                             fromDate={fromDate}
                             toDate={toDate}
@@ -134,6 +135,7 @@ const CrmDashboard: React.FC = () => {
                             onToDateChange={(t) => setToDate(t)}
                             exportLoading={isLoading}
                         />
+
                     )}
 
                     <Button

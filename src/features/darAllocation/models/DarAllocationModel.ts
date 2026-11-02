@@ -17,6 +17,7 @@ export interface DarAllocationData {
     EmployeeId: number | 0
     VillageName: string | null
     VillageMasterId: string | null
+    NumberOfChannelPartner: number | 0
     CreatedById: number | 0
     CreatedBy: string | null
     CreatedDate: string | null

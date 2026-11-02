@@ -540,7 +540,7 @@ export const FlatAlteration: React.FC = () => {
                             </Button>
                         )}
                     </div>
-                    <div className="p-6">
+                    
                         <DataTableWithHeaderRowDivider
                             columns={flatAlterationColumns}
                             data={
@@ -558,7 +558,7 @@ export const FlatAlteration: React.FC = () => {
                             }
                             fixedHeight={true}
                         />
-                    </div>
+                    
 
                 </section>
             </div>

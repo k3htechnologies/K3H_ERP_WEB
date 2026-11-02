@@ -51,7 +51,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
   const { DeductionMasterId } = useParams<{ DeductionMasterId?: string }>();
   const DeductionId = DeductionMasterId ? Number(DeductionMasterId) : 0;
   const isAddMode = DeductionId === 0;
-  const [applicable, setApplicable] = useState<string>("Percenatge");
+  const [applicable, setApplicable] = useState<string>("Percentage");
   // TOAST
   const { addToast } = useToast();
 
@@ -182,9 +182,9 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       newErrors.Name = 'Deduction Name must be at most 50 characters'
     }
 
-    if (!formData.Value || Number(formData.Value) <= 0) {
-      newErrors.Value = "Value is required";
-    }
+    if ( formData.Value === null || formData.Value === undefined) {
+    newErrors.Value = "Value is required";
+     }
 
     if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
       newErrors.MinSalary = "Min Salary is required";
@@ -213,7 +213,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       Name: formData.Name || '',
       Type: Array.isArray(formData.Type) ? formData.Type.join(',') : formData.Type,
       Value: formData.Value || 0,
-      Applicable: formData.Applicable==="" ?'Percenatge' :formData.Applicable,
+      Applicable: formData.Applicable==="" ?'Percentage' :formData.Applicable,
       BranchMasterId: formData.BranchMasterId || 0,
       MinSalary: formData.MinSalary || 0,
       MaxSalary: formData.MaxSalary || 0,
@@ -318,14 +318,14 @@ export const AddUpdateDeductionMaster: React.FC = () => {
                 <div className="flex gap-3">
                   <RadioPill
                     name="Applicable"
-                    label="Percenatge"
+                    label="Percentage"
                     value={formData.Applicable ?? ''}
-                    checked={applicable === "Percenatge"}
+                    checked={applicable === "Percentage"}
                     onChange={() => {
                       formData.Value = 0;
-                      setApplicable("Percenatge");
+                      setApplicable("Percentage");
 
-                      handleFieldChange("Applicable", "Percenatge");
+                      handleFieldChange("Applicable", "Percentage");
                     }}
                   />
 

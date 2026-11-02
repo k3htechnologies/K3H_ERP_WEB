@@ -1686,8 +1686,8 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
-// TEAM WORK SPACE
-   storeTaskTableColumns: (columns: string): void => {
+  // TEAM WORK SPACE
+  storeTaskTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS, columns);
     } catch (error) {
@@ -1729,9 +1729,32 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  //COST TO COMPANY
+  storeCostToCompanyTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Cost To Company Columns Details:", error);
+    }
+  },
+
+  getCostToCompanyTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Cost To Company Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
 
   clearLocalStorageData: (): void => {
     try {
+
+      document.title = "H. RISHABRAJ ERP";
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_PROJECT);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
@@ -1836,6 +1859,8 @@ export const LocalStorageHelper = {
 
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
+
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
@@ -1872,6 +1897,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.AGENDA_TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MEETING);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COST_TO_COMPANY);
+
 
 
     } catch (error) {

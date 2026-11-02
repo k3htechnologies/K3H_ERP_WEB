@@ -93,6 +93,14 @@ const Dashboard: React.FC = () => {
     )
   }
 
+  useEffect(() => {
+
+    const approvalCount = moduleApproval[0]?.MyApprovalCount ?? 0;
+
+    document.title = approvalCount > 0 ? `(${approvalCount}) H. RISHABRAJ ERP`  : "H. RISHABRAJ ERP";
+    
+  }, [moduleApproval]);
+
   return (
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
 
@@ -103,7 +111,7 @@ const Dashboard: React.FC = () => {
         <div className="col-span-3 lg:col-span-1">
           <WorktimeOverview workTimeOverviewTable={workTimeOverviewTable} />
         </div>
-       
+
 
       </div>
       <div className="grid grid-cols-3 gap-5">

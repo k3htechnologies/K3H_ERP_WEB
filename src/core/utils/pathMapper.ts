@@ -99,6 +99,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paymentschedules': '/paymentSchedules',
         '/channelpartnercategory': '/channelPartnerCategory',
         '/aopachievement': '/aopAchievement',
+        '/darallocation':'darAllocation',
 
 
         // INVENTORY
@@ -151,11 +152,11 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         // PURCHASE MATERIAL REQUISITION
         '/materialrequisition': '/materialRequisition',
-        '/materialrequisitionreports':'/materialRequisitionReports',
-        '/purchasemasterreport':'/purchaseMasterReport',
+        '/materialrequisitionreports': '/materialRequisitionReports',
+        '/purchasemasterreport': '/purchaseMasterReport',
 
         //STORE STOCK MANAGEMENT
-        '/stock':'/stock',
+        '/stock': '/stock',
 
         //TEAM WORK SPACE
         '/eventdashboard': '/teamWorkspaceDashboard',
@@ -166,7 +167,11 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //ESTIMATION & BUDGET
         '/baselinecostplan': '/baselineCostPlan',
-        '/constructionarea':'/constructionArea',
+        '/constructionarea': '/constructionArea',
+
+        //PAYROLL
+        '/costtocompany': '/costToCompany',
+
     }
 
 

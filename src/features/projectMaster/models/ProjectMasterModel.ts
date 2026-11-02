@@ -115,6 +115,7 @@ export interface ProjectMasterData {
 
     IsFederation:boolean | false;
     FederationAmount:number | 0;
+    IsLockAndKey:boolean | false;
 
     // Notification
     NotificationCount: number | 0;
@@ -236,6 +237,7 @@ export interface AddUpdateProjectMasterRequest {
 
     IsFederation:boolean | false;
     FederationAmount:number | 0;
+    IsLockAndKey:boolean | false;
 }
 
 export interface AddUpdateProjectMasterWithEmployeeRequest {

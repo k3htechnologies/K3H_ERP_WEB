@@ -260,7 +260,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
         TenantSystemGeneratedCode: existingTenantCode,
         TenantBuildingId: existingTenantBuildingId,
         TenantBuildingName: existingTenantBuildingName,
-        AdjustPurchaseAreaSqFt:flatDataFromState.AdjustPurchaseAreaSqFt
+        AdjustPurchaseAreaSqFt: flatDataFromState.AdjustPurchaseAreaSqFt
       });
 
       setSelectedWing(flatDataFromState.Wing || "");
@@ -352,29 +352,30 @@ export const AddUpdateTenantBooking: React.FC = () => {
     applicants.forEach((applicant: any, index: number) => {
 
       const applicantName = applicant?.ApplicantName || `Applicant ${index + 1}`;
+      const applicantType = applicant?.ApplicantType || `Applicant ${index + 1}`;
 
       if (!applicant?.ApplicantEmailId?.trim()) {
-        errors.push(`${applicantName}: E-Mail ID is required.`);
+        errors.push(`${applicantType} (${applicantName}) : E-Mail ID is required.`);
       }
 
       if (!applicant?.PhotoURL?.trim()) {
-        errors.push(`${applicantName}: Photo is required.`);
+        errors.push(`${applicantType} (${applicantName}) : Photo is required.`);
       }
 
       if (!applicant?.AadharCardNumber?.trim()) {
-        errors.push(`${applicantName}: Aadhaar Card Number is required.`);
+        errors.push(`${applicantType} (${applicantName}) : Aadhaar Card Number is required.`);
       }
 
       if (!applicant?.AadharCardURL?.trim()) {
-        errors.push(`${applicantName}: Aadhaar Card Document is required.`);
+        errors.push(`${applicantType} (${applicantName}) : Aadhaar Card Document is required.`);
       }
 
       if (!applicant?.PanNumber?.trim()) {
-        errors.push(`${applicantName}: PAN Card Number is required.`);
+        errors.push(`${applicantType} (${applicantName}) : PAN Card Number is required.`);
       }
 
       if (!applicant?.PanCardURL?.trim()) {
-        errors.push(`${applicantName}: PAN Card Document is required.`);
+        errors.push(`${applicantType} (${applicantName}) : PAN Card Document is required.`);
       }
     });
 
@@ -400,7 +401,15 @@ export const AddUpdateTenantBooking: React.FC = () => {
 
     if (validationErrors.length > 0) {
 
-      addToast({ type: "error", title: validationErrors[0] });
+      addToast({
+        type: "error",
+        title: "Please fix the following errors:",
+        message: validationErrors
+          .map((error: string, index: number) => `${index + 1}. ${error}`)
+          .join("\n"),
+        duration: 20000
+      });
+
     }
     return;
   };
@@ -513,6 +522,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
                 TenantId: booking.TenantId || 0,
                 TenantSystemGeneratedCode: "",
                 TenantBuildingId: booking.TenantBuildingId || 0,
+                AdjustPurchaseAreaSqFt: booking.AdjustPurchaseAreaSqFt || 0
               });
             }
             setParkingId(booking.ParkingId ?? null);
@@ -824,7 +834,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
     if (Number(tenantList?.InventoryFlatId) > 0 && formData.InventoryFlatId !== tenantList?.InventoryFlatId) {
       newErrors.TenantId = "The allotted unit does not match the unit selected in the tenant booking";
     }
-
+   
     if (!formData.PermanentAddress) {
       newErrors.PermanentAddress = "Permanent Address is required";
     } else if (formData.PermanentAddress.trim().length < 25) {
@@ -864,13 +874,6 @@ export const AddUpdateTenantBooking: React.FC = () => {
     if (!formData.RegistrationDate) {
       newErrors.RegistrationDate = "Registration Date is required";
     }
-
-    if (!formData.FlatAlterationRemark?.trim()) {
-      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
-    } else if (formData.FlatAlterationRemark.trim().length < 25) {
-      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark must be at least 25 characters";
-    }
-
 
     if (!formData.PaymentRemark?.trim()) {
       newErrors.PaymentRemark = "Payment Related Remark is required";
@@ -1047,6 +1050,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
       displayParkingId: parkingId || "",
       parkingStatus: "Member",
       isAcessOnlyApprovedParking: false,
+      isAcessMemberApprovedParking:true,
       approvalStatus: "Approved"
     });
   }, [projectId, parkingId]);
@@ -1232,6 +1236,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
                   setApplicantList([]);
                   setTenantUniqueCode((e.target.value).toUpperCase());
                   setTenantId(0);
+
+
 
                 }}
                 placeholder="Search By Tenant Code"
@@ -1483,7 +1489,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
 
                   <FieldItem label="RERA Carpet Area" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
 
-                  <FieldItem label="Adjust Purchase Area" value={selectedFlatData?.AdjustPurchaseAreaSqFt ? `${selectedFlatData.AdjustPurchaseAreaSqFt} SqFt` : "-"} />
+                  <FieldItem label="Adjust Purchase Area" value={selectedFlatData?.AdjustPurchaseAreaSqFt ? `${selectedFlatData.AdjustPurchaseAreaSqFt} SqFt` : 0} />
                 </div>
               </div>
             )}
@@ -1928,7 +1934,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Additional Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
               <div>
-                <TextArea required className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
+                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
                 <TextArea required className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />

@@ -42,7 +42,7 @@ export const DarAllocationViewModal: React.FC<DarAllocationViewModalProps> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Dar Allocation Details"
+            title="DAR Allocation Details"
             onSubmit={(e) => {
                 e.preventDefault()
                 onClose()
@@ -55,6 +55,7 @@ export const DarAllocationViewModal: React.FC<DarAllocationViewModalProps> = ({
 
                 <FieldItem label="Employee Name" value={data.EmployeeName} isRow withBorder={true} />
                 <FieldItem label="Village Name" value={data.VillageName} isRow withBorder={true} />
+                <FieldItem label="Number Of CP" value={data.NumberOfChannelPartner} isRow withBorder={true} />
 
                 <h4 className="text-lg font-semibold pb-2">
                     Action Details

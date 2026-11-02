@@ -11,7 +11,7 @@ import { vendorService } from "@/features/vendor/services/VendorService";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
-import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterEmail, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { BUSINESS_TYPE_OPTIONS, FIRMS_TYPE_OPTIONS, OWNERSHIP_TYPE_OPTIONS, VENDOR_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
@@ -334,6 +334,7 @@ export const AddUpdateVendor: React.FC = () => {
         const params: filterwithPaginationSpecificationMasterRequest = {
           PageNumber: 1,
           PageSize: 1000,
+          IsCheckPermission: false,
           LevelType: "L1",
         };
 
@@ -422,12 +423,6 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.CityMasterId = "City is required.";
     }
 
-    if (!formData.AadharCardNumber?.trim()) {
-      newErrors.AadharCardNumber = "Please enter a valid 12-digit Aadhaar number";
-    } else if (!isValidAadhaar(formData.AadharCardNumber.trim())) {
-      newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
-    }
-
     if (!formData.GSTNumber?.trim()) {
       newErrors.GSTNumber = "GST Number is required.";
     } else if (!isValidGST(formData.GSTNumber?.trim(), selectedGSTStateCode)) {
@@ -440,9 +435,7 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.PanCardNumber = "Enter a valid PAN Number.";
     }
 
-    if (!hasAnyDocumentFile(aadharCardURLFiles, aadharCardURL, removedAadharCardUrls)) {
-      newErrors.AadharCardURL = "Aadhaar card file is required.";
-    }
+
 
     if (!hasAnyDocumentFile(panCardURLFiles, panCardURL, removedPanCardUrls)) {
       newErrors.PanCardURL = "PAN card file is required.";
@@ -537,6 +530,8 @@ export const AddUpdateVendor: React.FC = () => {
 
 
 
+
+
   const filteredMaterialList = useMemo(() => {
 
     if (!searchMaterial.trim()) return materialsubmaterialList;
@@ -553,6 +548,39 @@ export const AddUpdateVendor: React.FC = () => {
   }, [materialsubmaterialList, searchMaterial]);
 
 
+
+  const handleAddContract = useCallback((contractData: SpecificationMasterData) => {
+
+    const contractId = contractData.SpecificationMasterId;
+
+    setSelectedContracts((prev) => {
+      const newSet = new Set(prev);
+
+      if (newSet.has(contractId)) {
+        newSet.delete(contractId);
+      } else {
+        newSet.add(contractId);
+      }
+
+      return newSet;
+    });
+  },
+    []
+  );
+
+
+  const filteredContractList = useMemo(() => {
+
+    if (!searchContract.trim()) return contractList;
+
+    const searchLower = searchContract.toLowerCase();
+
+    return contractList.filter((item) =>
+
+      item.CategoryName?.toLowerCase().includes(searchLower)
+
+    );
+  }, [contractList, searchContract]);
 
   const handleAddContract = useCallback((contractData: SpecificationMasterData) => {
 
@@ -607,517 +635,601 @@ export const AddUpdateVendor: React.FC = () => {
     const needsMaterialContract = (vendorType === "BOTH") && (selectedContracts.size === 0 && selectedMaterials.size === 0);
 
     if (needsMaterial) {
-      addToast({ type: "error", title: "Please select at least one material" });
-    }
+      const vendorType = formData.VendorType?.toUpperCase();
 
-    else if (needsContract) {
-      addToast({ type: "error", title: "Please select at least one contract" });
-    }
+      const needsMaterial = (vendorType === "MATERIAL") && selectedMaterials.size === 0;
+      const needsContract = (vendorType === "CONTRACTOR") && selectedContracts.size === 0;
+      const needsMaterialContract = (vendorType === "BOTH") && (selectedContracts.size === 0 && selectedMaterials.size === 0);
 
-    else if (needsMaterialContract) {
-      addToast({ type: "error", title: "Please select at least one material & contract" });
-    }
+      if (needsMaterial) {
+        addToast({ type: "error", title: "Please select at least one material" });
+      }
 
-    else if (needsMaterial || needsContract) {
-      return;
-    }
+      else if (needsContract) {
+        addToast({ type: "error", title: "Please select at least one contract" });
+      }
 
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
+      else if (needsMaterialContract) {
+        addToast({ type: "error", title: "Please select at least one material & contract" });
+      }
 
-        const formDataToSubmit = PushVendorFormData();
+      else if (needsMaterial || needsContract) {
+        return;
+      }
 
-        const response = await vendorService.apiCallAddUpdateVendor(formDataToSubmit);
+      else if (needsContract) {
+        addToast({ type: "error", title: "Please select at least one contract" });
+        return;
+      }
 
-        if (E.isRight(response)) {
+      else if (needsMaterialContract) {
+        addToast({ type: "error", title: "Please select at least one material & contract" });
+        return;
+      }
 
-          addToast({ type: "success", title: formData.VendorId ? "Vendor updated successfully" : "New Vendor added successfully" });
+      else if (needsMaterial || needsContract) {
+        return;
+      }
 
-          navigate("/vendor");
+      else if (needsContract) {
+        addToast({ type: "error", title: "Please select at least one contract" });
+        return;
+      }
 
-        } else {
+      else if (needsMaterialContract) {
+        addToast({ type: "error", title: "Please select at least one material & contract" });
+        return;
+      }
 
-          addToast({ type: "error", title: response.left?.message });
-        }
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
-      },
-      undefined,
-      formData.VendorId ? "Updating Vendor" : "Add Vendor"
-    );
-  };
+      else if (needsMaterial || needsContract) {
+        return;
+      }
 
-  const checkDuplicateMobileNumber = async (mobileNumber: string, countryCode: string) => {
+      await runApiWithLoader(
+        setIsLoading,
+        setLoadingMessage,
+        async () => {
 
-    if (Number(formData.VendorId) > 0) {
-      return;
-    }
+          const formDataToSubmit = PushVendorFormData();
 
-    if (!isValidMobile(mobileNumber, countryCode)) {
-      return;
-    }
+          const response = await vendorService.apiCallAddUpdateVendor(formDataToSubmit);
 
-    const isDuplicate = await checkDuplicateField({
+          if (E.isRight(response)) {
 
-      fieldName: "MobileNumber",
+            addToast({ type: "success", title: formData.VendorId ? "Vendor updated successfully" : "New Vendor added successfully" });
 
-      fieldValue: mobileNumber,
+            navigate("/vendor");
 
-      apiCallback: vendorService.apiCallPullVendor,
+          } else {
 
-      extraParams: { MobileNumberCountryCode: countryCode }
-    });
+            addToast({ type: "error", title: response.left?.message });
+          }
+          return response;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: 'error', title: error.message || 'Operation failed' })
+        },
+        undefined,
+        formData.VendorId ? "Updating Vendor" : "Add Vendor"
+      );
+    };
 
-    if (isDuplicate) {
+    const checkDuplicateMobileNumber = async (mobileNumber: string, countryCode: string) => {
 
-      setErrors((prev) => ({
-        ...prev,
-        MobileNumber: "Mobile number already exists"
-      }));
+      if (Number(formData.VendorId) > 0) {
+        return;
+      }
 
-    } else {
+      if (!isValidMobile(mobileNumber, countryCode)) {
+        return;
+      }
 
-      setErrors((prev) => ({
-        ...prev,
-        MobileNumber: ""
-      }));
-    }
-  };
+      const isDuplicate = await checkDuplicateField({
 
-  return (
+        fieldName: "MobileNumber",
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        fieldValue: mobileNumber,
 
-      <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
+        apiCallback: vendorService.apiCallPullVendor,
 
-      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
+        extraParams: { MobileNumberCountryCode: countryCode }
+      });
 
-        { }
-        <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-            Basic Details
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <SinglePageSelection
-              label="Vendor Type"
-              placeholder="Select Vendor Type"
-              required
-              value={formData.VendorType}
-              onChange={(val) => handleFieldChange("VendorType", String(val))}
-              options={VENDOR_TYPE_OPTIONS.map((opt) => ({
-                label: opt.name,
-                value: opt.id,
-              }))}
-              error={errors.VendorType}
-            />
+      if (isDuplicate) {
 
-            <Input
-              label="Vendor Name"
-              placeholder="Enter Vendor Name"
-              required
-              value={formData.VendorName}
-              maxLength={50}
-              onChange={(e) => handleFieldChange("VendorName", e.target.value)}
-              error={errors.VendorName}
-            />
-            <Input
-              label="Company Name"
-              placeholder="Enter Company Name"
-              required
-              maxLength={200}
-              value={formData.CompanyName}
-              onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
-              error={errors.CompanyName}
-            />
+        setErrors((prev) => ({
+          ...prev,
+          MobileNumber: "Mobile number already exists"
+        }));
 
-            <MobileNumberInput
-              mobileNumber={formData.MobileNumber ?? ""}
-              countryCode={formData.MobileNumberCountryCode ?? "+91"}
-              disabled={Number(formData.VendorId) > 0}
-              required
-              error={errors.MobileNumber}
-              onMobileChange={async (value) => {
+      } else {
 
-                handleFieldChange("MobileNumber", value);
+        setErrors((prev) => ({
+          ...prev,
+          MobileNumber: ""
+        }));
+      }
+    };
 
-                await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode || "+91");
-              }}
-              onCountryCodeChange={(value) =>
-                handleFieldChange("MobileNumberCountryCode", value)
-              }
-            />
-            <Input
-              label="E-Mail ID"
-              placeholder="Enter E-Mail ID"
-              required
-              type="email"
-              rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
-              value={formData.EmailId}
-              onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
-              error={errors.EmailId}
-            />
-            <SinglePageSelection
-              label="Company Type"
-              placeholder="Select Company Type"
-              required
-              value={formData.CompanyType}
-              onChange={(val) => handleFieldChange("CompanyType", String(val))}
-              options={FIRMS_TYPE_OPTIONS.map((opt) => ({
-                label: opt.name,
-                value: opt.id,
-              }))}
-              error={errors.CompanyType}
-            />
-            <SinglePageSelection
-              label="Ownership Type"
-              placeholder="Select Ownership Type"
-              required
-              value={formData.OwnershipType}
-              onChange={(val) => handleFieldChange("OwnershipType", String(val))}
-              options={OWNERSHIP_TYPE_OPTIONS.map((opt) => ({
-                label: opt.name,
-                value: opt.id,
-              }))}
-              error={errors.OwnershipType}
-            />
+    return (
 
-            <SinglePageSelection
-              label="Business Type"
-              placeholder="Select Business Type"
-              required
-              value={formData.VendorBusinessType}
-              onChange={(val) => handleFieldChange("VendorBusinessType", String(val))}
-              options={BUSINESS_TYPE_OPTIONS.map((opt) => ({
-                label: opt.name,
-                value: opt.id,
-              }))}
-              error={errors.VendorBusinessType}
-            />
-          </div>
-        </div>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
-        <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-            Address Details
-          </h3>
+        <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
 
-          <TextArea
-            label="Address"
-            placeholder="Enter Address"
-            required
-            rows={3}
-            className="thin-scroll"
-            value={formData.Address}
-            onChange={(e) => handleFieldChange("Address", e.target.value)}
-            error={errors.Address}
-          />
+        <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          { }
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
+              Basic Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <SinglePageSelection
+                label="Vendor Type"
+                placeholder="Select Vendor Type"
+                required
+                value={formData.VendorType}
+                onChange={(val) => handleFieldChange("VendorType", String(val))}
+                options={VENDOR_TYPE_OPTIONS.map((opt) => ({
+                  label: opt.name,
+                  value: opt.id,
+                }))}
+                error={errors.VendorType}
+              />
 
-            <div>
+              <Input
+                label="Vendor Name"
+                placeholder="Enter Vendor Name"
+                required
+                value={formData.VendorName}
+                maxLength={50}
+                onChange={(e) => handleFieldChange("VendorName", e.target.value)}
+                error={errors.VendorName}
+              />
+              <Input
+                label="Company Name"
+                placeholder="Enter Company Name"
+                required
+                maxLength={200}
+                value={formData.CompanyName}
+                onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
+                error={errors.CompanyName}
+              />
+
+              <MobileNumberInput
+                mobileNumber={formData.MobileNumber ?? ""}
+                countryCode={formData.MobileNumberCountryCode ?? "+91"}
+                disabled={Number(formData.VendorId) > 0}
+                required
+                error={errors.MobileNumber}
+                onMobileChange={async (value) => {
+
+                  handleFieldChange("MobileNumber", value);
+
+                  await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode || "+91");
+                }}
+                onCountryCodeChange={(value) =>
+                  handleFieldChange("MobileNumberCountryCode", value)
+                }
+              />
+              <Input
+                label="E-Mail ID"
+                placeholder="Enter E-Mail ID"
+                required
+                type="email"
+                rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                value={formData.EmailId}
+                onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
+                error={errors.EmailId}
+              />
+              <SinglePageSelection
+                label="Company Type"
+                placeholder="Select Company Type"
+                required
+                value={formData.CompanyType}
+                onChange={(val) => handleFieldChange("CompanyType", String(val))}
+                options={FIRMS_TYPE_OPTIONS.map((opt) => ({
+                  label: opt.name,
+                  value: opt.id,
+                }))}
+                error={errors.CompanyType}
+              />
+              <SinglePageSelection
+                label="Ownership Type"
+                placeholder="Select Ownership Type"
+                required
+                value={formData.OwnershipType}
+                onChange={(val) => handleFieldChange("OwnershipType", String(val))}
+                options={OWNERSHIP_TYPE_OPTIONS.map((opt) => ({
+                  label: opt.name,
+                  value: opt.id,
+                }))}
+                error={errors.OwnershipType}
+              />
 
               <SinglePageSelection
-                label='Country'
-                placeholder="Select Country"
+                label="Business Type"
+                placeholder="Select Business Type"
                 required
-                value={selectedCountryId || ''}
-                error={errors.CountryMasterId}
-                onChange={(item) => {
+                value={formData.VendorBusinessType}
+                onChange={(val) => handleFieldChange("VendorBusinessType", String(val))}
+                options={BUSINESS_TYPE_OPTIONS.map((opt) => ({
+                  label: opt.name,
+                  value: opt.id,
+                }))}
+                error={errors.VendorBusinessType}
+              />
+            </div>
+          </div>
 
-                  if (!item) {
-                    setSelectedCountryId(null);
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Address Details
+            </h3>
+
+            <TextArea
+              label="Address"
+              placeholder="Enter Address"
+              required
+              rows={3}
+              className="thin-scroll"
+              value={formData.Address}
+              onChange={(e) => handleFieldChange("Address", e.target.value)}
+              error={errors.Address}
+            />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+              <div>
+
+                <SinglePageSelection
+                  label='Country'
+                  placeholder="Select Country"
+                  required
+                  value={selectedCountryId || ''}
+                  error={errors.CountryMasterId}
+                  onChange={(item) => {
+
+                    if (!item) {
+                      setSelectedCountryId(null);
+                      setSelectedStateId(null);
+                      setSelectedDistrictId(null);
+                      setSelectedCityId(null);
+
+                      handleFieldChange('CountryMasterId', 0);
+                      handleFieldChange('StateMasterId', 0);
+                      handleFieldChange('DistrictMasterId', 0);
+                      handleFieldChange('CityMasterId', 0);
+
+                      return;
+                    }
+
+                    const id = Number(item);
+
+                    setSelectedCountryId(id);
                     setSelectedStateId(null);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
 
-                    handleFieldChange('CountryMasterId', 0);
+                    handleFieldChange('CountryMasterId', id);
                     handleFieldChange('StateMasterId', 0);
                     handleFieldChange('DistrictMasterId', 0);
                     handleFieldChange('CityMasterId', 0);
-
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  setSelectedCountryId(id);
-                  setSelectedStateId(null);
-                  setSelectedDistrictId(null);
-                  setSelectedCityId(null);
-
-                  handleFieldChange('CountryMasterId', id);
-                  handleFieldChange('StateMasterId', 0);
-                  handleFieldChange('DistrictMasterId', 0);
-                  handleFieldChange('CityMasterId', 0);
-                }}
-                disabled={isLocationLoading}
-                options={countryOptions}
-              />
-
-
-            </div>
-
-            <div>
-
-              <SinglePageSelection
-                label='State'
-                placeholder="Select State"
-                required
-                value={selectedStateId ?? ''}
-                error={errors.StateMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedStateId(null);
-                    setSelectedDistrictId(null);
-                    setSelectedCityId(null);
-
-                    handleFieldChange("StateMasterId", 0);
-                    handleFieldChange("DistrictMasterId", 0);
-                    handleFieldChange("CityMasterId", 0);
-                    handleFieldChange("GSTNumber", "");
-
-
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  const selectedState = stateOptions.find(state => Number(state.value) === id);
-
-                  const gstCode = selectedState?.gSTStateCode || "";
-
-                  setSelectedStateId(id);
-                  setSelectedDistrictId(null);
-                  setSelectedCityId(null);
-
-                  handleFieldChange("StateMasterId", id);
-                  handleFieldChange("DistrictMasterId", 0);
-                  handleFieldChange("CityMasterId", 0);
-
-                  handleFieldChange("GSTNumber", gstCode);
-
-                }}
-                disabled={!selectedCountryId || stateOptions.length === 0}
-                options={stateOptions}
-              />
-
-            </div>
-
-            <div>
-
-              <SinglePageSelection
-                label='District'
-                placeholder="Select District"
-                required
-                value={selectedDistrictId ?? ''}
-                error={errors.DistrictMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedDistrictId(null);
-                    setSelectedCityId(null);
-
-                    handleFieldChange('DistrictMasterId', 0);
-                    handleFieldChange('CityMasterId', 0);
-                    return;
-                  }
-
-                  const id = Number(item);
-
-
-
-                  setSelectedDistrictId(id);
-                  setSelectedCityId(null);
-
-                  handleFieldChange('DistrictMasterId', id);
-                  handleFieldChange('CityMasterId', 0);
-                }}
-                disabled={!selectedStateId || districtOptions.length === 0}
-                options={districtOptions}
-              />
-            </div>
-
-            <div>
-
-              <SinglePageSelection
-                label='City'
-                placeholder="Select City"
-                required
-                value={selectedCityId ?? ''}
-                error={errors.CityMasterId}
-                onChange={(item) => {
-
-                  if (!item) {
-                    setSelectedCityId(null);
-                    handleFieldChange('CityMasterId', 0);
-                    return;
-                  }
-
-                  const id = Number(item);
-
-                  setSelectedCityId(id);
-                  handleFieldChange('CityMasterId', id);
-
-                }}
-                disabled={!selectedDistrictId || cityOptions.length === 0}
-                options={cityOptions}
-              />
-
-            </div>
-          </div>
-        </div>
-
-        <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-            Government Identifiers
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Input
-              label="Aadhaar Card Number"
-              required
-              value={formData.AadharCardNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
-              placeholder="Enter Aadhaar Card Number"
-              error={errors.AadharCardNumber}
-            />
-
-            <MultiFilePicker
-              label='Aadhaar Card'
-              placeholder="Select Aadhaar Card"
-              required
-              error={errors.AadharCardURL}
-              value={aadharCardURLFiles}
-              onChange={setAadharCardURLFiles}
-              availableFilesURL={aadharCardURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf"
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedAadharCardUrls((prev) => [...prev, url])
-              }}
-            />
-
-            <Input
-              label="PAN Card Number"
-              required
-              value={formData.PanCardNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
-              placeholder="Enter PAN Card Number"
-              error={errors.PanCardNumber}
-            />
-            <MultiFilePicker
-              label='PAN Card'
-              placeholder="Select PAN Card"
-              required
-              error={errors.PanCardURL}
-              value={panCardURLFiles}
-              onChange={setPANCardURLFiles}
-              availableFilesURL={panCardURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf"
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedPanCardUrls((prev) => [...prev, url])
-              }}
-            />
-
-            <Input
-              label={`GST Number ${selectedStateName && selectedGSTStateCode ? ` (${selectedStateName} GST Code - ${selectedGSTStateCode})` : ""}`}
-              required
-              value={formData.GSTNumber}
-              rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
-              onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
-              placeholder="Enter GST Number"
-              error={errors.GSTNumber}
-            />
-
-            <MultiFilePicker
-              label='GST Certificate'
-              placeholder="Select GST Certificate"
-              required
-              error={errors.GSTCertificateURL}
-              value={gstGSTCertificateFiles}
-              onChange={setGSTCertificateFiles}
-              availableFilesURL={gSTCertificateURL ?? ""}
-              allowedTypes={[
-                "image/jpeg",
-                "image/png",
-                "application/pdf"
-              ]}
-              maxFiles={5}
-              onRemoveExisting={(url) => {
-                setRemovedGSTCertificateUrls((prev) => [...prev, url])
-              }}
-            />
-          </div>
-        </div>
-
-
-
-
-
-        <div className="space-y-4 pb-3">
-          <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
-            Material and Contract Management
-          </h3>
-
-          <Tabs
-            tabs={[
-              { id: "material", label: "Material" },
-              { id: "contract", label: "Contract" },
-            ]}
-
-            defaultActive={activeTab}
-            onTabChange={(tab) => setActiveTab(tab.id)}
-            islarge
-            isChips
-          />
-
-          { }
-          {activeTab === "material" && (
-            <div className="space-y-4">
-
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
-
-                <Input
-                  type="text"
-                  placeholder="Search By Material Name"
-                  value={searchMaterial}
-                  onChange={(e) => setSearchMaterial(e.target.value)}
-                  leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                  }}
+                  disabled={isLocationLoading}
+                  options={countryOptions}
                 />
 
-                <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
-                  {filteredMaterialList.length > 0 ? (
-                    filteredMaterialList.map((item) => {
 
-                      const isSelected = selectedMaterials.has(item.SubMaterialMasterId);
+              </div>
+
+              <div>
+
+                <SinglePageSelection
+                  label='State'
+                  placeholder="Select State"
+                  required
+                  value={selectedStateId ?? ''}
+                  error={errors.StateMasterId}
+                  onChange={(item) => {
+
+                    if (!item) {
+                      setSelectedStateId(null);
+                      setSelectedDistrictId(null);
+                      setSelectedCityId(null);
+
+                      handleFieldChange("StateMasterId", 0);
+                      handleFieldChange("DistrictMasterId", 0);
+                      handleFieldChange("CityMasterId", 0);
+                      handleFieldChange("GSTNumber", "");
+
+
+                      return;
+                    }
+
+                    const id = Number(item);
+
+                    const selectedState = stateOptions.find(state => Number(state.value) === id);
+
+                    const gstCode = selectedState?.gSTStateCode || "";
+
+                    setSelectedStateId(id);
+                    setSelectedDistrictId(null);
+                    setSelectedCityId(null);
+
+                    handleFieldChange("StateMasterId", id);
+                    handleFieldChange("DistrictMasterId", 0);
+                    handleFieldChange("CityMasterId", 0);
+
+                    handleFieldChange("GSTNumber", gstCode);
+
+                  }}
+                  disabled={!selectedCountryId || stateOptions.length === 0}
+                  options={stateOptions}
+                />
+
+              </div>
+
+              <div>
+
+                <SinglePageSelection
+                  label='District'
+                  placeholder="Select District"
+                  required
+                  value={selectedDistrictId ?? ''}
+                  error={errors.DistrictMasterId}
+                  onChange={(item) => {
+
+                    if (!item) {
+                      setSelectedDistrictId(null);
+                      setSelectedCityId(null);
+
+                      handleFieldChange('DistrictMasterId', 0);
+                      handleFieldChange('CityMasterId', 0);
+                      return;
+                    }
+
+                    const id = Number(item);
+
+
+
+                    setSelectedDistrictId(id);
+                    setSelectedCityId(null);
+
+                    handleFieldChange('DistrictMasterId', id);
+                    handleFieldChange('CityMasterId', 0);
+                  }}
+                  disabled={!selectedStateId || districtOptions.length === 0}
+                  options={districtOptions}
+                />
+              </div>
+
+              <div>
+
+                <SinglePageSelection
+                  label='City'
+                  placeholder="Select City"
+                  required
+                  value={selectedCityId ?? ''}
+                  error={errors.CityMasterId}
+                  onChange={(item) => {
+
+                    if (!item) {
+                      setSelectedCityId(null);
+                      handleFieldChange('CityMasterId', 0);
+                      return;
+                    }
+
+                    const id = Number(item);
+
+                    setSelectedCityId(id);
+                    handleFieldChange('CityMasterId', id);
+
+                  }}
+                  disabled={!selectedDistrictId || cityOptions.length === 0}
+                  options={cityOptions}
+                />
+
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Government Identifiers
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              <Input
+                label="PAN Card Number"
+                required
+                value={formData.PanCardNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => handleFieldChange("PanCardNumber", filterPAN(e.target.value))}
+                placeholder="Enter PAN Card Number"
+                error={errors.PanCardNumber}
+              />
+              <MultiFilePicker
+                label='PAN Card'
+                placeholder="Select PAN Card"
+                required
+                error={errors.PanCardURL}
+                value={panCardURLFiles}
+                onChange={setPANCardURLFiles}
+                availableFilesURL={panCardURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf"
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedPanCardUrls((prev) => [...prev, url])
+                }}
+              />
+
+              <Input
+                label={`GST Number ${selectedStateName && selectedGSTStateCode ? ` (${selectedStateName} GST Code - ${selectedGSTStateCode})` : ""}`}
+                required
+                value={formData.GSTNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => handleFieldChange("GSTNumber", filterGST(e.target.value))}
+                placeholder="Enter GST Number"
+                error={errors.GSTNumber}
+              />
+
+              <MultiFilePicker
+                label='GST Certificate'
+                placeholder="Select GST Certificate"
+                required
+                error={errors.GSTCertificateURL}
+                value={gstGSTCertificateFiles}
+                onChange={setGSTCertificateFiles}
+                availableFilesURL={gSTCertificateURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf"
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedGSTCertificateUrls((prev) => [...prev, url])
+                }}
+              />
+
+              <Input
+                label="Aadhaar Card Number"
+                value={formData.AadharCardNumber}
+                rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                onChange={(e) => handleFieldChange("AadharCardNumber", filterAadhaar(e.target.value))}
+                placeholder="Enter Aadhaar Card Number"
+                error={errors.AadharCardNumber}
+              />
+
+              <MultiFilePicker
+                label='Aadhaar Card'
+                placeholder="Select Aadhaar Card"
+                error={errors.AadharCardURL}
+                value={aadharCardURLFiles}
+                onChange={setAadharCardURLFiles}
+                availableFilesURL={aadharCardURL ?? ""}
+                allowedTypes={[
+                  "image/jpeg",
+                  "image/png",
+                  "application/pdf"
+                ]}
+                maxFiles={5}
+                onRemoveExisting={(url) => {
+                  setRemovedAadharCardUrls((prev) => [...prev, url])
+                }}
+              />
+
+            </div>
+          </div>
+
+
+
+
+
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold border-b border-gray-300 pb-2">
+              Material and Contract Management
+            </h3>
+
+            <Tabs
+              tabs={[
+                { id: "material", label: "Material" },
+                { id: "contract", label: "Contract" },
+              ]}
+
+              defaultActive={activeTab}
+              onTabChange={(tab) => setActiveTab(tab.id)}
+              islarge
+              isChips
+            />
+
+            { }
+            {activeTab === "material" && (
+              <div className="space-y-4">
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
+
+                  <Input
+                    type="text"
+                    placeholder="Search By Material Name"
+                    value={searchMaterial}
+                    onChange={(e) => setSearchMaterial(e.target.value)}
+                    leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                  />
+
+                  <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
+                    {filteredMaterialList.length > 0 ? (
+                      filteredMaterialList.map((item) => {
+
+                        const isSelected = selectedMaterials.has(item.SubMaterialMasterId);
+                        return (
+
+                          <div key={item.SubMaterialMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
+                            <div>
+                              <p className="font-medium text-gray-900">{item.SubMaterialName}</p>
+                              <p className="text-xs text-gray-500">{item.MaterialName}</p>
+                            </div>
+
+                            <Button
+                              type="button"
+                              color="transparent"
+                              onClick={() => handleAddMaterial(item)}
+                            >
+                              {isSelected ? (<Trash2 className="w-4 h-4" style={{ color: "red" }} />
+                              ) : (<Plus className="w-4 h-4" />
+                              )}
+                            </Button>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="text-center text-gray-400 py-12">
+                        <NoDataView />
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+
+              </div>
+            )}
+
+
+
+            {activeTab === "contract" && (
+              <div className="space-y-4">
+
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
+                  <Input
+                    type="text"
+                    placeholder="Search By Category Name"
+                    value={searchContract}
+                    onChange={(e) => setSearchContract(e.target.value)}
+                  />
+
+
+                  <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
+                    {filteredContractList.length > 0 ? (filteredContractList.map((item) => {
+
+                      const isSelected = selectedContracts.has(item.SpecificationMasterId);
                       return (
 
-                        <div key={item.SubMaterialMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
+                        <div key={item.SpecificationMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
                           <div>
-                            <p className="font-medium text-gray-900">{item.SubMaterialName}</p>
-                            <p className="text-xs text-gray-500">{item.MaterialName}</p>
+                            <p className="font-medium text-gray-900">{item.CategoryName}</p>
                           </div>
 
                           <Button
                             type="button"
                             color="transparent"
-                            onClick={() => handleAddMaterial(item)}
+                            onClick={() => handleAddContract(item)}
                           >
                             {isSelected ? (<Trash2 className="w-4 h-4" style={{ color: "red" }} />
                             ) : (<Plus className="w-4 h-4" />
@@ -1126,83 +1238,34 @@ export const AddUpdateVendor: React.FC = () => {
                         </div>
                       );
                     })
-                  ) : (
-                    <div className="text-center text-gray-400 py-12">
-                      <NoDataView />
-                    </div>
-                  )}
-                </div>
-
-              </div>
-
-            </div>
-          )}
-
-
-
-          {activeTab === "contract" && (
-            <div className="space-y-4">
-
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3 h-[400px] flex flex-col">
-                <Input
-                  type="text"
-                  placeholder="Search By Category Name"
-                  value={searchContract}
-                  onChange={(e) => setSearchContract(e.target.value)}
-                />
-
-
-                <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
-                  {filteredContractList.length > 0 ? (filteredContractList.map((item) => {
-
-                    const isSelected = selectedContracts.has(item.SpecificationMasterId);
-                    return (
-
-                      <div key={item.SpecificationMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
-                        <div>
-                          <p className="font-medium text-gray-900">{item.CategoryName}</p>
-                        </div>
-
-                        <Button
-                          type="button"
-                          color="transparent"
-                          onClick={() => handleAddContract(item)}
-                        >
-                          {isSelected ? (<Trash2 className="w-4 h-4" style={{ color: "red" }} />
-                          ) : (<Plus className="w-4 h-4" />
-                          )}
-                        </Button>
+                    ) : (
+                      <div className="text-center text-gray-400 py-12">
+                        <NoDataView />
                       </div>
-                    );
-                  })
-                  ) : (
-                    <div className="text-center text-gray-400 py-12">
-                      <NoDataView />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+
+
         </div>
+
+        <BottomActionBar
+          cancelText="Cancel"
+          saveText={formData.VendorId ? "Update" : "Add"}
+          onCancel={() => navigate(-1)}
+          canAction={canAction}
+          onSave={() => {
+            handleSubmit();
+          }}
+          isLoading={isLoading}
+        />
 
 
       </div>
+    );
+  };
 
-      <BottomActionBar
-        cancelText="Cancel"
-        saveText={formData.VendorId ? "Update" : "Add"}
-        onCancel={() => navigate(-1)}
-        canAction={canAction}
-        onSave={() => {
-          handleSubmit();
-        }}
-        isLoading={isLoading}
-      />
-
-
-    </div>
-  );
-};
-
-export default AddUpdateVendor;
+  export default AddUpdateVendor;

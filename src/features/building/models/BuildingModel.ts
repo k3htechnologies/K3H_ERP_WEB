@@ -46,6 +46,7 @@ export interface BuildingData {
 
   WardMasterId: number | null;
   WardName: string;
+  Address: string;
 
   TotalNumberOfUnits: number | null;
   TotalUnitsAreaUtilizedSqFt: number | null;
@@ -109,6 +110,7 @@ export interface AddUpdateBuildingRequest {
   CityMasterId: number | null;
   VillageMasterId: number | null;
   WardMasterId: number | null;
+  Address: string;
   TotalNumberOfUnits: number | null;
   TotalUnitsAreaUtilizedSqFt: number | null;
   IsGarden: boolean | null;

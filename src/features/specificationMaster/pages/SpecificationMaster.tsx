@@ -441,7 +441,13 @@ export const SpecificationMaster: React.FC = () => {
             width: '50',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || "-"}
+                    maxWidth="900px"
+                    tooltipThreshold={100}
+                />
+            ),
         },
         {
             key: 'ModifiedBy',
@@ -612,10 +618,16 @@ export const SpecificationMaster: React.FC = () => {
         {
             key: 'CategoryName',
             label: showL4 ? 'Sub Material Name' : showUomColumn ? 'Description' : 'Sub Category Name ',
-            width: '25',
+            width: '40',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || "-"}
+                    maxWidth="300px"
+                    tooltipThreshold={37}
+                />
+            ),
         },
 
         ...(showL4

@@ -18,21 +18,31 @@ export const getDarAllocationColumns = (): TableColumn[] => [
     {
         key: 'EmployeeName',
         label: 'Employee Name',
-        width: '16',
+        width: '15',
         sortable: true,
         align: 'left'
     },
+
     {
         key: 'VillageName',
         label: 'Village Name',
-        width: '16',
+        width: '30',
         sortable: false,
         align: 'left'
     },
+
+    {
+        key: 'NumberOfChannelPartner',
+        label: 'Number Of CP',
+        width: '10',
+        sortable: false,
+        align: 'center'
+    },
+
     {
         key: 'Actions',
         label: 'Actions',
-        width: '16',
+        width: '10',
         fixed: 'right',
         align: 'center'
     }

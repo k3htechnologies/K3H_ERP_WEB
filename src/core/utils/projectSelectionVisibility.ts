@@ -66,6 +66,8 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'purchaseMasterReport'
         , 'erpRoadmap'
         , 'visitorManagementDashboard'
+        , 'darallocation'
+        , 'vendorManagementDashboard'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

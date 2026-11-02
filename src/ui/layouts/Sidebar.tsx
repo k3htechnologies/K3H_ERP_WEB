@@ -57,9 +57,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const findActiveMenuItem = (currentPath: string) => {
     const normalizedCurrent = normalizePath(currentPath.split("/").filter(Boolean)[0])
-    if (normalizedCurrent === '/dashboard') {
-      return { isDashboard: true, module: null, subModule: null, subSubModule: null }
-    }
     if (!modules || modules.length === 0) return null
 
     for (const module of modules) {
@@ -146,19 +143,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return fallbackIcon
   }
 
-  const isDashboardActive =
-    normalizedLocationPath === '/dashboard' ||
-    normalizedLocationPath.startsWith('/dashboard/')
-
   const menuItems: MenuItem[] = [
 
     {
       id: 'dashboard',
       label: 'Dashboard',
-      icon: renderIcon("assets/sideDrawer/dashboard.svg", <Home className="h-5 w-5" />, {
-        isCollapsed: !isOpen,
-        isActive: isDashboardActive
-      }),
+      icon: renderIcon("assets/sideDrawer/dashboard.svg", <Home className="h-5 w-5" />),
       path: '/dashboard'
     },
 
@@ -273,18 +263,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const isModule = item.id.startsWith('module-')
     const isSubModule = item.id.startsWith('submodule-')
     const isSubSubModule = item.id.startsWith('subsubmodule-')
-    const isDashboard = item.id === 'dashboard'
-    const isDashboardItemActive = isDashboard && isDashboardActive
 
-    const isCurrentPage = isDashboardItemActive || !!(item.path && normalizePath(item.path) === normalizedLocationPath)
+    const isCurrentPage = !!(item.path && normalizePath(item.path) === normalizedLocationPath)
 
     const activeMenuItem = findActiveMenuItem(location.pathname);
 
-    const isInActivePath = isDashboardItemActive || Boolean(activeMenuItem && (
+    const isInActivePath = activeMenuItem && (
       (isModule && activeMenuItem.module && item.id === `module-${activeMenuItem.module.ModulesMasterId}`) ||
       (isSubModule && activeMenuItem.subModule && item.id === `submodule-${activeMenuItem.subModule.SubModulesMasterId}`) ||
       (isSubSubModule && activeMenuItem.subSubModule && item.id === `subsubmodule-${activeMenuItem.subSubModule.SubSubModulesMasterId}`)
-    ))
+    )
 
     const isParentSelected = selectedModule && (
       (isModule && item.id === `module-${selectedModule.ModulesMasterId}`) ||

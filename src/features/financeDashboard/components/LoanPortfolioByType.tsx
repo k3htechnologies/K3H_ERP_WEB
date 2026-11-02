@@ -22,7 +22,7 @@ export default function LoanPortfolioByType({ loanPortfolioByLoanTypeData }: Pro
                 className="bg-white rounded-xl p-4 h-[300px]"
                 style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
             >
-                <h2 className="text-sm font-semibold uppercase text-slate-500 mb-4">
+                 <h2 className="text-sm font-semibold uppercase text-slate-500 mb-4">
                     Loan Portfolio By Type
                 </h2>
 

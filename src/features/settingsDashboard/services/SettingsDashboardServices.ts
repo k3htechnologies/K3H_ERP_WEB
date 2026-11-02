@@ -10,7 +10,7 @@ export const settingsDashboardService = {
     apiCallPullSettingsDashboard: async (signal?: AbortSignal): Promise<E.Either<Failure, SettingsDashboardDatasetResponse>> => {
 
         try {
-
+   
             const response = await settingsDashboardDatasource.pullSettingsDashboard(signal);
             return E.right(response);
 
@@ -19,4 +19,5 @@ export const settingsDashboardService = {
             return E.left({ message: error.message, code: error.code });
         }
     }
-}
+}   
+

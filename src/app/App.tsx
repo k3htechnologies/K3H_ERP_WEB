@@ -269,6 +269,9 @@ import ViewDashboardApprovals from '@/features/dashboard/pages/ViewDashboardAppr
 import EmployeeLetter from '@/features/employeeMaster/pages/EmployeeLetter';
 import CrmMilestoneView from '@/features/crmDashboard/pages/CrmMilestoneView';
 import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectionSummaryView';
+import { DarAllocation } from '@/features/darAllocation/pages/DarAllocation';
+import VendorManagementDashboard from '@/features/vendorManagementDashboard/pages/VendorManagementDashboard';
+import ClientLoanReport from '@/features/clientLoanReport/pages/ClientLoanReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -367,6 +370,11 @@ function App() {
             <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
             <Route path="vendor/view" element={<VendorListStateProvider><ViewVendor /></VendorListStateProvider>} />
             <Route path="vendor/add/:vendorId?" element={<VendorListStateProvider><AddUpdateVendor /></VendorListStateProvider>} />
+
+
+            <Route path="vendorManagementDashboard" element={<VendorManagementDashboard />} />
+
+
 
             {/* SETTING -> COMPANY SETUP -> PAYROLL MASTER */}
             <Route path="branchMaster" element={<BranchMaster />} />
@@ -486,6 +494,7 @@ function App() {
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/salesMetrics" element={<ChannelPartnerListStateProvider><ChannelPartnerSalesMetrics /></ChannelPartnerListStateProvider>} />
+            <Route path="darallocation" element={<DarAllocation />} />
 
             <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
             <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
@@ -587,6 +596,8 @@ function App() {
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
+            <Route path="clientLoanReport" element={<ClientLoanReport />} />
+
 
 
             <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />

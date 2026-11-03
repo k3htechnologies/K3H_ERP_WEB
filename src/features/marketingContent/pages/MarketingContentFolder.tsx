@@ -230,7 +230,7 @@ export const MarketingContentFolder: React.FC = () => {
             render: (value, row) => (
                 <TooltipText
                     text={value || '-'}
-                    maxWidth="800px"
+                    maxWidth="400px"
                     tooltipThreshold={25}
                     onClick={() => handleNavigateToView(row)}
                 />
@@ -239,7 +239,7 @@ export const MarketingContentFolder: React.FC = () => {
         {
             key: 'NumberOfMarketingContent',
             label: 'Document Count',
-            width: '16',
+            width: '10',
             sortable: false,
             align: 'center',
             render: value => value || '0'
@@ -247,7 +247,7 @@ export const MarketingContentFolder: React.FC = () => {
         {
             key: 'ModifiedBy',
             label: 'Last Modified By',
-            width: '20',
+            width: '10',
             sortable: false,
             align: 'left',
             render: (value, row) => (
@@ -261,7 +261,7 @@ export const MarketingContentFolder: React.FC = () => {
         {
             key: 'ModifiedDate',
             label: 'Last Modified Date',
-            width: '20',
+            width: '10',
             sortable: false,
             align: 'center',
             render: (value, row) =>
@@ -274,7 +274,7 @@ export const MarketingContentFolder: React.FC = () => {
         {
             key: 'actions',
             label: 'Actions',
-            width: '12',
+            width: '10',
             fixed: 'right',
             align: 'center',
             render: (_value, row) => {

@@ -251,7 +251,7 @@ export const ApprovedBankFile: React.FC = () => {
                     <div className="flex items-center gap-2 justify-between w-full">
                         <MultiImageViewer
                             images={parseDocumentUrls(row.ApprovedBankFileURL)}
-                            title="Document"
+                            title={row.ApprovedBankFileName}
                             triggerLabel={
                                 <TooltipText
                                     text={value || '-'}
@@ -603,7 +603,7 @@ export const ApprovedBankFile: React.FC = () => {
                 }}
                 title={editingApprovedBankFileData ? 'Update Bank Documents' : 'Add Bank Documents'}
                 onSubmit={handleAddUpdateApprovedBankFile}
-                saveText='Save'
+                saveText={editingApprovedBankFileData ? 'Update' : 'Add'}
                 loading={isLoading}
                 size='xl'
             >

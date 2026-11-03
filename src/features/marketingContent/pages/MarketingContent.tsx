@@ -199,7 +199,7 @@ export const MarketingContent: React.FC = () => {
         {
             key: 'Title',
             label: 'Title',
-            width: '30',
+            width: '20',
             sortable: true,
             fixed: 'left',
             align: 'left',
@@ -208,11 +208,11 @@ export const MarketingContent: React.FC = () => {
                     <div className="flex items-center justify-between gap-2 w-full">
                         <MultiImageViewer
                             images={parseDocumentUrls(row.MarketingContentURL)}
-                            title="Document"
+                            title={row.Title}
                             triggerLabel={
                                 <TooltipText
                                     text={value || '-'}
-                                    maxWidth="800px"
+                                    maxWidth="400px"
                                     tooltipThreshold={25}
                                 />
                             } />
@@ -574,7 +574,7 @@ export const MarketingContent: React.FC = () => {
                 }}
                 title={editingMarketingContentData ? 'Update Content Document' : 'Add Content Document'}
                 onSubmit={handleAddUpdateMarketingContent}
-                saveText='Save'
+                saveText={editingMarketingContentData ? 'Update' : 'Add'}
                 loading={isLoading}
                 size='xl'
             >

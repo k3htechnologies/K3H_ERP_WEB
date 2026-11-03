@@ -1,12 +1,13 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { GatePassApi } from '@/features/gatePass/api/GatePassApi'
-import type {  DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassDeleteResponse, GatePassListResponse, GatePassOutResponse, GatePassSaveResponse, UpdateGatePassOutRequest } from '@/features/gatePass/models/GatePassModel'
+import type {  DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassApprovalResponse, GatePassDeleteResponse, GatePassListResponse, GatePassOutResponse, GatePassSaveResponse, UpdateGatePassApprovalRequest, UpdateGatePassOutRequest } from '@/features/gatePass/models/GatePassModel'
 
 export abstract class GatePassDatasource {
     abstract pullGatePass(params: FilterWithPaginationGatePassRequest, signal?: AbortSignal): Promise<GatePassListResponse>;
     abstract addUpdateGatePass(FormData: FormData): Promise<GatePassSaveResponse>;
     abstract updateGatePassOutRequest(parms: UpdateGatePassOutRequest): Promise<GatePassOutResponse>;
+    abstract updateGatePassApproval(params: UpdateGatePassApprovalRequest): Promise<GatePassApprovalResponse>;
     abstract deleteGatePass(params: DeleteGatePassRequest): Promise<GatePassDeleteResponse>;
 }
 
@@ -83,6 +84,23 @@ export class GatePassDatasourceImpl implements GatePassDatasource {
             if (error instanceof TokenExpiredException) {
 
                 return await this.updateGatePassOutRequest(parms);
+            }
+            throw error
+        }
+    }
+
+    async updateGatePassApproval(params: UpdateGatePassApprovalRequest): Promise<GatePassApprovalResponse> {
+        try {
+
+            return await this.k3hHttpClient.postRequestWithAuthentication(GatePassApi.UPDATE_APPROVAL, params);
+
+        } catch (error) {
+
+            console.error('ERROR: UPDATE GATE PASS APPROVAL :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.updateGatePassApproval(params);
             }
             throw error
         }

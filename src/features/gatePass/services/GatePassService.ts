@@ -1,6 +1,6 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import { GatePassDatasourceImpl } from '@/features/gatePass/datasources/GatePassDatasource'
-import type { FilterWithPaginationGatePassRequest, DeleteGatePassRequest, GatePassListResponse, GatePassSaveResponse, GatePassDeleteResponse, UpdateGatePassOutRequest, GatePassOutResponse } from '@/features/gatePass/models/GatePassModel'
+import type { FilterWithPaginationGatePassRequest, DeleteGatePassRequest, GatePassListResponse, GatePassSaveResponse, GatePassDeleteResponse, UpdateGatePassOutRequest, GatePassOutResponse, UpdateGatePassApprovalRequest, GatePassApprovalResponse } from '@/features/gatePass/models/GatePassModel'
 import * as E from 'fp-ts/Either';
 
 const gatePassDatasource = new GatePassDatasourceImpl();
@@ -35,6 +35,18 @@ export const gatePassService = {
         try {
 
             return E.right(await gatePassDatasource.updateGatePassOutRequest(parms));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallUpdateGatePassApproval: async (params: UpdateGatePassApprovalRequest): Promise<E.Either<Failure, GatePassApprovalResponse>> => {
+        try {
+
+            return E.right(await gatePassDatasource.updateGatePassApproval(params));
 
         } catch (error: any) {
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AddUpdateGatePassRequest, DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassData, UpdateGatePassOutRequest } from "@/features/gatePass/models/GatePassModel";
+import type {  AddUpdateGatePassRequest, DeleteGatePassRequest, FilterWithPaginationGatePassRequest, GatePassData, UpdateGatePassApprovalRequest, UpdateGatePassOutRequest } from "@/features/gatePass/models/GatePassModel";
 import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import usePagination from "@/core/hooks/usePagination";
@@ -31,7 +31,6 @@ export const useGatePass = () => {
     const { canExport: canExportGatePass, canAction: canActionGatePass } = useMenuPermissions("/gatePass");
     const { canExport: canExportGatePassAdministrativeAccess, canAction: canActionGatePassAdministrativeAccess } = useMenuPermissions("/gatePassAdministrativeAccess");
 
-
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [editingGatePassData, setEditingGatePassData] = useState<GatePassData | null>(null);
@@ -42,6 +41,7 @@ export const useGatePass = () => {
     const [deleteGatePassDetailsData, setDeleteGatePassDetailsData] = useState<GatePassData | null>(null)
     const [isConfirmationDialogBoxOpenforOut, setIsConfirmationDialogBoxOpenforOut] = useState(false)
     const [isConfirmationDialogBoxOpenforBell, setIsConfirmationDialogBoxOpenforBell] = useState(false)
+    const [isConfirmationDialogBoxOpenforLogin, setIsConfirmationDialogBoxOpenforLogin] = useState(false);
 
     const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
     const [formData, setFormData] = useState<AddUpdateGatePassRequest>(() => getInitialFormState());
@@ -142,8 +142,9 @@ export const useGatePass = () => {
         try {
             const saved = LocalStorageHelper.getGatePassTableColumns();
             if (saved) {
-                const parsed = JSON.parse(saved) as string[]
-                const withRequired = Array.from(new Set([...parsed, ...requiredGatePassColumnKeys]));
+                const parsed = JSON.parse(saved) as string[];
+                const newKeys = allGatePassColumnKeys.filter(k => !parsed.includes(k));
+                const withRequired = Array.from(new Set([...parsed, ...requiredGatePassColumnKeys, ...newKeys]));
                 return withRequired.filter(k => allGatePassColumnKeys.includes(k));
             }
         } catch { }
@@ -185,7 +186,7 @@ export const useGatePass = () => {
     }, [])
 
 
-    //#region CONFIRMATION DIALOG BOX
+    
     const handleConfirmationDialogBoxOpen = useCallback((row: GatePassData) => {
         setDeleteGatePassDetailsData(row)
         setIsConfirmationDialogBoxOpen(true)
@@ -196,11 +197,16 @@ export const useGatePass = () => {
         setIsConfirmationDialogBoxOpenforOut(true)
     }, [])
 
+    const handleConfirmationDialogBoxOpenforLogin = useCallback((row: GatePassData) => {
+        setDeleteGatePassDetailsData(row);
+        setIsConfirmationDialogBoxOpenforLogin(true);
+    }, []);
+
     const handleConfirmationDialogBoxOpenforBell = useCallback((row: GatePassData) => {
         setDeleteGatePassDetailsData(row)
         setIsConfirmationDialogBoxOpenforBell(true)
     }, [])
-    //#endregion
+    
 
     const applyFilters = () => {
         setFilters(tempFilters)
@@ -405,7 +411,6 @@ export const useGatePass = () => {
     const PushGatePassFormData = (): FormData => {
 
         const fd = new FormData();
-        
         fd.append("ExternalId", formData.ExternalId.toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("FullName", formData.FullName.trim() ?? "");
@@ -441,6 +446,10 @@ export const useGatePass = () => {
             return
         }
 
+        const isAdd = Number(formData.ExternalId) === 0;
+        let isSuccess = false;
+        let successMessage = '';
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -451,42 +460,17 @@ export const useGatePass = () => {
                 const response = await gatePassService.apiCallAddUpdateGatePass(payload);
 
                 if (E.isRight(response)) {
-
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.ExternalId === 0;
-
-                    if (isAdd) {
-
-                        const newRecord = response.right.Data[0] as GatePassData
-
-                        setGatePassList(prevData => [newRecord, ...prevData]);
-                        setLastUpdatedRow(newRecord.ExternalId);
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
-                    } else {
-
-                        const updatedRecord = response.right.Data[0] as GatePassData;
-                        setLastUpdatedRow(updatedRecord.ExternalId);
-
-                        setGatePassList(prevData =>
-                            prevData.map(item =>
-                                item.ExternalId === formData.ExternalId
-                                    ? updatedRecord
-                                    : item
-                            )
-                        )
-
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                    const updatedOrNewRecord = response.right.Data?.[0] as GatePassData | undefined;
+                    const idToHighlight = updatedOrNewRecord?.ExternalId || (isAdd ? undefined : formData.ExternalId);
+                    if (idToHighlight) {
+                        setLastUpdatedRow(idToHighlight);
                     }
 
                     setEditingGatePassData(null);
+                    successMessage = response.right.SuccessMessage?.[0] || 'Operation successful';
+                    isSuccess = true;
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -497,8 +481,13 @@ export const useGatePass = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            Number(formData.ExternalId) === 0 ? 'Add GatePass' : 'Update GatePass'
-        )
+            isAdd ? 'Add GatePass' : 'Update GatePass'
+        );
+
+        if (isSuccess) {
+            addToast({ type: 'success', title: successMessage });
+            await loadGatePassList(isAdd ? 1 : pagination.currentPage, filters, sortInfo, searchTerm || undefined);
+        }
 
     }
 
@@ -575,7 +564,9 @@ export const useGatePass = () => {
             setIsConfirmationDialogBoxOpenforBell(false);
         }
 
-        if (!deleteGatePassDetailsData) return
+        if (!deleteGatePassDetailsData) return;
+
+        let isSuccess = false;
 
         await runApiWithLoader(
             setIsLoading,
@@ -585,45 +576,77 @@ export const useGatePass = () => {
                 const params: UpdateGatePassOutRequest = {
                     ExternalId: deleteGatePassDetailsData.ExternalId,
                     Uniquekey: deleteGatePassDetailsData.Uniquekey,
-                    Type:action
-                }
+                    Type: action
+                };
 
                 const response = await gatePassService.apiCallUpdateGatePassOutRequest(params);
 
                 if (E.isRight(response)) {
-
-                    const updatedRecord = response.right.Data[0] as GatePassData;
-                    setLastUpdatedRow(updatedRecord.ExternalId);
-
-                    setGatePassList(prevData =>
-                        prevData.map(item =>
-                            item.ExternalId === updatedRecord.ExternalId
-                                ? updatedRecord
-                                : item
-                        )
-                    )
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
                     setIsConfirmationDialogBoxOpenforOut(false);
-
+                    isSuccess = true;
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
-
                     setIsConfirmationDialogBoxOpenforOut(false);
                 }
 
-                return response
+                return response;
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
             action === 'Bell' ? 'Notify Visitor' : 'Out Visitor Details'
-        )
-    }
+        );
+
+        if (isSuccess) {
+            await loadGatePassList(pagination.currentPage, filters, sortInfo, searchTerm || undefined);
+        }
+    };
+
+    const handleLoginGatePass = async (action: 'Accept' | 'Reject', remark: string = '') => {
+        setIsConfirmationDialogBoxOpenforLogin(false);
+
+        if (!deleteGatePassDetailsData) return;
+
+        let isSuccess = false;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                
+                const params: UpdateGatePassApprovalRequest = {
+                    ExternalId: deleteGatePassDetailsData.ExternalId,
+                    Uniquekey: deleteGatePassDetailsData.Uniquekey,
+                    ApprovalStatus: action === 'Accept' ? 'Approved' : 'Rejected', 
+                    ApprovalRemark: remark 
+                };
+
+                const response = await gatePassService.apiCallUpdateGatePassApproval(params);
+
+                if (E.isRight(response)) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    isSuccess = true;
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            `${action} Visitor Request`
+        );
+
+        if (isSuccess) {
+            await loadGatePassList(pagination.currentPage, filters, sortInfo, searchTerm || undefined);
+        }
+    };
 
     return {
         isLoading,
@@ -647,6 +670,7 @@ export const useGatePass = () => {
         isConfirmationDialogBoxOpen,
         isConfirmationDialogBoxOpenforOut,
         isConfirmationDialogBoxOpenforBell,
+        isConfirmationDialogBoxOpenforLogin,
         isViewModalOpen,
         viewGatePassDetailsData,
         showFilterPopup,
@@ -668,6 +692,7 @@ export const useGatePass = () => {
         setIsConfirmationDialogBoxOpen,
         setIsConfirmationDialogBoxOpenforOut,
         setIsConfirmationDialogBoxOpenforBell,
+        setIsConfirmationDialogBoxOpenforLogin,
         setDeleteGatePassDetailsData,
         setShowFilterPopup,
         setTempFilters,
@@ -691,8 +716,10 @@ export const useGatePass = () => {
         handleConfirmationDialogBoxOpen,
         handleConfirmationDialogBoxOpenforOut,
         handleConfirmationDialogBoxOpenforBell,
+        handleConfirmationDialogBoxOpenforLogin,
         handleDeleteGatePass,
         handleOutGatePass,
+        handleLoginGatePass,
         applyFilters,
         clearFilters,
         setIsViewModalOpen,
@@ -701,5 +728,7 @@ export const useGatePass = () => {
         handleFilterChange,
         handleExportGatePassExcel,
         handleExportGatePassPdf,
+        
+
     }
 }

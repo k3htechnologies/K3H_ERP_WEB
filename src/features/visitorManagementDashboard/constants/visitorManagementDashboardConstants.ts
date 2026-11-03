@@ -4,4 +4,5 @@ export const VISITOR_LIST_TITLE: Record<VisitorManagementDashboardFilterType, st
     TODAY: "Today's Visitors",
     WEEKLY: "This Week's Visitors",
     MONTHLY: "This Month's Visitors",
+    DATEWISE: "Datewise Visitors",
 };

@@ -13,7 +13,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { Edit, Trash2 } from "lucide-react";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
@@ -26,6 +26,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useMarketingContentListState } from "@/features/marketingContent/context/MarketingContentListStateContext";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 
 const initialFormState = (): AddUpdateMarketingContentRequest => ({
@@ -40,59 +41,33 @@ const initialFormState = (): AddUpdateMarketingContentRequest => ({
 })
 
 export const MarketingContent: React.FC = () => {
-
-    //#region STATE MANAGEMENT
     const [marketingContentList, setMarketingContentList] = useState<MarketingContentData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-
-    // USE NAVIGATE
     const navigate = useNavigate();
-
-    // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
-
-    //TABLE SORT INFO
     const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
     const { projectId } = useProject();
-
-    // TOAST
     const { addToast } = useToast();
-
-    //SET MARKETING CONTENT FILE
     const [marketingContentFiles, setMarketingContentFiles] = useState<(File | string)[]>([]);
     const [removeMarketingContentUrls, setRemoveMarketingContentUrls] = useState<string[]>([]);
     const [marketingContentURL, setMarketingContentURL] = useState<string>();
-
-    // ADD EDIT MARKETING CONTENT 
     const [editingMarketingContentData, setEditingMarketingContentData] = useState<MarketingContentData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-    //DELETE MARKETING CONTENT 
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteMarketingContentData, setDeleteMarketingContentData] = useState<MarketingContentData | null>(null)
-
-    // SINGLE SEARCH TEXT BOX
     const [searchTerm, setSearchTerm] = useState('');
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchMarketingContent(value)
     }, 350);
-
-    //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const [formData, setFormData] = useState<AddUpdateMarketingContentRequest>(() => initialFormState());
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions();
-    //#endregion
 
     const { MarketingContentFolderId } = useParams<{ MarketingContentFolderId?: string }>();
     const { listState } = useMarketingContentListState();
     const marketingContentFolderId = MarketingContentFolderId ? Number(MarketingContentFolderId) : listState.MarketingContentFolderId;
-    //#endregion
-
-    //#region DATA LOADING | LOAD | SEARCH 
 
     const loadMarketingContent = useCallback(async (page: number, sortInfo?: SortInfo, searchtext?: string) => {
 
@@ -130,9 +105,7 @@ export const MarketingContent: React.FC = () => {
             'Loading Marketing Content '
         )
     }, [pagination.pageSize, marketingContentFolderId, projectId, addToast])
-    //#endregion
-
-    //#region INIT
+    
     useEffect(() => {
         if (!projectId || !marketingContentFolderId) return;
 
@@ -140,7 +113,6 @@ export const MarketingContent: React.FC = () => {
 
     }, [projectId, marketingContentFolderId, sortInfo]);
 
-    //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
         return () => {
 
@@ -176,16 +148,10 @@ export const MarketingContent: React.FC = () => {
             setErrors({});
         }
     }, [isAddUpdateModalOpen, editingMarketingContentData, projectId]);
-    //#endregion
-
-    //#region SEARCH & CLEAR
     const searchMarketingContent = async (searchValue: string) => {
         setSearchTerm(searchValue);
         await loadMarketingContent(1, sortInfo, searchValue);
     };
-    //#endregion
-
-    //#region CLEAR 
     const clearSearchMarketingContent = () => {
         setSearchTerm('');
         debouncedSearch.cancel?.();
@@ -194,21 +160,15 @@ export const MarketingContent: React.FC = () => {
         loadMarketingContent(1, sortInfo, '');
 
     };
-    //#endregion
-
-    //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((page: number) => {
         loadMarketingContent(page, sortInfo, searchTerm);
     }, [sortInfo, searchTerm]);
 
-    //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         loadMarketingContent(1, sort, searchTerm);
     }, [searchTerm]);
-    //#endregion
 
-    //#region EDIT MARKETING CONTENT 
     const handleEditMarketingContent = useCallback((row: MarketingContentData) => {
         setEditingMarketingContentData({
             ...row,
@@ -216,17 +176,12 @@ export const MarketingContent: React.FC = () => {
         })
         setIsAddUpdateModalOpen(true);
     }, [])
-    //#endregion
 
-
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: MarketingContentData) => {
         setDeleteMarketingContentData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, [])
-    //#endregion
 
-    //#region TABLE PAGINATION INFO
     const MarketingContentPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
@@ -237,14 +192,14 @@ export const MarketingContent: React.FC = () => {
         }),
         [pagination, handlePageChange]
     );
+
     const MarketingContentForTable = useMemo(() => marketingContentList, [marketingContentList]);
 
-    //#region TABLE COLUMNS
     const MarketingContentColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'Title',
             label: 'Title',
-            width: '20',
+            width: '30',
             sortable: true,
             fixed: 'left',
             align: 'left',
@@ -257,7 +212,7 @@ export const MarketingContent: React.FC = () => {
                             triggerLabel={
                                 <TooltipText
                                     text={value || '-'}
-                                    maxWidth="250px"
+                                    maxWidth="800px"
                                     tooltipThreshold={25}
                                 />
                             } />
@@ -268,26 +223,39 @@ export const MarketingContent: React.FC = () => {
         {
             key: 'Remark',
             label: 'Remark',
-            width: '33',
+            width: '20',
             sortable: false,
             align: 'center',
-            render: (value) => value || '-'
+            render: (value) => (
+                <FieldInfoTooltip value={value} />
+            )
         },
         {
-            key: 'CreatedBy',
+            key: 'ModifiedBy',
             label: 'Last Modified By',
-            width: '33',
-            sortable: true,
-            align: 'center',
-            render: (value) => value || '-'
+            width: '20',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
         },
         {
-            key: 'CreatedDate',
+            key: 'ModifiedDate',
             label: 'Last Modified Date',
-            width: '33',
-            sortable: true,
+            width: '20',
+            sortable: false,
             align: 'center',
-            render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy_hh_mm(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
+                        : '-'
         },
         {
             key: 'actions',
@@ -345,8 +313,6 @@ export const MarketingContent: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-
-    // #region HANDLE ADD CONTENT MODAL
     const handleAddMarketingContentModal = () => {
         setEditingMarketingContentData(null);
         setFormData({
@@ -360,8 +326,6 @@ export const MarketingContent: React.FC = () => {
         setRemoveMarketingContentUrls([]);
         setIsAddUpdateModalOpen(true);
     }
-
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
     const validationAddUpdateMarketingContentForm = (): {
         isValid: boolean
@@ -388,8 +352,6 @@ export const MarketingContent: React.FC = () => {
             errors: newErrors
         }
     }
-
-    //#region PUSH FORM DATA
     const PushMarketingContentFormData = (): FormData => {
 
         const fd = new FormData();
@@ -409,8 +371,6 @@ export const MarketingContent: React.FC = () => {
         fd.append('RemoveMarketingContentURL', removeMarketingContentUrls.join(','));
         return fd;
     };
-
-    //#region ADD UPDATE MARKETING CONTENT 
     const handleAddUpdateMarketingContent = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({})
@@ -479,9 +439,6 @@ export const MarketingContent: React.FC = () => {
             'Add Content '
         )
     };
-    //#endregion
-
-    //#region DELETE CONTENT 
     const handleDeleteMarketingContent = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -540,13 +497,9 @@ export const MarketingContent: React.FC = () => {
             'Delete Content '
         )
     }
-    //#endregion
-
-    //#region BACK MARKETING CONTENT FOLDER PAGE
     const handleBackToListApprovedBankFolder = () => {
         navigate('/content');
     };
-    //#endregion
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -566,8 +519,6 @@ export const MarketingContent: React.FC = () => {
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchMarketingContent}
-
-                //ADD
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddMarketingContentModal}
@@ -576,7 +527,8 @@ export const MarketingContent: React.FC = () => {
             <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
 
                 <HeaderActionBar
-                    titleText={"Content Document "}
+                    titleText={"Content Document : "}
+                    subTitleText={listState.MarketingContentFolderName}
                     cancelText="Cancel"
                     onCancel={() => handleBackToListApprovedBankFolder()}
                     canAction={false}
@@ -620,7 +572,7 @@ export const MarketingContent: React.FC = () => {
                     setMarketingContentURL('');
                     setRemoveMarketingContentUrls([])
                 }}
-                title={editingMarketingContentData ? 'Update' : 'Add'}
+                title={editingMarketingContentData ? 'Update Content Document' : 'Add Content Document'}
                 onSubmit={handleAddUpdateMarketingContent}
                 saveText='Save'
                 loading={isLoading}
@@ -663,6 +615,8 @@ export const MarketingContent: React.FC = () => {
                         <div>
                             <TextArea
                                 label="Remark"
+                                required
+                                rows={3}
                                 className='thin-scroll'
                                 value={formData.Remark ?? ""}
                                 placeholder="Enter Remark"

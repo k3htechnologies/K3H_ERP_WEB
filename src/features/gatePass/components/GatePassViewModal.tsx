@@ -2,9 +2,9 @@ import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Button } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
-import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import {  formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import type { GatePassData } from '@/features/gatePass/models/GatePassModel';
-import { getStatusColor } from '@/features/gatePass/utils/Status';
+import { getStatusColor } from '../utils/Status';
 
 interface GatePassViewModalProps {
     isOpen: boolean;
@@ -75,8 +75,9 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
         >
             <div className="space-y-6">
 
+
                 <FieldItem
-                    label={data.FullName}
+                    label="Visitor Name"
                     value={`${data.FullName || '-'}${Number(data.NoOfParticipants) > 0 ? ` + ${data.NoOfParticipants}` : ''}`}
                     isRow
                     withBorder={true}
@@ -88,6 +89,7 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
 
                 <FieldItem label="Mobile Number" value={data?.MobileNumber ? `+91 ${(data?.MobileNumber)}` : '-'} isRow withBorder={true} />
 
+
                 <FieldItem
                     label="Appointment With"
                     value={data.EmployeeName}
@@ -96,14 +98,29 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
                 />
 
                 <FieldItem
-                    label="Appointment Date/Time"
+                    label="Appointment Date"
                     value={`${formatDate_dd_MonthName_yy_hh_mm(data.PassDateTime)}`}
                     isRow
                     withBorder={true}
                 />
-
+                {data.ApprovalStatus && (
+                    <FieldItem
+                        label="Approval Status"
+                        value={data.ApprovalStatus}
+                        isRow
+                        withBorder={true}
+                    />
+                )}
+                {data.ApprovalRemark && (
+                    <FieldItem
+                        label="Approval Remark"
+                        value={data.ApprovalRemark}
+                        isRow
+                        withBorder={true}
+                    />
+                )}
                 <FieldItem
-                    label="Out Date/Time"
+                    label="Out Date"
                     value={`${formatDate_dd_MonthName_yy_hh_mm(data.OutDateTime)}`}
                     isRow
                     withBorder={true}
@@ -122,7 +139,7 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
                     :
                     ''}
                 <div className="flex justify-between items-center">
-
+                    
                     {canAction && data.IsDelete && (
                         <>
                             <Button
@@ -147,7 +164,6 @@ export const GatePassViewModal: React.FC<GatePassViewModalProps> = ({
                         </>
                     )}
                 </div>
-                
             </div>
         </Modal>
     );

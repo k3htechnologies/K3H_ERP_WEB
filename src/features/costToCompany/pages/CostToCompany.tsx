@@ -133,15 +133,6 @@ export const CostToCompany: React.FC = () => {
             ),
         },
         {
-            key: 'AnnualCTC',
-            label: 'Annual CTC (₹)',
-            width: '15',
-            sortable: false,
-            fixed: 'left',
-            align: 'left',
-            render: value => value ? formatCurrency(value) : '0'
-        },
-        {
             key: 'MonthlyCTC',
             label: 'Monthly CTC (₹)',
             width: '15',
@@ -150,6 +141,16 @@ export const CostToCompany: React.FC = () => {
             align: 'left',
             render: value => value ? formatCurrency(value) : '0'
         },
+        {
+            key: 'AnnualCTC',
+            label: 'Annual CTC (₹)',
+            width: '15',
+            sortable: false,
+            fixed: 'left',
+            align: 'left',
+            render: value => value ? formatCurrency(value) : '0'
+        },
+        
         {
             key: 'EffectiveFromDate',
             label: 'Effective From Date',

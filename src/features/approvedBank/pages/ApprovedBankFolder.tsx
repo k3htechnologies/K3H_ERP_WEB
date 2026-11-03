@@ -25,6 +25,7 @@ import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { approvedBankFileService } from '@/features/approvedBank/services/ApprovedBankFileService';
 import type { FilterWithPaginationApprovedBankFileRequest } from '@/features/approvedBank/models/ApprovedBankFileModel';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 const initialFormState = (): AddUpdateApprovedBankFolderRequest => ({
     ApprovedBankFolderId: 0,
@@ -138,7 +139,7 @@ export const ApprovedBankFolder: React.FC = () => {
     };
 
     //#region MENU PERMISSIONS
-    const { canAction,canExport,canView } = useMenuPermissions();
+    const { canAction, canExport, canView } = useMenuPermissions();
     //#endregion
 
     //#region APPROVED BANK LIST STATE CONTEXT
@@ -181,11 +182,6 @@ export const ApprovedBankFolder: React.FC = () => {
     }, 350);
     //#endregion
 
-    //#region DATA LOADING |  LOAD | SEARCH 
-    const fetchApprovedBankFolderList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-        return await loadApprovedBankFolder(page, sort, searchTerm);
-    }
-
     const loadApprovedBankFolder = useCallback(async (page: number, sortInfo?: SortInfo, searchtext?: string) => {
         await runApiWithLoader(
             setIsLoading,
@@ -218,7 +214,7 @@ export const ApprovedBankFolder: React.FC = () => {
             'Loading Approved Bank'
         );
     }, [projectId, pagination.pageSize, addToast])
-   
+
     const handleDownloadFolder = async (row: ApprovedBankFolderData, exportType: 'ZIP' = 'ZIP') => {
         await runApiWithLoader(
             setIsLoading,
@@ -248,15 +244,6 @@ export const ApprovedBankFolder: React.FC = () => {
         );
     };
 
-
-    //#region INIT
-    useEffect(() => {
-
-        if (!projectId) return;
-        fetchApprovedBankFolderList(1);
-    }, [projectId])
-    //#endregion
-
     useEffect(() => {
         if (!isAddUpdateModalOpen) return;
         loadBankList(1, searchBankNameTerm);
@@ -281,49 +268,38 @@ export const ApprovedBankFolder: React.FC = () => {
             return updated;
         });
     };
-    //#endregion
+    
+    const searchApprovedBankFolder = (searchValue: string) => {
 
-    //#region SEARCH APPROVED BANK
-    const searchApprovedBankFolder = async (searchValue: string) => {
-        updateListState({ searchTerm: searchValue, page: 1 });
-        await loadApprovedBankFolder(1, sortInfo, searchValue);
-    };
-    //#endregion
-
-    //#region CLEAR 
-    const clearSearchApprovedBankFolder = () => {
-        updateListState({ searchTerm: '', page: 1 });
         debouncedSearch.cancel?.();
-        setPagination({ currentPage: 1 });
-        loadApprovedBankFolder(1, sortInfo, '');
+        updateListState({ searchTerm: searchValue, page: 1 });
     };
 
-    //#endregion
+    const clearSearchApprovedBankFolder = () => {
 
-    //#region HANDLE PAGE CHNAGE EVENT
+        debouncedSearch.cancel?.();
+        updateListState({searchTerm: '', page: 1 });
+    };
+
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
     }, [updateListState]);
 
-    //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
         updateListState({ sortInfo: sort, page: 1 });
     }, [updateListState]);
-    //#endregion
+    
 
     const handleDeleteDialogClose = useCallback(() => {
         setIsConfirmationDialogBoxOpen(false);
         setDeleteApprovedBankFolderData(null);
     }, [setIsConfirmationDialogBoxOpen, setDeleteApprovedBankFolderData]);
 
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: ApprovedBankFolderData) => {
         setDeleteApprovedBankFolderData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, [])
-    //#endregion
-
-    //#region TABLE PAGINATION INFO
+    
     const ApprovedBankFolderPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
@@ -334,8 +310,9 @@ export const ApprovedBankFolder: React.FC = () => {
         }),
         [pagination, handlePageChange]
     );
+
     const ApprovedBankFolderForTable = useMemo(() => approvedBankFolderList, [approvedBankFolderList]);
-    
+
     const handleNavigateToView = useCallback((row: ApprovedBankFolderData) => {
         updateListState({ ApprovedBankFolderId: row.ApprovedBankFolderId ?? 0, BankName: row.BankName ?? '' });
 
@@ -368,6 +345,33 @@ export const ApprovedBankFolder: React.FC = () => {
             render: value => value || '0'
         },
         {
+            key: 'ModifiedBy',
+            label: 'Last Modified By',
+            width: '20',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
+        },
+        {
+            key: 'ModifiedDate',
+            label: 'Last Modified Date',
+            width: '20',
+            sortable: false,
+            align: 'center',
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy_hh_mm(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
+                        : '-'
+        },
+        {
             key: 'actions',
             label: 'Actions',
             width: '12',
@@ -378,7 +382,7 @@ export const ApprovedBankFolder: React.FC = () => {
 
                 return (
                     <div className="flex items-center justify-center gap-2">
-                        {row.NumberOfApprovedBankFile === 0  && canAction? (
+                        {row.NumberOfApprovedBankFile === 0 && canAction ? (
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -396,7 +400,7 @@ export const ApprovedBankFolder: React.FC = () => {
                                 <Trash2 className="h-4 w-4" />
                             </Button>
 
-                        ) : row.NumberOfApprovedBankFile  > 0  && canExport?(
+                        ) : row.NumberOfApprovedBankFile > 0 && canExport ? (
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -413,13 +417,13 @@ export const ApprovedBankFolder: React.FC = () => {
                             >
                                 <Download className='w-4 h-4' />
                             </Button>
-                        ): null}
+                        ) : null}
                     </div>
                 );
             }
         }
-    ], [handleNavigateToView, handleConfirmationDialogBoxOpen, canAction,canExport]);
-   
+    ], [handleNavigateToView, handleConfirmationDialogBoxOpen, canAction, canExport]);
+
 
     const handleAddApprovedBankFolder = () => {
         setDeleteApprovedBankFolderData(null);
@@ -512,7 +516,7 @@ export const ApprovedBankFolder: React.FC = () => {
                             title: response.right.SuccessMessage[0]
                         });
                     }
-                    
+
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }

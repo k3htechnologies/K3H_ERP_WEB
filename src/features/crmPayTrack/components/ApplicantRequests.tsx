@@ -185,6 +185,8 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     const { pagination, setPagination } = usePagination(20);
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
+    
+    const isFinalRegistrationCompleted = bookingData?.IsFinalRegistrationCompleted === false;
 
     const applicantModificationList = useMemo(() => {
         if (!bookingApplicantModificationData?.length) {
@@ -1256,7 +1258,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                             Applicant Details
                         </h4>
 
-                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !applicantModificationList.length && (
+                        {canAction && isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !applicantModificationList.length && (
 
                             <div className="flex items-center gap-2">
                                 <Button

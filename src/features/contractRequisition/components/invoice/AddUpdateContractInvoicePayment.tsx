@@ -59,7 +59,7 @@ const AddUpdateContractInvoicePayment = () => {
 
   const navigate = useNavigate();
   const { listState } = useContractRequisitionListState();
-  const { ContractRequisitionId, ContractRequisitionInvoiceId, ContractRequisitionStatus, SystemGeneratedCode } = listState;
+  const { ContractRequisitionId, ContractRequisitionInvoiceId, ContractRequisitionStatus, SystemGeneratedCode, InvoiceNumber } = listState;
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { canAction: canMakePayments } = useMenuPermissions('Contract - Make Payments');
@@ -320,7 +320,7 @@ const AddUpdateContractInvoicePayment = () => {
           titleText={'Make Payment :'}
           subTitleText={SystemGeneratedCode ?? "-"}
           subSubTitleText={ContractRequisitionStatus ?? ''}
-          subSubSubTitleText={String(ContractRequisitionInvoiceId) ?? ''}
+          subSubSubTitleText={InvoiceNumber ?? ''}
           cancelText="Cancel"
           onCancel={() =>
             navigate("/contractRequisition/view", {

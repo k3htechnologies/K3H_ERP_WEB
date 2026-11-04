@@ -2,8 +2,9 @@ import * as E from "fp-ts/Either";
 
 import type { Failure } from "@/core/api/FailureResponse";
 import type {
+  BudgetWithQuantityListResponse,
   CloseContractRequisitionRequest,
-  ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationContractRequisition, PullProjectLockAndKeyContractStatusRequest,
+  ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionOverviewResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationBudgetWithQuantityRequest, FilterWithPaginationContractRequisition, PullContractOverviewRequest, PullProjectLockAndKeyContractStatusRequest,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
 import { ContractRequisitionDatasourceImpl } from "@/features/contractRequisition/datasources/ContractRequisitionDataSource";
 
@@ -20,7 +21,16 @@ export const contractRequisitionService = {
       return E.left({ message: error.message, code: error.code });
     }
   },
-
+  apiCallPullContractRequisitionOverview: async (
+    params: PullContractOverviewRequest,
+    options?: { signal?: AbortSignal },
+  ): Promise<E.Either<Failure, ContractRequisitionOverviewResponse>> => {
+    try {
+      return E.right(await ContractRequisitionDatasource.pullContractRequisitionOverview(params, options?.signal));
+    } catch (error: any) {
+      return E.left({ message: error.message, code: error.code });
+    }
+  },
   apiCallToAddContractRequisition: async (FormData: FormData): Promise<E.Either<Failure, ContractRequisitionSaveReponse>> => {
     try {
       return E.right(await ContractRequisitionDatasource.addUpdateContractRequisition(FormData));
@@ -55,5 +65,15 @@ export const contractRequisitionService = {
     } catch (error: any) {
       return E.left({ message: error.message, code: error.code });
     }
-  }
+  },
+    apiCallPullBudgetWithQuantity: async (
+    params: FilterWithPaginationBudgetWithQuantityRequest,
+    options?: { signal?: AbortSignal },
+  ): Promise<E.Either<Failure, BudgetWithQuantityListResponse>> => {
+    try {
+      return E.right(await ContractRequisitionDatasource.pullBudgetWithQuantity(params, options?.signal));
+    } catch (error: any) {
+      return E.left({ message: error.message, code: error.code });
+    }
+  },
 };

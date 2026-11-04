@@ -1,7 +1,18 @@
-import React, { useState } from "react";
-import { ChevronDown, Eye, FileX2, Inbox } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { ChevronDown, FileX2, Inbox } from "lucide-react";
+import * as E from "fp-ts/Either";
 
-import type { ContractRequisitionData } from "@/features/contractRequisition/models/ContractRequisitionModel";
+import type { ContractRequisitionOverview, PullContractOverviewRequest } from "@/features/contractRequisition/models/ContractRequisitionModel";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { useContractRequisitionListState } from "../context/ContractRequisitionListStateContext";
+import { runApiWithLoader } from "@/core/utils";
+import { contractRequisitionService } from "../services/ContractRequisitionService";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { getNameInitials } from "@/core/utils/getNameInitials";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatCurrency } from "@/core/utils/comman";
 
 interface LevelTwoItem {
   id?: string | number;
@@ -20,95 +31,13 @@ interface LevelOne {
   children?: LevelTwoItem[] | null;
 }
 
-interface ContractView {
-  contractCode?: string | null;
-  status?: string | null;
-  contractType?: string | null; // "Direct" badge
-  estimatedStartDate?: string | null;
-  documentUrl?: string | null;
-  remark?: string | null;
-
-  boq?: {
-    categories?: number | null;
-    items?: number | null;
-    totalQty?: number | null;
-    totalValue?: number | null;
-  } | null;
-
-  levels?: LevelOne[] | null;
-
-  vendor?: {
-    companyName?: string | null;
-    contactName?: string | null;
-    vendorId?: string | null;
-    finalizedAmount?: number | null;
-  } | null;
-
-  workOrder?: {
-    documentUrl?: string | null;
-    date?: string | null;
-    remark?: string | null;
-  } | null;
-
-  invoices?: {
-    count?: number | null;
-    totalFinalised?: number | null;
-    invoiced?: number | null;
-    paid?: number | null;
-    outstanding?: number | null;
-    last?: {
-      number?: string | null;
-      amount?: number | null;
-      date?: string | null;
-    } | null;
-  } | null;
-
-  audit?: {
-    createdBy?: string | null;
-    createdDate?: string | null;
-    modifiedBy?: string | null;
-    modifiedDate?: string | null;
-  } | null;
-}
-
-/** Single place to map API data -> view model. Edit field names here. */
-const toViewModel = (data: ContractRequisitionData | null): ContractView | null => {
-  if (!data) return null;
-  // Replace this cast with explicit field mapping once the model is final.
-  return data as unknown as ContractView;
-};
-
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                   */
-/* -------------------------------------------------------------------------- */
-
 const EMPTY = "—";
 
 const isNum = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
 
-const inr = new Intl.NumberFormat("en-IN", {
-  style: "currency",
-  currency: "INR",
-  maximumFractionDigits: 0,
-});
-
-const formatCurrency = (v?: number | null) => (isNum(v) ? inr.format(v) : EMPTY);
 const formatNumber = (v?: number | null) => (isNum(v) ? new Intl.NumberFormat("en-IN").format(v) : EMPTY);
 
-const formatDate = (value?: string | null, month: "long" | "short" = "long") => {
-  if (!value) return EMPTY;
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return EMPTY;
-  return d.toLocaleDateString("en-GB", { day: "numeric", month, year: "numeric" });
-};
-
 const text = (v?: string | null) => (v && v.trim() ? v.trim() : EMPTY);
-
-const initials = (name?: string | null) => {
-  const parts = (name ?? "").trim().split(/\s+/).filter(Boolean);
-  if (!parts.length) return "?";
-  return (parts[0][0] + (parts[1]?.[0] ?? "")).toUpperCase();
-};
 
 const percent = (part?: number | null, whole?: number | null) => {
   if (!isNum(part) || !isNum(whole) || whole <= 0) return null;
@@ -117,23 +46,29 @@ const percent = (part?: number | null, whole?: number | null) => {
 
 const statusStyles = (status?: string | null) => {
   const s = (status ?? "").toLowerCase().replace(/[\s_-]/g, "");
-  if (s === "inprogress") return "bg-blue-50 text-blue-600 border-blue-100";
+  if (s === "ongoing") return "bg-blue-50 text-blue-600 border-blue-100";
   if (s === "completed" || s === "approved") return "bg-emerald-50 text-emerald-700 border-emerald-100";
-  if (s === "pending" || s === "draft") return "bg-amber-50 text-amber-700 border-amber-100";
+  if (s === "pending") return "bg-amber-50 text-amber-700 border-amber-100";
   if (s === "cancelled" || s === "rejected") return "bg-red-50 text-red-600 border-red-100";
   return "bg-slate-100 text-slate-600 border-slate-200";
 };
 
-/* -------------------------------------------------------------------------- */
-/*  Small building blocks                                                     */
-/* -------------------------------------------------------------------------- */
+const StatusBadge: React.FC<{ status?: string | null }> = ({ status }) => {
+  if (!status || !status.trim()) return <>{EMPTY}</>;
+  return (
+    <span
+      className={`inline-block rounded border px-2 py-0.5 text-[11px] font-medium capitalize ${statusStyles(status)}`}
+    >
+      {status.replace(/[_-]/g, " ").toLowerCase()}
+    </span>
+  );
+};
 
-const Field: React.FC<{ label: string; children: React.ReactNode }> = ({ label, children }) => (
-  <div className="min-w-0">
-    <p className="text-xs text-slate-500">{label}</p>
-    <div className="mt-1 text-sm font-medium text-slate-900 break-words">{children}</div>
-  </div>
-);
+const renderDocuments = (url: string | null | undefined, title: string) => {
+  const docs = url && url.trim() ? parseDocumentUrls(url) : [];
+  if (!docs || docs.length === 0) return <span className="text-slate-400">No document</span>;
+  return <MultiImageViewer images={docs} title={title} triggerLabel="View" />;
+};
 
 const SectionCard: React.FC<{
   title: string;
@@ -159,31 +94,6 @@ const EmptyState: React.FC<{ message: string; icon?: React.ReactNode }> = ({ mes
   </div>
 );
 
-const DocumentLink: React.FC<{ url?: string | null; label?: string; variant?: "link" | "button" }> = ({
-  url,
-  label = "View",
-  variant = "link",
-}) => {
-  if (!url) return <span className="text-slate-400">No document</span>;
-
-  const base =
-    variant === "button"
-      ? "inline-flex items-center gap-2 rounded-md border border-sky-300 bg-white px-3 py-1.5 text-sm text-sky-700 hover:bg-sky-50"
-      : "inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:underline";
-
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`${base} focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500`}
-    >
-      {label}
-      <Eye className="h-4 w-4" aria-hidden />
-    </a>
-  );
-};
-
 const Stat: React.FC<{ label: string; value: string; className?: string; valueClass?: string; labelClass?: string }> = ({
   label,
   value,
@@ -191,15 +101,11 @@ const Stat: React.FC<{ label: string; value: string; className?: string; valueCl
   valueClass = "text-slate-900",
   labelClass = "text-slate-500",
 }) => (
-  <div className={`rounded-lg border px-3 py-3 text-center ${className}`}>
+  <div className={`min-w-0 rounded-lg border px-3 py-3 text-center ${className}`}>
     <p className={`text-[11px] font-medium uppercase tracking-wide ${labelClass}`}>{label}</p>
-    <p className={`mt-1.5 text-xl font-semibold ${valueClass}`}>{value}</p>
+    <p className={`mt-1.5 text-lg font-semibold wrap-break-word ${valueClass}`}>{value}</p>
   </div>
 );
-
-/* -------------------------------------------------------------------------- */
-/*  Contract levels (collapsible, level 2 listing inside)                     */
-/* -------------------------------------------------------------------------- */
 
 const LevelRow: React.FC<{
   index: number;
@@ -234,20 +140,17 @@ const LevelRow: React.FC<{
           </span>
         )}
         <ChevronDown
-          className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 motion-reduce:transition-none ${
-            open ? "rotate-180" : ""
-          }`}
+          className={`h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200 motion-reduce:transition-none ${open ? "rotate-180" : ""
+            }`}
           aria-hidden
         />
       </button>
 
-      {/* grid-rows trick = smooth height animation without measuring */}
       <div
         id={panelId}
         role="region"
-        className={`grid transition-[grid-template-rows] duration-200 motion-reduce:transition-none ${
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-        }`}
+        className={`grid transition-[grid-template-rows] duration-200 motion-reduce:transition-none ${open ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+          }`}
       >
         <div className="overflow-hidden">
           <div className="border-t border-slate-100 px-3 pb-3 pt-2">
@@ -257,10 +160,7 @@ const LevelRow: React.FC<{
               <ul className="divide-y divide-slate-100">
                 {children.map((child, i) => (
                   <li key={child.id ?? i} className="flex items-start gap-3 py-2.5">
-                    <span
-                      className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400"
-                      aria-hidden
-                    />
+                    <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-sky-400" aria-hidden />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-slate-800">{text(child.name)}</p>
                       {child.description ? (
@@ -290,16 +190,40 @@ const LevelRow: React.FC<{
   );
 };
 
-/* -------------------------------------------------------------------------- */
-/*  Main component                                                            */
-/* -------------------------------------------------------------------------- */
-
-interface ContractOverviewProps {
-  contractRequisitionData: ContractRequisitionData | null;
-}
-
-export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequisitionData }) => {
+export const ContractOverview: React.FC = () => {
+  const [_, setLoadingMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [contractRequisitionOverview, setContractRequisitionOverviewData] = useState<ContractRequisitionOverview | null>(null);
   const [openLevels, setOpenLevels] = useState<Set<number>>(new Set());
+
+  const { projectId } = useProject();
+  const { listState } = useContractRequisitionListState();
+  const { ContractRequisitionId } = listState;
+
+  useEffect(() => {
+    if (!projectId || !ContractRequisitionId || ContractRequisitionId === 0) return;
+    loadContractOverView();
+  }, [projectId, ContractRequisitionId]);
+
+  const loadContractOverView = async () => {
+    runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
+      const params: PullContractOverviewRequest = {
+        ProjectId: Number(projectId),
+        ContractRequisitionId: ContractRequisitionId,
+      };
+
+      const response = await contractRequisitionService.apiCallPullContractRequisitionOverview(params);
+
+      if (E.isRight(response)) {
+        const data = response.right.Data;
+        const item = Array.isArray(data) ? data[0] : data;
+        setContractRequisitionOverviewData(item ?? null);
+      } else {
+        setContractRequisitionOverviewData(null);
+      }
+      return response;
+    });
+  };
 
   const toggleLevel = (i: number) =>
     setOpenLevels((prev) => {
@@ -309,10 +233,8 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
       return next;
     });
 
-  const c = toViewModel(contractRequisitionData);
-
-  // Whole payload missing
-  if (!c) {
+  if (!contractRequisitionOverview) {
+    if (isLoading) return null;
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8">
         <EmptyState message="No contract details available." icon={<FileX2 className="h-6 w-6" aria-hidden />} />
@@ -320,66 +242,55 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
     );
   }
 
-  const levels = Array.isArray(c.levels) ? c.levels : [];
-  const inv = c.invoices ?? null;
-  const invoicedPct = percent(inv?.invoiced, inv?.totalFinalised);
+  const levelList: any[] = [];
+
+  const totalFinalized = contractRequisitionOverview.TotalFinalizedAmount;
+  const invoiced = contractRequisitionOverview.TotalInvoiceAmount;
+  const paid = contractRequisitionOverview.InvoicePaidAmount;
+  const outstanding = contractRequisitionOverview.OutstandingAmount;
+  const invoiceCount = isNum(contractRequisitionOverview.TotalInvoiceCount) ? contractRequisitionOverview.TotalInvoiceCount : 0;
+
+  const hasAmounts = [totalFinalized, invoiced, paid, outstanding].some(isNum);
+  const invoicedPct = percent(invoiced, totalFinalized);
   const pendingPct = invoicedPct === null ? null : 100 - invoicedPct;
-  const hasInvoices = !!inv && (isNum(inv.totalFinalised) || isNum(inv.invoiced) || (inv.count ?? 0) > 0);
+  const hasLastInvoice = !!contractRequisitionOverview.LastInvoiceNumber?.trim();
 
   return (
     <div className="space-y-4 text-slate-900">
-      {/* Contract overview */}
       <SectionCard
         title="Contract Overview"
-        headerClass="bg-blue-50"
-        titleClass="text-blue-700"
+        headerClass="bg-[#E7F2FF]"
+        titleClass="text-[#1D4ED8]"
         right={
-          c.contractType ? (
+          contractRequisitionOverview.ContractType ? (
             <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-medium text-blue-700">
-              {c.contractType}
+              {contractRequisitionOverview.ContractType}
             </span>
           ) : null
         }
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Field label="Contract Code">{text(c.contractCode)}</Field>
-          <Field label="Status">
-            {c.status ? (
-              <span
-                className={`inline-block rounded border px-2 py-0.5 text-[11px] font-medium capitalize ${statusStyles(
-                  c.status,
-                )}`}
-              >
-                {c.status.replace(/[_-]/g, " ").toLowerCase()}
-              </span>
-            ) : (
-              EMPTY
-            )}
-          </Field>
-          <Field label="Estimated Start Date">{formatDate(c.estimatedStartDate)}</Field>
-          <Field label="Document">
-            <DocumentLink url={c.documentUrl} />
-          </Field>
+          <FieldItem label="Contract Code" value={contractRequisitionOverview.SystemGeneratedCode} />
+          <FieldItem label="Status" value={<StatusBadge status={contractRequisitionOverview.ContractRequisitionStatus} />} />
+          <FieldItem label="Estimated Start Date" value={formatDate_dd_MonthName_yy(contractRequisitionOverview.EstimatedDate)} />
+          <FieldItem label="Document" value={renderDocuments(contractRequisitionOverview.AttachmentsURL, "Contract Document")} />
         </div>
         <div className="mt-4">
-          <Field label="Remark">
-            <span className="font-normal text-slate-700">{text(c.remark)}</span>
-          </Field>
+          <FieldItem label="Remark" value={contractRequisitionOverview.ContractRemark} />
         </div>
       </SectionCard>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]">
-        {/* Left column */}
         <div className="space-y-4">
-          <SectionCard title="BOQ Summary" headerClass="bg-yellow-50" titleClass="text-yellow-800">
-            {c.boq ? (
+          <SectionCard title="BOQ Summary" headerClass="bg-[#FFFFE4]" titleClass="text-[#7B6B28]">
+            {(contractRequisitionOverview as any)?.boq ? (
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <Stat label="Categories" value={formatNumber(c.boq.categories)} />
-                <Stat label="Items" value={formatNumber(c.boq.items)} />
-                <Stat label="Total Qty" value={formatNumber(c.boq.totalQty)} />
+                <Stat label="Categories" value={formatNumber((contractRequisitionOverview as any).boq.categories)} />
+                <Stat label="Items" value={formatNumber((contractRequisitionOverview as any).boq.items)} />
+                <Stat label="Total Qty" value={formatNumber((contractRequisitionOverview as any).boq.totalQty)} />
                 <Stat
                   label="Total BOQ Value"
-                  value={formatCurrency(c.boq.totalValue)}
+                  value={formatCurrency((contractRequisitionOverview as any).boq.totalValue)}
                   className="border-amber-300 bg-amber-50"
                   labelClass="text-amber-800"
                   valueClass="text-slate-900"
@@ -389,17 +300,16 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
               <EmptyState message="BOQ summary is not available yet." />
             )}
           </SectionCard>
-
           <SectionCard
-            title={`Contract Levels (${levels.length})`}
-            headerClass="bg-cyan-50"
-            titleClass="text-sky-700"
+            title={`Contract Levels (${levelList.length})`}
+            headerClass="bg-[#EAFCFF]"
+            titleClass="text-[#12A3DD]"
           >
-            {levels.length === 0 ? (
+            {levelList.length === 0 ? (
               <EmptyState message="No contract levels have been added." />
             ) : (
               <ul className="space-y-3">
-                {levels.map((level, i) => (
+                {levelList.map((level, i) => (
                   <LevelRow
                     key={level.id ?? i}
                     index={i}
@@ -413,25 +323,24 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
           </SectionCard>
         </div>
 
-        {/* Right column */}
         <div className="space-y-4">
-          <SectionCard title="Finalized Vendor" headerClass="bg-violet-50" titleClass="text-violet-700">
-            {c.vendor ? (
+          <SectionCard title="Finalized Vendor" headerClass="bg-[#F3F0FE]" titleClass="text-[finalized vendor]">
+            {contractRequisitionOverview.FinalVendorCompanyName && contractRequisitionOverview.FinalizedVendor ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-sm font-semibold text-violet-700">
-                    {initials(c.vendor.companyName)}
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[#B641E1] bg-[#DCDBFA] text-sm font-semibold text-[#B641E1]">
+                    {getNameInitials(contractRequisitionOverview.FinalVendorCompanyName)}
                   </span>
-                  <p className="min-w-0 break-words text-sm font-semibold text-slate-900">
-                    {text(c.vendor.companyName)}
+                  <p className="min-w-0 wrap-break-word text-sm font-semibold text-slate-900">
+                    {contractRequisitionOverview.FinalVendorCompanyName}
                   </p>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Field label="Vendor Name">{text(c.vendor.contactName)}</Field>
-                  <Field label="Vendor ID">{text(c.vendor.vendorId)}</Field>
+                  <FieldItem label="Vendor Name" value={contractRequisitionOverview.FinalizedVendor} />
+                  <FieldItem label="Vendor ID" value={contractRequisitionOverview.VendorCode} />
                 </div>
                 <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5">
-                  <Field label="Finalized Amount">{formatCurrency(c.vendor.finalizedAmount)}</Field>
+                  <FieldItem label="Finalized Amount" value={formatCurrency(contractRequisitionOverview.TotalFinalizedAmount)} />
                 </div>
               </div>
             ) : (
@@ -439,21 +348,14 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
             )}
           </SectionCard>
 
-          <SectionCard title="Work Order" headerClass="bg-green-50" titleClass="text-green-700">
-            {c.workOrder ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <Field label="Work Order Document">
-                    <DocumentLink url={c.workOrder.documentUrl} label="Document" variant="button" />
-                  </Field>
-                  <Field label="Date">{formatDate(c.workOrder.date, "short")}</Field>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Remark</p>
-                  <p className="mt-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                    {text(c.workOrder.remark)}
-                  </p>
-                </div>
+          <SectionCard title="Work Order" headerClass="bg-[#E6FFE6]" titleClass="text-[#00A800]">
+            {contractRequisitionOverview.ContractRequisitionWorkOrderURL ? (
+              <div className="grid grid-cols-2 gap-4">
+                <FieldItem
+                  label="Work Order Document"
+                  value={renderDocuments(contractRequisitionOverview.ContractRequisitionWorkOrderURL, "Work Order Document")}
+                />
+                <FieldItem label="Date" value={formatDate_dd_MonthName_yy(contractRequisitionOverview?.WorkOrderCreatedDate ? contractRequisitionOverview.WorkOrderCreatedDate : "")} />
               </div>
             ) : (
               <EmptyState message="No work order has been issued." />
@@ -462,40 +364,34 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
         </div>
       </div>
 
-      {/* Invoices */}
       <SectionCard
-        title={`Invoices (${inv?.count ?? 0})`}
-        headerClass="bg-slate-50"
-        titleClass="text-indigo-900"
+        title={`Invoices (${invoiceCount})`}
+        headerClass="bg-[#F6F9FF]"
+        titleClass="text-[#13367A]"
       >
-        {!hasInvoices ? (
+        {!hasAmounts && invoiceCount === 0 ? (
           <EmptyState message="No invoices have been generated for this contract." />
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <Stat
-                label="Total Finalised Amount"
-                value={formatCurrency(inv?.totalFinalised)}
-                labelClass="text-slate-500"
-              />
-              <Stat label="Invoiced" value={formatCurrency(inv?.invoiced)} />
+              <Stat label="Total Finalised Amount" value={formatCurrency(totalFinalized)} />
+              <Stat label="Invoiced" value={formatCurrency(invoiced)} />
               <Stat
                 label="Paid"
-                value={formatCurrency(inv?.paid)}
+                value={formatCurrency(paid)}
                 className="border-emerald-200 bg-emerald-50"
                 labelClass="text-emerald-800"
                 valueClass="text-emerald-800"
               />
               <Stat
                 label="Outstanding"
-                value={formatCurrency(inv?.outstanding)}
+                value={formatCurrency(outstanding)}
                 className="border-amber-200 bg-amber-50"
                 labelClass="text-amber-800"
                 valueClass="text-amber-800"
               />
             </div>
 
-            {/* Progress */}
             <div>
               <div
                 className="flex h-2 w-full overflow-hidden rounded-full bg-slate-200"
@@ -524,30 +420,36 @@ export const ContractOverview: React.FC<ContractOverviewProps> = ({ contractRequ
               </div>
             </div>
 
-            {/* Last invoice */}
-            {inv?.last && (
+            {hasLastInvoice ? (
               <div className="rounded-md border-l-4 border-indigo-500 bg-slate-50 px-3 py-2.5">
                 <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
                   Last Generated Invoice
                 </p>
                 <div className="mt-1 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm">
-                  <span className="font-medium text-slate-900">{text(inv.last.number)}</span>
-                  <span className="font-medium text-indigo-600">{formatCurrency(inv.last.amount)}</span>
-                  <span className="text-slate-600">{formatDate(inv.last.date, "short")}</span>
+                  <span className="font-medium text-slate-900">{text(contractRequisitionOverview.LastInvoiceNumber)}</span>
+                  <span className="font-medium text-indigo-600">{formatCurrency(contractRequisitionOverview.LastInvoiceAmount)}</span>
+                  <span className="text-slate-600">{formatDate_dd_MonthName_yy(contractRequisitionOverview?.LastInvoiceDate ? contractRequisitionOverview.LastInvoiceDate : "")}</span>
+                  {contractRequisitionOverview.LastInvoiceApprovalStatus ? <StatusBadge status={contractRequisitionOverview.LastInvoiceApprovalStatus} /> : null}
+                  {contractRequisitionOverview.LastInvoiceDocumentURL
+                    ? renderDocuments(contractRequisitionOverview.LastInvoiceDocumentURL, "Invoice Document")
+                    : null}
                 </div>
               </div>
+            ) : (
+              <p className="rounded-md bg-slate-50 px-3 py-2.5 text-xs text-slate-500">
+                No invoice has been generated yet.
+              </p>
             )}
           </div>
         )}
       </SectionCard>
 
-      {/* Action details */}
-      <SectionCard title="Action Details" headerClass="bg-slate-50" titleClass="text-slate-800">
+      <SectionCard title="Action Details" headerClass="bg-[#FBF9F9]" titleClass="text-[#1D1D1D]">
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          <Field label="Created By">{text(c.audit?.createdBy)}</Field>
-          <Field label="Created Date">{formatDate(c.audit?.createdDate)}</Field>
-          <Field label="Modified By">{text(c.audit?.modifiedBy)}</Field>
-          <Field label="Modified Date">{formatDate(c.audit?.modifiedDate)}</Field>
+          <FieldItem label="Created By" value={contractRequisitionOverview.CreatedBy} />
+          <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(contractRequisitionOverview.CreatedDate)} />
+          <FieldItem label="Modified By" value={contractRequisitionOverview.ModifiedBy} />
+          <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(contractRequisitionOverview.ModifiedDate)} />
         </div>
       </SectionCard>
     </div>

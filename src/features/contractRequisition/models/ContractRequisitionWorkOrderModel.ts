@@ -17,6 +17,7 @@ export interface ContractRequisitionWorkOrderData {
     ContractRequisitionWorkOrderURL: string | null;
     ClientRegistrationId: number;
     TotalAmount: number;
+    IsInvoiceCreated: boolean;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

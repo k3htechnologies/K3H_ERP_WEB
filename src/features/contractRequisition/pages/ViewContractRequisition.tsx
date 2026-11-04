@@ -62,7 +62,7 @@ export const ViewContractRequisition: React.FC = () => {
 
   useEffect(() => {
     if (!projectId || !ContractRequisitionId || ContractRequisitionId === 0) return;
-    loadContractRequisition()
+    loadContractRequisition();
   }, [projectId, ContractRequisitionId, addToast]);
 
   const loadContractRequisition = async () => {
@@ -89,7 +89,9 @@ export const ViewContractRequisition: React.FC = () => {
           ContractRequisitionStage: item.ContractRequisitionStage,
           VendorName: item.FinalVendor,
           CompanyGSTNumber: item.CompanyGSTNumber,
-          IsBOQCreated: item.IsBOQCreated
+          IsBOQCreated: item.IsBOQCreated,
+          IsWorkOrderAvailable: item.IsWorkOrderAvailable,
+          WorkOrderCreatedDate: item.WorkOrderCreatedDate
         })
       } else {
         addToast({ type: "error", title: response.left.message });
@@ -189,6 +191,10 @@ export const ViewContractRequisition: React.FC = () => {
     );
   };
 
+  const TotalWoAmount = Number(contractRequisitionData?.WorkOrderAmount ?? 0);
+  const PaidAmount = Number(contractRequisitionData?.TotalPaidAmount ?? 0);
+  const PendingAmount = TotalWoAmount - PaidAmount;
+
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -236,7 +242,7 @@ export const ViewContractRequisition: React.FC = () => {
                 Revoke Finalization
               </Button> : <></>
           }
-          {contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" && (
+          {contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ? (
             <div className="flex justify-end pb-2 gap-2">
               <Button
                 size="sm"
@@ -259,8 +265,8 @@ export const ViewContractRequisition: React.FC = () => {
                 Close Requisition
               </Button>
             </div>
-          )}
-          {listState.VendorName?.trim() !== "" && contractRequisitionData?.ContractStatus !== 'Completed' && (
+          ) : <></>}
+          {PendingAmount === 0 && listState.VendorName?.trim() !== "" && contractRequisitionData?.ContractStatus !== 'Completed' ? (
             <Button
               size="sm"
               style={{
@@ -281,7 +287,7 @@ export const ViewContractRequisition: React.FC = () => {
             >
               Completed
             </Button>
-          )}
+          ) : <></>}
         </div>
       </div>
 
@@ -289,10 +295,10 @@ export const ViewContractRequisition: React.FC = () => {
         <Tabs tabs={ContractRequisitionTabList} defaultActive={activeTab} islarge onTabChange={(t) => setActiveTab(t.id)} />
       </div>
 
-      {activeTab === "Overview" && <ContractOverview contractRequisitionData={contractRequisitionData} />}
+      {activeTab === "Overview" && <ContractOverview />}
       {activeTab === "boq" && <ContractBOQSelectionScreen onSaveSuccess={loadContractRequisition} />}
       {activeTab === "Finalized Vendor" && <FinalizedContractVendor onApprovalSuccess={loadContractRequisition} />}
-      {activeTab === "Work Order" && <ContractWorkOrder />}
+      {activeTab === "Work Order" && <ContractWorkOrder onUploadOrGenerateSuccess={loadContractRequisition} />}
       {activeTab === "Invoice" && <ContractInvoice />}
 
       <Modal

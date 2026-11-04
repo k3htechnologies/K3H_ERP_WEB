@@ -409,7 +409,7 @@ export const MASTER_DATA = {
     "Arrears",
     "Ex-Gratia",
     "Relocation Allowance",
-   
+
   ],
   leaveTypeMaster: [
     "Adoption - Adoption Leave",
@@ -477,7 +477,7 @@ export const MASTER_DATA = {
 
   parkingSize: ["Big", "Small"],
 
-  parkingStatus: ["Available", "Blocked", "Hold", "Member","Booked"],
+  parkingStatus: ["Available", "Blocked", "Hold", "Member", "Booked"],
 
   // unitLayout: ['Entire Flat','Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
@@ -545,7 +545,7 @@ export const MASTER_DATA = {
 
   monthsShots: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 
-  activeInactive: ["Active","Closed", "Inactive"],
+  activeInactive: ["Active", "Closed", "Inactive"],
 
   paymentFor: [
     "Stamp Duty",
@@ -686,7 +686,7 @@ export const MASTER_DATA = {
 
   ],
 
-  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30", "2030-31","2031-32","2032-33","2033-34"],
+  financialYear: ["2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2027-28", "2028-29", "2029-30", "2030-31", "2031-32", "2032-33", "2033-34"],
 
   termSheetDocument: [
     "Board Resolution",
@@ -767,8 +767,11 @@ export const MASTER_DATA = {
   priorityOptions: ['Critical', 'Non - Critical'],
 
   contractRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Work Order', 'Add Invoice', 'Make Payments'],
-
+  
+  contractRequisitionTypes: [ "direct" , "indirect" , "lock and key"],
+  
   contractRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
+  
   applicableFor: ['Sale', 'Tenant'],
 
   employeeLetterType: [
@@ -799,7 +802,7 @@ export const MASTER_DATA = {
     "Provisional Balance Sheet",
     "Solvency Certificate",
     "Tax Audit Report"
-],
+  ],
 } as const;
 
 // ============================================================================
@@ -956,6 +959,7 @@ export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFi
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
+export const CONTRACT_REQUISITION_TYPES_OPTIONS = toOptions(MASTER_DATA.contractRequisitionTypes)
 export const CONTRACT_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.contractRequisitionStages);
 export const CONTRACT_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.contractRequisitionStatus);
 export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);

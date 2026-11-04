@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  AlertCircle, ChevronDown, ChevronRight, Info
+  AlertCircle, Check, ChevronDown, ChevronRight, Info
 } from 'lucide-react'
 
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
@@ -111,6 +111,7 @@ export interface VendorQuotationLike {
   SystemGeneratedCode?: string
   VendorName?: string
   CompanyName?: string
+  GSTNumber?: string | null
   VerifiedNonVerified?: string
   IsApproval?: boolean
   IsFinalized?: boolean
@@ -126,6 +127,8 @@ export interface VendorQuotationLike {
 export interface QuotationSavePatch {
   /** ContractRequisitionQuotationTermsData[0].ContractRequisitionQuotationTermsId (0 if the vendor has no terms yet) */
   ContractRequisitionQuotationTermsId: number
+  /** true if at least one item row has a contract rate above 0 (i.e. something was actually quoted) */
+  hasQuotedItem: boolean
   /** All rows (items updated, groups untouched). 0 is written for "not entered". */
   ContractRequisitionQuotationData: QuotationLineLike[]
   /** Grand contract value (taxable amount + all taxes) */
@@ -133,7 +136,6 @@ export interface QuotationSavePatch {
   /** Whole days; 0 = not entered */
   ExpectedCompletionInDays: number
   ExpectedPaymentInDays: number
-  hasQuotedItem: boolean
   summary: { taxable: number; cgst: number; sgst: number; igst: number; grandTotal: number }
 }
 
@@ -1180,11 +1182,11 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     })
     return {
       ContractRequisitionQuotationTermsId: n0(activeTerms?.[0]?.ContractRequisitionQuotationTermsId),
+      hasQuotedItem: tree.leafKeys.some(k => n0(totals.get(k)?.contractRate) > 0),
       ContractRequisitionQuotationData: updated as unknown as QuotationLineLike[],
       Total: grand.contract,
       ExpectedCompletionInDays: draftToDays(dayDrafts.completion) ?? 0,
       ExpectedPaymentInDays: draftToDays(dayDrafts.payment) ?? 0,
-      hasQuotedItem: tree.leafKeys.some(k => n0(totals.get(k)?.contractRate) > 0),
       summary: {
         taxable: grand.contractBase, cgst: grand.cgst, sgst: grand.sgst,
         igst: grand.igst, grandTotal: grand.contract
@@ -1260,7 +1262,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   /* ---- header stats ---- */
   const totalVar = variance(grand.boqQuoted, grand.contractBase)
   const dash = !hasItems
-  const isVerified = vendor.VerifiedNonVerified === 'Verified'
   const showApprovalActions = canApprove && !!vendor.IsFinalized
 
   /* ---- cell renderers ---- */
@@ -1425,32 +1426,39 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
       <div
         className="flex cursor-pointer flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3"
       >
-        <div className="flex min-w-[200px] items-start gap-3" onClick={(e) => e.stopPropagation()}>
-          <input
-            type="checkbox"
-            checked={isChecked}
-            disabled={checkDisabled}
-            onChange={(e) => handleChecked(e.target.checked)}
-            aria-label={`Select ${vendor.VendorName ?? 'vendor'}`}
-            className="mt-1 h-4 w-4 cursor-pointer rounded border-gray-300 accent-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
-          />
-          <div className="min-w-0">
+        <div className="flex w-[280px] shrink-0 items-start gap-3" onClick={(e) => e.stopPropagation()}>
+          {/* Custom box: a native checkbox turns grey when disabled, but the finalized vendor's tick must stay blue */}
+          <span className="relative mt-1 inline-flex h-4 w-4 shrink-0">
+            <input
+              type="checkbox"
+              checked={isChecked}
+              disabled={checkDisabled}
+              onChange={(e) => handleChecked(e.target.checked)}
+              aria-label={`Select ${vendor.VendorName ?? 'vendor'}`}
+              className={`h-4 w-4 appearance-none rounded border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-400
+                ${isChecked ? 'border-blue-600 bg-blue-600' : 'border-gray-300 bg-white'}
+                ${checkDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
+                ${checkDisabled && !isChecked ? 'opacity-50' : ''}`}
+            />
+            {isChecked && (
+              <Check className="pointer-events-none absolute inset-0 h-4 w-4 p-0.5 text-white" strokeWidth={3} />
+            )}
+          </span>
+          <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5">
-              <span className="truncate text-base font-medium text-gray-900">{vendor.VendorName || '—'}</span>
+              <span className="truncate text-base font-medium text-gray-900" title={vendor.VendorName}>{vendor.VendorName || '—'}</span>
             </div>
             <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
               {vendor.CompanyName && <span className="truncate text-xs text-gray-600">{vendor.CompanyName}</span>}
-              {status && (
-                <span className={`rounded border px-1.5 text-[10px] font-medium leading-4 ${STATUS_STYLE[status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}>
-                  {status}
-                </span>
-              )}
-              {isVerified && (
-                <span className="rounded border border-blue-200 bg-blue-50 px-1.5 text-[10px] font-medium leading-4 text-blue-700">
-                  Verified
-                </span>
-              )}
             </div>
+            <p className="mt-0.5 truncate text-xs text-gray-500" title={vendor.GSTNumber ?? undefined}>
+              GST: {vendor.GSTNumber?.trim() || '—'}
+            </p>
+            {status && (
+              <span className={`rounded border px-1.5 text-[10px] font-medium leading-4 ${STATUS_STYLE[status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}>
+                {status}
+              </span>
+            )}
           </div>
         </div>
 
@@ -1461,7 +1469,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
           { label: 'EST. Delivery', value: dash ? '—' : formatDays(savedDays.completion), cls: 'text-green-700' },
           ...(vendor.ValidTill ? [{ label: 'Valid Till', value: formatDate(vendor.ValidTill), cls: 'text-green-700' }] : [])
         ].map(stat => (
-          <div key={stat.label} className="min-w-[120px] border-l border-gray-100 pl-4">
+          <div key={stat.label} className="w-[150px] shrink-0 border-l border-gray-100 pl-4">
             <p className="text-xs text-gray-400">{stat.label}</p>
             {isTableLoading
               ? <div className="mt-1 h-4 w-20 animate-pulse rounded bg-gray-200" />

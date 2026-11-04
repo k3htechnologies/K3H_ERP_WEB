@@ -51,7 +51,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
   const [isFinalizeConfirmationOpen, setIsFinalizeConfirmationOpen] = useState(false);
 
   const { listState, updateListState } = useContractRequisitionListState();
-  const { ContractRequisitionId, Uniquekey, CompanyGSTNumber, IsBOQCreated} = listState;
+  const { ContractRequisitionId, Uniquekey, CompanyGSTNumber, IsBOQCreated, ContractRequisitionStatus } = listState;
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions("/contractRequisition");
@@ -357,85 +357,89 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
         />
       )}
 
-      <div className="flex justify-end gap-2">
-        <button
-          type="button"
-          onClick={() => setExpandableOpen(prev => !prev)}
-          className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-[#135BEC30] text-blue-600 transition-all duration-1000 ease-in-out hover:bg-[#135BEC50]"
-          aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}>
-          <span className={`inline-flex transition-transform duration-1000 ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"}`}>
-            <ArrowLeft className="h-5 w-5" />
-          </span>
-        </button>
-        <div
-          className={`flex gap-2 overflow-hidden transition-all duration-1000 ease-in-out ${isExpandableOpen
-            ? "max-w-[1000px] opacity-100 translate-x-0"
-            : "max-w-0 opacity-0 translate-x-4 pointer-events-none"
-            }`}>
-          {!isAnyFinalized && cangetCompare && contractRequisitionVendorSelectedList.length > 1 && (
-            <Button
+      {
+        (ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "CLOSED") ?
+          <div className="flex justify-end gap-2">
+            <button
               type="button"
-              size="sm"
-              style={{
-                color: '#135BEC',
-                backgroundColor: '#E8F0FF',
-                padding: '4px 8px',
-              }}
-              leftIcon={<Scale size={15} />}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                handleExportCompareVendorExcel();
-              }}
-            >
-              Compare
-            </Button>
-          )}
-          {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
-            <Button
-              type="button"
-              size="sm"
-              style={{
-                color: '#00A800',
-                backgroundColor: '#E8FBE8',
-                padding: '4px 8px',
-              }}
-              leftIcon={<CheckLine size={15} />}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                finalizeVendor();
-              }}
-            >
-              Finalize Vendor
-            </Button>
-          )}
-          {!isAnyFinalized && cangetQuotation && IsBOQCreated && (
-            <Button
-              size="sm"
-              style={{
-                color: '#d35400',
-                backgroundColor: '#FDE6D3',
-                padding: '4px 8px',
-              }}
-              leftIcon={<MessageSquareQuote size={15} />}
-              onClick={() => setQuotationAvailable(true)}
-            >
-              Get Quotation
-            </Button>
-          )}
-        </div>
+              onClick={() => setExpandableOpen(prev => !prev)}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-gray-200 bg-[#135BEC30] text-blue-600 transition-all duration-1000 ease-in-out hover:bg-[#135BEC50]"
+              aria-label={isExpandableOpen ? "Hide actions" : "Show actions"}>
+              <span className={`inline-flex transition-transform duration-1000 ease-in-out ${isExpandableOpen ? "rotate-180" : "rotate-0"}`}>
+                <ArrowLeft className="h-5 w-5" />
+              </span>
+            </button>
+            <div
+              className={`flex gap-2 overflow-hidden transition-all duration-1000 ease-in-out ${isExpandableOpen
+                ? "max-w-[1000px] opacity-100 translate-x-0"
+                : "max-w-0 opacity-0 translate-x-4 pointer-events-none"
+                }`}>
+              {!isAnyFinalized && cangetCompare && contractRequisitionVendorSelectedList.length > 1 && (
+                <Button
+                  type="button"
+                  size="sm"
+                  style={{
+                    color: '#135BEC',
+                    backgroundColor: '#E8F0FF',
+                    padding: '4px 8px',
+                  }}
+                  leftIcon={<Scale size={15} />}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleExportCompareVendorExcel();
+                  }}
+                >
+                  Compare
+                </Button>
+              )}
+              {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
+                <Button
+                  type="button"
+                  size="sm"
+                  style={{
+                    color: '#00A800',
+                    backgroundColor: '#E8FBE8',
+                    padding: '4px 8px',
+                  }}
+                  leftIcon={<CheckLine size={15} />}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    finalizeVendor();
+                  }}
+                >
+                  Finalize Vendor
+                </Button>
+              )}
+              {!isAnyFinalized && cangetQuotation && IsBOQCreated && (
+                <Button
+                  size="sm"
+                  style={{
+                    color: '#d35400',
+                    backgroundColor: '#FDE6D3',
+                    padding: '4px 8px',
+                  }}
+                  leftIcon={<MessageSquareQuote size={15} />}
+                  onClick={() => setQuotationAvailable(true)}
+                >
+                  Get Quotation
+                </Button>
+              )}
+            </div>
+          </div> : <></>
+      }
 
-        <ApprovalActionModal
-          title="Finalize Vendor"
-          isOpen={isApprovalActionModalOpen}
-          onClose={() => setIsApprovalActionModalOpen(false)}
-          actionType={approvalActionType}
-          titleText={finalizedVendor?.VendorName}
-          onSubmit={handleApprovalSubmit}
-          loading={isLoading}
-        />
-      </div>
+
+      <ApprovalActionModal
+        title="Finalize Vendor"
+        isOpen={isApprovalActionModalOpen}
+        onClose={() => setIsApprovalActionModalOpen(false)}
+        actionType={approvalActionType}
+        titleText={finalizedVendor?.VendorName}
+        onSubmit={handleApprovalSubmit}
+        loading={isLoading}
+      />
 
       {
         contractRequisitionVendorSelectedList.length === 0 ?
@@ -448,6 +452,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
             <QuotationCard
               key={vendor.VendorId}
               vendor={vendor}
+              defaultExpandedDepth={3}
               loadTerms={async (v) => {
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                   ContractRequisitionId: Number(ContractRequisitionId),

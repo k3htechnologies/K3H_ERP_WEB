@@ -30,7 +30,7 @@ import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeCol
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { CONTRACT_REQUISITION_STAGES_OPTIONS, CONTRACT_REQUISITION_STATUS_OPTIONS } from "@/core/constants";
+import { CONTRACT_REQUISITION_STAGES_OPTIONS, CONTRACT_REQUISITION_STATUS_OPTIONS, CONTRACT_REQUISITION_TYPES_OPTIONS } from "@/core/constants";
 import { DateInput } from "@/ui/components/forms/DateInput";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
@@ -78,6 +78,9 @@ export const ContractRequisition: React.FC = () => {
           FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
           ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
           SortBy: getSortByParam(sortInfo ?? null, ContractRequisitionColumns),
+          ContractType: filterParams.ContractType ?? filterParams.ContractType,
+          FinalVendor: filterParams.FinalVendor ?? filterParams.FinalVendor,
+          FinalVendorCompanyName: filterParams.FinalVendorCompanyName ?? filterParams.FinalVendorCompanyName
         };
 
         const response = await contractRequisitionService.apiCallPullContractRequisition(params);
@@ -155,7 +158,9 @@ export const ContractRequisition: React.FC = () => {
         VendorFinalizationApprovalStatus: row.VendorFinalizationApprovalStatus,
         VendorName: row.FinalVendor,
         CompanyGSTNumber: row.CompanyGSTNumber,
-        IsBOQCreated: row.IsBOQCreated
+        IsBOQCreated: row.IsBOQCreated,
+        IsWorkOrderAvailable: row.IsWorkOrderAvailable,
+        WorkOrderCreatedDate: row.WorkOrderCreatedDate
       });
       navigate("/contractRequisition/view");
     },
@@ -659,6 +664,15 @@ export const ContractRequisition: React.FC = () => {
           </div>
           <div>
             <SinglePageSelection
+              label="Contract Type"
+              placeholder="Select Contract Type"
+              value={tempFilters?.ContractType || ""}
+              options={CONTRACT_REQUISITION_TYPES_OPTIONS.map((stage) => ({ label: stage.name, value: stage.id }))}
+              onChange={(value) => handleFilterChange("ContractType", String(value))}
+            />
+          </div>
+          <div>
+            <SinglePageSelection
               label="Contract Requisition Stage"
               placeholder="Select Stage"
               value={tempFilters?.ContractRequisitionStage || ""}
@@ -673,6 +687,24 @@ export const ContractRequisition: React.FC = () => {
               value={tempFilters?.ContractRequisitionStatus || ""}
               options={CONTRACT_REQUISITION_STATUS_OPTIONS.map((status) => ({ label: status.name, value: status.id }))}
               onChange={(value) => handleFilterChange("ContractRequisitionStatus", String(value))}
+            />
+          </div>
+          <div>
+            <Input
+              label='Vendor Name'
+              type="text"
+              value={tempFilters.FinalVendor || ''}
+              onChange={e => handleFilterChange('FinalVendor', e.target.value)}
+              placeholder="Enter Vendor Name"
+            />
+          </div>
+          <div>
+            <Input
+              label='Vendor Company Name'
+              type="text"
+              value={tempFilters.FinalVendorCompanyName || ''}
+              onChange={e => handleFilterChange('FinalVendorCompanyName', e.target.value)}
+              placeholder="Enter Vendor Company Name"
             />
           </div>
           <div>

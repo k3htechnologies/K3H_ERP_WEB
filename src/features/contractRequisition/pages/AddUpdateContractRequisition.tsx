@@ -8,6 +8,8 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import type {
   AddUpdateContractLevelRequest,
   AddUpdateContractRequisitionRequest,
+  BudgetWithQuantityData,
+  FilterWithPaginationBudgetWithQuantityRequest,
   FilterWithPaginationContractRequisition,
   PullProjectLockAndKeyContractStatusRequest,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
@@ -34,8 +36,7 @@ import { fetchContractMasterDropdown } from "@/features/contractMaster/contractM
 import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 import type { FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
-import type { BudgetData } from "@/features/budget/models/BudgetModel";
-import { fetchProjectBudget, getBudgetL1Dropdown, getBudgetL2Dropdown } from "@/features/budget/budgetDropdown";
+import { getBudgetL1Dropdown, getBudgetL2Dropdown } from "@/features/budget/budgetDropdown";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const initialFormStateContractRequisition = (): AddUpdateContractRequisitionRequest => ({
@@ -71,7 +72,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
   const [levelFormData, setLevelFormData] = useState<AddUpdateContractLevelRequest>(() => initialFormStateLevelDetails());
   const [formData, setFormData] = useState<AddUpdateContractRequisitionRequest>(() => initialFormStateContractRequisition());
   const [levelDetailsList, setLevelDetailsList] = useState<AddUpdateContractLevelRequest[]>([]);
-  const [budgetData, setBudgetData] = useState<BudgetData[]>([]);
+  const [budgetData, setBudgetData] = useState<BudgetWithQuantityData[]>([]);
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const [dropdownLabels, setDropdownLabels] = useState<{
@@ -192,8 +193,35 @@ export const AddUpdateContractRequisition: React.FC = () => {
   };
 
   const loadProjectBudget = async () => {
-    const data = await fetchProjectBudget(Number(projectId), "APPROVED");
-    setBudgetData(data);
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: FilterWithPaginationBudgetWithQuantityRequest = {
+          PageNumber: 1,
+          PageSize: 1,
+          ProjectId: Number(projectId),
+          ApprovalStatus: "APPROVED"
+        }
+
+        const response = await contractRequisitionService.apiCallPullBudgetWithQuantity(params);
+        if (E.isRight(response)) {
+          const data = response.right.Data;
+          setBudgetData(data);
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Loading Budget Details'
+    );
   };
 
   const fetchContractDetails = async () => {
@@ -402,7 +430,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       return;
     }
     let canAdd = false;
-    if (formData.ContractType === "direct") {
+    if (formData.ContractType === "direct" || formData.ContractType === "lock and key") {
       canAdd = canAddDirectContract(levelFormData);
     } else {
       canAdd = canAddIndirectContract(levelFormData);
@@ -461,7 +489,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
 
   const handleSave = async () => {
 
-    if (levelDetailsList.length === 0) {
+    if (!isLockAndKeyContractCreating && levelDetailsList.length === 0) {
       addToast({ type: "error", title: "Please select at least one Contract Details" });
       return;
     }
@@ -521,6 +549,16 @@ export const AddUpdateContractRequisition: React.FC = () => {
     addToast({ type: "success", title: "Contract Details Removed" });
   };
 
+  const level2LabelMap = useMemo(() => {
+    const map = new Map<string, string>();
+    budgetData.forEach((b) => {
+      if (b.LevelType === "L2" && b.LevelId2 && b.Level2Name) {
+        map.set(String(b.LevelId2), b.Level2Name);
+      }
+    });
+    return map;
+  }, [budgetData]);
+
   const ContractLevelDetailsColumns = useMemo<TableColumn[]>(() => [
     {
       key: "ContractMasterName",
@@ -534,6 +572,27 @@ export const AddUpdateContractRequisition: React.FC = () => {
           tooltipThreshold={25}
         />
       ),
+    },
+    {
+      key: "SubLevelId",
+      label: "Work",
+      align: "left",
+      width: "30",
+      render: (value) => {
+        const labels = String(value ?? "")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+          .map((id) => level2LabelMap.get(id) ?? id);
+
+        return (
+          <TooltipText
+            text={labels.length ? labels.join(", ") : "-"}
+            maxWidth="250px"
+            tooltipThreshold={25}
+          />
+        );
+      },
     },
     {
       key: "ContractType",
@@ -613,7 +672,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       ]
       : []) as TableColumn[]),
   ], [
-    canAction, isLockAndKeyContractCreating, levelDetailsList, handleConfirmationDialogBoxOpen
+    canAction, isLockAndKeyContractCreating, levelDetailsList, handleConfirmationDialogBoxOpen, level2LabelMap
   ]);
 
   const BudgetDetailsColumns = useMemo<TableColumn[]>(() => [

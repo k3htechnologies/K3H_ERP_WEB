@@ -49,7 +49,7 @@ export const ContractInvoice: React.FC = () => {
   const { addToast } = useToast();
   const { pagination, setPagination } = usePagination(20);
   const { listState, updateListState } = useContractRequisitionListState();
-  const { ContractRequisitionId, Uniquekey } = listState;
+  const { ContractRequisitionId, Uniquekey, IsWorkOrderAvailable, ContractRequisitionStatus } = listState;
 
   useEffect(() => {
     if (!projectId) return;
@@ -231,7 +231,8 @@ export const ContractInvoice: React.FC = () => {
 
   const handleViewPayment = (row: ContractRequisitionInvoiceData) => {
     updateListState({
-      ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId
+      ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId,
+      InvoiceNumber: row.InvoiceNumber ? row.InvoiceNumber : ""
     });
     navigate(`/contractInvoicePayment/invoicePayment`);
   }
@@ -263,7 +264,6 @@ export const ContractInvoice: React.FC = () => {
         label: 'Invoice Document',
         width: '30',
         sortable: false,
-        fixed: 'left',
         align: 'left',
         render: (value: string, row: any) => {
           return (
@@ -283,7 +283,6 @@ export const ContractInvoice: React.FC = () => {
         label: 'Photographs Document',
         width: '30',
         sortable: false,
-        fixed: 'left',
         align: 'left',
         render: (value: string, row: any) => {
           return (
@@ -303,7 +302,6 @@ export const ContractInvoice: React.FC = () => {
         label: 'Completion Certificate Document',
         width: '30',
         sortable: false,
-        fixed: 'left',
         align: 'left',
         render: (value: string, row: any) => {
           return (
@@ -343,6 +341,14 @@ export const ContractInvoice: React.FC = () => {
         render: value => value || '0'
       },
       {
+        key: "InvoiceTDSPaidTillDate",
+        label: "Paid TDS Amount",
+        width: "14",
+        sortable: false,
+        align: "right",
+        render: value => value || '0'
+      },
+      {
         key: "PendingAmount",
         label: "Pending Amount",
         width: "14",
@@ -351,10 +357,26 @@ export const ContractInvoice: React.FC = () => {
         render: (_, row: ContractRequisitionInvoiceData) => {
           const invoice = Number(row.InvoiceAmount || 0);
           // const tds = Number(row. || 0)
-          const paid = Number(row.PaymentAmount || 0);
+          const paid = Number(row.InvoiceAmountPaidTillDate || 0) + Number(row.InvoiceTDSPaidTillDate || 0);
           const pending = invoice - paid;
 
           return pending >= 0 ? pending : 0;
+        }
+      },
+      {
+        key: 'Remarks',
+        label: 'Remarks',
+        width: '30',
+        sortable: false,
+        align: 'left',
+        render: (value: string) => {
+          return (
+            <TooltipText
+              text={value || '-'}
+              maxWidth="200px"
+              tooltipThreshold={25}
+            />
+          );
         }
       },
       {
@@ -387,7 +409,7 @@ export const ContractInvoice: React.FC = () => {
           const status = row.InvoiceStatus?.toUpperCase() || "";
           const isApproved = status.includes("APPROVED");
           const isLocked = !canAction || isApproved;
-          const isFullyPaid = row.InvoiceAmount === row.InvoiceAmountPaidTillDate;
+          const isFullyPaid = row.InvoiceAmount === row.InvoiceAmountPaidTillDate + row.InvoiceTDSPaidTillDate;
 
           return (
             <div className="flex items-center justify-center">
@@ -442,10 +464,9 @@ export const ContractInvoice: React.FC = () => {
                         >
                           Fully Paid
                         </Button>
-                        : <Button
+                        : (canMakePaymentAction &&  !["COMPLETED", "CLOSED"].includes(listState.ContractRequisitionStatus?.toUpperCase()) ? <Button
                           color="green"
                           size="sm"
-                          disabled={!canMakePaymentAction}
                           onClick={() => {
                             updateListState({
                               ContractRequisitionInvoiceId: row.ContractRequisitionInvoiceId ?? 0,
@@ -454,7 +475,7 @@ export const ContractInvoice: React.FC = () => {
                           }}
                         >
                           Make Payment
-                        </Button>
+                        </Button> : <></>)
                     }
 
                   </>
@@ -517,7 +538,9 @@ export const ContractInvoice: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
       <div className="flex justify-end gap-2">
         {
-          canAction && invoiceSummaryData?.TotalRequisitionAmount !== invoiceSummaryData?.PaidRequisitionAmount ?
+          canAction && invoiceSummaryData?.TotalRequisitionAmount !== invoiceSummaryData?.PaidRequisitionAmount && IsWorkOrderAvailable
+            && ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "CLOSED"
+            ?
             <Button
               color="blue"
               size="sm"

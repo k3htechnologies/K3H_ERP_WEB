@@ -62,7 +62,7 @@ const AddUpdateContractInvoice = () => {
   const navigate = useNavigate();
   const { canAction } = useMenuPermissions("Contract - Add Invoice");
   const { listState } = useContractRequisitionListState();
-  const { ContractRequisitionId } = listState;
+  const { ContractRequisitionId, WorkOrderCreatedDate } = listState;
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { ContractInvoiceId } = useParams<{ ContractInvoiceId?: string }>();
@@ -397,6 +397,7 @@ const AddUpdateContractInvoice = () => {
               <div>
                 <DatePickerInput
                   label="Invoice Date"
+                  minDate={formatDate_dd_mm_yyyy(WorkOrderCreatedDate ?? "")}
                   value={formatDate_dd_mm_yyyy(formData.InvoiceDate)}
                   onChange={(val) => handleFieldChange('InvoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                   required

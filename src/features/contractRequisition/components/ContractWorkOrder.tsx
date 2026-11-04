@@ -41,7 +41,11 @@ const InitialUploadFormState = (): AddUpdateContractRequisitionWorkOrderRequest 
   RemoveContractRequisitionWorkOrderURL: ''
 })
 
-export const ContractWorkOrder: React.FC = () => {
+interface ContractWorkOrderProps {
+  onUploadOrGenerateSuccess?: () => Promise<void>;
+}
+
+export const ContractWorkOrder: React.FC<ContractWorkOrderProps> = ({ onUploadOrGenerateSuccess }) => {
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [contractRequisitionWorkOrder, setContractRequisitionWorkOrder] = useState<ContractRequisitionWorkOrderData | null>(null);
@@ -236,6 +240,8 @@ export const ContractWorkOrder: React.FC = () => {
 
           loadWorkOrder();
 
+          await onUploadOrGenerateSuccess?.();
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -282,6 +288,8 @@ export const ContractWorkOrder: React.FC = () => {
           setIsConfirmationDialogBoxOpen(false);
 
           setDeleteGenerateWorkOrderData(null);
+
+          await onUploadOrGenerateSuccess?.();
 
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -387,7 +395,7 @@ export const ContractWorkOrder: React.FC = () => {
               </span>
             </div>
 
-            {isWorkOrderLoaded && canGenerateWorkOrder && !["COMPLETED", "CLOSED"].includes(listState.ContractRequisitionStatus?.toUpperCase()) && (
+            {isWorkOrderLoaded && canGenerateWorkOrder && !contractRequisitionWorkOrder.IsInvoiceCreated && !["COMPLETED", "CLOSED"].includes(listState.ContractRequisitionStatus?.toUpperCase()) && (
               <Button
                 color="red"
                 variant="solid"

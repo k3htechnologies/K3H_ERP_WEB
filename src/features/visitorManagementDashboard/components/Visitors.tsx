@@ -13,13 +13,12 @@ import { VISITOR_LIST_TITLE } from '@/features/visitorManagementDashboard/consta
 interface Props {
     visitorData: VisitorTable[];
     filterType: VisitorManagementDashboardFilterType;
-    canAction?: boolean;
     onLogin?: (row: VisitorTable) => void;
     onLogout: (row: VisitorTable) => void;
     onBell: (row: VisitorTable) => void;
 }
 
-export default function Visitors({ visitorData, filterType, canAction = true, onLogin, onLogout, onBell }: Props) {
+export default function Visitors({ visitorData, filterType, onLogin, onLogout, onBell }: Props) {
 
     const columns: TableColumn[] = [
         {
@@ -136,9 +135,9 @@ export default function Visitors({ visitorData, filterType, canAction = true, on
             fixed: 'right',
             align: 'center',
             render: (_value, row) => {
-                const isInDisabled = !canAction || !row?.IsApproval;
-                const isOutDisabled = !canAction || !row?.IsCheckOutEnabled;
-                const isBellDisabled = !canAction || !row?.IsNotificationEnabled;
+                const isInDisabled =  !row?.IsApproval;
+                const isOutDisabled = !row?.IsCheckOutEnabled;
+                const isBellDisabled = !row?.IsNotificationEnabled;
 
                 return (
                     <div className="flex items-center justify-center gap-2">

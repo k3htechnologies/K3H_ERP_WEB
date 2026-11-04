@@ -314,7 +314,6 @@ const VisitorManagementDashboard: React.FC = () => {
                     <Visitors
                         visitorData={visitorsList}
                         filterType={filterType}
-                        canAction={canAction}
                         onLogin={handleConfirmationDialogBoxOpenforLogin}
                         onLogout={handleConfirmationDialogBoxOpenforOut}
                         onBell={handleConfirmationDialogBoxOpenforBell}

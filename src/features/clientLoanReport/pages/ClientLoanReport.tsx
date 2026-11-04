@@ -40,6 +40,8 @@ export const ClientLoanReport: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         setFilters({});
+        setSearchTerm("");
+        setSortInfo(undefined);
         loadingClientLoanReport(1, {});
     }, [projectId]);
 

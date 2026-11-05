@@ -56,6 +56,7 @@ export const ViewPayTrack: React.FC = () => {
   const { canView: canCallLogsView } = useMenuPermissions('/payTrackCallLog');
 
   const bookingTabList: { id: string; label: string }[] = [
+    
     canOverviewView ? { id: 'BookingForm', label: 'Overview' } : null,
 
     Number(listState.totalUnitCost ?? 0) > 0 && canBankLoansView ? { id: 'BankLoans', label: 'Bank Loans' } : null,

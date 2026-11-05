@@ -105,7 +105,7 @@ export const MarketingContent: React.FC = () => {
             'Loading Marketing Content '
         )
     }, [pagination.pageSize, marketingContentFolderId, projectId, addToast])
-    
+
     useEffect(() => {
         if (!projectId || !marketingContentFolderId) return;
 
@@ -604,8 +604,16 @@ export const MarketingContent: React.FC = () => {
                                 onChange={setMarketingContentFiles}
                                 availableFilesURL={marketingContentURL ?? ""}
                                 error={errors.MarketingContentURL}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                                maxFiles={5}
+                                allowedTypes={["image/jpeg",
+                                    "image/png",
+                                    "image/jpg",
+                                    "application/pdf",
+                                    "application/vnd.ms-excel",
+                                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                    "text/csv",
+                                    "application/octet-stream",
+                                    "application/msword",
+                                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]}
                                 onRemoveExisting={(url) => {
                                     setRemoveMarketingContentUrls((prev) => [...prev, url])
                                 }}

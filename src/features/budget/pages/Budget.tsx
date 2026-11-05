@@ -210,7 +210,6 @@ export const Budget: React.FC = () => {
         );
     }, [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination, selectedWingId]);
 
-
     useEffect(() => {
         if (isAddUpdateModalOpen) {
             if (editBudgetData) {

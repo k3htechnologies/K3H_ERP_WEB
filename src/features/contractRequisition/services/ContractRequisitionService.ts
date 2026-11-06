@@ -4,7 +4,7 @@ import type { Failure } from "@/core/api/FailureResponse";
 import type {
   BudgetWithQuantityListResponse,
   CloseContractRequisitionRequest,
-  ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionOverviewResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationBudgetWithQuantityRequest, FilterWithPaginationContractRequisition, PullContractOverviewRequest, PullProjectLockAndKeyContractStatusRequest,
+  ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionOverviewResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationBudgetWithQuantityRequest, FilterWithPaginationContractRequisition, FilterWithPaginationIndirectContract, IndirectContractListResponse, PullContractOverviewRequest, PullProjectLockAndKeyContractStatusRequest,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
 import { ContractRequisitionDatasourceImpl } from "@/features/contractRequisition/datasources/ContractRequisitionDataSource";
 
@@ -27,6 +27,16 @@ export const contractRequisitionService = {
   ): Promise<E.Either<Failure, ContractRequisitionOverviewResponse>> => {
     try {
       return E.right(await ContractRequisitionDatasource.pullContractRequisitionOverview(params, options?.signal));
+    } catch (error: any) {
+      return E.left({ message: error.message, code: error.code });
+    }
+  },
+  apiCallPullIndirectContractRequisition: async (
+    params: FilterWithPaginationIndirectContract,
+    options?: { signal?: AbortSignal },
+  ): Promise<E.Either<Failure, IndirectContractListResponse>> => {
+    try {
+      return E.right(await ContractRequisitionDatasource.pullIndirectContractRequisition(params, options?.signal));
     } catch (error: any) {
       return E.left({ message: error.message, code: error.code });
     }
@@ -66,7 +76,7 @@ export const contractRequisitionService = {
       return E.left({ message: error.message, code: error.code });
     }
   },
-    apiCallPullBudgetWithQuantity: async (
+  apiCallPullBudgetWithQuantity: async (
     params: FilterWithPaginationBudgetWithQuantityRequest,
     options?: { signal?: AbortSignal },
   ): Promise<E.Either<Failure, BudgetWithQuantityListResponse>> => {

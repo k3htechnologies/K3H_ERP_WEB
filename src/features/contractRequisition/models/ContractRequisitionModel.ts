@@ -14,6 +14,19 @@ export interface IndirectContractDetails {
   Remark: string;
 }
 
+export interface IndirectContractData {
+  SpecificationMasterId: number;
+  UniqueKey: string;
+  CategoryName: string;
+  LevelType: string;
+  CreatedById: number;
+  CreatedBy: string;
+  CreatedDate: string;
+  ModifiedById: number;
+  ModifiedBy: string;
+  ModifiedDate: string | null;
+}
+
 export interface BudgetWithQuantityData {
   BudgetId: number | 0
   UniqueKey: string | null
@@ -181,6 +194,14 @@ export interface PullProjectLockAndKeyContractStatusRequest {
   ProjectId: number | 0;
 }
 
+export interface FilterWithPaginationIndirectContract {
+  PageSize: number;
+  PageNumber: number;
+  ProjectId?: number;
+  InventoryFlatFloorBasementPodiumWingId?: number;
+  SortBy?: string
+}
+
 export interface FilterWithPaginationBudgetWithQuantityRequest {
   PageSize: number;
   PageNumber: number;
@@ -254,6 +275,7 @@ export interface CloseContractRequisitionRequest {
   CloseCompletionRemark: string | null,
 }
 
+export type IndirectContractListResponse = ApiResponse<IndirectContractData[]>;
 export type BudgetWithQuantityListResponse = ApiResponse<BudgetWithQuantityData[]>;
 export type ContractRequisitionListResponse = ApiResponse<ContractRequisitionData[]>;
 export type ContractRequisitionSaveReponse = ApiResponse<ContractRequisitionData>;

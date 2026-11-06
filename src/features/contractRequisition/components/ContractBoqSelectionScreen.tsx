@@ -9,6 +9,7 @@ import useToast from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { contractRequisitionBoqService } from "@/features/contractRequisition/services/ContractRequisitionBoqService";
 import { useContractRequisitionListState } from "@/features/contractRequisition/context/ContractRequisitionListStateContext";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const budgetConfig = {
   idKey: "BudgetId",
@@ -37,6 +38,7 @@ export const ContractBOQSelectionScreen: React.FC<ContractBOQSelectionScreenProp
   const { ContractRequisitionId, IsLockAndKeyContract } = listState;
   const { addToast } = useToast();
   const { projectId } = useProject();
+  const { canView: canViewBOQ, canAction: canActionBOQ } = useMenuPermissions('Contract - BOQ');
 
   const loadDetailsdata = async () => {
     await runApiWithLoader(
@@ -137,7 +139,7 @@ export const ContractBOQSelectionScreen: React.FC<ContractBOQSelectionScreenProp
       {
         key: "Quantity",
         label: "Quantity",
-        render: (value, row: any) => (row.LevelId3 !== 0 && value ? value : "—"),
+        render: (value) => value || "—",
       }
     ],
     [IsLockAndKeyContract]
@@ -172,7 +174,7 @@ export const ContractBOQSelectionScreen: React.FC<ContractBOQSelectionScreenProp
       columns={IsLockAndKeyContract ? ContractRequisitionLockAndKeyBoqColumns : ContractRequisitionBoqColumns}
       selectable
       initialSelectedIds={initialSelectedIds}
-      disabled={isSelectionLocked}
+      disabled={isSelectionLocked || (canViewBOQ && !canActionBOQ)}
       onSave={handleSave}
     />
   );

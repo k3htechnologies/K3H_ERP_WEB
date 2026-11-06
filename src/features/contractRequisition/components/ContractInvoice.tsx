@@ -407,7 +407,7 @@ export const ContractInvoice: React.FC = () => {
         render: (_value, row) => {
 
           const status = row.InvoiceStatus?.toUpperCase() || "";
-          const isApproved = status.includes("APPROVED");
+          const isApproved = status === "APPROVED";
           const isLocked = !canAction || isApproved;
           const isFullyPaid = row.InvoiceAmount === row.InvoiceAmountPaidTillDate + row.InvoiceTDSPaidTillDate;
 
@@ -538,7 +538,7 @@ export const ContractInvoice: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
       <div className="flex justify-end gap-2">
         {
-          canAction && invoiceSummaryData?.TotalRequisitionAmount !== invoiceSummaryData?.PaidRequisitionAmount && IsWorkOrderAvailable
+          canAction && invoiceSummaryData?.TotalRequisitionAmount !== invoiceSummaryData?.TotalInvoiceAmount && IsWorkOrderAvailable
             && ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "CLOSED"
             ?
             <Button

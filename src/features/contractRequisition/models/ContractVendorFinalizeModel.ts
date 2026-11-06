@@ -43,12 +43,6 @@ export interface SelectedVendorData {
   CityName?: string;
   AvailableMaterialList?: string;
   AvailableContractList?: string;
-  CreatedById?: number;
-  CreatedBy?: string;
-  CreatedDate?: Date;
-  ModifiedById?: number;
-  ModifiedBy?: string;
-  ModifiedDate?: Date;
   IsApproval?: boolean;
   IsFinalized?: boolean;
   VendorFinalizationApproval?: string;
@@ -56,6 +50,15 @@ export interface SelectedVendorData {
   ContractTypeMasterData?: any[];
   MagicLinkURL?: string;
   ProjectName?: string;
+  Total?: number;
+  BudgetAmount?: number;
+  ExpectedCompletionInDays?: number;
+  CreatedById?: number;
+  CreatedBy?: string;
+  CreatedDate?: Date;
+  ModifiedById?: number;
+  ModifiedBy?: string;
+  ModifiedDate?: Date;
 }
 
 export interface ContractRequisitionQuotationDetailsTermsData {

@@ -51,13 +51,12 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
   const [isFinalizeConfirmationOpen, setIsFinalizeConfirmationOpen] = useState(false);
 
   const { listState, updateListState } = useContractRequisitionListState();
-  const { ContractRequisitionId, Uniquekey, CompanyGSTNumber, IsBOQCreated, ContractRequisitionStatus } = listState;
+  const { ContractRequisitionId, Uniquekey, CompanyGSTNumber, IsBOQCreated, ContractRequisitionStatus, ContractType } = listState;
   const { projectId } = useProject();
   const { addToast } = useToast();
-  const { canAction } = useMenuPermissions("/contractRequisition");
   const { canAction: cangetCompare } = useMenuPermissions('Contract - Get Compare');
   const { canAction: cangetQuotation } = useMenuPermissions('Contract - Get Quotation');
-  const { canAction: canfinalizeVendor } = useMenuPermissions('Contract - Finalized Vendor');
+  const { canAction: canFinalizeVendor, canView : canViewFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
 
   useEffect(() => {
     if (!projectId) return;
@@ -393,7 +392,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
                   Compare
                 </Button>
               )}
-              {!isAnyFinalized && canfinalizeVendor && checkedFinalVendor && (
+              {!isAnyFinalized && canFinalizeVendor && checkedFinalVendor && (
                 <Button
                   type="button"
                   size="sm"
@@ -452,6 +451,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
             <QuotationCard
               key={vendor.VendorId}
               vendor={vendor}
+              contractType={ContractType}
               defaultExpandedDepth={3}
               loadTerms={async (v) => {
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
@@ -468,12 +468,12 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
                 }
               }}
               checked={checkedFinalVendor === vendor.VendorId}
-              checkDisabled={isAnyFinalized || !canAction}
+              checkDisabled={isAnyFinalized || !canFinalizeVendor}
               onCheckedChange={(checked, vendor) => {
                 if (isAnyFinalized) return;
                 setCheckedFinalVendor(checked ? Number(vendor.VendorId) : null);
               }}
-              readOnly={!canAction || isAnyFinalized}
+              readOnly={(canViewFinalizedVendor && !canFinalizeVendor) || isAnyFinalized}
               onSave={async (patch) => {
                 if (!patch.hasQuotedItem) {
                   addToast({ type: "error", title: "Please add price at least one quotation item." })
@@ -481,7 +481,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
                 }
                 await handleSavequotation(vendor.VendorId ?? 0, patch);
               }}
-              canApprove={canfinalizeVendor}
+              canApprove={canFinalizeVendor}
               onApprove={() => handleApproveRejectVendor("approve")}
               onReject={() => handleApproveRejectVendor("reject")}
               onApprovalHistory={handleApprovalLog}

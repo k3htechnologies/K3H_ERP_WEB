@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import * as E from "fp-ts/Either";
 
@@ -32,12 +32,12 @@ import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpaginatio
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import { fetchContractMasterDropdown } from "@/features/contractMaster/contractMasterDropdown";
 import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 import type { FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import { getBudgetL1Dropdown, getBudgetL2Dropdown } from "@/features/budget/budgetDropdown";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { fetchIndirectContractDropdown } from "@/features/contractRequisition/indirectContractDropdown";
 
 const initialFormStateContractRequisition = (): AddUpdateContractRequisitionRequest => ({
   ContractRequisitionId: 0,
@@ -88,7 +88,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
   const isAddMode = contractId === 0;
   const { addToast, showError } = useToast();
   const { projectId } = useProject();
-  const { canAction } = useMenuPermissions("/contractRequisition");
+  const { canAction } = useMenuPermissions("Contract Requisition");
 
   const memoizedfetchSpecificationMasterDropdown = useMemo(
     () => async (_: number, __?: { value?: string }) => {
@@ -109,6 +109,11 @@ export const AddUpdateContractRequisition: React.FC = () => {
     fetchCallback: memoizedfetchSpecificationMasterDropdown,
     autoFetchOptions: true,
   });
+
+  const fetchIndirectContractCallback = useCallback((pageNumber: number) =>
+    fetchIndirectContractDropdown(pageNumber, projectId ?? 0),
+    [projectId]
+  );
 
   const StaticContractTypeTabList = [
     { id: "direct", label: "Direct" },
@@ -939,7 +944,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
               required
               title="Select Contract"
               size="lg"
-              dataFetchCallBack={fetchContractMasterDropdown}
+              dataFetchCallBack={fetchIndirectContractCallback}
               onSelected={(item) => {
                 if (item === null) {
                   handleLevelFieldChange("ContractMasterId", 0);

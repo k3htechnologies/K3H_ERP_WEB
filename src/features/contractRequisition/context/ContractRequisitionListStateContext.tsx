@@ -29,6 +29,7 @@ export type ContractRequisitionListState = {
   IsBOQCreated: boolean;
   IsWorkOrderAvailable: boolean;
   WorkOrderCreatedDate: string;
+  ContractType: string;
 };
 
 export type ContractRequisitionDetailItem = {};
@@ -68,7 +69,8 @@ const INITIAL_STATE: ContractRequisitionListState = {
   CompanyGSTNumber: "",
   IsBOQCreated: false,
   IsWorkOrderAvailable: false,
-  WorkOrderCreatedDate: ""
+  WorkOrderCreatedDate: "",
+  ContractType: ""
 };
 
 function getInitialState(currentProjectId: number | null): ContractRequisitionListState {

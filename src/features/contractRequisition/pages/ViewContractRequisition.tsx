@@ -45,17 +45,18 @@ export const ViewContractRequisition: React.FC = () => {
   const { ContractRequisitionId, SystemGeneratedCode, ContractRequisitionStatus, VendorName } = listState;
   const location = useLocation();
 
-  const { canAction: canContractRequisitionView } = useMenuPermissions('/contractRequisition');
-  const { canView: canFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
-  const { canView: canGenerateWorkOrder } = useMenuPermissions('Contract - Generate Work Order');
-  const { canView: canAddInvoice } = useMenuPermissions('Contract - Add Invoice');
+  const { canAction: canActionContractRequisition } = useMenuPermissions('Contract Requisition');
+  const { canView: canViewFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
+  const { canView: canViewWorkOrder } = useMenuPermissions('Contract - Generate Work Order');
+  const { canView: canViewInvoice } = useMenuPermissions('Contract - Add Invoice');
+  const { canView: canViewBOQ } = useMenuPermissions('Contract - BOQ');
 
   const ContractRequisitionTabList: { id: string; label: string }[] = [
     { id: "Overview", label: "Overview" },
-    contractRequisitionData?.ContractType !== "indirect" ? { id: "boq", label: "BOQ" } : null,
-    canFinalizedVendor ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
-    canGenerateWorkOrder ? { id: "Work Order", label: "Work Order" } : null,
-    canAddInvoice ? { id: "Invoice", label: "Invoice" } : null,
+    canViewBOQ ? { id: "boq", label: "BOQ" } : null,
+    canViewFinalizedVendor ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
+    canViewWorkOrder ? { id: "Work Order", label: "Work Order" } : null,
+    canViewInvoice ? { id: "Invoice", label: "Invoice" } : null,
   ].filter(Boolean) as { id: string; label: string }[];
 
   const [activeTab, setActiveTab] = useState<string>(location.state?.activeTab || ContractRequisitionTabList?.[0]?.id || "");
@@ -91,7 +92,8 @@ export const ViewContractRequisition: React.FC = () => {
           CompanyGSTNumber: item.CompanyGSTNumber,
           IsBOQCreated: item.IsBOQCreated,
           IsWorkOrderAvailable: item.IsWorkOrderAvailable,
-          WorkOrderCreatedDate: item.WorkOrderCreatedDate
+          WorkOrderCreatedDate: item.WorkOrderCreatedDate,
+          ContractType: item.ContractType
         })
       } else {
         addToast({ type: "error", title: response.left.message });
@@ -204,28 +206,29 @@ export const ViewContractRequisition: React.FC = () => {
       </Loader>
 
       <div className="flex justify-between">
-        <HeaderActionBar
-          subTitleText={SystemGeneratedCode ?? "-"}
-          subSubTitleText={ContractRequisitionStatus ?? ""}
-          subSubSubTitleText={VendorName ?? ""}
-          cancelText="Cancel"
-          onCancel={() => {
-            navigate("/contractRequisition");
-          }}
-          EditText="Edit"
-          canAction={activeTab === "Overview" &&
-            canContractRequisitionView &&
-            !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
-            !["COMPLETED", "CLOSED"].includes(listState?.ContractRequisitionStage?.toUpperCase() ?? "") &&
-            ["GET QUOTATION"].includes(listState?.ContractRequisitionStage?.toUpperCase())}
-          onEdit={() => {
-            if (activeTab === "Overview") {
-              if (contractRequisitionData) handleContractRequisitionEdit(contractRequisitionData);
-            }
-          }}
-        />
-
-        <div className="flex justify-end gap-4">
+        <div className="flex-1">
+          <HeaderActionBar
+            subTitleText={SystemGeneratedCode ?? "-"}
+            subSubTitleText={ContractRequisitionStatus ?? ""}
+            subSubSubTitleText={VendorName ?? ""}
+            cancelText="Cancel"
+            onCancel={() => {
+              navigate("/contractRequisition");
+            }}
+            EditText="Edit"
+            canAction={activeTab === "Overview" &&
+              canActionContractRequisition &&
+              !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
+              !["COMPLETED", "CLOSED"].includes(listState?.ContractRequisitionStage?.toUpperCase() ?? "") &&
+              ["GET QUOTATION"].includes(listState?.ContractRequisitionStage?.toUpperCase())}
+            onEdit={() => {
+              if (activeTab === "Overview") {
+                if (contractRequisitionData) handleContractRequisitionEdit(contractRequisitionData);
+              }
+            }}
+          />
+        </div>
+        <div className="flex justify-end gap-2 pl-2">
           {
             (contractRequisitionData?.IsVendorFinalizationApproved && !contractRequisitionData.IsWorkOrderAvailable) && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ?
               <Button
@@ -242,7 +245,7 @@ export const ViewContractRequisition: React.FC = () => {
                 Revoke Finalization
               </Button> : <></>
           }
-          {contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ? (
+          {canActionContractRequisition && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ? (
             <div className="flex justify-end pb-2 gap-2">
               <Button
                 size="sm"
@@ -275,13 +278,13 @@ export const ViewContractRequisition: React.FC = () => {
                 backgroundColor: '#E8F7E8'
               }}
               onClick={() => {
-                // setSelectedMaterialRequisitionItem({
-                //   MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
-                //   Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
-                //   ProjectId: Number(projectId),
-                //   Type: "Completed",
-                //   CloseCompletionRemark: ""
-                // });
+                setSelectedContractRequisitionItem({
+                  ContractRequisitionId: contractRequisitionData?.ContractRequisitionId ?? 0,
+                  UniqueKey: contractRequisitionData?.UniqueKey ?? "",
+                  ProjectId: Number(projectId),
+                  Type: "Completed",
+                  CloseCompletionRemark: ""
+                });
                 setIsCloseRequisitionDialogOpen(true);
               }}
             >

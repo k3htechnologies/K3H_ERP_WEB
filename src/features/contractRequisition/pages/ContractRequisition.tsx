@@ -56,7 +56,7 @@ export const ContractRequisition: React.FC = () => {
   const { searchTerm, filters, sortInfo } = listState;
   const [isShowCustomizeContractRequisitionColumnsModal, setIsShowCustomizeContractRequisitionColumnsModal] = useState(false);
   const navigate = useNavigate();
-  const { canAction, canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions("Contract Requisition");
   const { projectId } = useProject();
 
   const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
@@ -160,7 +160,8 @@ export const ContractRequisition: React.FC = () => {
         CompanyGSTNumber: row.CompanyGSTNumber,
         IsBOQCreated: row.IsBOQCreated,
         IsWorkOrderAvailable: row.IsWorkOrderAvailable,
-        WorkOrderCreatedDate: row.WorkOrderCreatedDate
+        WorkOrderCreatedDate: row.WorkOrderCreatedDate,
+        ContractType: row.ContractType,
       });
       navigate("/contractRequisition/view");
     },
@@ -311,7 +312,7 @@ export const ContractRequisition: React.FC = () => {
   const getContractRequisitionStatusColor = (status: string = "") => {
     const map: Record<string, { bg: string; text: string }> = {
       "Completed": { bg: "#51E5514A", text: "#48C848" },
-      "CLOSED": { bg: "#FF003726", text: "#FF0037" },
+      "Closed": { bg: "#FF003726", text: "#FF0037" },
       "Ongoing": { bg: "#DBEAFE", text: "#2563EB" },
     };
     return map[status] ?? { bg: "#F3F4F6", text: "#111827" };

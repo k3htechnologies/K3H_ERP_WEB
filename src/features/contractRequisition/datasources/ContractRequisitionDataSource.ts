@@ -2,13 +2,14 @@ import baseClient from "@/core/config/baseClient";
 import type {
   BudgetWithQuantityListResponse,
   CloseContractRequisitionRequest,
-  ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionOverviewResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationBudgetWithQuantityRequest, FilterWithPaginationContractRequisition, PullContractOverviewRequest, PullProjectLockAndKeyContractStatusRequest,
+  ContractRequisitionDeleteResponse, ContractRequisitionListResponse, ContractRequisitionLockAndKeyStatusResponse, ContractRequisitionOverviewResponse, ContractRequisitionSaveReponse, DeleteContractRequisitionRequest, FilterWithPaginationBudgetWithQuantityRequest, FilterWithPaginationContractRequisition, FilterWithPaginationIndirectContract, IndirectContractListResponse, PullContractOverviewRequest, PullProjectLockAndKeyContractStatusRequest,
 } from "@/features/contractRequisition/models/ContractRequisitionModel";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import { ContractRequisitionApi } from "@/features/contractRequisition/api/ContractRequisitionApi";
 
 export abstract class ContractRequisitionDatasource {
   abstract pullContractRequisition(params: FilterWithPaginationContractRequisition, signal?: AbortSignal): Promise<ContractRequisitionListResponse>;
+  abstract pullIndirectContractRequisition(params: FilterWithPaginationIndirectContract): Promise<IndirectContractListResponse>;
   abstract pullContractRequisitionOverview(params: PullContractOverviewRequest, signal?: AbortSignal): Promise<ContractRequisitionOverviewResponse>;
   abstract addUpdateContractRequisition(data: FormData): Promise<ContractRequisitionSaveReponse>;
   abstract deleteContractRequisition(params: DeleteContractRequisitionRequest): Promise<ContractRequisitionDeleteResponse>;
@@ -31,7 +32,6 @@ export class ContractRequisitionDatasourceImpl implements ContractRequisitionDat
         PageNumber: (params.PageNumber ?? 1).toString(),
         ProjectId: (params.ProjectId ?? 0).toString(),
       });
-      console.log(params)
       if (params.ContractRequisitionId) queryParams.append("ContractRequisitionId", params.ContractRequisitionId.toString());
       if (params.SystemGeneratedCode?.trim()) queryParams.append("SystemGeneratedCode", params.SystemGeneratedCode.trim());
       if (params.FromDate) queryParams.append("FromDate", params.FromDate);
@@ -50,10 +50,37 @@ export class ContractRequisitionDatasourceImpl implements ContractRequisitionDat
 
       return response;
     } catch (error: any) {
-      console.error("ERROR: PULL Contract REQUISITION :", error);
+      console.error("ERROR: PULL CONTRACT REQUISITION :", error);
 
       if (error instanceof TokenExpiredException) {
         return await this.pullContractRequisition(params);
+      }
+
+      throw error;
+    }
+  }
+
+  async pullIndirectContractRequisition(
+    params: FilterWithPaginationIndirectContract,
+    signal?: AbortSignal,
+  ): Promise<IndirectContractListResponse> {
+    try {
+      const queryParams = new URLSearchParams({
+        PageSize: (params.PageSize ?? 10).toString(),
+        PageNumber: (params.PageNumber ?? 1).toString(),
+        ProjectId: (params.ProjectId ?? 0).toString(),
+      });
+
+      const response = await this.k3hHttpClient.getRequestWithAuthentication(`${ContractRequisitionApi.PULL_INDIRECT_CONTRACT}?${queryParams.toString()}`, {
+        signal,
+      });
+
+      return response;
+    } catch (error: any) {
+      console.error("ERROR: PULL INDIRECT CONTRACT REQUISITION:", error);
+
+      if (error instanceof TokenExpiredException) {
+        return await this.pullIndirectContractRequisition(params);
       }
 
       throw error;

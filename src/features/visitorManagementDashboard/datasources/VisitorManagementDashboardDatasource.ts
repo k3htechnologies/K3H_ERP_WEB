@@ -19,6 +19,9 @@ export class VisitorManagementDashboardDatasourceImpl implements VisitorManageme
                 Type: params.Type,
             });
 
+            if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
+            if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
+
             return await this.k3hHttpClient.getRequestWithAuthentication(`${VisitorManagementDashboardApi.PULL}?${queryParams.toString()}`, { signal })
 
         } catch (error) {

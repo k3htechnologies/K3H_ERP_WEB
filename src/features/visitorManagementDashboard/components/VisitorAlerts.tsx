@@ -1,9 +1,9 @@
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
-import { getAlertColor } from '@/features/visitorManagementDashboard/utils/Status';
-import type { VisitorAlertData } from '@/features/visitorManagementDashboard/models/VisitorManagementDashboardModel';
+import { getAlertColor } from '@/features/visitorManagementDashboard/utils/visitorManagementDashboardUtils'; 
+import type { AlertTable } from '@/features/visitorManagementDashboard/models/VisitorManagementDashboardModel';
 
 interface Props {
-    visitorAlertData: VisitorAlertData[];
+    visitorAlertData: AlertTable[];
 }
 
 export default function VisitorAlerts({ visitorAlertData }: Props) {
@@ -33,12 +33,12 @@ export default function VisitorAlerts({ visitorAlertData }: Props) {
                             >
                                 <span className="absolute left-0 top-0 h-full w-1.5 rounded-l-lg" style={{ backgroundColor: accent }} />
 
-                                <p className="text-sm font-semibold text-orange-800 break-words whitespace-normal">
+                                <p className="text-sm font-semibold break-words whitespace-normal" style={{ color: accent }}>
                                     {alert.AlertType || "-"}
                                 </p>
 
-                                <p className="text-xs text-orange-700 mt-1 break-words whitespace-normal">
-                                    {alert.Message || "-"}
+                                <p className="text-xs text-gray-600 mt-1 break-words whitespace-normal">
+                                    {alert.AlertMessage || "-"}
                                 </p>
                             </div>
                         );

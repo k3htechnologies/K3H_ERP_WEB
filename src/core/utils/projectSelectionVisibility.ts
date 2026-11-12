@@ -69,6 +69,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'visitorManagementDashboard'
         ,'costToCompany',
         ,'darAllocation'
+        ,'vendorManagementDashboard'
 
     ];
 

@@ -68,6 +68,7 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
     const { bookingId, bookingData, bookingApprovalStatus, parkingNumber: bookingParkingNumber } = listState;
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
+     const isFinalRegistrationCompleted = bookingData?.IsFinalRegistrationCompleted === false;
 
     const isParkingDetailsEmpty = !bookingParkingNumber || bookingParkingNumber === "-";
     const isParkingEmpty = !bookingParkingNumber || bookingParkingNumber === "-";
@@ -651,7 +652,7 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                                 Parking Details
                             </h4>
                             <div className="">
-                                {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !tableData.length && (
+                                {canAction && isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !tableData.length && (
                                     <div className="flex justify-end">
                                         <Button
                                             onClick={() => {

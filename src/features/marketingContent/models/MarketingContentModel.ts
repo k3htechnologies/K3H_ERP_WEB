@@ -8,7 +8,7 @@ export interface FilterWithPaginationMarketingContentRequest {
     Title?: string
     ProjectId?: number
     SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
+    ExportType?: 'Excel' | 'PDF' | 'ZIP'
 }
 
 export interface MarketingContentData {

@@ -64,6 +64,8 @@ export const Summary: React.FC = () => {
 
     const isRefundStatus = bookingData?.ApprovalStatus === 'Refund';
 
+    const isFinalRegistrationCompleted = bookingData?.IsFinalRegistrationCompleted === false;
+
     const { canAction } = useMenuPermissions('/modificationRequest');
 
     const [cancelBookingFormData, setCancelBookingFormData] = useState<CancelBookingRequest>(() => initialFormStateForCancelBooking(),);
@@ -366,7 +368,7 @@ export const Summary: React.FC = () => {
             {Number(listState.tenantId) === 0 && (
                 <div className="absolute top-5 right-2 z-10  gap-2">
 
-                    {canAction && bookingData && (!isBookingCancel && !isRefundStatus) && (
+                    {canAction && bookingData && isFinalRegistrationCompleted && (!isBookingCancel && !isRefundStatus) && (
                         <Button
                             onClick={() => {
                                 setIsCancelBookingReasonModalOpen(true);

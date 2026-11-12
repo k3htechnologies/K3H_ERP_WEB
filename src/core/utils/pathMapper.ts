@@ -33,6 +33,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/weekoffmappingmaster': '/weekOffMappingMaster',
         '/companymaster': '/companyMaster',
         '/vendor': '/vendor',
+        '/vendormanagementdashboard': '/vendorManagementDashboard',
         '/employeemaster': '/employeeMaster',
         '/profile': '/profile',
         '/tnc': '/tnc',
@@ -121,6 +122,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/brokerage': '/brokerage',
         '/collectionreport': '/collectionReport',
         '/dailycollectionreport': '/dailyCollectionReport',
+        '/clientloanreport': '/clientLoanReport',
 
         //MORE
         '/inwardoutward': '/inwardOutward',

@@ -36,7 +36,13 @@ export interface GatePassData {
     ModifiedById: number | 0
     ModifiedBy: string | ''
     ModifiedDate: string | null
-    IsDelete?:boolean
+    IsDelete?: boolean;
+    IsApproval?: boolean;
+    ApprovalStatus?: string;
+    ApprovalRemark?: string;
+    IsCheckOutEnabled?: boolean;
+    IsNoticationEnabled?: boolean;
+    IsNotificationEnabled?: boolean;
 }
 
 export interface AddUpdateGatePassRequest {
@@ -54,6 +60,15 @@ export interface AddUpdateGatePassRequest {
     RemovePhotoURL: string | '';
 }
 
+export interface UpdateGatePassApprovalRequest {
+    Uniquekey: string;
+    ApprovalStatus: string;
+    ExternalId: number; 
+    ApprovalRemark: string;
+}
+
+
+
 export interface UpdateGatePassOutRequest {
     ExternalId: number;
     Uniquekey: string;
@@ -68,4 +83,5 @@ export interface DeleteGatePassRequest {
 export type GatePassListResponse = ApiResponse<GatePassData[]>;
 export type GatePassSaveResponse = ApiResponse<GatePassData[]>;
 export type GatePassOutResponse = ApiResponse<GatePassData[]>;
+export type GatePassApprovalResponse = ApiResponse<GatePassData[]>;
 export type GatePassDeleteResponse = ApiResponse<number>;

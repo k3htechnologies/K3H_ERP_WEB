@@ -15,6 +15,7 @@ export interface MarketingContentFolderData {
     Uniquekey: string | null
     ProjectId: number | null
     MarketingContentFolderName: string | null
+    NumberOfMarketingContent: number | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

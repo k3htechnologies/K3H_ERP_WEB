@@ -1,3 +1,4 @@
+import GatePassApprovalModal from '@/features/gatePass/components/GatePassApprovalModal';
 import { Loader } from "@/core/utils/loader"
 import { useGatePass } from "../hooks/useGatePass";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
@@ -13,7 +14,7 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 export const GatePass: React.FC = () => {
     const {
-        // States
+
         isLoading,
         loadingMessage,
         searchTerm,
@@ -35,6 +36,7 @@ export const GatePass: React.FC = () => {
         isConfirmationDialogBoxOpen,
         isConfirmationDialogBoxOpenforOut,
         isConfirmationDialogBoxOpenforBell,
+        isConfirmationDialogBoxOpenforLogin,
         isViewModalOpen,
         viewGatePassDetailsData,
         showFilterPopup,
@@ -42,6 +44,7 @@ export const GatePass: React.FC = () => {
         requiredGatePassColumnKeys,
         selectedGatePassColumnKeys,
         isShowCustomizeGatePassColumnsModal,
+
         gatePassColumns,
         applyFilters,
         clearFilters,
@@ -51,7 +54,9 @@ export const GatePass: React.FC = () => {
         removedPhotoURLs,
         photoURL,
 
-        // Setters
+
+
+
         setSearchTerm,
         setIsAddUpdateModalOpen,
         setEditingGatePassData,
@@ -60,6 +65,7 @@ export const GatePass: React.FC = () => {
         setIsConfirmationDialogBoxOpen,
         setIsConfirmationDialogBoxOpenforOut,
         setIsConfirmationDialogBoxOpenforBell,
+        setIsConfirmationDialogBoxOpenforLogin,
         setDeleteGatePassDetailsData,
         setIsViewModalOpen,
         setViewGatePassDetailsData,
@@ -72,7 +78,8 @@ export const GatePass: React.FC = () => {
         setRemovedPhotoURLs,
         setPhotoURL,
 
-        // Actions
+
+        handleLoginGatePass,
         handleAddGatePassModal,
         handleFilterChange,
         handleExportGatePassExcel,
@@ -87,6 +94,7 @@ export const GatePass: React.FC = () => {
         handleConfirmationDialogBoxOpen,
         handleConfirmationDialogBoxOpenforOut,
         handleConfirmationDialogBoxOpenforBell,
+        handleConfirmationDialogBoxOpenforLogin,
 
         handleEditGatePass,
     } = useGatePass();
@@ -134,6 +142,11 @@ export const GatePass: React.FC = () => {
 
     }, [setIsConfirmationDialogBoxOpenforOut, setDeleteGatePassDetailsData]);
 
+    const handleDeleteDialogCloseforLogin = useCallback(() => {
+        setIsConfirmationDialogBoxOpenforLogin(false);
+        setDeleteGatePassDetailsData(null);
+    }, [setIsConfirmationDialogBoxOpenforLogin, setDeleteGatePassDetailsData]);
+
     const handleDeleteDialogCloseforBell = useCallback(() => {
 
         setIsConfirmationDialogBoxOpenforBell(false);
@@ -158,38 +171,39 @@ export const GatePass: React.FC = () => {
                 onClearSearch={clearSearchGatePass}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeGatePassColumnsModal(true)}
-                // FILTER
+
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => setShowFilterPopup(true)}
-                // ADD
+
                 isShowAddButton={canActionGatePass || canActionGatePassAdministrativeAccess}
                 addTitle="Add"
                 onAdd={handleAddGatePassModal}
-                // EXPORT
+
                 isShowExportButton={(canExportGatePass || canExportGatePassAdministrativeAccess) && gatePassListForTable.length > 0}
                 onExportExcel={handleExportGatePassExcel}
                 onExportPdf={handleExportGatePassPdf}
                 exportLoading={isLoading}
             />
 
-            <div className="mt-5">
-                <GatePassTable
-                    data={gatePassListForTable}
-                    columns={visibleGatePassColumns}
-                    pagination={gatePassPaginationInfo}
-                    sortInfo={sortInfo}
-                    onSort={handleSortColumn}
-                    onView={handleViewGatePassDetails}
-                    onEdit={handleEditGatePass}
-                    onDelete={handleConfirmationDialogBoxOpen}
-                    onLogout={handleConfirmationDialogBoxOpenforOut}
-                    onBell={handleConfirmationDialogBoxOpenforBell}
-                    lastUpdatedRow={lastUpdatedRow}
-                    canAction={canActionGatePass || canActionGatePassAdministrativeAccess}
-                    loading={isLoading}
-                />
-            </div>
+
+            <GatePassTable
+                data={gatePassListForTable}
+                columns={visibleGatePassColumns}
+                pagination={gatePassPaginationInfo}
+                sortInfo={sortInfo}
+                onSort={handleSortColumn}
+                onView={handleViewGatePassDetails}
+                onEdit={handleEditGatePass}
+                onDelete={handleConfirmationDialogBoxOpen}
+                onLogin={handleConfirmationDialogBoxOpenforLogin}
+                onLogout={handleConfirmationDialogBoxOpenforOut}
+                onBell={handleConfirmationDialogBoxOpenforBell}
+                lastUpdatedRow={lastUpdatedRow}
+                canAction={canActionGatePass || canActionGatePassAdministrativeAccess}
+                loading={isLoading}
+            />
+
 
             <GatePassViewModal
                 isOpen={isViewModalOpen}
@@ -270,6 +284,7 @@ export const GatePass: React.FC = () => {
                 title="You are about to mark this Gate Pass Out?"
                 message="Marking this Gate Pass Out will confirm that the visitor has exited. Do you want to continue?"
                 confirmText="Out"
+                variant="generate"
             />
 
             <DeleteDialog
@@ -278,9 +293,17 @@ export const GatePass: React.FC = () => {
                 onConfirm={() => handleOutGatePass('Bell')}
                 loading={isLoading}
                 pageName="Gate Pass Bell"
-                title="Notify Appointment person"
+                title="Notify Appointment Person"
                 message="The appointment contact will be notified that their visitor has arrived at reception"
                 confirmText="Notify"
+                variant="generate"
+            />
+
+            <GatePassApprovalModal
+                isOpen={isConfirmationDialogBoxOpenforLogin}
+                onClose={handleDeleteDialogCloseforLogin}
+                onSubmit={handleLoginGatePass}
+                loading={isLoading}
             />
         </div>
     )

@@ -67,6 +67,7 @@ export const FlatAlteration: React.FC = () => {
     const { listState } = usePayTrackBookingListState();
     const { bookingId, bookingData, bookingApprovalStatus } = listState;
     const isBookingCancelled = bookingData?.ApprovalStatus == "Cancel" || bookingData?.ApprovalStatus == "Refund";
+    const isFinalRegistrationCompleted = bookingData?.IsFinalRegistrationCompleted === false;
 
     const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
     const [RemoveProofOfDocumentUrls, setRemoveProofOfDocumentUrls] = useState<string[]>([]);
@@ -527,7 +528,7 @@ export const FlatAlteration: React.FC = () => {
                             Unit / Modulation / Customization Details
                         </h4>
 
-                        {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && !flatAlterationData && (
+                        {canAction && isFinalRegistrationCompleted && bookingApprovalStatus?.toUpperCase() === "APPROVED" && !flatAlterationData && (
                             <Button
                                 onClick={handleCreateRequestFlatSpecificationModal}
                                 color="blue"
@@ -540,25 +541,25 @@ export const FlatAlteration: React.FC = () => {
                             </Button>
                         )}
                     </div>
-                    
-                        <DataTableWithHeaderRowDivider
-                            columns={flatAlterationColumns}
-                            data={
-                                flatAlterationData
-                                    ? [flatAlterationData]
-                                    : bookingData?.FlatAlterationRemark
-                                        ? [
-                                            {
-                                                FlatAlterationRemark: bookingData?.FlatAlterationRemark,
-                                                ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
-                                                IsApproval: bookingData?.FlatAlterationRequestIsApproval,
-                                            },
-                                        ]
-                                        : []
-                            }
-                            fixedHeight={true}
-                        />
-                    
+
+                    <DataTableWithHeaderRowDivider
+                        columns={flatAlterationColumns}
+                        data={
+                            flatAlterationData
+                                ? [flatAlterationData]
+                                : bookingData?.FlatAlterationRemark
+                                    ? [
+                                        {
+                                            FlatAlterationRemark: bookingData?.FlatAlterationRemark,
+                                            ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
+                                            IsApproval: bookingData?.FlatAlterationRequestIsApproval,
+                                        },
+                                    ]
+                                    : []
+                        }
+                        fixedHeight={true}
+                    />
+
 
                 </section>
             </div>

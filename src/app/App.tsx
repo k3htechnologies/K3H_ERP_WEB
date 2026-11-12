@@ -271,6 +271,8 @@ import CrmCollectionSummaryView from '@/features/crmDashboard/pages/CrmCollectio
 import CompanyDocument from '@/features/companyMaster/pages/CompanyDocument';
 import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompanyMasterWithBank';
 import { DarAllocation } from '@/features/darAllocation/pages/DarAllocation';
+import ClientLoanReport from '@/features/clientLoanReport/pages/ClientLoanReport';
+import VendorManagementDashboard from '@/features/vendorManagementDashboard/pages/VendorManagementDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -338,8 +340,6 @@ function App() {
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
 
-
-
             <Route path="companyMaster" element={<CompanyListStateProvider><ViewCompanyMasterWithBank /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
@@ -371,6 +371,7 @@ function App() {
             <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
             <Route path="vendor/view" element={<VendorListStateProvider><ViewVendor /></VendorListStateProvider>} />
             <Route path="vendor/add/:vendorId?" element={<VendorListStateProvider><AddUpdateVendor /></VendorListStateProvider>} />
+            <Route path="vendorManagementDashboard" element={<VendorManagementDashboard />} />
 
             {/* SETTING -> COMPANY SETUP -> PAYROLL MASTER */}
             <Route path="branchMaster" element={<BranchMaster />} />
@@ -591,6 +592,7 @@ function App() {
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
+            <Route path="clientLoanReport" element={<ClientLoanReport />} />
 
 
             <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />

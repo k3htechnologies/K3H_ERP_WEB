@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
-import { Bell, LogOut, Trash2 } from 'lucide-react';
+import { Bell, LogIn, LogOut, Trash2 } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
 import type { GatePassData } from '@/features/gatePass/models/GatePassModel';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
@@ -18,6 +18,7 @@ interface GetPassTableProps {
     onView: (row: GatePassData) => void;
     onEdit: (row: GatePassData) => void;
     onDelete: (row: GatePassData) => void;
+    onLogin?: (row: GatePassData) => void;
     onLogout: (row: GatePassData) => void;
     onBell: (row: GatePassData) => void;
     canAction: boolean;
@@ -33,6 +34,7 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
     onSort,
     onView,
     onDelete,
+    onLogin,
     onLogout,
     onBell,
     canAction,
@@ -50,16 +52,10 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
 
                     render: (_value: any, row: GatePassData) => {
 
-
                         const isDeleteDisabled = !canAction || !row.IsDelete;
-
-                        const isOutDisabled = !!row.OutDateTime || row.IsDelete;
-
-                        const passTimeReached = row.PassDateTime
-                            ? new Date(row.PassDateTime) <= new Date()
-                            : false;
-
-                        const isBellDisabled = !canAction || !!row.OutDateTime || !passTimeReached;
+                        const isInDisabled = !row?.IsApproval;
+                        const isOutDisabled = !row?.IsCheckOutEnabled;
+                        const isBellDisabled = !(row?.IsNoticationEnabled ?? row?.IsNotificationEnabled);
 
                         return (
                             <div className="flex items-center justify-center gap-2">
@@ -89,7 +85,31 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
 
-                                {/* OUT / LOGOUT */}
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+
+                                        if (isInDisabled) return;
+
+                                        onLogin?.(row);
+                                    }}
+                                    color="transparent"
+                                    isborderRadius
+                                    disabled={isInDisabled}
+                                    size="sm"
+                                    style={{
+                                        color: isInDisabled ? "#9CA3AF" : "#16A34A", 
+                                        padding: "4px 8px",
+                                        cursor: isInDisabled
+                                            ? "not-allowed"
+                                            : "pointer",
+                                        opacity: isInDisabled ? 0.5 : 1,
+                                    }}
+                                >
+                                    <LogIn className="h-4 w-4" />
+                                </Button>
+
                                 <Button
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -115,7 +135,6 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
                                     <LogOut className="h-4 w-4" />
                                 </Button>
 
-                                {/* BELL */}
                                 <Button
                                     onClick={(e) => {
                                         e.preventDefault();
@@ -210,6 +229,49 @@ export const GatePassTable: React.FC<GetPassTableProps> = ({
                     render: (_value: any, row: GatePassData) => (
                         <span>{formatDate_dd_MonthName_yy_hh_mm(row.PassDateTime)}</span>
                     ),
+                };
+            }
+
+            if (col.key === 'ApprovalStatus') {
+                return {
+                    ...col,
+                    render: (value: any, row: GatePassData) => {
+                        const status = String(value || row?.ApprovalStatus || '').trim();
+                        const approvalRemark = row?.ApprovalRemark ? String(row.ApprovalRemark).trim() : '';
+
+                        if (!status) {
+                            return (
+                                <div className="flex items-center gap-1.5 whitespace-nowrap">
+                                    <span className="text-gray-400">-</span>
+                                    {approvalRemark && (
+                                        <FieldInfoTooltip value={approvalRemark} />
+                                    )}
+                                </div>
+                            );
+                        }
+
+                        const upper = status.toUpperCase();
+                        let badgeClass = 'bg-gray-100 text-gray-700';
+
+                        if (upper.includes('PENDING')) {
+                            badgeClass = 'bg-orange-100 text-orange-700';
+                        } else if (upper.includes('APPROV') || upper === 'ACCEPT') {
+                            badgeClass = 'bg-green-100 text-green-700';
+                        } else if (upper.includes('REJECT')) {
+                            badgeClass = 'bg-red-100 text-red-700';
+                        }
+
+                        return (
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
+                                <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${badgeClass}`}>
+                                    {status}
+                                </span>
+                                {approvalRemark && (
+                                    <FieldInfoTooltip value={approvalRemark} />
+                                )}
+                            </div>
+                        );
+                    },
                 };
             }
 

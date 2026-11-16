@@ -67,6 +67,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'erpRoadmap'
         , 'visitorManagementDashboard'
         , 'costToCompany'
+        ,'processSalary'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

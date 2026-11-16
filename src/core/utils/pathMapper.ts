@@ -165,6 +165,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/constructionarea': '/constructionArea',
 
         '/costToCompany': '/CostToCompany',
+        '/processSalary': '/ProcessSalary',
     }
 
 

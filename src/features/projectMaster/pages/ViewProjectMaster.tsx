@@ -26,8 +26,8 @@ import { formatCurrency } from '@/core/utils/comman';
 import { Button, Input } from '@/ui/components/forms';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { fetchPaginationProjectWithEmployeeDropdown } from '../projectWiseEmployeeDropdown';
 import Checkbox from '@/ui/components/forms/Checkbox';
+import usePagination from '@/core/hooks/usePagination';
 
 const initialFormState = (): AddUpdateModulesWorkflowApprovalRequest => ({
     EmployeeId: "",
@@ -47,7 +47,6 @@ export const ViewProjectMaster: React.FC = () => {
     const debouncedSearchForEmployeeName = useDebouncedCallback((value: string) => {
         searchEmployeeName(value)
     }, 350)
-
 
     const [companyMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
@@ -110,25 +109,74 @@ export const ViewProjectMaster: React.FC = () => {
 
     const [selectedEmployeeId, setSelectedEmployeeId] = useState<string[]>([]);
 
-    const [projectWithEmployeeListOptions, setProjectWithEmployeeListOptions] = useState<
-        { label: string; value: string }[]
-    >([]);
 
     const [isOpenAddProjectMasterWithEmployee, setIsOpenAddProjectMasterWithEmployee] = useState(false);
 
-    useEffect(() => {
-        if (!isOpenAddProjectMasterWithEmployee) return;
+    const [employeeForProject, setEmployeeForProject] = useState<EmployeeMasterData[]>([]);
+    const [isFetchingMoreEmployee, setIsFetchingMoreEmployee] = useState(false);
 
-        const loadProjectWithEmployeeList = async () => {
-            const response = await fetchPaginationProjectWithEmployeeDropdown(1, {
-                projectId: listState.projectId,
+    const { pagination: employeePagination, setPagination: setEmployeePagination } = usePagination(20);
+    const [originalSelectedEmployeeIds, setOriginalSelectedEmployeeIds] = useState<string[]>([]);
+
+    const loadEmployeesForApproval = async (page: number, searchValue = searchEmployeeNameTerm) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const search = searchValue.trim();
+
+                const response = await projectMasterService.apiCallPullPaginationProjectMasterWithEmployee(20, page, Number(projectId), search || undefined);
+
+                if (E.isRight(response)) {
+
+                    const employees = response.right.Data ?? [];
+
+                    setEmployeeForProject((prev) =>
+                        page === 1 ? employees : [...prev, ...employees]
+                    );
+
+                    setEmployeePagination({
+                        currentPage: page,
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / employeePagination.pageSize),
+                    });
+                } else {
+                    addToast({ type: "error", title: response.left.message, });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Employee'
+        );
+    };
+
+    const handleEmployeeListScroll = (e: React.UIEvent<HTMLDivElement>) => {
+        const element = e.currentTarget;
+
+        if (
+            element.scrollHeight - element.scrollTop <= element.clientHeight + 40 &&
+            employeePagination.currentPage < employeePagination.totalPages &&
+            !isFetchingMoreEmployee
+        ) {
+            const nextPage = employeePagination.currentPage + 1;
+            setIsFetchingMoreEmployee(true);
+
+            loadEmployeesForApproval(nextPage).finally(() => {
+                setIsFetchingMoreEmployee(false);
             });
-            setProjectWithEmployeeListOptions(response.itemList);
-        };
-        loadProjectWithEmployeeList();
-    }, [isOpenAddProjectMasterWithEmployee]);
+        }
+    };
 
     const handleAddEmployeeModal = (employeeId: string) => {
+
+        if (originalSelectedEmployeeIds.includes(employeeId)) {
+            return;
+        }
+
         setSelectedEmployeeId(prev => {
             const updated = prev.includes(employeeId)
                 ? prev.filter(id => id !== employeeId)
@@ -137,11 +185,11 @@ export const ViewProjectMaster: React.FC = () => {
             setFormData(f => ({
                 ...f,
                 ProjectId: listState.projectId,
-                EmployeeId: updated.join(','),
+                EmployeeId: updated.join(","),
             }));
 
             if (errors.EmployeeId) {
-                setErrors(e => ({ ...e, EmployeeId: '' }));
+                setErrors(e => ({ ...e, EmployeeId: "" }));
             }
             return updated;
         });
@@ -342,7 +390,6 @@ export const ViewProjectMaster: React.FC = () => {
         );
     };
 
-
     const handleBackToListProjectMaster = () => {
         navigate('/projectMaster');
     };
@@ -372,7 +419,6 @@ export const ViewProjectMaster: React.FC = () => {
         navigate('/projectMaster/approval');
     };
 
-
     useEffect(() => {
         if (activeTabForModulesWorkflowApproval.length > 0 && !activeModuleTab) {
             setActiveModuleTab(activeTabForModulesWorkflowApproval[0].id);
@@ -393,23 +439,50 @@ export const ViewProjectMaster: React.FC = () => {
 
     const handleAddUpdateEmployee = (item: ModulesWorkflowApprovalData) => {
         setDeleteModulesWorkflowApprovalData(null);
-        setSelectedEmployeeId([]);
+
+        const assignedEmployeeIds = (item.EmployeeData ?? []).map(
+            employee => String(employee.EmployeeId)
+        );
+
+        setOriginalSelectedEmployeeIds(assignedEmployeeIds);
+        setSelectedEmployeeId(assignedEmployeeIds);
+
         setFormData({
             ...initialFormState(),
             ProjectId: projectId,
+            EmployeeId: assignedEmployeeIds.join(","),
             ModulesMasterId: item.ModulesMasterId,
             SubModulesMasterId: item.SubModulesMasterId,
             SubSubModulesMasterId: item.SubSubModulesMasterId,
         });
-        setSearchEmployeeNameTerm('');
+
+        setSearchEmployeeNameTerm("");
         setErrors({});
+        setEmployeeForProject([]);
+        setEmployeePagination({
+            currentPage: 1,
+            pageSize: employeePagination.pageSize,
+            totalRecords: 0,
+            totalPages: 0,
+        });
+
         setIsOpenAddProjectMasterWithEmployee(true);
-    }
+        setIsFetchingMoreEmployee(true);
+
+        loadEmployeesForApproval(1, "").finally(() => {
+            setIsFetchingMoreEmployee(false);
+        });
+    };
 
     const PushModulesWorkflowApproval = (): AddUpdateModulesWorkflowApprovalRequest => {
+
+        const newEmployeeIds = selectedEmployeeId.filter(
+            id => !originalSelectedEmployeeIds.includes(id)
+        );
+
         return {
             ProjectId: formData.ProjectId,
-            EmployeeId: selectedEmployeeId.join(","),
+            EmployeeId: newEmployeeIds.join(","),
             ModulesMasterId: formData.ModulesMasterId,
             SubModulesMasterId: formData.SubModulesMasterId,
             SubSubModulesMasterId: formData.SubSubModulesMasterId,
@@ -418,15 +491,16 @@ export const ViewProjectMaster: React.FC = () => {
     };
 
     const handleAddUpdateModulesWorkflowApproval = async (e: React.FormEvent) => {
-
         e.preventDefault();
 
-        if (selectedEmployeeId.length === 0) {
+        const newEmployeeIds = selectedEmployeeId.filter(
+            id => !originalSelectedEmployeeIds.includes(id)
+        );
 
-            addToast({ type: "error", title: "At least one employee is required" });
-            return
+        if (newEmployeeIds.length === 0) {
+            addToast({ type: "error", title: "At least one employee is required", });
+            return;
         }
-
         await runApiWithLoader(
 
             setIsLoading,
@@ -602,9 +676,9 @@ export const ViewProjectMaster: React.FC = () => {
                                                 </span>
 
                                                 <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${editProjectData?.Category?.toLowerCase() === "tender"
-                                                        ? "bg-[#4346551F] text-[#434655]"
-                                                        : "bg-green-100 text-green-700"
-                                                        }`}
+                                                    ? "bg-[#4346551F] text-[#434655]"
+                                                    : "bg-green-100 text-green-700"
+                                                    }`}
                                                 >
                                                     {editProjectData?.Category || "-"}
                                                 </span>
@@ -1261,7 +1335,7 @@ export const ViewProjectMaster: React.FC = () => {
                                                                     </div>
 
                                                                     <div>
-                                                                       <h5 className="text-md font-semibold text-gray-900 break-words">
+                                                                        <h5 className="text-md font-semibold text-gray-900 break-words">
                                                                             {member.FullName || "-"}
                                                                         </h5>
 
@@ -1357,36 +1431,55 @@ export const ViewProjectMaster: React.FC = () => {
                 onSubmit={handleAddUpdateModulesWorkflowApproval}
                 saveText='Add'
                 loading={isLoading}
-                size="small-half"
+                size="large75"
             >
-                <div className=" space-y-4 ">
+                <div className="space-y-4">
                     <Input
                         type="text"
                         placeholder="Search By Employee Name or Department"
                         value={searchEmployeeNameTerm}
-                        onChange={e => {
-                            setSearchEmployeeNameTerm(e.target.value);
+                        onChange={(e) => {
+
+                            const value = e.target.value;
+
+                            setSearchEmployeeNameTerm(value);
+                            setEmployeeForProject([]);
+                            setEmployeePagination({
+                                currentPage: 1,
+                                pageSize: employeePagination.pageSize,
+                                totalRecords: 0,
+                                totalPages: 0,
+                            });
+
+                            setIsFetchingMoreEmployee(true);
+                            loadEmployeesForApproval(1, value).finally(() => {
+                                setIsFetchingMoreEmployee(false);
+                            });
                         }}
                         leftIcon={<Search className="h-8 w-8 pb-1 text-gray-400" />}
                         className="w-full p-12 border border-[#3333334f] rounded mb-1"
                     />
 
-                    <div className="overflow-x-auto thin-scroll">
+                    <div className="overflow-y-auto  thin-scroll" style={{ maxHeight: "55vh" }} onScroll={handleEmployeeListScroll}>
                         <div className="flex items-center justify-between px-6 py-2">
                             <button
                                 type="button"
                                 className="text-sm font-medium text-[#1D1D1D80]"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
+                                onClick={() => {
 
-                                    const filteredEmployees = projectWithEmployeeListOptions
-                                        .filter(employee =>
-                                            employee.label.toLowerCase().includes(searchEmployeeNameTerm.toLowerCase())
-                                        )
-                                        .map(employee => employee.value);
+                                    const ids = employeeForProject.map(employee =>
+                                        String(employee.EmployeeId)
+                                    );
 
-                                    setSelectedEmployeeId(filteredEmployees);
+                                    const updated = Array.from(
+                                        new Set([...originalSelectedEmployeeIds, ...ids])
+                                    );
+
+                                    setSelectedEmployeeId(updated);
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        EmployeeId: updated.join(","),
+                                    }));
                                 }}
                             >
                                 Select All
@@ -1395,46 +1488,53 @@ export const ViewProjectMaster: React.FC = () => {
                             <button
                                 type="button"
                                 className="text-sm font-medium text-[#1D1D1D80]"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setSelectedEmployeeId([]);
+                                onClick={() => {
+                                    setSelectedEmployeeId(originalSelectedEmployeeIds);
+
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        EmployeeId: originalSelectedEmployeeIds.join(","),
+                                    }));
                                 }}
                             >
                                 Clear All
                             </button>
                         </div>
-                        {projectWithEmployeeListOptions
-                            .filter(employee =>
-                                employee.label.toLowerCase().includes(searchEmployeeNameTerm.toLowerCase())
-                            ).length === 0 ? (
+
+                        {employeeForProject.map((employee, index) => {
+                            const id = String(employee.EmployeeId);
+
+                            return (
+                                <label key={employee.EmployeeId ?? index}
+                                    className="flex items-center justify-between gap-2 px-6 py-3 border-b border-blue-200 cursor-pointer last:border-b-0"
+                                >
+                                    <span className="text-sm text-gray-800">
+                                        {employee.FullName ?? "-"} - {employee.Department ?? "-"} - {employee.Designation ?? "-"}
+                                    </span>
+
+                                    <Checkbox
+                                        type="checkbox"
+                                        checked={selectedEmployeeId.includes(id)}
+                                        disabled={originalSelectedEmployeeIds.includes(id)}
+                                        onChange={() => handleAddEmployeeModal(id)}
+                                        className="w-4 h-4 cursor-pointer"
+                                    />
+                                </label>
+                            );
+                        })}
+
+                        {isFetchingMoreEmployee && (
+                            <p className="py-3 text-center text-sm text-gray-500">
+                                Loading employees...
+                            </p>
+                        )}
+
+                        {!isFetchingMoreEmployee && employeeForProject.length === 0 && (
                             <div className="flex items-center justify-center h-100 text-gray-500 text-sm">
                                 <NoDataView />
                             </div>
-
-                        ) : (
-                            projectWithEmployeeListOptions
-                                .filter(employee =>
-                                    employee.label.toLowerCase().includes(searchEmployeeNameTerm.toLowerCase())
-                                )
-                                .map(employee => {
-                                    const checked = selectedEmployeeId.includes(employee.value);
-                                    return (
-                                        <label
-                                            key={employee.value}
-                                            className="flex items-center justify-between gap-2 px-6 py-3 border-b border-blue-200 cursor-pointer last:border-b-0"
-                                        >
-                                            <span className="text-sm text-gray-800">{employee.label}</span>
-                                            <Checkbox
-                                                type="checkbox"
-                                                checked={checked}
-                                                onChange={() => handleAddEmployeeModal(employee.value)}
-                                                className="w-4 h-4 cursor-pointer"
-                                            />
-                                        </label>
-                                    );
-                                })
                         )}
+
                     </div>
                 </div>
             </Modal>

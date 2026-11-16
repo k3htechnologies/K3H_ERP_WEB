@@ -732,6 +732,12 @@ export const getPageInfo = (path: string) => {
         description: "Overview of your system and key metrics",
       };
 
+    case "processSalary":
+      return {
+        title: "Process Salary",
+        description: "Overview of your system and key metrics",
+      };
+
 
     default:
       return {

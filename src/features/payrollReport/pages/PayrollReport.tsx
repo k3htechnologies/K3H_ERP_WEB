@@ -25,6 +25,7 @@ import { Button } from "@/ui/components/forms/Button";
 import { Check, X } from "lucide-react";
 import ModuleApprovalStatus from "../components/moduleApprovalStatus";
 import useToast from "@/core/hooks/useToast";
+import AttendanceReport from "@/features/attendanceReport/pages/AttendanceReport";
 
 export const PayrollReport: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>(TAB_LIST[0].id);
@@ -37,6 +38,7 @@ export const PayrollReport: React.FC = () => {
   const [isSelectAll, setIsSelectAll] = useState(false);
   const [subActiveTab, setSubActiveTab] = useState<SubTabId>(SUBTAB_LIST[0].id);
   const { addToast } = useToast();
+  const [attendanceView, setAttendanceView] = useState<"Table" | "Grid">("Table");
 
   // ── All data / filter / export logic ──────────────────────────────────────
   const {
@@ -170,28 +172,47 @@ export const PayrollReport: React.FC = () => {
           onTabChange={(t) => setActiveTab(t.id as TabId)}
         />
 
-        <div className="mt-6 -mx-6 px-6">
-          <TableActionToolbar
-            isShowSearchBar
-            searchTerm={searchTerm}
-            searchPlaceholder="Search by Employee Name"
-            onSearchChange={(v) => {
-              setSearchTerm(v);
-              debouncedSearch(v);
-            }}
-            onClearSearch={clearSearch}
-            isShowFilterButton
-            filters={filters}
-            onOpenFilter={() => setShowFilterPopup(true)}
-            isShowExportButton
-            onExportPdf={() =>
-              handleExportPdf(() => getCurrentColumns(activeTab), sortInfo)
-            }
-            exportLoading={isLoading}
-            isShowAddButton={false}
-            isShowCustomizeButton={false}
-          />
-        </div>
+        {activeTab === "Attendance" && (
+          <div className="mt-3 -mx-6 px-6">
+            <Tabs
+              tabs={[
+                { id: "Table", label: "Table" },
+                { id: "Grid", label: "Grid" },
+              ]}
+              isChips={true}
+              defaultActive={attendanceView}
+              onTabChange={(t) =>
+                setAttendanceView(t.id as "Table" | "Grid")
+              }
+            />
+          </div>
+        )}
+
+        {!(activeTab === "Attendance" && attendanceView === "Grid") && (
+          <div className="mt-6 -mx-6 px-6">
+            <TableActionToolbar
+              isShowSearchBar
+              searchTerm={searchTerm}
+              searchPlaceholder="Search by Employee Name"
+              onSearchChange={(v) => {
+                setSearchTerm(v);
+                debouncedSearch(v);
+              }}
+              onClearSearch={clearSearch}
+              isShowFilterButton
+              filters={filters}
+              onOpenFilter={() => setShowFilterPopup(true)}
+              isShowExportButton
+              onExportPdf={() =>
+                handleExportPdf(() => getCurrentColumns(activeTab), sortInfo)
+              }
+              exportLoading={isLoading}
+              isShowAddButton={false}
+              isShowCustomizeButton={false}
+            />
+          </div>
+        )}
+
         {activeTab !== "Attendance" && (
           <div className="mt-3 -mx-6 px-6">
             <div className="flex items-center justify-between">
@@ -274,21 +295,18 @@ export const PayrollReport: React.FC = () => {
           </div>
         )}
 
-
-        <div className="mt-1 -mx-6 px-6">
-          {activeTab === "Attendance" ? (
+        {activeTab === "Attendance" && (
+          <div className={`mt-1 -mx-6 px-6 ${attendanceView === "Grid" ? "hidden" : ""}`}>
             <DataTableExpandable
               ref={attendanceTableRef}
               data={groupedAttendanceData}
               columns={attendanceColumns}
               pagination={paginationInfo}
-
               emptyMessage={EMPTY_MESSAGES[activeTab]}
               {...sharedTableProps}
               expandable={{
                 keyField: "EmployeeId",
                 alwaysFetchOnOpen: false,
-
                 renderRow: (_data: any, row: any) => (
                   <DataTableWithOutBorder
                     data={row._groupedItems || []}
@@ -300,45 +318,55 @@ export const PayrollReport: React.FC = () => {
                 ),
               }}
             />
-          ) : subActiveTab === "Approval" ? (
-            <DataTable
-              data={getApprovalData()}
-              columns={getCurrentColumns(activeTab)}
-              pagination={paginationInfo}
-              onRowSelect={(rows) => {
-                setSelectedApprovals(rows)
-                setIsSelectAll(false)
-              }}
-              selectedRowKeys={selectedApprovals.map(r => r[approvalRowKey])}
-              rowKey={approvalRowKey}
-              emptyMessage={EMPTY_MESSAGES[activeTab]}
-              {...sharedTableProps}
-            />
+          </div>
+        )}
 
-          ) : (
+        {activeTab === "Attendance" && attendanceView === "Grid" && (
+          <AttendanceReport />
+        )}
 
-            <DataTableExpandable
-              data={getCurrentData()}
-              columns={getCurrentColumns(activeTab)}
-              pagination={paginationInfo}
-              emptyMessage={EMPTY_MESSAGES[activeTab]}
-              {...sharedTableProps}
-              expandable={{
-                keyField: approvalRowKey,
-                alwaysFetchOnOpen: true,
-                renderRow: (_data: any, row: any) => (
-                  <ModuleApprovalStatus
+        {activeTab !== "Attendance" && (
+          <div className="mt-1 -mx-6 px-6">
+            {subActiveTab === "Approval" ? (
+              <DataTable
+                data={getApprovalData()}
+                columns={getCurrentColumns(activeTab)}
+                pagination={paginationInfo}
+                onRowSelect={(rows) => {
+                  setSelectedApprovals(rows);
+                  setIsSelectAll(false);
+                }}
+                selectedRowKeys={selectedApprovals.map(
+                  (r) => r[approvalRowKey]
+                )}
+                rowKey={approvalRowKey}
+                emptyMessage={EMPTY_MESSAGES[activeTab]}
+                {...sharedTableProps}
+              />
+            ) : (
+              <DataTableExpandable
+                data={getCurrentData()}
+                columns={getCurrentColumns(activeTab)}
+                pagination={paginationInfo}
+                emptyMessage={EMPTY_MESSAGES[activeTab]}
+                {...sharedTableProps}
+                expandable={{
+                  keyField: approvalRowKey,
+                  alwaysFetchOnOpen: true,
+                  renderRow: (_data: any, row: any) => (
+                    <ModuleApprovalStatus
+                      id={row[approvalRowKey]}
+                      moduleName={activeTab}
+                      requestId={row.CreatedById}
+                      remarks={row.remarks}
+                    />
+                  ),
+                }}
+              />
+            )}
+          </div>
+        )}
 
-                    id={row[approvalRowKey]}
-                    moduleName={activeTab}
-                    requestId={row.CreatedById}
-                    remarks={row.remarks}
-                  />
-                ),
-              }}
-            />
-          )}
-        </div>
         {/* FILTER MODAL */}
         <Modal
           isOpen={showFilterPopup}

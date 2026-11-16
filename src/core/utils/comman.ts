@@ -111,6 +111,17 @@ export const format24To12Hour = (hour: string, minute: string) => {
   const displayHour = h >= 13 ? h - 12 : h
   return `${displayHour.toString().padStart(2, "0")}:${minute} ${ampm}`
 }
+
+export const formatWorkingHours = (value?: string | null): string => {
+  if (!value) return "-";
+
+  const [hours, minutes] = value.split(":").map(Number);
+
+  if (Number.isNaN(hours) || Number.isNaN(minutes)) return "-";
+
+  return `${hours}h ${minutes}m`;
+};
+
 export const getMonthDateRange = (date: Date) => {
 
   const fromDate = new Date(date.getFullYear(), date.getMonth(), 1);
@@ -275,3 +286,19 @@ export const sendEmail = (email: string) => {
   }
 }
 
+export const formatMonthYear = (value: string | null): string => {
+  if (!value) return "";
+
+  const [month, year] = value.split("-");
+
+  const monthNumber = Number(month);
+
+  if (monthNumber < 1 || monthNumber > 12 || !year) return "";
+
+  const date = new Date(Number(year), monthNumber - 1);
+
+  return date.toLocaleString("en-US", {
+    month: "long",
+    year: "numeric"
+  });
+};

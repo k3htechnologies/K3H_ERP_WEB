@@ -425,19 +425,19 @@ export const formatDate_Day_MonthName = (dateString: string | Date): string => {
 
 export const convert_hh_mm_ss_to_hh_mm = (timeString?: string) => {
 
-    if (!timeString || timeString === "00:00:00") return "";
+  if (!timeString || timeString === "00:00:00") return "";
 
-    const [hours, minutes] = timeString.split(":");
+  const [hours, minutes] = timeString.split(":");
 
-    const hourNum = parseInt(hours, 10);
+  const hourNum = parseInt(hours, 10);
 
-    if (isNaN(hourNum)) return "";
+  if (isNaN(hourNum)) return "";
 
-    const period = hourNum >= 12 ? "PM" : "AM";
-    
-    const formattedHour = hourNum % 12 === 0 ? 12 : hourNum % 12;
+  const period = hourNum >= 12 ? "PM" : "AM";
 
-    return `${formattedHour}:${minutes} ${period}`;
+  const formattedHour = hourNum % 12 === 0 ? 12 : hourNum % 12;
+
+  return `${formattedHour}:${minutes} ${period}`;
 };
 
 /**

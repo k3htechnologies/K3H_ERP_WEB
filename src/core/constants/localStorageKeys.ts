@@ -176,7 +176,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TASK: 'task.listState',
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
-    COST_TO_COMPANY: 'costToCompany.listState'
-
+    COST_TO_COMPANY: 'costToCompany.listState',
+    PROCESS_SALARY: 'processSalary.listState'
 
 } as const

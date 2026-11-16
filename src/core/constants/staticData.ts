@@ -801,6 +801,8 @@ export const MASTER_DATA = {
     "Employment Agreement",
   ],
 
+  holdRelease: ['Hold', 'Release'],
+
 } as const;
 
 // ============================================================================
@@ -964,7 +966,7 @@ export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materia
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 export const EMPLOYEE_LETTER_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeLetterType);
-
+export const HOLD_RELEASE_TYPE_OPTIONS = toOptions(MASTER_DATA.holdRelease);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

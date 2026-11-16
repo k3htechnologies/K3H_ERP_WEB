@@ -281,9 +281,7 @@ export const CompanyMaster: React.FC = () => {
                             maxWidth="250px"
                             tooltipThreshold={30}
                             onClick={() => handleViewCompanyDetails(row)}
-
                         />
-
                     </div>
                 )
             },
@@ -429,7 +427,7 @@ export const CompanyMaster: React.FC = () => {
                 width: '12',
                 fixed: 'right',
                 align: 'center',
-                
+
                 render: (_value, row) => {
 
                     const canDelete = canAction && !row.NumberOfEmployee;
@@ -663,7 +661,7 @@ export const CompanyMaster: React.FC = () => {
 
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div>
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>

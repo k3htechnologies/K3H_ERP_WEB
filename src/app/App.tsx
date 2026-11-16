@@ -24,7 +24,6 @@ import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMapping
 import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMaster';
 import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
 import Vendor from '@/features/vendor/pages/Vendor';
-import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
 import TncMaster from '@/features/tnc/pages/TncMaster';
 import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
 import AddCompany from '@/features/companyMaster/pages/AddCompany';
@@ -255,6 +254,10 @@ import AddUpdateCostToCompany from '@/features/costToCompany/pages/AddUpdateCost
 import { CostToCompanyListStateProvider } from '@/features/costToCompany/context/CostToCompanyListStateContext';
 import ViewCostToCompany from '@/features/costToCompany/pages/ViewCostToCompany';
 import AttendanceReport from '@/features/attendanceReport/pages/AttendanceReport';
+import ProcessSalary from '@/features/processSalary/pages/ProcessSalary';
+import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompanyMasterWithBank';
+import { ProcessSalaryListStateProvider } from '@/features/processSalary/context/ProcessSalaryListStateContext';
+import ViewProcessSalaryDetails from '@/features/processSalary/pages/ViewProcessSalaryDetails';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -330,7 +333,7 @@ function App() {
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
             <Route path="employeeMaster/letter" element={<EmployeeListStateProvider><EmployeeLetter /></EmployeeListStateProvider>} />
 
-            <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster" element={<CompanyListStateProvider><ViewCompanyMasterWithBank /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
             <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
@@ -422,6 +425,9 @@ function App() {
             <Route path='costToCompany' element={<CostToCompanyListStateProvider><CostToCompany /></CostToCompanyListStateProvider>} />
             <Route path='costToCompany/add/:CostToCompanyId?' element={<CostToCompanyListStateProvider><AddUpdateCostToCompany /></CostToCompanyListStateProvider>} />
             <Route path='costToCompany/view' element={<CostToCompanyListStateProvider><ViewCostToCompany /></CostToCompanyListStateProvider>} />
+
+            <Route path='processSalary' element={<ProcessSalaryListStateProvider><ProcessSalary /></ProcessSalaryListStateProvider>} />
+            <Route path='processSalary/view' element={<ProcessSalaryListStateProvider><ViewProcessSalaryDetails /></ProcessSalaryListStateProvider>} />
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />

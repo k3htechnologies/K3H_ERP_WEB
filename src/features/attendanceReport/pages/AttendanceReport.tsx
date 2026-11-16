@@ -10,19 +10,17 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import * as E from 'fp-ts/Either';
 import { Loader } from "@/core/utils/loader";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { fetchDepartmentMasterDropdown } from "@/features/departmentMaster/departmentMasterDropdown";
-import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
-import { fetchCompanyMasterDropdown } from "@/features/companyMaster/companyMasterDropDown";
-import { MapLink, StatusBadge } from "@/features/payrollReport/components/columnComponents";
+import { MapLink } from "@/features/payrollReport/components/columnComponents";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { updateFilter } from "@/core/utils/filterHelper";
-import { getWeekToDateRange } from "@/core/utils/comman";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { getAttendanceStatusStyle } from "../utills/AttendanceStatusStyle";
+import { format24To12Hour, formatWorkingHours, getWeekToDateRange } from "@/core/utils/comman";
+import { Input } from "@/ui/components/forms";
 
 export const AttendanceReport: React.FC = () => {
 
@@ -39,6 +37,7 @@ export const AttendanceReport: React.FC = () => {
         const { fromDate, toDate } = getWeekToDateRange();
 
         const formatDate = (date: Date) => {
+
             const day = String(date.getDate()).padStart(2, "0");
             const month = String(date.getMonth() + 1).padStart(2, "0");
             const year = date.getFullYear();
@@ -67,7 +66,6 @@ export const AttendanceReport: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationAttendanceRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
@@ -92,20 +90,26 @@ export const AttendanceReport: React.FC = () => {
 
                 const employeeMap = new Map<number, typeof data>();
 
-                data.forEach(item => {
-                    const records = employeeMap.get(item.EmployeeId) ?? [];
-                    records.push(item);
-                    employeeMap.set(item.EmployeeId, records);
+                data.forEach((item) => {
+                    if (!employeeMap.has(item.EmployeeId)) {
+                        employeeMap.set(item.EmployeeId, []);
+                    }
+
+                    employeeMap.get(item.EmployeeId)!.push(item);
                 });
 
-                const formattedData = Array.from(employeeMap.values()).map(records => {
+                const formattedData = Array.from(employeeMap.values()).map((records) => {
+                    const firstRecord = records[0];
                     const row: any = {
-                        id: records[0].EmployeeId,
-                        EmployeeId: records[0].EmployeeId,
-                        FullName: records[0].FullName,
+                        id: firstRecord.EmployeeId,
+                        EmployeeId: firstRecord.EmployeeId,
+                        FullName: firstRecord.FullName,
+                        EmployeeCode: firstRecord.EmployeeCode,
+                        Department: firstRecord.Department,
+                        Designation: firstRecord.Designation
                     };
 
-                    records.forEach(item => {
+                    records.forEach((item) => {
                         const dateKey = item.AttendanceDate.split("T")[0];
                         row[dateKey] = item;
                     });
@@ -114,7 +118,6 @@ export const AttendanceReport: React.FC = () => {
                 });
 
                 setAttendanceReportList(formattedData);
-
                 setPagination({
                     currentPage: page,
                     totalRecords: response.right.TotalNumberOfRecord,
@@ -138,19 +141,12 @@ export const AttendanceReport: React.FC = () => {
         if (!start || !end || start > end) return [];
 
         const columns: TableColumn[] = [];
-        const current = new Date(`${start}T00:00:00`);
-        const lastDate = new Date(`${end}T00:00:00`);
+        const current = new Date(start);
+        const lastDate = new Date(end);
 
         while (current <= lastDate) {
-            const date = [
-                current.getFullYear(),
-                String(current.getMonth() + 1).padStart(2, "0"),
-                String(current.getDate()).padStart(2, "0"),
-            ].join("-");
-
-            const dayName = current.toLocaleDateString("en-US", {
-                weekday: "short",
-            });
+            const date = current.toISOString().split("T")[0];
+            const dayName = current.toLocaleDateString("en-US", { weekday: "long" });
 
             columns.push({
                 key: date,
@@ -170,17 +166,12 @@ export const AttendanceReport: React.FC = () => {
                     const status = hasStatus ? rawStatus : "-";
                     const normalizedStatus = rawStatus.toLowerCase();
                     const holiday = normalizedStatus === "holiday";
-                    const isWeeklyOff = normalizedStatus === "week off";
+                    const isWeeklyOff = normalizedStatus === "week off" || normalizedStatus === "week-off";
                     const isAbsent = normalizedStatus === "absent";
                     const isLateIn = normalizedStatus === "late in";
+                    const checkoutmissing = normalizedStatus === "checkout missing";
 
-                    const formatTime = (time?: string) => {
-                        if (!time) return "-";
-
-                        return String(time).includes("T")
-                            ? String(time).split("T")[1]?.slice(0, 5) || "-"
-                            : String(time).slice(0, 5) || "-";
-                    };
+                    const statusStyle = getAttendanceStatusStyle(rawStatus);
 
                     const renderLocation = (label: string, address?: string) => (
                         <div className="col-span-2 min-w-0">
@@ -188,36 +179,50 @@ export const AttendanceReport: React.FC = () => {
                                 {label}
                             </div>
 
-                            <div className="mt-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm text-[#1D1D1D] font-medium leading-5 line-clamp-2">
-                                <TooltipText maxWidth="150px"
+                            <div className="mt-1 min-w-0 break-words [overflow-wrap:anywhere] text-sm font-medium leading-5 text-[#1D1D1D] line-clamp-2">
+                                <TooltipText
+                                    maxWidth="150px"
                                     tooltipThreshold={20}
-                                    text={address || "-"} />
+                                    text={address || "-"}
+                                />
                             </div>
                         </div>
                     );
 
                     return (
-                        <div className="flex h-[320px] w-[240px] items-start justify-start">
-                            <div
-                                className={`box-border flex h-[320px] w-[240px] min-w-[240px] max-w-[240px] flex-col overflow-hidden rounded-2xl border border-gray-900 p-3 shadow-sm ${isWeeklyOff
-                                    ? "border-slate-200 bg-slate-50"
-                                    : "border-slate-200 bg-white"
-                                    }`}
-                            >
+                        <div className="flex h-[320px] w-[240px] items-start justify-start mt-2 mb-2">
+                            <div className={`box-border flex h-[320px] w-[240px] min-w-[240px] max-w-[240px] flex-col overflow-hidden rounded-2xl border border-slate-200 p-3 shadow-sm ${statusStyle.card}`}>
+
                                 <div className="mb-3 flex min-h-6 items-start">
-                                    {!hasStatus ? null : isWeeklyOff ? (
-                                        <span className="inline-flex rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-600">
-                                            Weekly Off
+                                    {!hasStatus ? null : (
+                                        <span className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${statusStyle.badge}`}>
+                                            {isWeeklyOff ? "Weekly Off" : status}
                                         </span>
-                                    ) : (
-                                        <StatusBadge value={status} />
                                     )}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-xs">
-                                    <FieldItem label="In Time" value={isWeeklyOff ? "-" : formatTime(attendance.PunchIn)} />
-                                    <FieldItem label="Out Time" value={isWeeklyOff ? "-" : formatTime(attendance.PunchOut)} />
-                                    <FieldItem label="Working Hrs" value={isWeeklyOff ? "-" : attendance.WorkingHours || "-"} />
+                                    <FieldItem
+                                        label="In Time"
+                                        value={isWeeklyOff ? "-"
+                                            : attendance.PunchIn
+                                                ? format24To12Hour(
+                                                    attendance.PunchIn.split("T")[1].split(":")[0],
+                                                    attendance.PunchIn.split("T")[1].split(":")[1]
+                                                ) : "-"
+                                        }
+                                    />
+                                    <FieldItem
+                                        label="Out Time"
+                                        value={isWeeklyOff ? "-"
+                                            : attendance.PunchOut
+                                                ? format24To12Hour(
+                                                    attendance.PunchOut.split("T")[1].split(":")[0],
+                                                    attendance.PunchOut.split("T")[1].split(":")[1]
+                                                ) : "-"
+                                        }
+                                    />
+                                    <FieldItem label="Working Hrs" value={isWeeklyOff ? "-" : formatWorkingHours(attendance.WorkingHours)} />
 
                                     <div>
                                         <div className="truncate text-sm font-medium text-[#1D1D1D80]">
@@ -229,9 +234,9 @@ export const AttendanceReport: React.FC = () => {
                                                 <span>-</span>
                                             ) : (
                                                 <span
-                                                    className={`inline-flex rounded-full px-2 py-0.5 ${isLateIn
-                                                        ? "bg-red-50 text-red-700 font-semibold border border-red-400"
-                                                        : "bg-emerald-50 text-emerald-700 font-semibold border border-emerald-400"
+                                                    className={`inline-flex rounded-full border px-2 py-0.5 font-semibold ${isLateIn
+                                                        ? "border-red-400 bg-red-50 text-red-500"
+                                                        : "border-emerald-400 bg-emerald-50 text-emerald-700"
                                                         }`}
                                                 >
                                                     {isLateIn ? "Yes" : "No"}
@@ -240,7 +245,7 @@ export const AttendanceReport: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="col-span-2 border-t border-gray-200 pt-3">
+                                    <div className="col-span-2 border-t border-[#F8FAFC] pt-3">
                                         {renderLocation("In Location",
                                             isWeeklyOff ? "-" : attendance.PunchInAddress
                                         )}
@@ -250,7 +255,7 @@ export const AttendanceReport: React.FC = () => {
                                         isWeeklyOff ? "-" : attendance.PunchOutAddress
                                     )}
 
-                                    {hasStatus && !isWeeklyOff && !isAbsent && !holiday && (
+                                    {hasStatus && !isWeeklyOff && !isAbsent && !holiday && !checkoutmissing && (
                                         <div className="col-span-2">
                                             <MapLink
                                                 value={attendance.Polyline}
@@ -282,8 +287,27 @@ export const AttendanceReport: React.FC = () => {
             sortable: false,
             fixed: "left",
             align: "left",
-            render: value => value || "-",
+            render: (_value, row) => {
+                return (
+                    <div className="flex flex-col">
+                        <span className="font-medium">
+                            {row.FullName || "-"}
+                        </span>
 
+                        <span className="text-sm text-gray-500">
+                            {row.EmployeeCode || "-"}
+                        </span>
+
+                        <span className="text-sm text-gray-500">
+                            {row.Department || "-"} - {row.Designation || "-"}
+                        </span>
+
+                        <span className="text-sm text-gray-500">
+                            {row.Company || "-"}
+                        </span>
+                    </div>
+                );
+            },
         },
         ...dateColumns,
     ], [dateColumns]);
@@ -330,8 +354,7 @@ export const AttendanceReport: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-        [pagination, handlePageChange]
-    )
+        [pagination, handlePageChange])
 
     const AttendanceReportDataForTable = useMemo(() => attendanceReportList, [attendanceReportList]);
 
@@ -367,7 +390,7 @@ export const AttendanceReport: React.FC = () => {
     const handleExportAttendanceReportPdf = () => handleExportAttendanceReport("PDF")
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div className="pt-6" >
             <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
             <TableActionToolbar
@@ -389,17 +412,15 @@ export const AttendanceReport: React.FC = () => {
                 onExportPdf={handleExportAttendanceReportPdf}
             />
 
-            <div className="[&_td:first-child]:!align-middle [&_td:not(:first-child)]:!align-top">
-                <DataTable
-                    data={AttendanceReportDataForTable}
-                    columns={AttendanceReportColumns}
-                    pagination={AttendanceReportDataPaginationInfo}
-                    emptyMessage="No Attendance Report Data Found"
-                    fixedHeight={true}
-                    recordsPerPage={20}
-                    className="flex-1"
-                />
-            </div>
+            <DataTable
+                data={AttendanceReportDataForTable}
+                columns={AttendanceReportColumns}
+                pagination={AttendanceReportDataPaginationInfo}
+                emptyMessage="No Attendance Report Data Found"
+                fixedHeight={true}
+                recordsPerPage={20}
+                className="flex-1"
+            />
 
             <Modal
                 isOpen={showFilterPopup}
@@ -434,32 +455,32 @@ export const AttendanceReport: React.FC = () => {
                     </div>
 
                     <div>
-                        <SingleSelectDropdownWithPagination
-                            label="Department"
-                            title="Select Department"
-                            size="lg"
-                            dataFetchCallBack={fetchDepartmentMasterDropdown}
-                            onSelected={item => handleFilterChange("DepartmentName", String(item))}
+                        <Input
+                            type="text"
+                            label="Department Name"
+                            value={tempFilters?.DepartmentName ?? ""}
+                            onChange={(e) => handleFilterChange("DepartmentName", e.target.value)}
+                            placeholder="Enter Department Name"
                         />
                     </div>
 
                     <div>
-                        <SingleSelectDropdownWithPagination
-                            label="Employee"
-                            title="Select Employees"
-                            size="lg"
-                            dataFetchCallBack={fetchEmployeeMasterDropdown}
-                            onSelected={item => handleFilterChange("EmployeeName", String(item))}
+                        <Input
+                            type="text"
+                            label="Employee Name"
+                            value={tempFilters?.EmployeeName ?? ""}
+                            onChange={(e) => handleFilterChange("EmployeeName", e.target.value)}
+                            placeholder="Enter Employee Name"
                         />
                     </div>
 
                     <div>
-                        <SingleSelectDropdownWithPagination
-                            label="Company"
-                            title="Select Company"
-                            size="lg"
-                            dataFetchCallBack={fetchCompanyMasterDropdown}
-                            onSelected={item => handleFilterChange("CompanyName", String(item))}
+                        <Input
+                            type="text"
+                            label="Company Name"
+                            value={tempFilters?.CompanyName ?? ""}
+                            onChange={(e) => handleFilterChange("CompanyName", e.target.value)}
+                            placeholder="Enter Company Name"
                         />
                     </div>
 

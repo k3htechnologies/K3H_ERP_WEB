@@ -35,6 +35,10 @@ export interface AttendanceData {
   Polyline?: string | null;
   Distance?: number | null;
   IsLate?: string | null
+  EmployeeCode?: string | null
+  Department?: string | null
+  Designation?: string | null
+  Company?: string | null
   CreatedById?: number | null;
   CreatedBy?: string | null;
   CreatedDate?: string | null;

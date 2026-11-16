@@ -1,3 +1,4 @@
+
 import type { EmployeeData } from "@/features/authentication/models/AuthenticationModel";
 import { LOCAL_STORAGE_FOR_STATE_KEYS, LOCAL_STORAGE_KEYS } from "../constants/localStorageKeys";
 import type { ModuleData } from "@/features/menu/models/MenuModel";
@@ -1892,6 +1893,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.AGENDA_TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MEETING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COST_TO_COMPANY);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROCESS_SALARY);
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);

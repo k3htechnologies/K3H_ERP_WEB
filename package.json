@@ -14,6 +14,7 @@
     "@react-google-maps/api": "^2.20.8",
     "@tiptap/react": "^3.10.7",
     "@tiptap/starter-kit": "^3.10.7",
+    "date-fns": "^4.1.0",
     "fp-ts": "^2.16.11",
     "hls.js": "^1.7.1",
     "lucide-react": "^0.552.0",

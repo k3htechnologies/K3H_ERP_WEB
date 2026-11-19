@@ -1,9 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
-import { getMaterialRequisitionTableColumns } from "@/features/materialRequisition/constants/MaterialRequisitionColumns";
-import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
-import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants/localStorageKeys";
+import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type MaterialRequisitionListState = {
     page: number;
@@ -11,84 +8,56 @@ export type MaterialRequisitionListState = {
     searchTerm: string;
     filters: FilterInfo;
     sortInfo: SortInfo | undefined;
-    projectId: number | null;
-    MaterialRequisitionId: number;
-    SystemGeneratedCode: string;
-    Uniquekey: string;
-    FromDate: string;
-    ToDate: string;
-    MaterialRequisitionStage: string;
-    MaterialRequisitionStatus: string;
-    VendorFinalizationApprovalStatus: string;
-    VendorName:string
-    CompanyGSTNumber: string;
+    projectId: number;
+    materialRequisitionId: number;
+    systemGeneratedCode: string;
+    uniquekey: string;
+    fromDate: string;
+    toDate: string;
+    companyGSTNumber: string;
+    materialRequisitionStatus: string;
+    approvalStatus: string;
+    departmentMasterId: number;
 };
 
-export type MaterialRequisitionDetailItem = {
-    MaterialRequisitionDetailId: number
-    Uniquekey: string
-    MaterialMasterId: number
-    MaterialCode: string
-    MaterialName: string
-    SubMaterialName: string
-    SubMaterialMasterId: number
-    MaterialQuantity: number
-    UomMasterId: number
-    UomCode: string
-    Uom: string
-    RequiredDate: string
-    MaterialReceivedQuantityTillDate: number
-    IsTolerant?: boolean
-}
-
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION;
-const REQUIRED_COLUMN_KEYS = ['SystemGeneratedCode', 'Actions'];
 
-function getInitialState(currentProjectId: number | null): MaterialRequisitionListState {
-    if (!currentProjectId) {
-        return {
-            page: 1,
-            pageSize: 20,
-            searchTerm: "",
-            filters: {},
-            sortInfo: undefined,
-            projectId: currentProjectId,
-            MaterialRequisitionId: 0,
-            SystemGeneratedCode: "",
-            Uniquekey: "",
-            FromDate: "",
-            ToDate: "",
-            MaterialRequisitionStage: "",
-            MaterialRequisitionStatus: "",
-            VendorFinalizationApprovalStatus: "",
-            VendorName:"",
-            CompanyGSTNumber:""
-        };
-    }
+// ================= INITIAL STATE =================
+
+const getInitialState = (): MaterialRequisitionListState => {
 
     try {
+
         const stored = localStorage.getItem(STORAGE_KEY);
+
         if (stored) {
-            const parsed = JSON.parse(stored) as { projectId: number; state: MaterialRequisitionListState; };
-            if (parsed.projectId === currentProjectId) {
-                return {
-                    ...parsed.state,
-                    projectId: currentProjectId,
-                    MaterialRequisitionId: parsed.state.MaterialRequisitionId || 0,
-                    SystemGeneratedCode: parsed.state.SystemGeneratedCode || "",
-                    Uniquekey: parsed.state.Uniquekey || "",
-                    FromDate: parsed.state.FromDate || "",
-                    ToDate: parsed.state.ToDate || "",
-                    MaterialRequisitionStage: parsed.state.MaterialRequisitionStage || "",
-                    MaterialRequisitionStatus: parsed.state.MaterialRequisitionStatus || "",
-                    VendorFinalizationApprovalStatus: parsed.state.VendorFinalizationApprovalStatus || "",
-                    VendorName:parsed.state.VendorName || "",
-                    CompanyGSTNumber:parsed.state.CompanyGSTNumber || "",
-                };
-            }
+
+            const parsed = JSON.parse(stored) as Partial<MaterialRequisitionListState>;
+
+            return {
+                page: parsed.page || 1,
+                pageSize: parsed.pageSize || 20,
+                searchTerm: parsed.searchTerm || "",
+                filters: parsed.filters || {},
+                sortInfo: parsed.sortInfo,
+
+                projectId: parsed.projectId ?? 0,
+
+                materialRequisitionId: parsed.materialRequisitionId || 0,
+                systemGeneratedCode: parsed.systemGeneratedCode || "",
+                uniquekey: parsed.uniquekey || "",
+                fromDate: parsed.fromDate || "",
+                toDate: parsed.toDate || "",
+                companyGSTNumber: parsed.companyGSTNumber || "",
+                materialRequisitionStatus: parsed.materialRequisitionStatus || "",
+                approvalStatus: parsed.approvalStatus || "",
+                departmentMasterId:parsed.departmentMasterId || 0,
+            };
         }
+
     } catch (error) {
-        console.error('Error loading Material Requisition list state:', error);
+
+        console.error("Error loading Material Requisition list state:", error);
     }
 
     return {
@@ -97,135 +66,130 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
         searchTerm: "",
         filters: {},
         sortInfo: undefined,
-        projectId: currentProjectId,
-        MaterialRequisitionId: 0,
-        SystemGeneratedCode: "",
-        Uniquekey: "",
-        FromDate: "",
-        ToDate: "",
-        MaterialRequisitionStage: "",
-        MaterialRequisitionStatus: "",
-        VendorFinalizationApprovalStatus: "",
-        VendorName:"",
-        CompanyGSTNumber:""
+        projectId: 0,
+        materialRequisitionId: 0,
+        systemGeneratedCode: "",
+        uniquekey: "",
+        fromDate: "",
+        toDate: "",
+        companyGSTNumber: "",
+        materialRequisitionStatus: "",
+        approvalStatus: "",
+        departmentMasterId:0,
     };
-}
+};
 
 type Ctx = {
     listState: MaterialRequisitionListState;
+
     updateListState: (newState: Partial<MaterialRequisitionListState>) => void;
+
     resetFilters: () => void;
+
+    resetToDefault: () => void;
+
     clearMaterialRequisitionContext: () => void;
-    selectedColumnKeys: string[];
-    setSelectedColumnKeys: (keys: string[]) => void;
-    detailData: MaterialRequisitionDetailItem[];
-    setDetailData: (data: MaterialRequisitionDetailItem[]) => void;
 };
+
 
 const MaterialRequisitionListStateContext = createContext<Ctx | null>(null);
 
 export const MaterialRequisitionListStateProvider = ({ children }: { children: ReactNode }) => {
-    const { projectId: currentProjectId } = useProject();
-    const [listState, setListState] = useState<MaterialRequisitionListState>(() => getInitialState(currentProjectId));
-    const [detailData, setDetailData] = useState<MaterialRequisitionDetailItem[]>([]);
-    const allColumns = useMemo<TableColumn[]>(
-        () => getMaterialRequisitionTableColumns(), []
+
+    const [listState, setListState] = useState<MaterialRequisitionListState>(() => getInitialState());
+
+    useEffect(() => {
+
+        try {
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(listState));
+
+        } catch (error) {
+
+            console.error("Error saving Material Requisition list state:", error);
+        }
+
+    }, [listState]);
+
+    const updateListState = useCallback((updates: Partial<MaterialRequisitionListState>) => {
+
+            setListState(prev => ({
+                ...prev,
+                ...updates
+            }));
+
+        },
+        []
     );
 
-    const [selectedColumnKeys, setSelectedColumnKeys] = useState<string[]>(() => {
-        try {
-            const stored = LocalStorageHelper.getMaterialRequisitionTableColumns();
-            if (stored) {
-                const parsed = JSON.parse(stored) as string[];
-                const withRequired = Array.from(new Set([...parsed, ...REQUIRED_COLUMN_KEYS]));
-                return withRequired.filter(k => allColumns.some(col => col.key === k));
-            }
-        } catch (error) {
-            console.error('Error loading selected columns:', error);
-        }
+    const resetFilters = useCallback(() => {
 
-        return Array.from(
-            new Set([
-                ...allColumns.map(col => col.key),
-                ...REQUIRED_COLUMN_KEYS
-            ])
-        );
-    });
+        setListState(prev => ({
+            ...prev,
+            filters: {},
+            searchTerm: "",
+            sortInfo: undefined,
+            page: 1
+        }));
 
-    useEffect(() => {
-        setListState(getInitialState(currentProjectId));
-    }, [currentProjectId]);
-
-    useEffect(() => {
-        if (listState.projectId === currentProjectId && currentProjectId) {
-            try {
-                const stateToStore = {
-                    projectId: currentProjectId,
-                    state: listState,
-                };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToStore));
-            } catch (error) {
-                console.error('Error saving Material Requisition list state:', error);
-            }
-        }
-    }, [listState, currentProjectId]);
-
-    const updateListState = useCallback((newState: Partial<MaterialRequisitionListState>) => {
-        setListState(prev => {
-            const updated = { ...prev, ...newState };
-            if (updated.projectId !== currentProjectId) {
-                updated.projectId = currentProjectId;
-            }
-            return updated;
-        });
-    }, [currentProjectId]);
-
-    const handleSetSelectedColumnKeys = useCallback((keys: string[]) => {
-
-        const withRequired = Array.from(new Set([...keys, ...REQUIRED_COLUMN_KEYS]));
-        setSelectedColumnKeys(withRequired);
-
-        try {
-            LocalStorageHelper.storeMaterialRequisitionTableColumns?.(JSON.stringify(withRequired));
-        } catch (error) {
-            console.error('Error saving selected columns:', error);
-        }
     }, []);
 
-    const resetFilters = useCallback(() => {
-        updateListState({
+    const resetToDefault = useCallback(() => {
+
+        const defaultState: MaterialRequisitionListState = {
             page: 1,
-            searchTerm: '',
+            pageSize: 20,
+            searchTerm: "",
             filters: {},
             sortInfo: undefined,
-            MaterialRequisitionId: 0,
-            SystemGeneratedCode: "",
-            Uniquekey: "",
-            FromDate: "",
-            ToDate: "",
-            MaterialRequisitionStage: "",
-            MaterialRequisitionStatus: "",
-            VendorFinalizationApprovalStatus: "",
-            VendorName:"",
-            CompanyGSTNumber:""
-            
-        });
-    }, [updateListState]);
+            projectId: 0,
+
+            materialRequisitionId: 0,
+            systemGeneratedCode: "",
+            uniquekey: "",
+            fromDate: "",
+            toDate: "",
+            companyGSTNumber: "",
+            materialRequisitionStatus: "",
+            approvalStatus: "",
+            departmentMasterId:0,
+        };
+
+        setListState(defaultState);
+
+    }, []);
 
     const clearMaterialRequisitionContext = useCallback(() => {
-        setListState(getInitialState(currentProjectId));
-    }, [currentProjectId]);
+
+        setListState(prev => ({
+            ...prev,
+            materialRequisitionId: 0,
+            systemGeneratedCode: "",
+            uniquekey: "",
+            fromDate: "",
+            toDate: "",
+            companyGSTNumber: "",
+            materialRequisitionStatus: "",
+            approvalStatus: "",
+            departmentMasterId:0,
+        }));
+
+    }, []);
+
 
     const contextValue = useMemo(() => ({
         listState,
         updateListState,
         resetFilters,
-        clearMaterialRequisitionContext,
-        selectedColumnKeys,
-        setSelectedColumnKeys: handleSetSelectedColumnKeys,
-        detailData,
-        setDetailData,
-    }), [listState, updateListState, resetFilters, clearMaterialRequisitionContext, selectedColumnKeys, handleSetSelectedColumnKeys, detailData, setDetailData]);
+        resetToDefault,
+        clearMaterialRequisitionContext
+    }), [
+        listState,
+        updateListState,
+        resetFilters,
+        resetToDefault,
+        clearMaterialRequisitionContext
+    ]);
 
     return (
         <MaterialRequisitionListStateContext.Provider value={contextValue}>
@@ -235,12 +199,14 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
 };
 
 export const useMaterialRequisitionListState = () => {
+
     const ctx = useContext(MaterialRequisitionListStateContext);
-    if (!ctx) throw new Error("use Material Requisition ListState must be used inside Material Requisition ListState Provider");
+
+    if (!ctx) {
+        throw new Error(
+            "use Material Requisition ListState must be used inside Material Requisition ListState Provider"
+        );
+    }
+
     return ctx;
 };
-
-export const getMaterialRequisitionRequiredColumnKeys = (): string[] => REQUIRED_COLUMN_KEYS;
-
-
-

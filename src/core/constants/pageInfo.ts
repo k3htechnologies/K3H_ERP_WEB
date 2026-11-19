@@ -224,7 +224,14 @@ export const getPageInfo = (path: string) => {
         title: "Cost To Company",
         description: "Overview of your system and key metrics",
       };
+      
+      case "processSalary":
+      return {
+        title: "Process Salary",
+        description: "Manage and process employee salaries efficiently",
+      };
 
+      
     //DOCUMENT MANAGEMENT
     case "category":
       return {

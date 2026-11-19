@@ -101,13 +101,11 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
         try {
             const queryParams = new URLSearchParams({
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
+                VendorId: (params.VendorId ?? 0).toString(),
             })
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${MaterialRequisitionInvoiceApi.PULL_INVOICE_SUMMARY}?${queryParams.toString()}`, { signal }
-            )
-            return response;
-
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionInvoiceApi.PULL_INVOICE_SUMMARY}?${queryParams.toString()}`, { signal }  )
+            
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION INVOICE SUMMARY :', error);

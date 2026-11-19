@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
+
 export function getSortByParam(
   sortInfo: { column: string; direction: 'asc' | 'desc' } | null,
-  departmentMasterColumns: { key: string; label: string }[]
+  departmentMasterColumns: { key: string; label: ReactNode }[]
 ): string | undefined {
   if (!sortInfo) return undefined;
 

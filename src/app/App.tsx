@@ -265,6 +265,9 @@ import ViewCompanyMasterWithBank from '@/features/companyMaster/pages/ViewCompan
 import { DarAllocation } from '@/features/darAllocation/pages/DarAllocation';
 import ClientLoanReport from '@/features/clientLoanReport/pages/ClientLoanReport';
 import VendorManagementDashboard from '@/features/vendorManagementDashboard/pages/VendorManagementDashboard';
+import { ProcessSalaryListStateProvider } from '@/features/processSalary/context/ProcessSalaryListStateContext';
+import ProcessSalary from '@/features/processSalary/pages/ProcessSalary';
+import ViewProcessSalaryDetails from '@/features/processSalary/pages/ViewProcessSalaryDetails';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -427,6 +430,9 @@ function App() {
             <Route path='costToCompany' element={<CostToCompanyListStateProvider><CostToCompany /></CostToCompanyListStateProvider>} />
             <Route path='costToCompany/add/:CostToCompanyId?' element={<CostToCompanyListStateProvider><AddUpdateCostToCompany /></CostToCompanyListStateProvider>} />
             <Route path='costToCompany/view' element={<CostToCompanyListStateProvider><ViewCostToCompany /></CostToCompanyListStateProvider>} />
+
+            <Route path='processSalary' element={<ProcessSalaryListStateProvider><ProcessSalary /></ProcessSalaryListStateProvider>} />
+            <Route path='processSalary/view' element={<ProcessSalaryListStateProvider><ViewProcessSalaryDetails /></ProcessSalaryListStateProvider>} />
 
 
             {/* INVENTORY */}

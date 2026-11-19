@@ -797,9 +797,7 @@ export const PaymentLedger: React.FC = () => {
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
-        isShowAddButton={canAction&& 
-         Number(totals.PendingAmount || 0) > 0 &&
-         bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
+        isShowAddButton={canAction&&  Number(totals.PendingAmount || 0) > 0 && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
         addTitle="Add"
         onAdd={handlePaymentLedgerCrmModal} />
 

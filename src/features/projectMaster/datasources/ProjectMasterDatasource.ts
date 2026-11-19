@@ -5,6 +5,7 @@ import type {
     AddUpdateProjectMasterWithBankDetailsRequest,
     AddUpdateProjectMasterWithCompanyRequest,
     AddUpdateProjectMasterWithEmployeeRequest,
+    CheckProjectSetupStatusResponse,
     DeleteProjectMasterWithBankDetailsRequest,
     DeleteProjectMasterWithEmployeeRequest,
     FilterWithPaginationProjectMasterRequest,
@@ -36,7 +37,9 @@ export abstract class ProjectMasterDatasource {
 
     abstract pullProjectMasterWithBankDetails(ProjectId: number, BankName?: string,IsCheckPermission?: boolean, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
     abstract addUpdateProjectMasterWithBankDetails(params: AddUpdateProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsSaveResponse>;
-    abstract deleteProjectMasterWithBankDetails(params: DeleteProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsDeleteResponse>
+    abstract deleteProjectMasterWithBankDetails(params: DeleteProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsDeleteResponse>;
+    
+    abstract checkProjectSetupStatus(ProjectId: number, PageName?: string, signal?: AbortSignal): Promise<CheckProjectSetupStatusResponse>;
 }
 
 export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
@@ -323,6 +326,28 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
                 return await this.deleteProjectMasterWithBankDetails(params);
 
+            }
+
+            throw error
+        }
+    }
+
+    async checkProjectSetupStatus(ProjectId: number, PageName?: string, signal?: AbortSignal): Promise<CheckProjectSetupStatusResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (ProjectId ?? 0).toString()
+            })
+            if (PageName) queryParams.append('PageName', PageName.trim());
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${ProjectMasterApi.CHECK_PROJECT_SETUP_STATUS}?${queryParams.toString()}`, { signal } )
+             
+        } catch (error: any) {
+
+            console.error('ERROR: CHECK PROJECT SETUP STATUS:', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.checkProjectSetupStatus(Number(ProjectId));
             }
 
             throw error

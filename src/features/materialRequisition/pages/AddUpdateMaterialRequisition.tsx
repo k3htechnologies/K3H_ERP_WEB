@@ -2,7 +2,7 @@ import { Loader } from "@/core/utils/loader"
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { Button } from "@/ui/components/forms/Button";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { Edit, Plus, Trash2 } from "lucide-react";
+import { CheckCircle2, Clock, Edit, Info, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
@@ -16,7 +16,6 @@ import { Input } from "@/ui/components/forms/Input";
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { filterNumbers } from "@/core/utils/fileValidation";
@@ -38,6 +37,10 @@ import { calculateRequiredDate } from "../utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { fetchMaterialMasterDropdown } from "@/features/materialMaster/materialMasterDropdown";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import type { ProjectSetupStatus } from "@/features/projectMaster/models/ProjectMasterModel";
+import { CheckProjectSetupStatus } from "@/features/projectMaster/utils/ProjectSetupUtils";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -83,20 +86,22 @@ export const AddUpdateMaterialRequisition = () => {
     const [projectBudgetList, setProjectBudgetList] = useState<BudgetData[]>([]);
     const [addMaterialPopUp, setAddMaterialPopUp] = useState(false);
     const { addToast } = useToast();
+
+    const [projectSetupStatus, setProjectSetupStatus] = useState<ProjectSetupStatus | null>(null);
+    const [isCheckingProjectSetup, setIsCheckingProjectSetup] = useState(false);
     const [materialList, setMaterialList] = useState<AddUpdateMaterialRequisitionDetailRequest[]>([]);
     const [materialData, setMaterialData] = useState<AddUpdateMaterialRequisitionDetailRequest>(() => initialFormState());
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionRequest>(() => initialFormStateMaterialRequisition())
     const [documentFiles, setdocumentFiles] = useState<(File | string)[]>([]);
     const [removeddocumentFilesURLs, setRemoveddocumentFilesURLs] = useState<string[]>([]);
     const [documentURL, setDocumentURL] = useState<string>("");
-     const {canAction} = useMenuPermissions('Get Material Requisition');
+    const { canAction } = useMenuPermissions('Get Material Requisition');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "", level1Name: "", level2Name: "", level3Name: "", level4Name: "" });
 
     const [editIndex, setEditIndex] = useState<number | null>(null);
     const navigate = useNavigate();
-    const { projectId } = useProject();
+
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
 
     const hasDirect = materialList.some(item => item.MaterialRequisitionType?.toUpperCase() === "DIRECT");
@@ -144,13 +149,62 @@ export const AddUpdateMaterialRequisition = () => {
         loadDetailsdata();
     }, [MaterialRequisitionId]);
 
+    useEffect(() => {
+
+        setIsLoading(true);
+        setLoadingMessage("Check Project Status");
+        const projectId = Number(formData.ProjectId);
+
+        if (projectId <= 0) {
+            setProjectSetupStatus(null);
+            setIsCheckingProjectSetup(false);
+            setIsLoading(false);
+            setLoadingMessage("");
+            return;
+        }
+
+        let isActive = true;
+
+        const checkStatus = async () => {
+
+            setIsCheckingProjectSetup(true);
+
+            try {
+                const status = await CheckProjectSetupStatus(projectId, "MATERIAL REQUISITION APPROVAL");
+
+                if (isActive) {
+                    setProjectSetupStatus(status);
+                }
+                setIsLoading(false);
+                setLoadingMessage("");
+            } catch (error) {
+
+                if (isActive) {
+                    setProjectSetupStatus(null);
+                }
+                setIsLoading(false);
+                setLoadingMessage("");
+            } finally {
+                if (isActive) {
+                    setIsCheckingProjectSetup(false);
+                }
+                setIsLoading(false);
+                setLoadingMessage("");
+            }
+        };
+
+        checkStatus();
+
+        return () => { isActive = false; };
+    }, [formData.ProjectId]);
+
     const loadDetailsdata = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const params: FilterMaterialRequisitionDetails = {
-                    ProjectId: Number(projectId),
+                    ProjectId: Number(formData.ProjectId) ?? 0,
                     MaterialRequisitionId: Number(MaterialRequisitionId)
                 };
 
@@ -217,18 +271,18 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     useEffect(() => {
-        if (!projectId) {
+        if (!formData.ProjectId || Number(formData.ProjectId) <= 0) {
             setProjectBudgetList([]);
             return;
         }
 
         const loadProjectBudget = async () => {
-            const data = await fetchProjectBudget(Number(projectId), "APPROVED");
+            const data = await fetchProjectBudget(Number(formData.ProjectId), "APPROVED");
             setProjectBudgetList(data);
         };
 
         loadProjectBudget();
-    }, [projectId]);
+    }, [formData.ProjectId]);
 
     useEffect(() => {
         if (!MaterialRequisitionTab.some(tab => tab.id === active)) {
@@ -405,7 +459,7 @@ export const AddUpdateMaterialRequisition = () => {
             level4Name: row.Level4Name || "",
         });
         setAddMaterialPopUp(true);
-    }, [projectId, projectBudgetList]);
+    }, [formData.ProjectId, projectBudgetList]);
 
     const saveMaterial = async () => {
         setErrors({});
@@ -536,12 +590,12 @@ export const AddUpdateMaterialRequisition = () => {
                     key: "Level4Name",
                     label: "Sub Material",
                     align: "left",
-                    width: "30",
+                    width: "40",
                     render: (value) => (
                         <TooltipText
                             text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
+                            maxWidth="300px"
+                            tooltipThreshold={40}
                             tooltipClassName="inline-block px-2 py-1 rounded-full font-medium text-red-900 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
@@ -567,12 +621,12 @@ export const AddUpdateMaterialRequisition = () => {
                     key: "SubMaterialName",
                     label: "Sub Material",
                     align: "left",
-                    width: "30",
+                    width: "40",
                     render: (value) => (
                         <TooltipText
                             text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
+                            maxWidth="350px"
+                            tooltipThreshold={40}
                             tooltipClassName="inline-block px-2 py-1 rounded-full font-medium text-red-900 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
@@ -679,6 +733,10 @@ export const AddUpdateMaterialRequisition = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
+        if (!formData.ProjectId) {
+            newErrors.ProjectId = 'Project is required.';
+        }
+
         if (!formData.Remarks) {
             newErrors.Remarks = ' Remarks is required.';
         } else if (formData.Remarks.trim().length < 25) {
@@ -700,7 +758,7 @@ export const AddUpdateMaterialRequisition = () => {
         form.append('Uniquekey', formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6');
         form.append('Remarks', formData.Remarks ?? '');
         form.append('MaterialRequisitionDetailJSON', JSON.stringify(materialList) ?? '');
-        form.append("ProjectId", projectId!.toString());
+        form.append("ProjectId", String(formData.ProjectId ?? 0));
 
         documentFiles.forEach((file) => {
             if (file instanceof File) {
@@ -714,16 +772,17 @@ export const AddUpdateMaterialRequisition = () => {
 
     const handleSave = async () => {
 
-        if (materialList.length === 0) {
-            addToast({ type: "error", title: "Please select at least one Material Details" });
-            return;
-        }
-
         setErrors({});
+
         const validation = validateMaterialRequisitionForm();
 
         if (!validation.isValid) {
             setErrors(validation.errors);
+            return;
+        }
+
+        if (materialList.length === 0) {
+            addToast({ type: "error", title: "Please select at least one Material Details" });
             return;
         }
 
@@ -764,6 +823,14 @@ export const AddUpdateMaterialRequisition = () => {
 
     const maxQuantity = budgetQuantity - orderQuantity + existingRequisitionQuantity;
 
+    const isProjectSetupComplete =
+        Number(formData.ProjectId) > 0 &&
+        Number(projectSetupStatus?.ProjectId) === Number(formData.ProjectId) &&
+        projectSetupStatus?.IsCompanyId === true &&
+        projectSetupStatus?.IsGSTNumber === true &&
+        projectSetupStatus?.IsBank === true &&
+        projectSetupStatus?.IsApproval === true;
+
     return (
         <div>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -771,90 +838,196 @@ export const AddUpdateMaterialRequisition = () => {
 
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
 
-                    <div className="space-y-6">
+                    <div className="relative min-w-0 w-[526px]">
+                        <SinglePageSelection
+                            label="Project"
+                            required
+                            disabled={Number(formData.MaterialRequisitionId) > 0}
+                            isShowClearSelection={false}
+                            options={(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).map(opt => ({
+                                label: opt.ProjectName,
+                                value: opt.ProjectId
+                            }))}
 
-                        <div className="flex items-center justify-between border-b border-gray-500 pb-2">
-                            <h3 className="text-lg font-semibold text-gray-900">
-                                Material Details
+                            value={formData.ProjectId ?? 0}
+                            onChange={(e) => {
+                                const selectedProjectId = Number(e ?? 0);
+
+                                if (selectedProjectId === Number(formData.ProjectId)) {
+                                    return;
+                                }
+
+                                setProjectSetupStatus(null);
+
+                                setFormData(prev => ({
+                                    ...prev,
+                                    ProjectId: selectedProjectId
+                                }));
+                            }}
+
+
+                            placeholder="Select Project"
+                            error={errors.ProjectId}
+                        />
+                    </div>
+
+                    {Number(formData.ProjectId) > 0 && !isCheckingProjectSetup && projectSetupStatus !== null && !isProjectSetupComplete && (
+                        <div className="mt-4  rounded-lg border border-gray-200 bg-white p-4">
+
+                            <h3 className="mb-3 text-base font-semibold text-gray-800">
+                                Project Setup Status
                             </h3>
 
-                            <Button
-                                type="button"
-                                color="blue"
-                                size="sm"
-                                onClick={handleAddMaterial}
-                                leftIcon={<Plus className="h-4 w-4" />}>
-                                Add Material
-                            </Button>
 
-                        </div>
+                            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
 
-                        {materialList.length > 0 ? (
+                                {[
+                                    {
+                                        label: "company is linked to the project",
+                                        isDone: projectSetupStatus?.IsCompanyId
+                                    },
+                                    {
+                                        label: "GST details are entered",
+                                        isDone: projectSetupStatus?.IsGSTNumber
+                                    },
+                                    {
+                                        label: "bank account details are configured",
+                                        isDone: projectSetupStatus?.IsBank
+                                    },
+                                    {
+                                        label: "Approval workflow is set up",
+                                        isDone: projectSetupStatus?.IsApproval
+                                    }
+                                ].map((item) => (
+                                    <div
+                                        key={item.label}
+                                        className="flex items-center justify-between rounded-md border border-gray-200 p-3"
+                                    >
+                                        <span className="text-sm font-medium text-gray-700">
+                                            {item.label}
+                                        </span>
 
-                            <DataTable
-                                data={materialList}
-                                columns={MaterialRequisitionColumns}
-                                emptyMessage="No Material Found"
-                                fixedHeight
-                                recordsPerPage={5}
-                                className="flex-1"
-                            />
+                                        <span
+                                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${item.isDone
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
+                                                }`}
+                                        >
+                                            {item.isDone ? (
+                                                <> <CheckCircle2 size={14} />  Completed  </>
+                                            ) : (
+                                                <> <Clock size={14} /> Pending </>
+                                            )}
+                                        </span>
+                                    </div>
+                                ))}
 
-                        ) : (
-                            <div className="flex items-center justify-center">
-                                <span className="text-gray-500 text-sm font-medium">No Material Details Found</span>
                             </div>
-                        )}
 
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
 
-                        <div className="flex items-center justify-between">
-                            <MultiFilePicker
-                                label="Attachment"
-                                placeholder="Upload Attachment"
-                                value={documentFiles}
-                                onChange={setdocumentFiles}
-                                availableFilesURL={documentURL}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", ".dwg"]}
-                                error={errors.AttachmentsURL}
-                                maxFiles={5}
-                                onRemoveExisting={(url) =>
-                                    setRemoveddocumentFilesURLs((prev) => [...prev, url])
-                                }
-                            />
+                            <div className="mt-4 rounded-md border border-blue-200 bg-blue-50 p-3">
+                                <p className="text-sm font-semibold text-blue-800">
+                                    Please contact your HOD to complete the Project Setup first.
+                                </p>
+
+                                <p className="mt-1 text-sm text-blue-700">
+                                    Once all pending setup activities are completed,
+                                    you can add the Material Requisition.
+                                </p>
+                            </div>
+
+
                         </div>
+                    )}
 
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
+                    {isProjectSetupComplete && (
+                        <div className="space-y-6 pt-5">
 
-                        <div className="flex items-center justify-between">
-                            <TextArea
-                                label="Remark"
-                                required
-                                className="thin-scroll"
-                                value={formData.Remarks}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        Remarks: e.target.value
-                                    }))
-                                }
-                                placeholder="Enter Remark"
-                                error={errors.Remarks} />
+                            <div className="flex items-center justify-between border-b border-gray-500 pb-2">
+                                <h3 className="text-lg font-semibold text-gray-900">
+                                    Material Details
+                                </h3>
+
+                                <Button
+                                    type="button"
+                                    color="blue"
+                                    size="sm"
+                                    onClick={handleAddMaterial}
+                                    leftIcon={<Plus className="h-4 w-4" />}>
+                                    Add Material
+                                </Button>
+
+                            </div>
+
+                            {materialList.length > 0 ? (
+
+                                <DataTable
+                                    data={materialList}
+                                    columns={MaterialRequisitionColumns}
+                                    emptyMessage="No Material Found"
+                                    fixedHeight
+                                    recordsPerPage={5}
+                                    className="flex-1"
+                                />
+
+                            ) : (
+                                <div className="flex items-center justify-center">
+                                    <span className="text-gray-500 text-sm font-medium">No Material Details Found</span>
+                                </div>
+                            )}
+
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+
+                            <div className="flex items-center justify-between">
+                                <MultiFilePicker
+                                    label="Attachment"
+                                    placeholder="Upload Attachment"
+                                    value={documentFiles}
+                                    onChange={setdocumentFiles}
+                                    availableFilesURL={documentURL}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", ".dwg"]}
+                                    error={errors.AttachmentsURL}
+                                    maxFiles={5}
+                                    onRemoveExisting={(url) =>
+                                        setRemoveddocumentFilesURLs((prev) => [...prev, url])
+                                    }
+                                />
+                            </div>
+
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
+
+                            <div className="flex items-center justify-between">
+                                <TextArea
+                                    label="Remark"
+                                    required
+                                    className="thin-scroll"
+                                    value={formData.Remarks}
+                                    onChange={(e) =>
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            Remarks: e.target.value
+                                        }))
+                                    }
+                                    placeholder="Enter Remark"
+                                    error={errors.Remarks} />
+                            </div>
+
                         </div>
-
-                    </div>
+                    )}
                 </div>
 
                 <BottomActionBar
                     cancelText="Cancel"
                     saveText={formData.MaterialRequisitionId && formData.MaterialRequisitionId > 0 ? "Update" : "Add"}
                     onCancel={() => navigate(-1)}
-                    canAction={canAction}
+                    canAction={canAction && isProjectSetupComplete}
                     onSave={() => {
                         handleSave();
                     }}
                     isLoading={isLoading}
                 />
+
+
             </div>
 
             <Modal
@@ -897,6 +1070,22 @@ export const AddUpdateMaterialRequisition = () => {
                                 setErrors({});
                             }}
                         />
+
+
+                        <div className="flex items-center gap-2 rounded-md border border-blue-300 bg-blue-50/70 px-3 py-2.5">
+
+                            <Info size={15} className="shrink-0 text-blue-600" />
+
+                            <p className="text-sm leading-5 text-blue-700">
+                                
+
+                                {active === "Direct"
+                                    ? "This material will be sourced from the approved project budget."
+                                    : "This material is not part of the approved project budget and will be treated as an indirect expense."}
+                            </p>
+
+                        </div>
+
 
                         {active === "Direct" && (
                             <div className="space-y-4">

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import type { AddUpdateMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
@@ -53,14 +52,15 @@ const CreateInvoice: React.FC = () => {
     const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const { projectId } = useProject();
+
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.materialRequisitionId;
+    const currentUniquekey = listState.uniquekey
+    const projectId = listState.projectId;
     const { MaterialRequisitionGRNId, MaterialRequisitionInvoiceId } = useParams<{ MaterialRequisitionGRNId?: string, MaterialRequisitionInvoiceId?: string }>();
-    const systemGeneratedCode = listState.SystemGeneratedCode;
+    const systemGeneratedCode = listState.systemGeneratedCode;
     const navigate = useNavigate();
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
@@ -81,13 +81,18 @@ const CreateInvoice: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         loadMaterialRequisitionGRNData();
-        loadmaterialRequisitionInvoiceSummary();
 
         if (!isAddMode) {
             fetchInvoiceDetails();
         }
 
     }, [projectId, currentMaterialRequisitionId, MaterialRequisitionGRNId])
+
+    useEffect(() => {
+        if (!materialRequisitionGRNData?.VendorId) return;
+
+        loadmaterialRequisitionInvoiceSummary();
+    }, [materialRequisitionGRNData?.VendorId]);
 
     const loadMaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
@@ -134,6 +139,7 @@ const CreateInvoice: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionInvoiceSummary = {
                     MaterialRequisitionId: currentMaterialRequisitionId,
+                    VendorId: Number(materialRequisitionGRNData?.VendorId)
                 };
 
                 const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoiceSummary(params);
@@ -141,6 +147,7 @@ const CreateInvoice: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setInvoiceSummaryData(response.right.Data[0] ?? null);
+
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -352,8 +359,8 @@ const CreateInvoice: React.FC = () => {
             newErrors.InvoiceAmount = ' Invoice Amount is required.';
         } else if (Number(formData.InvoiceAmount) === 0) {
             newErrors.InvoiceAmount = ' Invoice Amount must be greater than zero.';
-        } else if (Number(formData.InvoiceAmount) > Number(invoiceSummaryData?.PendingRequisitionAmount ?? 0)) {
-            newErrors.InvoiceAmount = `Invoice Amount cannot be greater than Pending Invoice Amount (${invoiceSummaryData?.PendingRequisitionAmount ?? 0}).`;
+        } else if (Number(formData.InvoiceAmount) > Number(invoiceSummaryData?.POPendingAmount ?? 0)) {
+            newErrors.InvoiceAmount = `Invoice Amount cannot be greater than Pending Invoice Amount (${invoiceSummaryData?.POPendingAmount ?? 0}).`;
         }
 
         const invoiceDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.InvoiceDate ? new Date(formData.InvoiceDate) : undefined);
@@ -479,8 +486,7 @@ const CreateInvoice: React.FC = () => {
                 <HeaderActionBar
                     titleText={'Create Invoice :'}
                     subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={listState.MaterialRequisitionStatus ?? ''}
-                    subSubSubTitleText={listState.VendorName ?? ''}
+                    subSubTitleText={listState.materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                     EditText="Edit"
                     onCancel={() =>
@@ -529,17 +535,17 @@ const CreateInvoice: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem
                                 label="Total (₹)"
-                                value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)}
+                                value={formatCurrency(invoiceSummaryData?.POAmount)}
                             />
 
                             <FieldItem
                                 label="Paid (₹)"
-                                value={formatCurrency(invoiceSummaryData?.PaidRequisitionAmount)}
+                                value={formatCurrency(invoiceSummaryData?.POPaidAmount)}
                             />
 
                             <FieldItem
                                 label="Pending (₹)"
-                                value={formatCurrency(invoiceSummaryData?.PendingRequisitionAmount)}
+                                value={formatCurrency(invoiceSummaryData?.POPendingAmount)}
                             />
                         </div>
                     </div>
@@ -578,7 +584,7 @@ const CreateInvoice: React.FC = () => {
                         <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
                         <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
                         <FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks || '-'} />
-                        
+
 
                     </div>
                 </div>
@@ -633,7 +639,7 @@ const CreateInvoice: React.FC = () => {
                                 onChange={(e) => {
                                     const value = filterNumbersWithDecimal(e.target.value);
 
-                                    const totalRequisitionAmount = Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0);
+                                    const totalRequisitionAmount = Number(invoiceSummaryData?.POAmount ?? 0);
 
                                     const totalInvoiceAmount = Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0);
 
@@ -647,8 +653,8 @@ const CreateInvoice: React.FC = () => {
                                 }}
                                 placeholder="Enter Invoice Amount"
                                 rightIcon="(₹)"
-                                max={Number(formData.MaterialRequisitionInvoiceId) > 0 ? (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0) + Number(editInvoiceAmount)) 
-                                                                                       : (Number(invoiceSummaryData?.TotalRequisitionAmount ?? 0) -Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
+                                max={Number(formData.MaterialRequisitionInvoiceId) > 0 ? (Number(invoiceSummaryData?.POAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0) + Number(editInvoiceAmount))
+                                    : (Number(invoiceSummaryData?.POAmount ?? 0) - Number(invoiceSummaryData?.TotalInvoiceAmount ?? 0))}
                                 error={errors.InvoiceAmount}
                             />
                         </div>

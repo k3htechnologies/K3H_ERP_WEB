@@ -30,9 +30,8 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
             if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.FromDate) queryParams.append('FromDate', params.FromDate);
             if (params.ToDate) queryParams.append('ToDate', params.ToDate);
-            if (params.MaterialRequisitionStage?.trim()) queryParams.append('MaterialRequisitionStage', params.MaterialRequisitionStage.trim());
             if (params.MaterialRequisitionStatus?.trim()) queryParams.append('MaterialRequisitionStatus', params.MaterialRequisitionStatus.trim());
-            if (params.VendorName?.trim()) queryParams.append('VendorName', params.VendorName.trim());
+            
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

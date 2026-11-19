@@ -173,6 +173,7 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //PAYROLL
         '/costtocompany': '/costToCompany',
+        '/processsalary': '/processSalary'
 
     }
 

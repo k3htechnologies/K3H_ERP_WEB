@@ -1,13 +1,12 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useMemo, useState } from "react";
 import type { MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import { Loader } from "@/core/utils/loader";
 import { useNavigate, useParams } from "react-router-dom";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
@@ -17,15 +16,25 @@ import { Button } from "@/ui/components/forms";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
-import { DataTableWithHeaderRowDivider, type TableColumn } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import type { MaterialRequisitionInvoiceData } from "@/features/materialRequisition//models/MaterialRequisitionInvoiceModel";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import { copyToClipboard, formatCurrency } from "@/core/utils/comman";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import CustomTableRowSpan, { type CustomTableRowSpanColumn } from "@/ui/components/DataTable/CustomTableRowSpan";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { getRowSpan } from "@/ui/components/DataTable/DataTableRowSpan";
+import { Copy } from "lucide-react";
 
 interface OverviewProps {
     matrialRequisitionData: MaterialRequisitionData | null;
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
+    materialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
     handleExportMaterialRequisition?: () => Promise<void>;
 }
 
-export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData, handleExportMaterialRequisition }) => {
+export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matrialRequisitionDetailData, materialRequisitionInvoiceData, handleExportMaterialRequisition }) => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -34,12 +43,25 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
     const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
     const [isSplit, setIsSplit] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    const { projectId } = useProject();
+
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey;
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.materialRequisitionId;
+    const currentUniquekey = listState.uniquekey;
+    const projectId = listState.projectId;
     const navigate = useNavigate();
+
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [invoiceNumber, setInvoiceNumber] = useState<string | null>("");
+    const [invoiceAmount, setInvoiceAmount] = useState<number | null>(0);
+
+    const [isApprovalFinalizedVendorLogModalOpen, setIsApprovalFinalizedVendorLogModalOpen] = useState(false);
+    const [approvalFinalizedVendorLogRequest, setApprovalFinalizedVendorLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [vendorName, setVendorName] = useState<string | null>("");
+    const [quotation, setQuotation] = useState<string | null>("");
+
+    const { canExport } = useMenuPermissions('Get Material Requisition');
 
     const PushSplitMaterialRequisitionFormData = (): FormData => {
 
@@ -129,11 +151,29 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
     const ShowSplitButton = matrialRequisitionData?.IsSplit && isSplit !== true
 
-    const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
+    const handleApprovalFinalizedVendorLog = (row: MaterialRequisitionDetailData) => {
+
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "FINALIZED VENDOR APPROVAL",
+            Id: listState.materialRequisitionId ?? 0,
+            SubId: row.MaterialRequisitionDetailId,
+            SubSubId: row.VendorId,
+            ProjectId: Number(projectId),
+        };
+
+        setVendorName(row.VendorName ?? "");
+        setQuotation(formatCurrency(row.Amount ?? 0));
+
+        setApprovalFinalizedVendorLogRequest(request);
+        setIsApprovalFinalizedVendorLogModalOpen(true);
+    };
+
+
+    const matrialRequisitionDetailColumns = useMemo<CustomTableRowSpanColumn[]>(() => {
 
         const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
-        const columns: TableColumn[] = [];
+        const columns: CustomTableRowSpanColumn[] = [];
 
         if (isSplit) {
             columns.push({
@@ -201,12 +241,12 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     key: "Level4Name",
                     label: "Sub Material",
                     align: "left",
-                    width: "30",
+                    width: "40",
                     render: (value) => (
                         <TooltipText
                             text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
+                            maxWidth="300px"
+                            tooltipThreshold={40}
                             tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                         />
                     )
@@ -219,29 +259,25 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     key: "MaterialName",
                     label: "Material",
                     align: "left",
-                    width: "30",
-                    render: (value) => (
-                        <TooltipText
-                            text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
-                        />
+                    width: "40",
+                    render: (value, row) => (
+                        <div className="flex flex-col items-start gap-0.5 w-max">
+
+                            <span className="text-xs font-semibold text-slate-800">
+                                {value || "-"}
+                            </span>
+
+                            {row.SubMaterialName && (
+                                <span className="inline-block max-w-full rounded-sm bg-blue-50 px-1.5 py-0.5 text-[12px] leading-tight text-slate-500 whitespace-normal break-words">
+                                    {row.SubMaterialName}
+
+                                </span>
+                            )}
+
+                        </div>
                     )
-                },
-                {
-                    key: "SubMaterialName",
-                    label: "Sub Material",
-                    align: "left",
-                    width: "30",
-                    render: (value) => (
-                        <TooltipText
-                            text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
-                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                        />
-                    )
-                },
+                }
+
 
             );
         }
@@ -249,11 +285,17 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
         columns.push(
             {
                 key: "MaterialQuantity",
-                label: "Quantity",
+                label: "Quantity & Units",
                 align: "left",
                 width: "30",
                 render: (value, row) => {
-                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                    const quantity = value ?? 0;
+                    const unit = isDirect ? row.Level4SubMaterialUomCode : row.UomCode;
+                    return (
+                        <span className="inline-flex items-center rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 whitespace-nowrap">
+                            {quantity} {unit || ""}
+                        </span>
+                    );
                 }
             },
 
@@ -274,14 +316,359 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     <FieldInfoTooltip value={value} />
                 )
             },
+            {
+                key: "ApprovalStatus",
+                label: "Vendor Finalized Status",
+                width: "18",
+                sortable: false,
+                align: "left",
+                render: (value?: string, row?: any) => (
+                    <div className="flex items-center gap-2">
+                        {Number(row?.Amount) > 0 ? (
+                            <ApprovalActions
+                                approvalStatus={value || "-"}
+                                isIcons={true}
+                                onHistory={() => handleApprovalFinalizedVendorLog(row)}
+                            />
+                        ) : value}
+                    </div>
+                )
+            },
+            {
+                key: "VendorDetailsGroup",
+                label: "Vendor Details",
+                align: "center",
 
+                children: [
+                    {
+                        key: "VendorName",
+                        label: "Vendor / Company Name",
+                        align: "left",
+                        width: "20",
+                        render: (value, row) => (
+                            <div className="flex flex-col items-start gap-0.5">
+
+                                <span className="text-xs font-semibold text-slate-800">
+                                    {value || "-"}
+                                </span>
+
+                                {row.VendorCompanyName && (
+                                    <span className="inline-block max-w-full rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500 whitespace-normal break-words">
+                                        {row.VendorCompanyName}
+                                    </span>
+                                )}
+
+                            </div>
+                        )
+                    },
+                    {
+                        key: 'POSystemGeneratedCode',
+                        label: 'PO Code',
+                        sortable: false,
+                        width: '20',
+                        render: (value) => {
+                            return (
+                                <div className="flex items-center gap-2">
+
+                                    <TooltipText
+                                        text={value || '-'}
+                                        maxWidth="180px"
+                                        tooltipThreshold={30}
+                                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"/>
+
+                                    {value && (
+                                        <Button
+                                            onClick={async (e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                const success = await copyToClipboard(value);
+                                                if (success) {
+                                                    addToast({ type: 'success', title: `${value} Copied!` });
+                                                }
+                                            }}
+                                            color="transparent"
+                                            size="sm"
+                                            style={{
+                                                padding: '2px 6px',
+                                                color: '#6B7280',
+                                                cursor: 'pointer'
+                                            }}
+                                            title="Copy"
+                                        >
+                                            <Copy className="h-3.5 w-3.5" />
+                                        </Button>
+                                    )}
+                                </div>
+                            );
+                        },
+                        rowSpan: (_row, index, data) => getRowSpan(data, index, ['POSystemGeneratedCode'])
+                    },
+
+                    {
+                        key: 'PurchaseOrderURL',
+                        label: 'PO',
+                        width: '15',
+                        sortable: false,
+                        align: 'left',
+                        render: (value: string, row: any) => {
+                            return (
+                                <div className="flex items-center justify-between w-full">
+                                    <MultiImageViewer
+                                        images={parseDocumentUrls(row.PurchaseOrderURL)}
+                                        title="Purchase Order "
+                                        isIcon={false}
+                                        triggerLabel={value === '' || 'Purchase Order'}
+                                    />
+
+                                </div>
+                            );
+                        },
+                        rowSpan: (_row, index, data) => getRowSpan(data, index, ['PurchaseOrderURL'])
+                    },
+                    {
+                        key: "Amount",
+                        label: "Amount (₹)",
+                        align: "left",
+                        width: "30",
+                        render: (value) => formatCurrency(value) || 0
+                    },
+                    {
+                key: "PurchaseOrderCreatedBy",
+                label: "Created By / Date",
+                sortable: false,
+                width: "20",
+                fixed: "left",
+                align: "left",
+                render: (value, row) => (
+                    <div className="flex flex-col items-start gap-1">
+
+                        <span className="text-xs font-semibold text-slate-800">
+                            {value || "-"}
+                        </span>
+
+                        {row.PurchaseOrderCreatedDate && (
+                            <span className="inline-block rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500">
+                                {formatDate_dd_MonthName_yy_hh_mm(row.PurchaseOrderCreatedDate)}
+                            </span>
+                        )}
+
+                    </div>
+                ),
+                rowSpan: (_row, index, data) =>
+                    getRowSpan(data, index, ["POSystemGeneratedCode"])
+            },
+                ]
+            },
+
+        )
+        return columns;
+    }, [matrialRequisitionDetailData, isSplit, selectedIds, handleApprovalFinalizedVendorLog]);
+
+    const handleApprovalLog = (row: MaterialRequisitionInvoiceData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "INVOICE APPROVAL",
+            Id: listState.materialRequisitionId ?? 0,
+            SubId: row.MaterialRequisitionInvoiceId ?? 0,
+           ProjectId: Number(projectId),
+        };
+        setInvoiceNumber(row.InvoiceNumber);
+        setInvoiceAmount(row.InvoiceAmount);
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
+
+    const materialRequisitionInvoiceDataWithTotal = useMemo(() => {
+        const data = materialRequisitionInvoiceData || [];
+
+        const totalInvoiceAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmount ?? 0),
+            0
         );
 
-        return columns;
-    }, [matrialRequisitionDetailData, isSplit, selectedIds]);
+        const totalPaidAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceAmountPaidTillDate ?? 0),
+            0
+        );
+
+        const totalPaidTDSAmount = data.reduce(
+            (total, row) => total + Number(row.InvoiceTDSPaidTillDate ?? 0),
+            0
+        );
+
+        return [
+            ...data,
+            {
+                InvoiceNumber: "TOTAL",
+                InvoiceAmount: totalInvoiceAmount,
+                InvoiceAmountPaidTillDate: totalPaidAmount,
+                InvoiceTDSPaidTillDate: totalPaidTDSAmount,
+                isTotal: true,
+            },
+        ];
+    }, [materialRequisitionInvoiceData]);
+
+    const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
+        () => [
+            {
+                key: "InvoiceNumber",
+                label: "Invoice Number",
+                width: '15',
+                align: "left",
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return (
+                            <span className="font-bold text-gray-500">
+                                TOTAL
+                            </span>
+                        );
+                    }
+                    return (
+                        <span className="font-medium text-black">
+                            {value || "-"}
+                        </span>
+                    );
+                }
+            },
+            {
+                key: 'UploadInvoiceURL',
+                label: 'Invoice',
+                width: '15',
+                sortable: false,
+                align: 'left',
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return "";
+                    }
+                    return (
+                        <div className="flex items-center justify-between w-full">
+                            <MultiImageViewer
+                                images={parseDocumentUrls(row.UploadInvoiceURL)}
+                                title="Invoice Document"
+                                isIcon={false}
+                                triggerLabel={value === '' || 'PDF'}
+                            />
+
+                        </div>
+                    );
+                }
+            },
+            {
+                key: 'PerformaInvoiceURL',
+                label: 'Performa',
+                width: '15',
+                sortable: false,
+                align: 'left',
+                render: (value: string, row: any) => {
+                    if (row.isTotal) {
+                        return "";
+                    }
+                    return (
+                        <div className="flex items-center justify-between w-full">
+                            <MultiImageViewer
+                                images={parseDocumentUrls(row.PerformaInvoiceURL)}
+                                title="DWG Document"
+                                isIcon={false}
+                                triggerLabel={value === '' || 'DWG'}
+                            />
+
+                        </div>
+                    );
+                }
+            },
+            {
+                key: "InvoiceAmount",
+                label: "Amount",
+                width: '15',
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                )
+            },
+            {
+                key: "InvoiceAmountPaidTillDate",
+                label: "Paid",
+                width: '15',
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                )
+            },
+            {
+                key: "InvoiceTDSPaidTillDate",
+                label: "TDS",
+                width: '15',
+                align: "right",
+                render: (value: number, row: any) => (
+                    <span className={row.isTotal ? "font-bold text-gray-500" : "font-medium text-black"}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                )
+            },
+            {
+                key: "InvoiceDate",
+                label: "Invoice Date",
+                align: "left",
+                width: '15',
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
+            },
+            {
+                key: "InvoiceDueDate",
+                label: "Invoice Due Date",
+                align: "left",
+                width: '15',
+                render: (value?: string, row?: any) =>
+                    row.isTotal
+                        ? ""
+                        : value
+                            ? formatDate_dd_MonthName_yy(value)
+                            : '-'
+            },
+            {
+                key: "Remarks",
+                label: "Remark",
+                align: "left",
+                width: "10",
+                render: (value?: string, row?: any) => (
+                    row.isTotal
+                        ? ""
+                        : <FieldInfoTooltip value={value} />
+                )
+            },
+            {
+                key: "ApprovalStatus",
+                label: "Invoice Status",
+                width: "18",
+                sortable: false,
+                align: "left",
+                render: (value?: string, row?: any) => (
+                    row.isTotal
+                        ? ""
+                        :
+                        <ApprovalActions
+                            approvalStatus={value || "-"}
+                            isIcons={true}
+
+                            onHistory={() => handleApprovalLog(row)
+                            }
+                        />
+
+                )
+            },
+        ], [handleApprovalLog]
+    );
 
     return (
-        <div className="justify-center pt-5">
+        <div className="justify-center pt-3">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="border border-[#33333321] rounded-xl overflow-hidden mb-4 mt-2">
@@ -293,23 +680,28 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
                     <FieldItem label="MR Code" value={matrialRequisitionData?.SystemGeneratedCode} />
-                    <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
-                    <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
-
+                    <FieldItem label="Project Name" value={matrialRequisitionData?.ProjectName} />
+                    <FieldItem label="Company Name" value={matrialRequisitionData?.CompanyName} />
+                    <FieldItem label="Department" value={matrialRequisitionData?.Department} />
+                    <FieldItem label="MR Approval Status" value={matrialRequisitionData?.ApprovalStatus} />
                     <div>
                         <p className="text-sm font-medium text-[#1D1D1D80]">Attachment</p>
                         <MultiImageViewer
                             images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
-                            title="Attachment"
+                            title={`Attachment - ${matrialRequisitionData?.ProjectName || ''} - ${matrialRequisitionData?.SystemGeneratedCode || ''}`}
                             isIcon={false}
                             triggerLabel="-"
                         />
                     </div>
 
+
+                    <FieldItem label="GST Number" value={matrialRequisitionData?.CompanyGSTNumber} />
+                    <FieldItem label="PAN Number" value={matrialRequisitionData?.CompanyPANNumber} />
+
                 </div>
             </div>
 
-            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-4">
+            <section className="border border-[#33333321] rounded-xl overflow-hidden mt-5">
                 <div className="bg-[#FCF1FF] px-4 py-2 border-b border-[#D0D7DE] flex items-center justify-between">
 
                     <h4 className="text-sm font-semibold text-[#7E22CE] flex items-center gap-2">
@@ -325,10 +717,10 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                     </h4>
 
                     <div className="flex items-center gap-2">
-                        {handleExportMaterialRequisition && (
+                        {handleExportMaterialRequisition && canExport && (
                             <Button
                                 size="sm"
-                                color="blue"
+                                color="red"
                                 onClick={() => handleExportMaterialRequisition()}>
                                 PDF
                             </Button>
@@ -336,16 +728,19 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
                         {ShowSplitButton && !isSplit && (
 
-                            <button
+                            <Button
+                                size="sm"
+                                color="primary"
+                                variant="outline"
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
                                     setIsSplit(true)
                                 }}
-                                className="flex px-3 py-0.3 mr-2 border border-[#135BEC] text-[#135BEC] bg-white hover:bg-black-50 rounded-md gap-2">
+                            >
 
-                                <span>Split</span>
-                            </button>
+                                Split
+                            </Button>
 
                         )}
                     </div>
@@ -354,8 +749,8 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
 
                 <div className="overflow-y-auto thin-scroll">
-                    <DataTableWithHeaderRowDivider
-                        columns={MatrialRequisitionDetailColumns}
+                    <CustomTableRowSpan
+                        columns={matrialRequisitionDetailColumns}
                         data={matrialRequisitionDetailData}
                         emptyMessage="No Material Requisition Details Found"
                         fixedHeight={true}
@@ -402,7 +797,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 )}
             </section>
 
-            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-4">
+            <section className="border border-[#33333321] rounded-xl overflow-hidden mt-5">
                 <div className="bg-[#E6FFE6] px-4 py-2 border-b border-[#D0D7DE]">
                     <h4 className="text-sm font-semibold text-[#00A800]">
                         Remarks
@@ -414,8 +809,32 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </div>
             </section>
 
+            {listState.approvalStatus?.toUpperCase() === "APPROVED" &&  (
+                <section className="border border-[#33333321] rounded-xl overflow-hidden mt-5">
+                    <div className="bg-[#FCE7F3] px-4 py-2 border-b border-[#D0D7DE]">
+                        <h4 className="text-sm font-semibold text-[#BE185D] flex items-center gap-2">
+                            Invoice Details
+
+                            <span className="inline-flex items-center justify-center min-w-[22px] h-[22px] px-1 rounded-full bg-[#F9CFE2] text-[#BE185D] text-xs font-semibold">
+                                {materialRequisitionInvoiceData.length}
+                            </span>
+                        </h4>
+                    </div>
+
+                    <div className="overflow-y-auto thin-scroll">
+                        <DataTableWithHeaderRowDivider
+                            columns={MaterialRequisitionInvoiceColumns}
+                            data={materialRequisitionInvoiceDataWithTotal}
+                            emptyMessage="No Invoice Details Found"
+                            fixedHeight={true}
+                            className="flex-1"
+                        />
+                    </div>
+                </section>
+            )}
+
             {matrialRequisitionData?.CloseCompletionRemark && (
-                <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+                <section className="border border-[#33333321] rounded-xl overflow-hidden mt-5">
                     <div className="bg-[#FBF9F9] px-4 py-2 border-b border-[#D0D7DE]">
                         <h4 className="text-sm font-semibold text-[#1D1D1D]">
                             {matrialRequisitionData?.MaterialRequisitionStatus} Remark
@@ -428,7 +847,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </section>
             )}
 
-            <section className="border border-[#33333321] rounded-xl overflow-hidden mb-2">
+            <section className="border border-[#33333321] rounded-xl overflow-hidden mt-5">
                 <div className="bg-[#E1E2E4] px-4 py-2 border-b border-[#D0D7DE]">
                     <h4 className="text-sm font-semibold text-[#333333]">
                         Action Details
@@ -437,12 +856,11 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 border-b border-[#135bec2e]">
                     <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
-                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
+                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(matrialRequisitionData?.CreatedDate ?? '')} />
                     <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
-                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
+                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(matrialRequisitionData?.ModifiedDate ?? '')} />
                 </div>
             </section>
-
 
 
             <Modal
@@ -471,6 +889,22 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </div>
             </Modal>
 
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Invoice Approval'
+                titleText={invoiceNumber ?? ""}
+                subTitleText={String(invoiceAmount ?? 0)}
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest}
+            />
+
+            <ApprovalLogModal
+                isOpen={isApprovalFinalizedVendorLogModalOpen}
+                title='Finalized Vendor'
+                titleText={vendorName ?? ""}
+                subTitleText={quotation ?? ""}
+                onClose={() => setIsApprovalFinalizedVendorLogModalOpen(false)}
+                request={approvalFinalizedVendorLogRequest} />
 
         </div>
     )

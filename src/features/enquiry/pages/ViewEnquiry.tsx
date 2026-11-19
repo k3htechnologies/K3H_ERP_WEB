@@ -24,6 +24,8 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Edit, Trash2 } from "lucide-react";
 import { getStatusColor } from "./Status";
 import { calculateAge, isDateWithinPastDays } from "@/core/utils/comman";
+import Tabs from "@/ui/components/Tab/Tab";
+import CallMonitoring from "@/features/callMonitoring/pages/CallMonitoring";
 
 const ViewEnquiry: React.FC = () => {
 
@@ -67,6 +69,14 @@ const ViewEnquiry: React.FC = () => {
 
     //#region MENU PERMISSION
     const { canAction } = useMenuPermissions('/enquiry');
+
+    const EnquiryTabList = [
+        { id: "Overview", label: "Overview" },
+        { id: "CallLogs", label: "Call Logs" }
+    ]
+
+    const [enquiryActiveTab, setEnquiryActiveTab] = useState(EnquiryTabList[0].id)
+
 
     //#region FETCH ENQUIRY DETAILS
     useEffect(() => {
@@ -360,409 +370,426 @@ const ViewEnquiry: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEnquiry()}
-                canAction={canActionPerform}
+                canAction={enquiryActiveTab === "Overview" ? canActionPerform : false}
                 onEdit={() => {
-                    if (enquiryData) handleEditEnquiry(enquiryData!);
+                    if (enquiryActiveTab === "Overview" && enquiryData) {
+                        handleEditEnquiry(enquiryData);
+                    }
                 }}
                 isLoading={false}
             />
 
-            <div className="grid grid-cols-12 gap-4 pt-5">
+            <div className="mt-5">
+                <Tabs
+                    tabs={EnquiryTabList}
+                    defaultActive={enquiryActiveTab}
+                    onTabChange={(t) => setEnquiryActiveTab(t.id)}
+                    islarge
+                />
+            </div>
 
-                <div className="col-span-6">
+            {enquiryActiveTab === "Overview" && (
+                <div className="grid grid-cols-12 gap-4 pt-5">
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                    <div className="col-span-6">
 
-                        <div className="border-b pb-2 mt-1">
-                            <div className="flex items-start justify-between">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
-                                <h1 className="text-lg font-semibold text-black">
-                                    Lead Information
-                                </h1>
+                            <div className="border-b pb-2 mt-1">
+                                <div className="flex items-start justify-between">
 
-                                <div className="text-xs text-gray-700">
+                                    <h1 className="text-lg font-semibold text-black">
+                                        Lead Information
+                                    </h1>
 
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-gray-500 w-32 text-right">
-                                            Enquiry Date
-                                        </span>
-                                        <span>:</span>
-                                        <span className="font-semibold w-32">
-                                            {formatDate_dd_MonthName_yy(safe(enquiryData?.EnquiryDate ?? ""))}
-                                        </span>
-                                    </div>
+                                    <div className="text-xs text-gray-700">
 
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="text-gray-500 w-32 text-right">
-                                            Next Follow-up Date
-                                        </span>
-                                        <span>:</span>
-                                        <span className="font-semibold w-32">
-                                            {formatDate_dd_MonthName_yy(safe(enquiryData?.NextFollowUpDate))}
-                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-gray-500 w-32 text-right">
+                                                Enquiry Date
+                                            </span>
+                                            <span>:</span>
+                                            <span className="font-semibold w-32">
+                                                {formatDate_dd_MonthName_yy(safe(enquiryData?.EnquiryDate ?? ""))}
+                                            </span>
+                                        </div>
+
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="text-gray-500 w-32 text-right">
+                                                Next Follow-up Date
+                                            </span>
+                                            <span>:</span>
+                                            <span className="font-semibold w-32">
+                                                {formatDate_dd_MonthName_yy(safe(enquiryData?.NextFollowUpDate))}
+                                            </span>
+                                        </div>
+
                                     </div>
 
                                 </div>
-
                             </div>
+
+
+                            {/* Basic Deatils */}
+
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Enquiry Details
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Enquiry Code" value={safe(enquiryData?.SystemGeneratedCode)} />
+                                    <FieldItem label="Mobile No" value={!safe(enquiryData?.MobileNumber) ? "-" : `${enquiryData?.MobileNumberCountryCode ?? "+91"}  ${enquiryData?.MobileNumber}`} />
+                                    <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
+                                    <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
+                                    <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
+                                    <FieldItem label="Accommodation" value={safe(enquiryData?.Accommodation)} />
+                                    <FieldItem label="Occupation Type" value={safe(enquiryData?.OccupationType)} />
+                                    <FieldItem label="Nationality" value={safe(enquiryData?.Nationality)} />
+                                    {safe(enquiryData?.Nationality?.toUpperCase()) !== "INDIAN" ? (
+                                        <>
+                                            <FieldItem label="Country Of Residence" value={safe(enquiryData?.CountryOfResidence)} />
+                                            <FieldItem label="City Of Residence" value={safe(enquiryData?.CityOfResidence)} />
+                                        </>
+                                    ) : null}
+
+                                    <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
+                                    <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
+                                </div>
+                            </section>
+                            <hr className="border-t border-gray-200" />
+
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Source
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                    <FieldItem label="Source " value={safe(enquiryData?.Source)} />
+
+                                    {enquiryData?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
+                                        <>
+                                            <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                            <FieldItem label="CP Code" value={safe(enquiryData?.ChannelPartnerCode)} />
+                                            <FieldItem label="CP Name" value={safe(enquiryData?.ChannelPartnerName)} />
+                                            <FieldItem label="CP Mobile No" value={!safe(enquiryData?.ChannelPartnerMobileNumber) ? "-" : `${enquiryData?.ChannelPartnerMobileNumberCountryCode || "+91"}  ${enquiryData?.ChannelPartnerMobileNumber}`} />
+                                            <FieldItem label="CP Designation" value={safe(enquiryData?.ChannelPartnerDesignation)} />
+                                            <FieldItem label="CP Company Name" value={safe(enquiryData?.ChannelPartnerCompany)} />
+                                            <FieldItem label="CP Firms Type" value={safe(enquiryData?.ChannelPartnerFirmsType)} />
+                                            <FieldItem label="CP Type" value={safe(enquiryData?.ChannelPartnerType)} />
+
+
+                                            {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="CP Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
+
+                                            {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="CP Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `${enquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode || "+91"} ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
+
+                                            {enquiryData?.ChannelPartnerTeamMemberEmailId && (<FieldItem label="CP Team Member E-Mail ID " value={safe(enquiryData?.ChannelPartnerTeamMemberEmailId)} />)}
+                                        </>
+                                    )}
+
+                                    {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Advertisement' && (
+                                        <>
+                                            <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                            <FieldItem label="Sub Sub Source" value={safe(enquiryData?.SubSubSource)} />
+                                        </>
+                                    )}
+
+                                    {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource !== 'Advertisement' && (
+                                        <>
+                                            <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                        </>
+                                    )}
+
+                                    {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Reference' && (
+                                        <>
+                                            <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferralProjectName ?? "")} />
+                                            <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferralUnitNumber ?? "")} />
+                                            <FieldItem label="Unit Owner" value={safe(enquiryData?.ReferralUnitOwnerName ?? "")} />
+
+                                        </>
+                                    )}
+                                    {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Loyalty' && (
+                                        <>
+                                            <FieldItem label="Existing Project Name" value={safe(enquiryData?.LoyaltyExistingProjectName ?? "")} />
+                                            <FieldItem label="Existing Unit Number" value={safe(enquiryData?.LoyaltyExistingUnitNumber ?? "")} />
+                                            <FieldItem label="Unit Owner" value={safe(enquiryData?.LoyaltyExistingUnitOwnerName ?? "")} />
+
+                                        </>
+                                    )}
+                                    {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Employee Reference' && (
+                                        <>
+                                            <FieldItem label="Employee Reference Name" value={safe(enquiryData?.EmployeeReferenceName ?? "")} />
+                                            <FieldItem label="Employee Reference Mobile Number" value={safe(enquiryData?.EmployeeReferenceMobileNumber) ? `+91 ${safe(enquiryData?.EmployeeReferenceMobileNumber)}` : '-'} />
+                                        </>
+                                    )}
+
+                                </div>
+                            </section>
+
+                            <hr className="border-t border-gray-200" />
+
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Address
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                    <FieldItem label="Current Location" value={safe(enquiryData?.CurrentLocation)} />
+                                </div>
+                            </section>
+
+                            <hr className="border-t border-gray-200" />
+
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Property Preferences
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Budget (In CR)" value={safe(enquiryData?.Budget)} />
+                                    <FieldItem label="Possession Type" value={safe(enquiryData?.PossessionType)} />
+                                    <FieldItem label="Requirement" value={safe(enquiryData?.Requirement)} />
+                                    <FieldItem label={
+                                        enquiryData?.Requirement === "Residential"
+                                            ? "Residential Type"
+                                            : enquiryData?.Requirement === "Commercial"
+                                                ? "Commercial Type"
+                                                : "Type"
+                                    }
+                                        value={safe(enquiryData?.RequirementType)}
+                                    />
+                                    <FieldItem label="Location" value={safe(enquiryData?.VillageName)} />
+                                    <FieldItem label="Timeline Of Purchase" value={safe(enquiryData?.Timeline)} />
+                                    <FieldItem label="Area Preferred (SqFt)" value={safe(enquiryData?.AreaPreferred)} />
+                                    <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
+
+
+                                </div>
+                            </section>
+                            <hr className="border-t border-gray-200" />
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Customer Details
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Customer Classification" value={safe(enquiryData?.CustomerClassification)} />
+                                    <FieldItem label="Source Of Funding" value={safe(enquiryData?.SourceOfFunding)} />
+                                    <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
+                                </div>
+                            </section>
+                            <hr className="border-t border-gray-200" />
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Enquiry Information
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Stage " value={safe(enquiryData?.FinalStage)} />
+                                    {safe(enquiryData?.FinalStageDetail) !== "-" ? <FieldItem label="Stage Reason " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
+
+                                </div>
+                            </section>
+                            <hr className="border-t border-gray-200" />
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Sales Details
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
+                                    <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
+                                </div>
+                            </section>
+                            <hr className="border-t border-gray-200" />
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Enquiry Remark
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                    <FieldItem label="Remark" value={safe(enquiryData?.Remark)} />
+                                </div>
+                            </section>
+                            <hr className="border-t border-gray-200" />
+                            <section className="p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Action Details
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Created By" value={enquiryData?.CreatedBy ?? '-'} />
+                                    <FieldItem
+                                        label="Created Date"
+                                        value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.CreatedDate ?? '-')}
+                                    />
+                                    <FieldItem label="Modified By" value={enquiryData?.ModifiedBy ?? '-'} />
+                                    <FieldItem
+                                        label="Modified Date"
+                                        value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.ModifiedDate ?? '-')}
+                                    />
+                                </div>
+                            </section>
                         </div>
-
-
-                        {/* Basic Deatils */}
-
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Enquiry Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Enquiry Code" value={safe(enquiryData?.SystemGeneratedCode)} />
-                                <FieldItem label="Mobile No" value={!safe(enquiryData?.MobileNumber) ? "-" :  `${enquiryData?.MobileNumberCountryCode ?? "+91"}  ${enquiryData?.MobileNumber}`} />
-                                <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
-                                <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
-                                <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
-                                <FieldItem label="Accommodation" value={safe(enquiryData?.Accommodation)} />
-                                <FieldItem label="Occupation Type" value={safe(enquiryData?.OccupationType)} />
-                                <FieldItem label="Nationality" value={safe(enquiryData?.Nationality)} />
-                                {safe(enquiryData?.Nationality?.toUpperCase()) !== "INDIAN" ? (
-                                    <>
-                                        <FieldItem label="Country Of Residence" value={safe(enquiryData?.CountryOfResidence)} />
-                                        <FieldItem label="City Of Residence" value={safe(enquiryData?.CityOfResidence)} />
-                                    </>
-                                ) : null}
-
-                                <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
-                                <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Source
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-
-                                <FieldItem label="Source " value={safe(enquiryData?.Source)} />
-
-                                {enquiryData?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
-                                    <>
-                                        <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
-                                        <FieldItem label="CP Code" value={safe(enquiryData?.ChannelPartnerCode)} />
-                                        <FieldItem label="CP Name" value={safe(enquiryData?.ChannelPartnerName)} />
-                                        <FieldItem label="CP Mobile No" value={!safe(enquiryData?.ChannelPartnerMobileNumber) ? "-" :  `${enquiryData?.ChannelPartnerMobileNumberCountryCode || "+91"}  ${enquiryData?.ChannelPartnerMobileNumber}`} />
-                                        <FieldItem label="CP Designation" value={safe(enquiryData?.ChannelPartnerDesignation)} />
-                                        <FieldItem label="CP Company Name" value={safe(enquiryData?.ChannelPartnerCompany)} />
-                                        <FieldItem label="CP Firms Type" value={safe(enquiryData?.ChannelPartnerFirmsType)} />
-                                        <FieldItem label="CP Type" value={safe(enquiryData?.ChannelPartnerType)} />
-
-
-                                        {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="CP Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
-                                        
-                                        {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="CP Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `${enquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode || "+91"} ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
-                                    
-                                        {enquiryData?.ChannelPartnerTeamMemberEmailId && (<FieldItem label="CP Team Member E-Mail ID " value={safe(enquiryData?.ChannelPartnerTeamMemberEmailId)} />)}
-                                    </>
-                                )}
-
-                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Advertisement' && (
-                                    <>
-                                        <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
-                                        <FieldItem label="Sub Sub Source" value={safe(enquiryData?.SubSubSource)} />
-                                    </>
-                                )}
-
-                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource !== 'Advertisement' && (
-                                    <>
-                                        <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
-                                    </>
-                                )}
-
-                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Reference' && (
-                                    <>
-                                        <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferralProjectName ?? "")} />
-                                        <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferralUnitNumber ?? "")} />
-                                        <FieldItem label="Unit Owner" value={safe(enquiryData?.ReferralUnitOwnerName ?? "")} />
-
-                                    </>
-                                )}
-                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Loyalty' && (
-                                    <>
-                                        <FieldItem label="Existing Project Name" value={safe(enquiryData?.LoyaltyExistingProjectName ?? "")} />
-                                        <FieldItem label="Existing Unit Number" value={safe(enquiryData?.LoyaltyExistingUnitNumber ?? "")} />
-                                        <FieldItem label="Unit Owner" value={safe(enquiryData?.LoyaltyExistingUnitOwnerName ?? "")} />
-
-                                    </>
-                                )}
-                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Employee Reference' && (
-                                    <>
-                                        <FieldItem label="Employee Reference Name" value={safe(enquiryData?.EmployeeReferenceName ?? "")} />
-                                        <FieldItem label="Employee Reference Mobile Number" value={safe(enquiryData?.EmployeeReferenceMobileNumber) ? `+91 ${safe(enquiryData?.EmployeeReferenceMobileNumber)}` : '-'} />
-                                    </>
-                                )}
-
-                            </div>
-                        </section>
-
-                        <hr className="border-t border-gray-200" />
-
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Address
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                <FieldItem label="Current Location" value={safe(enquiryData?.CurrentLocation)} />
-                            </div>
-                        </section>
-
-                        <hr className="border-t border-gray-200" />
-
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Property Preferences
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Budget (In CR)" value={safe(enquiryData?.Budget)} />
-                                <FieldItem label="Possession Type" value={safe(enquiryData?.PossessionType)} />
-                                <FieldItem label="Requirement" value={safe(enquiryData?.Requirement)} />
-                                <FieldItem label={
-                                    enquiryData?.Requirement === "Residential"
-                                        ? "Residential Type"
-                                        : enquiryData?.Requirement === "Commercial"
-                                            ? "Commercial Type"
-                                            : "Type"
-                                }
-                                    value={safe(enquiryData?.RequirementType)}
-                                />
-                                <FieldItem label="Location" value={safe(enquiryData?.VillageName)} />
-                                <FieldItem label="Timeline Of Purchase" value={safe(enquiryData?.Timeline)} />
-                                <FieldItem label="Area Preferred (SqFt)" value={safe(enquiryData?.AreaPreferred)} />
-                                <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
-
-
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Customer Details
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Customer Classification" value={safe(enquiryData?.CustomerClassification)} />
-                                <FieldItem label="Source Of Funding" value={safe(enquiryData?.SourceOfFunding)} />
-                                <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Enquiry Information
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Stage " value={safe(enquiryData?.FinalStage)} />
-                                {safe(enquiryData?.FinalStageDetail) !== "-" ? <FieldItem label="Stage Reason " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
-
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Sales Details
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
-                                <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Enquiry Remark
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                <FieldItem label="Remark" value={safe(enquiryData?.Remark)} />
-                            </div>
-                        </section>
-                        <hr className="border-t border-gray-200" />
-                        <section className="p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Created By" value={enquiryData?.CreatedBy ?? '-'} />
-                                <FieldItem
-                                    label="Created Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.CreatedDate ?? '-')}
-                                />
-                                <FieldItem label="Modified By" value={enquiryData?.ModifiedBy ?? '-'} />
-                                <FieldItem
-                                    label="Modified Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.ModifiedDate ?? '-')}
-                                />
-                            </div>
-                        </section>
                     </div>
-                </div>
 
-                {/*  RIGHT SIDE  */}
-                <div className="col-span-6">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+                    {/*  RIGHT SIDE  */}
+                    <div className="col-span-6">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
-                        <div className="border-b pb-2 mt-1">
-                            <div className="flex items-start justify-between">
+                            <div className="border-b pb-2 mt-1">
+                                <div className="flex items-start justify-between">
 
-                                {/* LEFT — TITLE */}
-                                <h1 className="text-lg font-semibold text-black">
-                                    Remark & Activity
-                                </h1>
+                                    {/* LEFT — TITLE */}
+                                    <h1 className="text-lg font-semibold text-black">
+                                        Remark & Activity
+                                    </h1>
 
-                                {/* RIGHT — DATES */}
-                                <div className="text-xs text-gray-700">
+                                    {/* RIGHT — DATES */}
+                                    <div className="text-xs text-gray-700">
 
-                                    <div className="flex items-center gap-2">
-                                        {canActionPerform && (
-                                            <Button
-                                                color="blue"
-                                                size="sm"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleOpenEnquiryFollowUpModal()
-                                                }}
-                                                title="Follow-Up">
-                                                Follow Up
-                                            </Button>
-                                        )}
-                                    </div>
-
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div className="mt-3 overflow-y-auto h-[1600px] thin-scroll pr-2">
-
-                            {editEnquiryFollowUpData?.map((item, index) => (
-                                <div key={item.EnquiryFollowUpId} className="grid grid-cols-[24px_1fr] gap-3">
-
-                                    {/* LEFT — DOT + LINE */}
-                                    <div className="flex flex-col items-center">
-
-                                        {/* DOT */}
-                                        <div className="h-4 w-4 rounded-full bg-blue-600"></div>
-                                        <div className="w-[3px] bg-blue-600 flex-1"></div>
-                                        {/* LINE (hide after last item) */}
-                                        {index !== editEnquiryFollowUpData.length - 1 && (
-                                            <div className="w-[3px] bg-blue-600 flex-1"></div>
-                                        )}
-                                    </div>
-
-                                    {/* RIGHT — CONTENT */}
-                                    <div>
-                                        {/* TOP ROW */}
-                                        <div className="flex items-start justify-between gap-3">
-
-                                            <div className="flex items-center gap-3">
-                                                <span className="font-semibold text-gray-900">
-                                                    {
-                                                        item.ModifiedBy
-                                                            ? `${item.ModifiedBy} - ${formatDate_dd_MonthName_yy_hh_mm(item.ModifiedDate ?? "")}`
-                                                            : `${item.CreatedBy ?? ""} - ${formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate ?? "")}`
-                                                    }
-                                                </span>
-
-                                                <span className="text-xs text-gray-500 flex flex-col gap-1">
-                                                    {(() => {
-                                                        const { bg, text } = getStatusColor(item.Status || '');
-                                                        return (
-                                                            <span
-                                                                className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                                                                style={{ backgroundColor: bg, color: text }}
-                                                            >
-                                                                {item.Status || "-"}
-                                                            </span>
-                                                        );
-                                                    })()}
-                                                </span>
-                                            </div>
-
-                                            {index === 0 && canActionPerform && isDateWithinPastDays(item.CreatedDate, 2) && (
-                                                <div className="flex items-center gap-1">
-                                                    <Button
-                                                        color="transparent"
-                                                        isborderRadius
-                                                        size="sm"
-                                                        style={{ color: 'blue', padding: '4px 8px' }}
-                                                        title="Edit"
-                                                        onClick={() => handleOpenEnquiryFollowUpModal(item)}
-                                                        disabled={isLoading}
-                                                        leftIcon={<Edit className="h-4 w-4" />}
-                                                    />
-
-                                                    <Button
-                                                        color="transparent"
-                                                        isborderRadius
-                                                        size="sm"
-                                                        style={{ color: 'red', padding: '4px 8px' }}
-                                                        title="Delete"
-                                                        onClick={() => handleDeleteEnquiryFollowUp(item)}
-                                                        disabled={isLoading}
-                                                        leftIcon={<Trash2 className="h-4 w-4" />}
-                                                    />
-                                                </div>
+                                        <div className="flex items-center gap-2">
+                                            {canActionPerform && (
+                                                <Button
+                                                    color="blue"
+                                                    size="sm"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleOpenEnquiryFollowUpModal()
+                                                    }}
+                                                    title="Follow-Up">
+                                                    Follow Up
+                                                </Button>
                                             )}
                                         </div>
 
-                                        {/* LOST REASON */}
-                                        {item.Status?.toLowerCase() === "lost" && (
-                                            <span className="block mt-1 text-xs text-gray-500 italic">
-                                                Lost Reason: {item.LostReason || "-"}
-                                            </span>
-                                        )}
-
-                                        {/* REMARK */}
-                                        <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
-                                            {item.Remark || "-"}
-                                        </p>
                                     </div>
 
                                 </div>
-                            ))}
+                            </div>
+
+                            <div className="mt-3 overflow-y-auto h-[1600px] thin-scroll pr-2">
+
+                                {editEnquiryFollowUpData?.map((item, index) => (
+                                    <div key={item.EnquiryFollowUpId} className="grid grid-cols-[24px_1fr] gap-3">
+
+                                        {/* LEFT — DOT + LINE */}
+                                        <div className="flex flex-col items-center">
+
+                                            {/* DOT */}
+                                            <div className="h-4 w-4 rounded-full bg-blue-600"></div>
+                                            <div className="w-[3px] bg-blue-600 flex-1"></div>
+                                            {/* LINE (hide after last item) */}
+                                            {index !== editEnquiryFollowUpData.length - 1 && (
+                                                <div className="w-[3px] bg-blue-600 flex-1"></div>
+                                            )}
+                                        </div>
+
+                                        {/* RIGHT — CONTENT */}
+                                        <div>
+                                            {/* TOP ROW */}
+                                            <div className="flex items-start justify-between gap-3">
+
+                                                <div className="flex items-center gap-3">
+                                                    <span className="font-semibold text-gray-900">
+                                                        {
+                                                            item.ModifiedBy
+                                                                ? `${item.ModifiedBy} - ${formatDate_dd_MonthName_yy_hh_mm(item.ModifiedDate ?? "")}`
+                                                                : `${item.CreatedBy ?? ""} - ${formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate ?? "")}`
+                                                        }
+                                                    </span>
+
+                                                    <span className="text-xs text-gray-500 flex flex-col gap-1">
+                                                        {(() => {
+                                                            const { bg, text } = getStatusColor(item.Status || '');
+                                                            return (
+                                                                <span
+                                                                    className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                                                                    style={{ backgroundColor: bg, color: text }}
+                                                                >
+                                                                    {item.Status || "-"}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                    </span>
+                                                </div>
+
+                                                {index === 0 && canActionPerform && isDateWithinPastDays(item.CreatedDate, 2) && (
+                                                    <div className="flex items-center gap-1">
+                                                        <Button
+                                                            color="transparent"
+                                                            isborderRadius
+                                                            size="sm"
+                                                            style={{ color: 'blue', padding: '4px 8px' }}
+                                                            title="Edit"
+                                                            onClick={() => handleOpenEnquiryFollowUpModal(item)}
+                                                            disabled={isLoading}
+                                                            leftIcon={<Edit className="h-4 w-4" />}
+                                                        />
+
+                                                        <Button
+                                                            color="transparent"
+                                                            isborderRadius
+                                                            size="sm"
+                                                            style={{ color: 'red', padding: '4px 8px' }}
+                                                            title="Delete"
+                                                            onClick={() => handleDeleteEnquiryFollowUp(item)}
+                                                            disabled={isLoading}
+                                                            leftIcon={<Trash2 className="h-4 w-4" />}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* LOST REASON */}
+                                            {item.Status?.toLowerCase() === "lost" && (
+                                                <span className="block mt-1 text-xs text-gray-500 italic">
+                                                    Lost Reason: {item.LostReason || "-"}
+                                                </span>
+                                            )}
+
+                                            {/* REMARK */}
+                                            <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
+                                                {item.Remark || "-"}
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                ))}
 
 
-                            {/* LAST ROW — NEXT FOLLOW-UP */}
-                            <div className="grid grid-cols-[24px_1fr] gap-3">
+                                {/* LAST ROW — NEXT FOLLOW-UP */}
+                                <div className="grid grid-cols-[24px_1fr] gap-3">
 
-                                <div className="flex flex-col items-center">
-                                    <div className="h-4 w-4 rounded-full bg-gray-400"></div>
-                                </div>
+                                    <div className="flex flex-col items-center">
+                                        <div className="h-4 w-4 rounded-full bg-gray-400"></div>
+                                    </div>
 
-                                <div className="flex justify-between items-center">
-                                    <span className="text-sm text-gray-500">
-                                        {enquiryData?.NextFollowUpDate
-                                            ? formatDate_dd_MonthName_yy(enquiryData.NextFollowUpDate)
-                                            : "-"}
-                                    </span>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-sm text-gray-500">
+                                            {enquiryData?.NextFollowUpDate
+                                                ? formatDate_dd_MonthName_yy(enquiryData.NextFollowUpDate)
+                                                : "-"}
+                                        </span>
 
-                                    <span className="text-sm font-semibold text-gray-600">
-                                        Next Follow-up
-                                    </span>
+                                        <span className="text-sm font-semibold text-gray-600">
+                                            Next Follow-up
+                                        </span>
+                                    </div>
+
                                 </div>
 
                             </div>
 
                         </div>
-
                     </div>
-                </div>
 
-            </div>
+                </div>
+            )}
+
+             {enquiryActiveTab === "CallLogs" && (
+                <CallMonitoring pageName='Enquiry' id={currentEnquiryId} />
+            )}
 
             <Modal
                 isOpen={isEnquiryFollowUpModalOpen}

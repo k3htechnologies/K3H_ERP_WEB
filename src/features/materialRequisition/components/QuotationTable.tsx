@@ -1,11 +1,13 @@
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { DataTableEditable, type EditableColumnGroup, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable"
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
-import { computeAmount, computeAmountInstallation, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
+import { computeAmountInstallation, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { Input } from "@/ui/components/forms/Input"
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation"
 import { formatCurrency } from "@/core/utils/comman"
 import useToast from "@/core/hooks/useToast";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
+
 
 type Row =
     {
@@ -20,7 +22,9 @@ type Row =
         TGST?: number | string
         Amount: number
         Installation: number
-        Logistics?: string
+        MaterialRequisitionDetailId?: number
+        IsFinalized: boolean;
+        ApprovalStatus: string | null;
     }
 
 interface Props {
@@ -32,30 +36,44 @@ interface Props {
     termId?: number
     onSave?: (rows: Row[]) => void
     onEditModeChange?: (isEditing: boolean) => void
-    VendorFinalizationApprovalStatus?: string
+    MaterialRequisitionStatus?: string
+    MaterialRequisitionApprovalStatus?: string
     VendorGSTNumber?: string
     CompanyGSTNumber?: string
+    IsPendingMaterialRequisitionDetail?:boolean
     addToast?: ReturnType<typeof useToast>["addToast"]
 }
 
-export const FinalizedVendorQuotationTable: React.FC<Props> = ({
+const normalizeRows = (items: Row[]): Row[] => items.map(row =>Number(row.MaterialRequisitionDetailId) === 0 ? { ...row, MaterialName: row.MaterialName ?? "" } : row);
+
+export const QuotationTable: React.FC<Props> = ({
     data,
     onChange,
     onSave,
     onEditModeChange,
-    VendorFinalizationApprovalStatus,
+    MaterialRequisitionStatus,
+    MaterialRequisitionApprovalStatus,
     VendorGSTNumber,
     CompanyGSTNumber,
+    IsPendingMaterialRequisitionDetail,
     addToast
 }) => {
-    const [rows, setRows] = useState<Row[]>(data)
-    const [stagedRows, setStagedRows] = useState<Row[]>(data)
+    const [rows, setRows] = useState<Row[]>(() => normalizeRows(data))
+    const [stagedRows, setStagedRows] = useState<Row[]>(() => normalizeRows(data))
     const [isEditing, setIsEditing] = useState(false)
+    const { canAction } = useMenuPermissions('Get Quotation');
+
+    const isEditDisabled =
+        !canAction ||
+        !IsPendingMaterialRequisitionDetail ||
+        ["CLOSED", "COMPLETED"].includes(MaterialRequisitionStatus?.trim().toUpperCase() ?? "") ||
+        MaterialRequisitionApprovalStatus?.trim().toUpperCase() !== "APPROVED";
 
     useEffect(() => {
         if (!isEditing) {
-            setRows(data)
-            setStagedRows(data)
+            const normalizedData = normalizeRows(data)
+            setRows(normalizedData)
+            setStagedRows(normalizedData)
         }
     }, [data, isEditing]);
 
@@ -64,14 +82,16 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             (isEditing ? stagedRows : rows).map(r => ({
                 ...r,
                 id: r.id ?? `row-${r.MaterialName}-${r.MaterialQuantity}`,
-                Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),  // ← key fix
+                Amount: Number((r as any).MaterialRequisitionDetailId) === 0 ? Number(r.Amount ?? 0) : computeAmountInstallation(r),
             })),
         [rows, stagedRows, isEditing]
     )
 
     const handleChange = useCallback((newRows: Row[]) => {
-        const updatedRows = newRows.map(row => {
-            const amount = computeAmount(row);
+
+        const updatedRows = normalizeRows(newRows).map(row => {
+
+            const amount = Number(row.MaterialRequisitionDetailId) === 0 ? Number(row.Amount || 0) : computeAmountInstallation(row);
 
             if (amount <= 0) {
                 return {
@@ -89,6 +109,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         setStagedRows(updatedRows);
 
         onChange?.(updatedRows);
+
     }, [onChange]);
 
     const handleSave = () => {
@@ -130,7 +151,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         onSave?.(
             stagedRows.map(r => ({
                 ...r,
-                Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),
+                Amount: Number((r as any).MaterialRequisitionDetailId) === 0 ? Number(r.Amount ?? 0) : computeAmountInstallation(r),
             }))
         );
 
@@ -154,12 +175,15 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
 
 
     const hasAmount = (row: Row) => {
-        const amount = computeAmount(row);
+        const amount = Number(row.MaterialRequisitionDetailId) === 0
+            ? Number(row.Amount || 0)
+            : computeAmountInstallation(row);
 
         return amount > 0;
     };
 
     const getGSTType = () => {
+
         const vendorStateCode = VendorGSTNumber?.trim().substring(0, 2);
         const companyStateCode = CompanyGSTNumber?.trim().substring(0, 2);
 
@@ -179,6 +203,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     };
 
     const { isSameState, isDifferentState } = getGSTType();
+    const hasFinalizedRow = rows.some(row => row.IsFinalized === true);
 
     const columns: EditableTableColumn[] = useMemo(() => [
         {
@@ -191,33 +216,32 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             cellClassName: "font-medium text-gray-900",
             render: (_value, row) => {
-                const isService = !!row?.Logistics
+                const isService = Number(row?.MaterialRequisitionDetailId) === 0
                 return (
                     <div className="flex flex-col">
-                        {row.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT" ? (
+                        {isService ? (
+                            <span className="text-gray-900">
+                                {row?.MaterialName || ""}
+                            </span>
+                        ) : row.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT" ? (
                             <>
                                 <span className="text-gray-900">
-                                    {row?.MaterialName || row?.Logistics || ""}
+                                    {row?.MaterialName || ""}
                                 </span>
-
                                 <span className="text-gray-400 text-xs">
                                     <TooltipText text={row?.SubMaterialName || ""} />
                                 </span>
                             </>
-                        ) :
-                            <>
-                                <span className="text-gray-900">
-                                    {row?.Level4Name || row?.Logistics || ""}
-                                </span>
-                            </>
-                        }
-
+                        ) : (
+                            <span className="text-gray-900">
+                                {row?.Level4Name || ""}
+                            </span>
+                        )}
 
                         <span className={`mt-1 inline-block px-2 py-0.5 text-xs rounded-full font-semibold w-fit
                            ${isService ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
                             {isService ? "SERVICE" : "MATERIAL"}
                         </span>
-
                     </div>
                 )
             }
@@ -232,12 +256,16 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (_value, row) => (
                 <div className="w-full flex justify-end items-start p-0 m-0">
-                    <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 leading-none">
-                        {row?.MaterialQuantity || "-"}{" "}
-                        {row?.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
-                            ? row?.Level4SubMaterialUomCode
-                            : row?.UomCode}
-                    </span>
+
+                    {Number(row?.MaterialRequisitionDetailId) !== 0 && (
+                        <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 leading-none">
+                            {row?.MaterialQuantity || "-"}{" "}
+                            {row?.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT"
+                                ? row?.Level4SubMaterialUomCode
+                                : row?.UomCode}
+                        </span>
+                    )}
+
                 </div>
             )
         },
@@ -252,7 +280,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#253E60] text-white tracking-[0.8px]",
             render: (_value, row) => {
 
-                if (row?.Logistics) return
+                if (Number(row?.MaterialRequisitionDetailId) === 0) return
 
                 <span className="inline-flex items-center justify-center min-w-[70px] px-3 py-1.5 rounded-md bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 text-gray-500 text-xs font-semibold shadow-sm">
                     —
@@ -268,11 +296,16 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             },
             renderEditor: (_value, onChange, row) => {
 
-                if (row?.Logistics) return <span className=" text-gray-300">-</span>
+                if (row.IsFinalized || Number(row.MaterialRequisitionDetailId) === 0) {
+                    return <div className="flex justify-end w-full">
+                        <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
+                            {row?.MaterialPerUnit || '-'}
+                        </span>
+                    </div>;
+                }
 
                 return (
                     <Input
-
                         type="text"
                         value={row?.MaterialPerUnit ?? 0}
                         onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
@@ -293,7 +326,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#253E60] text-white tracking-[1px]",
             render: (_value, row) => {
 
-                if (row?.Logistics) return
+                if (Number(row?.MaterialRequisitionDetailId) === 0) return
 
                 <span className="inline-flex items-center justify-center min-w-[70px] px-3 py-1.5 rounded-md bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 text-gray-500 text-xs font-semibold shadow-sm">
                     —
@@ -302,14 +335,20 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 return (
                     <div className="flex justify-end w-full">
                         <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
-                            {row?.Installation || '-'}
+                            {row?.Installation || ''}
                         </span>
                     </div>
                 )
             },
             renderEditor: (_value, onChange, row) => {
 
-                if (row?.Logistics) return <span className=" text-gray-300">-</span>
+                if (row.IsFinalized || Number(row.MaterialRequisitionDetailId) === 0) {
+                    return <div className="flex justify-end w-full">
+                        <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
+                            {row?.Installation || '-'}
+                        </span>
+                    </div>;
+                }
 
                 return (
                     <Input
@@ -334,8 +373,11 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             prefix: "₹",
             headerClassName: "bg-[#253E60] text-white tracking-[1px]",
+
+            
             renderEditor: (_value, onChange, row) => {
-                if (row.Logistics) {
+
+                if (Number(row.MaterialRequisitionDetailId) === 0 && !hasFinalizedRow) {
                     return (
                         <Input
                             type="text"
@@ -345,6 +387,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                         />
                     )
                 }
+                
                 return (
                     <span className="w-full block text-right pr-1 font-bold text-black-300">
                         {formatCurrency(computeAmountInstallation(row))}
@@ -353,7 +396,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             },
             render: (_value, row) => (
                 <span className="w-full block text-right pr-1">
-                    ₹{(row.Logistics ? (row.Amount ?? 0) : computeAmountInstallation(row)).toLocaleString()}
+                    ₹{(Number(row.MaterialRequisitionDetailId) === 0 ? (row.Amount ?? 0) : computeAmountInstallation(row)).toLocaleString()}
                 </span>
             )
         },
@@ -367,13 +410,12 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-
             renderEditor: (_value, onChange, row) => {
 
-                if (!isSameState || !hasAmount(row)) {
+                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalized) {
                     return (
-                        <span className="text-gray-300 text-right block">
-                            -
+                        <span className="text-gray-400 text-right block">
+                            {row.CGST || "-"}
                         </span>
                     );
                 }
@@ -394,10 +436,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                 );
             },
 
-            cellClassName: (value) =>
-                value !== 0
-                    ? "text-yellow-600 font-semibold bg-yellow-50"
-                    : "text-gray-400 font-semibold bg-gray-100"
+            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold bg-gray-100"
         },
 
         {
@@ -411,10 +450,10 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if (!isSameState || !hasAmount(row)) {
+                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalized) {
                     return (
                         <span className="text-gray-300 text-right block">
-                            -
+                            {row.SGST || "-"}
                         </span>
                     );
                 }
@@ -433,10 +472,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                     />
                 );
             },
-            cellClassName: (value) =>
-                value !== 0
-                    ? "text-yellow-600 font-semibold bg-yellow-50"
-                    : "text-gray-400 font-semibold bg-gray-100"
+            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold bg-gray-100"
         },
 
         {
@@ -450,10 +486,10 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if (!isDifferentState || !hasAmount(row)) {
+                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalized) {
                     return (
                         <span className="text-gray-300 text-right block">
-                            -
+                            {row.TGST ?? "-"}
                         </span>
                     );
                 }
@@ -474,10 +510,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                     />
                 );
             },
-            cellClassName: (value) =>
-                value !== 0
-                    ? "text-yellow-600 font-semibold bg-yellow-50"
-                    : "text-gray-400 font-semibold bg-gray-100"
+            cellClassName: (value) =>   value !== 0  ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold bg-gray-100"
         },
         {
             key: "Total",
@@ -500,7 +533,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                     Quotation
                 </div>
                 {
-                    !VendorFinalizationApprovalStatus?.toUpperCase().includes("APPROVED") && (
+                    !isEditDisabled && (
                         !isEditing ? (
 
                             <button

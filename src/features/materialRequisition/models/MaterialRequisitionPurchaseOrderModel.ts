@@ -14,9 +14,10 @@ export interface MaterialRequisitionPurchaseOrderData {
     MaterialRequisitionPurchaseOrderId: number | 0;
     Uniquekey: string | null;
     ProjectId: number | 0;
+    POSystemGeneratedCode: string;
     MaterialRequisitionId: number | 0;
+    MaterialRequisitionDetailId: string;
     PurchaseOrderURL: string | null;
-    RemovePurchaseOrderURL: string | '';
     NumberOfGRN: number | 0;
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -30,6 +31,7 @@ export interface MaterialRequisitionPurchaseOrderData {
 
 export interface AddUpdateMaterialRequisitionPurchaseOrder {
     MaterialRequisitionPurchaseOrderId: number | 0;
+    MaterialRequisitionDetailId:string;
     Uniquekey: string | null;
     ProjectId: number | 0;
     MaterialRequisitionId: number | 0;
@@ -46,6 +48,7 @@ export interface DeleteMaterialRequisitionPurchaseOrder {
 
 export interface GenerateMaterialRequisitionPurchaseOrderPdfData {
     MaterialRequisitionId: number | 0;
+    MaterialRequisitionDetailId:string;
     ProjectId: number | 0;
     Uniquekey: string | null;
     Remarks: string | null;

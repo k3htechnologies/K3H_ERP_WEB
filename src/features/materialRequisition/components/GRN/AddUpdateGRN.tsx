@@ -9,7 +9,6 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { Input } from "@/ui/components/forms/Input";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
@@ -18,12 +17,14 @@ import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
+import type { MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
     Remarks: '',
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
+    VendorId: 0,
     MaterialRequisitionGRNId: 0,
     ChallanNumber: "",
     VehicleNumber: null,
@@ -53,16 +54,19 @@ export const AddUpdateGRN = () => {
     const { canAction } = useMenuPermissions('Get Material Requisition');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const navigate = useNavigate();
-    const { projectId } = useProject();
+
+    const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
+
 
     const { MaterialRequisitionId, MaterialRequisitionGRNId, } = useParams<{
         MaterialRequisitionId?: string; MaterialRequisitionGRNId?: string;
     }>();
 
     const { listState } = useMaterialRequisitionListState();
+    const projectId = listState.projectId;
 
-    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey;
+    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.materialRequisitionId;
+    const currentUniquekey = listState.uniquekey;
 
     const materialRequisitionGRNId = MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0;
     const isAddMode = materialRequisitionGRNId === 0;
@@ -73,9 +77,10 @@ export const AddUpdateGRN = () => {
 
     useEffect(() => {
         if (matrialRequisitionDetailData.length > 0) {
-            setMaterialList(
-                matrialRequisitionDetailData as MaterialRequisitionDetailGRN[]
-            );
+
+            const filterMatrialRequisitionDetail = matrialRequisitionDetailData.filter((item: MaterialRequisitionDetailData) => item.ApprovalStatus?.trim().toUpperCase() === "APPROVED" && item.PurchaseOrderURL?.trim());
+
+            setMaterialList(filterMatrialRequisitionDetail as MaterialRequisitionDetailGRN[]);
         }
     }, [matrialRequisitionDetailData]);
 
@@ -109,6 +114,7 @@ export const AddUpdateGRN = () => {
                             MaterialRequisitionGRNId: e.MaterialRequisitionGRNId ?? materialRequisitionGRNId,
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
                             ProjectId: e.ProjectId ?? Number(projectId),
+                            VendorId: e.VendorId ?? 0,
                             ChallanNumber: e.ChallanNumber ?? "",
                             Remarks: e.Remarks ?? "",
                             VehicleNumber: e.VehicleNumber ?? "",
@@ -213,6 +219,7 @@ export const AddUpdateGRN = () => {
         form.append('ChallanNumber', formData.ChallanNumber);
         form.append('VehicleNumber', formData.VehicleNumber ?? '');
         form.append('MaterialRequisitionGRNId', formData.MaterialRequisitionGRNId.toString());
+        form.append('VendorId', String(selectedVendorId ?? 0));
 
         const filtered = materialList
             .filter(item => item.TotalReceivedMaterialQuantity > 0)
@@ -300,7 +307,7 @@ export const AddUpdateGRN = () => {
         setErrors((prev) => ({ ...prev, [field]: "", }));
     };
 
-    const MatrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
+    const matrialRequisitionDetailColumns = useMemo<TableColumn[]>(() => {
 
         const isDirect = materialList?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
@@ -392,6 +399,28 @@ export const AddUpdateGRN = () => {
                 render: (value) =>
                     value ? formatDate_dd_MonthName_yy(value) : "-"
             },
+            {
+                key: "VendorDetailsGroup",
+                label: "Vendor Details",
+                align: "center",
+
+                children: [
+                    {
+                        key: "VendorCompanyName",
+                        label: "Company Name",
+                        align: "left",
+                        width: "30",
+                        render: (value) => value || "-"
+                    },
+                    {
+                        key: "VendorName",
+                        label: "Name",
+                        align: "left",
+                        width: "30",
+                        render: (value) => value || "-"
+                    },
+                ]
+            },
 
             {
                 key: "QuantityGroup",
@@ -441,34 +470,53 @@ export const AddUpdateGRN = () => {
                             const materialQuantity = row.MaterialQuantity
                             const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
                             const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-                            const isPendingQtyZero=pendingQuantity <=0;
+                            const isPendingQtyZero = pendingQuantity <= 0;
+                            const isOtherVendorSelected = selectedVendorId !== null && selectedVendorId !== Number(row.VendorId);
                             return (
                                 <Input
                                     label=""
                                     value={value ?? 0}
                                     maxLength={9}
-                                    disabled={isPendingQtyZero}
+                                    disabled={isPendingQtyZero || isOtherVendorSelected}
                                     onChange={(e) => {
-                                        const raw = filterNumbers(e.target.value);
 
+                                        const raw = filterNumbers(e.target.value);
                                         const receivedQuantity = Number(raw);
 
                                         if (receivedQuantity > pendingQuantity) {
-                                            addToast({
-                                                type: "error", title: `Received Quantity cannot exceed Pending Quantity (${pendingQuantity})`,
-                                            });
+                                            addToast({ type: "error", title: `Received Quantity cannot exceed Pending Quantity (${pendingQuantity})`, });
                                             return;
                                         }
 
                                         if (receivedQuantity < 0) return;
 
-                                        setMaterialList(prev =>
-                                            prev.map(item =>
-                                                item.MaterialRequisitionDetailId === row.MaterialRequisitionDetailId
-                                                    ? { ...item, TotalReceivedMaterialQuantity: receivedQuantity }
-                                                    : item
-                                            )
-                                        );
+                                        if (receivedQuantity > 0) {
+                                            setSelectedVendorId(Number(row.VendorId));
+                                        }
+
+                                        setMaterialList(prev => {
+
+                                            const updatedList = prev.map(item => {
+
+                                                if (item.MaterialRequisitionDetailId === row.MaterialRequisitionDetailId && Number(item.VendorId) === Number(row.VendorId)) {
+                                                    return {
+                                                        ...item,
+                                                        TotalReceivedMaterialQuantity: receivedQuantity
+                                                    };
+                                                }
+
+                                                return item;
+                                            });
+
+
+                                            const hasReceivedQuantity = updatedList.some(item => Number(item.TotalReceivedMaterialQuantity) > 0);
+
+                                            if (!hasReceivedQuantity) {
+                                                setSelectedVendorId(null);
+                                            }
+
+                                            return updatedList;
+                                        });
                                     }}
                                     max={pendingQuantity}
                                 />
@@ -495,7 +543,7 @@ export const AddUpdateGRN = () => {
 
 
                         <CustomTable
-                            columns={MatrialRequisitionDetailColumns}
+                            columns={matrialRequisitionDetailColumns}
                             data={materialList}
                             emptyMessage="No Material Requisition Details Found"
                             fixedHeight={true}

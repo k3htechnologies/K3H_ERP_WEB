@@ -18,6 +18,8 @@ export interface FilterWithPaginationVendorRequest {
     GSTNumber?: string 
     AadharCardNumber?: string
     PanCardNumber?: string
+    FromDate?: string | null
+    ToDate?: string | null
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

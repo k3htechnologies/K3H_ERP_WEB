@@ -5,12 +5,10 @@ import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Invoice } from "@/features/materialRequisition/components/invoice/Invoice";
-import Overview from "@/features/materialRequisition/components/Overview";
 import PurchaseOrder from "@/features/materialRequisition/components/PurchaseOrder";
 import GRN from "@/features/materialRequisition/components/GRN/GRN";
 import type { CloseMaterialRequisitionRequest, FilterMaterialRequisitionOverview, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { runApiWithLoader } from "@/core/utils";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
@@ -20,12 +18,11 @@ import { FinalizedVendor } from "@/features/materialRequisition/components/Final
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import type { MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import type { RevokeFinalizationVendorRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
-import { vendorFinalizationService } from "../services/VendorFinalizationService";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Button } from "@/ui/components/forms";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import Enquiry from "@/features/materialRequisition/components/Enquiry";
+import Quotation from "../components/Quotation";
 
 export const ViewMaterialRequisition: React.FC = () => {
     const emp = LocalStorageHelper.getStoredEmployeeData();
@@ -37,35 +34,32 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
     const navigate = useNavigate();
-    const { projectId } = useProject();
-    const { setDetailData } = useMaterialRequisitionListState()
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState, updateListState } = useMaterialRequisitionListState();
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const systemGeneratedCode = listState.SystemGeneratedCode;
-    const materialRequisitionStatus = listState.MaterialRequisitionStatus;
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.materialRequisitionId;
+    const systemGeneratedCode = listState.systemGeneratedCode;
     const location = useLocation();
-
-    const [isRevokeFinalizationVendorDialogOpen, setIsRevokeFinalizationVendorDialogOpen] = useState(false);
-    const [selectedRevokeFinalizationVendorMaterialRequisitionItem, setSelectedRevokeFinalizationVendorMaterialRequisitionItem] = useState<RevokeFinalizationVendorRequest | null>(null);
+    const projectId = listState.projectId;
 
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<CloseMaterialRequisitionRequest | null>(null);
     const [closeCompletedRemarkError, setCloseCompletedRemarkError] = useState("");
 
     const { canAction: canMaterialRequisitionView } = useMenuPermissions('Get Material Requisition');
+    const { canView: canGetQuotationView } = useMenuPermissions('Get Quotation');
     const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
 
-        { id: "Overview", label: "Overview" },
         { id: "Details", label: "Details" },
-        canFinalizedVendorView ? { id: "Finalize Vendor", label: "Finalize Vendor" } : null,
-        canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
-        { id: "GRN", label: "GRN" },
-        canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
+        canGetQuotationView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Enquiry", label: "Enquiry" } : null,
+        canGetQuotationView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Quotation", label: "Quotation" } : null,
+        canFinalizedVendorView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Finalize Vendor", label: "Finalize Vendor" } : null,
+        canGeneratePurchaseOrder && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Purchase Order", label: "Purchase Order" } : null,
+        listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "GRN", label: "GRN" } : null,
+        canAddInvoice && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Invoice", label: "Invoice" } : null
 
     ].filter(Boolean) as { id: string; label: string }[];
 
@@ -106,16 +100,10 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                     setMaterialRequisitionInvoiceData(item?.MaterialRequisitionInvoiceData ?? []);
 
-                    setDetailData(item?.MaterialRequisitionDetailData);
-
                     updateListState({
-                        MaterialRequisitionId: item.MaterialRequisitionId ?? 0,
-                        MaterialRequisitionStage: item.MaterialRequisitionStage ?? "",
-                        MaterialRequisitionStatus: item.MaterialRequisitionStatus ?? "",
-                        SystemGeneratedCode: item.SystemGeneratedCode ?? "",
-                        VendorFinalizationApprovalStatus: item.VendorFinalizationApprovalStatus,
-                        VendorName: item.FinalVendor,
-                        Uniquekey: item.Uniquekey ?? ""
+                        materialRequisitionId: item.MaterialRequisitionId ?? 0,
+                        systemGeneratedCode: item.SystemGeneratedCode ?? "",
+                        uniquekey: item.Uniquekey ?? ""
                     });
 
                 } else {
@@ -165,7 +153,6 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                 } else {
                     addToast({ type: "error", title: response.left.message });
-                    setIsCloseRequisitionDialogOpen(false);
                 }
                 return response;
             },
@@ -176,46 +163,10 @@ export const ViewMaterialRequisition: React.FC = () => {
         );
     };
 
-    const handleRevokeFinalizationVendor = async () => {
-
-        if (!selectedRevokeFinalizationVendorMaterialRequisitionItem) return;
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload: RevokeFinalizationVendorRequest = {
-                    MaterialRequisitionId: selectedRevokeFinalizationVendorMaterialRequisitionItem.MaterialRequisitionId,
-                    Uniquekey: selectedRevokeFinalizationVendorMaterialRequisitionItem.Uniquekey,
-                    ProjectId: Number(projectId),
-                }
-
-                const response = await vendorFinalizationService.apiCallRevokeFinalizationVendor(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage[0], });
-
-                    navigate("/materialRequisition");
-
-                    setIsRevokeFinalizationVendorDialogOpen(false);
-
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                    setIsRevokeFinalizationVendorDialogOpen(false);
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => addToast({ type: "error", title: error.message }),
-            undefined,
-            "Revoke Finalization Vendor",
-        );
-    };
+    
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
+        updateListState({ materialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);
 
@@ -233,7 +184,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                     MaterialRequisitionId: Number(currentMaterialRequisitionId) || 0,
                     ProjectId: Number(projectId) || 0,
-                    ExportType:"MATERIAL REQUISITION PDF"
+                    ExportType: "MATERIAL REQUISITION PDF"
                 };
 
                 const response = await materialRequisitionService.apiCallPullMaterialRequisitionOverview(params);
@@ -249,34 +200,28 @@ export const ViewMaterialRequisition: React.FC = () => {
         );
     };
 
-    const TotalPoAmount = Number(matrialRequisitionData?.TotalPoAmount ?? 0);
-    const PaidAmount = Number(matrialRequisitionData?.PaidAmount ?? 0);
-    const PendingAmount = TotalPoAmount - PaidAmount;
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="flex justify-between">
                 <div className="flex-1">
-                        <HeaderActionBar
+                    <HeaderActionBar
                         subTitleText={systemGeneratedCode ?? "-"}
-                        subSubTitleText={materialRequisitionStatus ?? ''}
-                        subSubSubTitleText={listState.VendorName ?? ''}
+                        subSubTitleText={matrialRequisitionData?.ProjectName ?? "-"}
+                        subSubSubTitleText={listState?.approvalStatus ?? "-"}
                         cancelText="Cancel"
                         onCancel={() => handleBackToListMaterialRequisition()}
                         EditText="Edit"
 
-                        canAction={activeTab === "Overview" &&
+                        canAction={activeTab === "Details" &&
                             canMaterialRequisitionView &&
-                            Number(matrialRequisitionData?.CreatedById) === Number(emp?.EmployeeId) &&
-                            !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
-                            !["COMPLETED", "CLOSED"].includes(listState?.MaterialRequisitionStage?.toUpperCase() ?? "") &&
-                            ["GET QUOTATION"].includes(listState?.MaterialRequisitionStage?.toUpperCase())}
+                            ["PENDING"].includes(listState?.approvalStatus?.toUpperCase()) &&
+                            Number(matrialRequisitionData?.CreatedById) === Number(emp?.EmployeeId)}
 
                         onEdit={() => {
 
-                            if (activeTab === "Overview") {
+                            if (activeTab === "Details") {
 
                                 if (matrialRequisitionData) handleMaterialRequisitionEdit(matrialRequisitionData);
                             }
@@ -285,31 +230,10 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                 </div>
 
-                  <div className="flex justify-end gap-2">
-                    {matrialRequisitionData?.IsCopy &&
-                    !["CLOSED", "COMPLETED"].includes( matrialRequisitionData?.MaterialRequisitionStatus?.trim().toUpperCase() ?? "" ) && (
-                        <Button
-                            size="sm"
-                            style={{
-                                color: '#135BEC',
-                                padding: '4px 8px',
-                                backgroundColor: '#DBEAFE'
-                            }}
-                            onClick={() => {
-                                setSelectedRevokeFinalizationVendorMaterialRequisitionItem({
-                                    MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
-                                    Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
-                                    ProjectId: Number(projectId)
-                                });
+                <div className="flex justify-end gap-2">
 
-                                setIsRevokeFinalizationVendorDialogOpen(true);
-                            }}
-                        >
-                            Revoke Finalization
-                        </Button>
-                    )}
-
-                    {!["Completed", "Closed"].includes( matrialRequisitionData?.MaterialRequisitionStatus?.trim() ?? "" ) && (
+                    {!["Completed", "Closed"].includes(matrialRequisitionData?.MaterialRequisitionStatus?.trim() ?? "") && 
+                     ["APPROVED"].includes(listState?.approvalStatus?.toUpperCase()) &&(
                         <div className="flex justify-end pb-2 pl-2 gap-2">
                             <Button
                                 size="sm"
@@ -332,31 +256,30 @@ export const ViewMaterialRequisition: React.FC = () => {
                             >
                                 Close Requisition
                             </Button>
+
+                            <Button
+                                size="sm"
+                                style={{
+                                    color: '#008A00',
+                                    padding: '4px 8px',
+                                    backgroundColor: '#E8F7E8'
+                                }}
+                                onClick={() => {
+                                    setSelectedMaterialRequisitionItem({
+                                        MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
+                                        Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
+                                        ProjectId: Number(projectId),
+                                        Type: "Completed",
+                                        CloseCompletionRemark: ""
+                                    });
+                                    setIsCloseRequisitionDialogOpen(true);
+                                }}
+                            >
+                                Completed
+                            </Button>
                         </div>
                     )}
 
-                    {PendingAmount === 0 && listState.VendorName?.trim() !== "" && matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && (
-                        <Button
-                            size="sm"
-                            style={{
-                                color: '#008A00',
-                                padding: '4px 8px',
-                                backgroundColor: '#E8F7E8'
-                            }}
-                            onClick={() => {
-                                setSelectedMaterialRequisitionItem({
-                                    MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
-                                    Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
-                                    ProjectId: Number(projectId),
-                                    Type: "Completed",
-                                    CloseCompletionRemark: ""
-                                });
-                                setIsCloseRequisitionDialogOpen(true);
-                            }}
-                        >
-                            Completed
-                        </Button>
-                    )}
 
                 </div>
             </div>
@@ -366,15 +289,17 @@ export const ViewMaterialRequisition: React.FC = () => {
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
                     islarge={true}
-                    tabWidth={16}
+                    tabWidth={14}
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
 
-            {activeTab === 'Overview' && (<Overview matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData}/>)}
-            {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData}  handleExportMaterialRequisition={handleExportMaterialRequisition}/>}
-            {activeTab === 'Finalize Vendor' && <FinalizedVendor onApprovalSuccess={loadMaterialRequisitionOverview} />}
-            {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} />}
+
+            {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData} handleExportMaterialRequisition={handleExportMaterialRequisition} />}
+            {activeTab === 'Enquiry' && <Enquiry materialRequisitionDetailData={matrialRequisitionDetailData} />}
+            {activeTab === 'Quotation' && <Quotation materialRequisitionDetailData={matrialRequisitionDetailData} />}
+            {activeTab === 'Finalize Vendor' && <FinalizedVendor onload={loadMaterialRequisitionOverview}  />}
+            {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} materialRequisitionDetailData={matrialRequisitionDetailData}/>}
             {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onload={loadMaterialRequisitionOverview} />)}
             {activeTab === 'Invoice' && <Invoice onApprovalSuccess={loadMaterialRequisitionOverview} />}
 
@@ -451,19 +376,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             </Modal>
 
-            <ConfirmationDialogBox
-                isOpen={isRevokeFinalizationVendorDialogOpen}
-                onClose={() => {
-                    setIsRevokeFinalizationVendorDialogOpen(false);
-                    setSelectedRevokeFinalizationVendorMaterialRequisitionItem(null);
-                }}
-                onConfirm={handleRevokeFinalizationVendor}
-                title="Reopen Vendor Finalization"
-                message="Are you sure you want to reopen the vendor finalization? This will allow you to select and finalize another vendor."
-                confirmText="Reopen"
-                cancelText="Cancel"
-                loading={isLoading}
-            />
+            
         </div>
     );
 };

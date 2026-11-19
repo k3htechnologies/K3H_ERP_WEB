@@ -30,6 +30,8 @@ const initialFormState = (): AddUpdateAssetMasterRequest => ({
   SupplierName: '',
   AssetInvoiceURL: null,
   RemoveAssetInvoiceURL: '',
+  AssetImageURL: null,
+  RemoveAssetImageURL: '',
 });
 
 export const AddUpdateAssetMaster: React.FC = () => {
@@ -42,6 +44,10 @@ export const AddUpdateAssetMaster: React.FC = () => {
   const [assetInvoiceFiles, setAssetInvoiceFiles] = useState<(File | string)[]>([]);
   const [removedAssetInvoiceUrls, setRemovedAssetInvoiceUrls] = useState<string[]>([]);
   const [assetInvoiceURL, setAssetInvoiceURL] = useState<string>();
+
+  const [assetImageFiles, setAssetImageFiles] = useState<(File | string)[]>([]);
+  const [removedAssetImageUrls, setRemovedAssetImageUrls] = useState<string[]>([]);
+  const [assetImageURL, setAssetImageURL] = useState<string>();
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -121,6 +127,10 @@ export const AddUpdateAssetMaster: React.FC = () => {
             setAssetInvoiceFiles([]);
             setAssetInvoiceURL(e.AssetInvoiceURL ?? undefined);
             setRemovedAssetInvoiceUrls([]);
+
+            setAssetImageFiles([]);
+            setAssetImageURL(e.AssetImageURL ?? undefined);
+            setRemovedAssetImageUrls([]);
           }
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -192,6 +202,10 @@ export const AddUpdateAssetMaster: React.FC = () => {
       newErrors.AssetInvoiceURL = "Asset Invoice is required.";
     }
 
+    if (!hasAnyDocumentFile(assetImageFiles, assetImageURL, removedAssetImageUrls)) {
+      newErrors.AssetImageURL = "Asset Image is required.";
+    }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -222,6 +236,14 @@ export const AddUpdateAssetMaster: React.FC = () => {
     });
 
     fd.append('RemoveAssetInvoiceURL', removedAssetInvoiceUrls.join(','));
+
+    assetImageFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('AssetImageURL', file);
+      }
+    });
+
+    fd.append('RemoveAssetImageURL', removedAssetImageUrls.join(','));
 
     return fd;
   }
@@ -424,6 +446,23 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   maxFiles={5}
                   onRemoveExisting={(url) => {
                     setRemovedAssetInvoiceUrls((prev) => [...prev, url])
+                  }}
+                />
+              </div>
+
+              <div>
+                <MultiFilePicker
+                  label="Asset Image"
+                  placeholder="Select Asset Image"
+                  required
+                  error={errors.AssetImageURL}
+                  value={assetImageFiles}
+                  onChange={setAssetImageFiles}
+                  availableFilesURL={assetImageURL ?? ""}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg","application/pdf"]}
+                  maxFiles={5}
+                  onRemoveExisting={(url) => {
+                    setRemovedAssetImageUrls((prev) => [...prev, url])
                   }}
                 />
               </div>

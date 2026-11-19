@@ -797,6 +797,8 @@ export const MASTER_DATA = {
     "Solvency Certificate",
     "Tax Audit Report"
 ],
+  holdRelease: ['Hold', 'Release'],
+
 } as const;
 
 // ============================================================================
@@ -956,7 +958,7 @@ export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);
 export const EMPLOYEE_LETTER_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeLetterType);
 export const COMPANY_DOCUMENT = toOptions(MASTER_DATA.companyDocument);
-
+export const HOLD_RELEASE_TYPE_OPTIONS = toOptions(MASTER_DATA.holdRelease);
 
 
 // ============================================================================

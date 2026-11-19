@@ -21,7 +21,8 @@ export interface PaymentScheduleMasterData {
   PaymentScheduleScheme: string | null;
   Stage: string | null;
   PaymentSchedulePercentage: number | 0;
-  PaymentScheduleCummulativePercentage: number | 0;
+  PaymentCummulativePercentage: number | 0;
+  Total: number | 0;
   InventoryBuildingId: number | 0;
   BuildingNumber: string | null;
   InventoryFlatFloorBasementPodiumWingId?: number;

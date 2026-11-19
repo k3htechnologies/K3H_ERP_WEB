@@ -18,7 +18,6 @@ import type { FilterWithPaginationMaterialRequisitionInvoice } from "@/features/
 import { useCallback, useEffect, useState } from "react";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { Loader } from "@/core/utils/loader";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
@@ -30,11 +29,11 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
     const { addToast } = useToast();
     const { MaterialRequisitionId, MaterialRequisitionInvoiceId } = useParams();
     const { listState } = useMaterialRequisitionListState();
-    const { projectId } = useProject();
+    const projectId  =listState.projectId
     const { canAction: canMakePayments } = useMenuPermissions('Make Payments');
-    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.materialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
-    const systemGeneratedCode = listState.SystemGeneratedCode;
+    const systemGeneratedCode = listState.systemGeneratedCode;
 
     const initialFormState = () => ({
         PaymentMode: "",
@@ -330,8 +329,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                 <HeaderActionBar
                     titleText={'Make Payment :'}
                     subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={listState.MaterialRequisitionStatus ?? ''}
-                    subSubSubTitleText={listState.VendorName ?? ''}
+                    subSubTitleText={listState.materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                     onCancel={() =>
                         navigate("/materialRequisition/view", {

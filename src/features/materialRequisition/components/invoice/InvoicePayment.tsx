@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
@@ -35,15 +34,16 @@ const InvoicePayment: React.FC = () => {
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionInvoiceData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const { projectId } = useProject();
+    
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string; }>();
     const { listState } = useMaterialRequisitionListState();
-    const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey
-    const systemGeneratedCode = listState.SystemGeneratedCode;
+    const projectId  = listState.projectId;
+    const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.materialRequisitionStatus?.toUpperCase())
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.materialRequisitionId;
+    const currentUniquekey = listState.uniquekey
+    const systemGeneratedCode = listState.systemGeneratedCode;
     const navigate = useNavigate();
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
@@ -368,8 +368,7 @@ const InvoicePayment: React.FC = () => {
                 <HeaderActionBar
                     titleText={'Make Payment :'}
                     subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={listState.MaterialRequisitionStatus ?? ''}
-                    subSubSubTitleText={listState.VendorName ?? ''}
+                    subSubTitleText={listState.materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                     onCancel={() =>
                         navigate("/materialRequisition/view", {
@@ -381,7 +380,8 @@ const InvoicePayment: React.FC = () => {
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
+<FieldItem label="Vendor Name" value={materialRequisitionGRNData?.VendorName || '-'} />
+<FieldItem label="Vendor Company Name" value={materialRequisitionGRNData?.CompanyName || '-'} />
                         <FieldItem label="Challan Number" value={materialRequisitionGRNData?.ChallanNumber || '-'} />
                         <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
                         <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
@@ -411,7 +411,7 @@ const InvoicePayment: React.FC = () => {
 
                             <div className="flex items-center gap-2">
                                 <ApprovalActions
-                                    approvalStatus={invoiceData?.InvoiceStatus}
+                                    approvalStatus={invoiceData?.ApprovalStatus}
                                     isIcons={true}
                                     onHistory={() => handleApprovalLog(invoiceData as MaterialRequisitionInvoiceData)}
                                 />
@@ -515,7 +515,7 @@ const InvoicePayment: React.FC = () => {
                                 </h3>
 
                                 <div className="flex items-center gap-1">
-                                    {index === 0 && !["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase()) && (
+                                    {index === 0 && !["COMPLETED", "CLOSED"].includes(listState.materialRequisitionStatus?.toUpperCase()) && (
                                         
                                         <Button
                                             onClick={(e) => {

@@ -284,6 +284,17 @@ export interface DeleteProjectMasterWithBankDetailsRequest {
     ProjectId: number | 0;
 }
 
+export interface ProjectSetupStatus {
+    
+    ProjectId: number | 0;
+    IsCompanyId: boolean;
+    IsGSTNumber: boolean;
+    IsBank: boolean;
+    IsApproval: boolean;
+}
+
+
+
 export type ProjectMasterListResponse = ApiResponse<ProjectMasterData[]>;
 export type ProjectMasterSaveResponse = ApiResponse<ProjectMasterData[]>;
 export type ProjectMasterWithEmployeeResponse = ApiResponse<EmployeeMasterData[]>;
@@ -295,3 +306,4 @@ export type ProjectMasterWithCompanyDeleteResponse = ApiResponse<number>;
 export type ProjectMasterWithBankDetailsResponse = ApiResponse<ProjectWithBankDetails[]>;
 export type ProjectMasterWithBankDetailsSaveResponse = ApiResponse<ProjectWithBankDetails[]>;
 export type ProjectMasterWithBankDetailsDeleteResponse = ApiResponse<number>;
+export type CheckProjectSetupStatusResponse = ApiResponse<ProjectSetupStatus[]>;

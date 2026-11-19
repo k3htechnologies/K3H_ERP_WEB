@@ -275,3 +275,26 @@ export const getInputValue = (id: number,value: number | null | undefined) => {
 };
 
 export const isEmpty = (value: any) =>value === null || value === undefined || value === '';
+
+export const sendEmail = (email: string) => {
+  if (email) {
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${email}`, '_blank');
+  }
+}
+
+export const formatMonthYear = (value: string | null): string => {
+  if (!value) return "";
+
+  const [month, year] = value.split("-");
+
+  const monthNumber = Number(month);
+
+  if (monthNumber < 1 || monthNumber > 12 || !year) return "";
+
+  const date = new Date(Number(year), monthNumber - 1);
+
+  return date.toLocaleString("en-US", {
+    month: "long",
+    year: "numeric"
+  });
+};

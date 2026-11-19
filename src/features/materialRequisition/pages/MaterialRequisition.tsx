@@ -2,10 +2,9 @@ import { Loader } from "@/core/utils/loader";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { useToast } from "@/core/hooks/useToast";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
@@ -22,22 +21,21 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
+import { MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { getMaterialRequisitionStatusColor } from "@/features/materialRequisition/utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
-import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
-import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { copyToClipboard, formatCurrency } from "@/core/utils/comman";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Input } from "@/ui/components/forms";
-import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
-import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
-import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
+import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 
 export const MaterialRequisition: React.FC = () => {
     const emp = LocalStorageHelper.getStoredEmployeeData();
@@ -48,26 +46,29 @@ export const MaterialRequisition: React.FC = () => {
     const { pagination, setPagination } = usePagination(20);
     const [materialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData[]>([]);
     const { listState, updateListState, clearMaterialRequisitionContext } = useMaterialRequisitionListState();
-    const { searchTerm, filters, sortInfo } = listState;
+    const { page, searchTerm, filters, sortInfo } = listState;
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
     const navigate = useNavigate();
-    const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
-    const [vendorName, setVendorName] = useState<string | null>("");
-    const {canAction,canExport} = useMenuPermissions('Get Material Requisition');
-
+    const { canAction, canExport } = useMenuPermissions('Get Material Requisition');
 
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [mrCode, setMrcode] = useState<string | null>("");
+    const [projectName, setProjectName] = useState<string | null>("");
+    const [createdBy, setCreatedBy] = useState<string | null>("");
+
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+    const [approvalRowData, setApprovalRowData] = useState<MaterialRequisitionData | null>(null);
 
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchMaterialRequisition(value)
     }, 350);
 
     useEffect(() => {
-        if (!projectId) return;
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
 
@@ -76,7 +77,7 @@ export const MaterialRequisition: React.FC = () => {
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
-    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm, clearMaterialRequisitionContext]);
+    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm, clearMaterialRequisitionContext]);
 
     const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadDetailsdata(page, filters, sort ?? sortInfo);
@@ -90,11 +91,9 @@ export const MaterialRequisition: React.FC = () => {
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
-                    ProjectId: Number(projectId),
+                    ProjectId: Number(filterParams?.ProjectId ?? 0),
                     MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
                     SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
-                    VendorName: filterParams.VendorName?.trim() ?? undefined,
                     FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
@@ -132,14 +131,14 @@ export const MaterialRequisition: React.FC = () => {
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
         updateListState({
-            MaterialRequisitionId: row.MaterialRequisitionId ?? 0,
-            MaterialRequisitionStage: row.MaterialRequisitionStage ?? "",
-            MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "",
-            SystemGeneratedCode: row.SystemGeneratedCode ?? "",
-            VendorFinalizationApprovalStatus: row.VendorFinalizationApprovalStatus,
-            VendorName: row.FinalVendor,
-            CompanyGSTNumber: row.CompanyGSTNumber ?? "",
-            Uniquekey: row.Uniquekey ?? ""
+            materialRequisitionId: row.MaterialRequisitionId ?? 0,
+            systemGeneratedCode: row.SystemGeneratedCode ?? "",
+            uniquekey: row.Uniquekey ?? "",
+            projectId: row.ProjectId ?? 0,
+            companyGSTNumber: row.CompanyGSTNumber ?? "",
+            materialRequisitionStatus: row.MaterialRequisitionStatus ?? "",
+            approvalStatus: row.ApprovalStatus ?? "",
+            departmentMasterId:row.DepartmentMasterId ?? 0
         });
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
@@ -149,7 +148,7 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
+        updateListState({ materialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);
 
@@ -162,15 +161,30 @@ export const MaterialRequisition: React.FC = () => {
             onPageChange: handlePageChange
         }), [pagination, handlePageChange]);
 
+
     const handleApprovalLog = (row: MaterialRequisitionData) => {
         const request: ModulesApprovalStatusRequest = {
-            ModuleName: "FINALIZED VENDOR",
-            Id: row.MaterialRequisitionId,
-            ProjectId: projectId ?? 0,
+            ModuleName: "MATERIAL REQUISITION APPROVAL",
+            Id: row.MaterialRequisitionId ?? 0,
+            ProjectId: row.ProjectId ?? 0,
         };
-        setVendorName(row.FinalVendor)
+        setMrcode(row.SystemGeneratedCode);
+        setProjectName(row.ProjectName);
+        setCreatedBy(row.CreatedBy);
+
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
+    };
+
+    const handleApproveRejectMaterialRequisition = (row: MaterialRequisitionData, approvalType: "approve" | "reject") => {
+
+        setApprovalRowData(row);
+        setMrcode(row.SystemGeneratedCode);
+        setProjectName(row.ProjectName);
+        setCreatedBy(row.CreatedBy);
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+
     };
 
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
@@ -220,64 +234,20 @@ export const MaterialRequisition: React.FC = () => {
             }
         },
         {
+            key: 'ProjectName',
+            label: 'Project Name',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => (value) || '-'
+        },
+        {
             key: 'CompanyName',
             label: 'Company Name',
             width: '15',
             sortable: false,
             align: 'left',
             render: (value) => (value) || '-'
-        },
-        {
-            key: 'MaterialRequisitionStage',
-            label: 'Stage',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (value) => (value) || '-'
-        },
-        {
-            key: 'FinalVendor',
-            label: 'Vendor Name',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: (value: string, row: any) => {
-                return (
-                    <MultiImageViewer
-                        images={parseDocumentUrls(row.PurchaseOrderURL)}
-                        title={`Purchase Order - ${row.FinalVendor ?? ""}`}
-                        triggerLabel={value || '-'}
-                        isWrap={false}
-                    />
-                );
-            }
-        },
-
-        {
-            key: "VendorFinalizationApprovalStatus",
-            label: "Vendor Finalization Status",
-            width: "18",
-            sortable: false,
-            align: "center",
-            render: (value, row) => (
-
-                <ApprovalActions
-                    approvalStatus={value || "-"}
-                    showApproval={row.IsApproval}
-                    isIcons={true}
-
-                    onHistory={
-                        ["PARTIAL APPROVED", "APPROVED"].includes(value?.toUpperCase())
-                            ? () => handleApprovalLog(row)
-                            : value?.toUpperCase() === "PENDING" &&
-                                !["GET QUOTATION", "GET COMPARE"].includes(row?.MaterialRequisitionStage?.toUpperCase())
-                                ? () => handleApprovalLog(row)
-                                : undefined
-                    }
-
-                />
-
-            )
         },
 
         {
@@ -306,6 +276,60 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
                 );
             },
+        },
+        {
+            key: 'Department',
+            label: 'Department',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => (value) || '-'
+        },
+        {
+        key: 'ModifiedBy',
+        label: 'Last Modified By',
+        width: '33',
+        sortable: false,
+        align: 'left',
+        render: (value, row) => (
+          <TooltipText
+            text={value || row.CreatedBy || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
+      },
+      {
+        key: 'ModifiedDate',
+        label: 'Last Modified Date',
+        width: '33',
+        sortable: false,
+        align: 'center',
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy_hh_mm(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
+              : '-'
+      },
+        {
+            key: "ApprovalStatus",
+            label: "Approval Status",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApproval}
+                    isIcons={true}
+                    onHistory={() => handleApprovalLog(row)}
+                    onApprove={() => handleApproveRejectMaterialRequisition(row, "approve")}
+                    onReject={() => handleApproveRejectMaterialRequisition(row, "reject")}
+                />
+
+            )
         },
         {
             key: 'TotalPoAmount',
@@ -355,12 +379,9 @@ export const MaterialRequisition: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const canActionStage =
-                    canAction &&
-                    Number(row.CreatedById) === Number(emp?.EmployeeId) &&
-                    !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
-                    !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase()) &&
-                    ["GET QUOTATION"].includes(row?.MaterialRequisitionStage?.toUpperCase());
+                const canActionStage = canAction && Number(row.CreatedById) === Number(emp?.EmployeeId) &&
+                    ["PENDING"].includes(row.ApprovalStatus?.toUpperCase()) &&
+                    !["COMPLETED", "CLOSED"].includes(row.MaterialRequisitionStage?.toUpperCase());
 
                 return (
                     <div className="flex items-center justify-center gap-1">
@@ -409,8 +430,9 @@ export const MaterialRequisition: React.FC = () => {
 
                 );
             }
-        }
-    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction, handleApprovalLog]);
+        },
+        
+    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction, handleApprovalLog, handleApproveRejectMaterialRequisition]);
 
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 
@@ -465,7 +487,7 @@ export const MaterialRequisition: React.FC = () => {
 
     const clearSearchMaterialRequisition = () => {
         debouncedSearch.cancel?.();
-        updateListState({ searchTerm: '', filters: {}, page: 1 });
+        updateListState({ searchTerm: '', filters: {}, page: 1, projectId: 0 });
         setTempFilters({});
         loadDetailsdata(1, { SystemGeneratedCode: '' }, sortInfo, undefined);
     };
@@ -481,7 +503,7 @@ export const MaterialRequisition: React.FC = () => {
 
     const clearFilters = () => {
         setTempFilters({});
-        updateListState({ filters: {}, page: 1 });
+        updateListState({ filters: {}, page: 1, projectId: 0 });
     };
 
     const handleFilterChange = (key: string, value: string) => {
@@ -501,7 +523,7 @@ export const MaterialRequisition: React.FC = () => {
                 const payload: DeleteMaterialRequisitionRequest = {
                     MaterialRequisitionId: deleteData.MaterialRequisitionId,
                     Uniquekey: deleteData.Uniquekey,
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(deleteData.ProjectId ?? 0)
                 };
 
                 const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
@@ -561,11 +583,9 @@ export const MaterialRequisition: React.FC = () => {
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
-                    ProjectId: Number(projectId),
+                    ProjectId: Number(filters?.ProjectId ?? 0),
                     MaterialRequisitionStatus: filters?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filters?.MaterialRequisitionStage ?? undefined,
                     SystemGeneratedCode: searchTerm ?? filters?.SystemGeneratedCode ?? undefined,
-                    VendorName: filters.VendorName?.trim() ?? undefined,
                     FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
                     ToDate: filters?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
                     ExportType: exportType
@@ -587,11 +607,57 @@ export const MaterialRequisition: React.FC = () => {
     const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
     const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
 
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (!approvalRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "MATERIAL REQUISITION APPROVAL",
+            Id: approvalRowData.MaterialRequisitionId ?? 0,
+            ProjectId: approvalRowData.ProjectId ?? 0,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await loadDetailsdata(page, filters, sortInfo);
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+    };
+
 
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
+
+
 
             <TableActionToolbar
                 isShowSearchBar
@@ -610,7 +676,7 @@ export const MaterialRequisition: React.FC = () => {
                 }}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeMaterialRequisitionColumnsModal(true)}
-                isShowAddButton={canAction && Number(projectId) > 0}
+                isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddMaterialRequisitionModal}
                 isShowImportButton={canAction}
@@ -688,21 +754,18 @@ export const MaterialRequisition: React.FC = () => {
                             placeholder="Enter MR Code" />
                     </div>
                     <div>
-                        <Input type="text"
-                            label='Vendor Name'
-                            value={tempFilters?.VendorName ?? ''}
-                            onChange={e => handleFilterChange('VendorName', e.target.value)}
-                            placeholder="Enter Vendor Name" />
-                    </div>
-                    <div>
                         <SinglePageSelection
-                            label="Requisition Stage"
-                            placeholder="Select Requisition Stage"
-                            value={tempFilters?.MaterialRequisitionStage || ""}
-                            options={MATERIAL_REQUISITION_STAGES_OPTIONS.map((stage) => ({ label: stage.name, value: stage.id }))}
-                            onChange={(value) => handleFilterChange('MaterialRequisitionStage', String(value))}
+                            label="Project"
+                            placeholder="Select Project"
+                            options={(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).map(opt => ({
+                                label: opt.ProjectName,
+                                value: String(opt.ProjectId)
+                            }))}
+                            value={String(tempFilters?.ProjectId ?? '')}
+                            onChange={(value) => handleFilterChange('ProjectId', String(value))}
                         />
                     </div>
+
 
                     <div>
                         <SinglePageSelection
@@ -739,10 +802,23 @@ export const MaterialRequisition: React.FC = () => {
 
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                title='Finalized Vendor'
-                titleText={vendorName ?? ""}
+                title='Material Requisition'
+                titleText={mrCode ?? ""}
+                subTitleText={projectName ?? ""}
+                subSubTitleText={createdBy ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
-                request={approvalLogRequest}
+                request={approvalLogRequest} />
+
+            <ApprovalActionModal
+                title="Material Requisition"
+                isOpen={isApprovalActionModalOpen}
+                onClose={() => setIsApprovalActionModalOpen(false)}
+                actionType={approvalActionType}
+                titleText={mrCode ?? ""}
+                subTitleText={projectName ?? ""}
+                subSubTitleText={createdBy ?? ""}
+                onSubmit={handleApprovalSubmit}
+                loading={isLoading}
             />
 
         </div>

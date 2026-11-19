@@ -9,9 +9,7 @@ export interface FilterWithPaginationMaterialRequisition {
     SystemGeneratedCode?: string | null
     FromDate?: string | null
     ToDate?: string | null
-    MaterialRequisitionStage?: string | null
     MaterialRequisitionStatus?: string | null
-    VendorName?: string | null
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }
@@ -26,22 +24,6 @@ export interface FilterMaterialRequisitionDetails {
     MaterialRequisitionId?: number | 0
     ExportType?: "PDF" | "Excel"
 }
-
-export interface FilterWithPaginationMaterialRequisition {
-    PageSize: number
-    PageNumber: number
-    ProjectId: number
-    MaterialRequisitionId?: number | 0
-    SystemGeneratedCode?: string | null
-    FromDate?: string | null
-    ToDate?: string | null
-    MaterialRequisitionStage?: string | null
-    MaterialRequisitionStatus?: string | null
-    VendorName?: string | null
-    SortBy?: string
-    ExportType?: "PDF" | "Excel"
-}
-
 export interface MaterialRequisitionData {
     MaterialRequisitionId: number;
     Uniquekey: string;
@@ -51,43 +33,31 @@ export interface MaterialRequisitionData {
     AttachmentsURL: string;
     Remarks: string;
     ClientRegistrationId: number;
-    MaterialRequisitionStage: string;
     MaterialRequisitionStatus: string;
     CloseCompletionRemark: string;
-    FinalVendor: string;
-    FinalVendorCompanyName: string;
-    FinalVendorMobileNumber: string;
-    FinalVendorGSTNumber: string;
-    FinalVendorEmailId: string;
-    FinalVendorPANNumber: string;
     IsSplit: boolean;
     IsCopy: boolean;
     IsRequisitionAction: boolean;
-    IsApprovalVendorFinalization: boolean;
-    IsApprovalInvoice: boolean;
-    VendorFinalizationApprovalStatus: string;
-    InvoiceApprovalStatus: string;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;
+    Department: string;
+    DepartmentMasterId: number;
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: string;
+    MaterialRequisitionDetailData: MaterialRequisitionDetailData[];
+    MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
+    CompanyName: string | null
+    CompanyGSTNumber: string | null
+    CompanyPANNumber: string | null
+    IsApproval: boolean;
+    ApprovalStatus: string | null;
     PaidAmount: number;
     TDSPaidAmount: number;
     TotalPoAmount: number;
     TotalInvoiceAmount: number;
     TotalInvoice: number;
-    TotalTaxAmount: number;
-    PurchaseOrderURL: string;
-    MaterialRequisitionDetailData: MaterialRequisitionDetailData[];
-    MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
-    VendorName: string | null
-    CompanyName: string | null
-    CompanyGSTNumber: string | null
-    CompanyPANNumber: string | null
-    ExpectedDeliveryInDays: number | 0
-    ExpectedPaymentInDays: number | 0
 }
 
 export interface MaterialRequisitionDetailData {
@@ -122,6 +92,18 @@ export interface MaterialRequisitionDetailData {
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: null;
+
+    ApprovalStatus: string;
+    VendorSystemGeneratedCode: string;
+    VendorCompanyName: string;
+    VendorName: string;
+    VendorId: number;
+    Amount: number;
+    PurchaseOrderURL: string;
+    POSystemGeneratedCode: string;
+    MaterialRequisitionPurchaseOrderId:number
+    PurchaseOrderCreatedBy: Date;
+    PurchaseOrderCreatedDate: Date;
 }
 
 export interface AddUpdateMaterialRequisitionRequest {
@@ -173,8 +155,6 @@ export interface CloseMaterialRequisitionRequest {
     Type: string | null,
     CloseCompletionRemark: string | null,
 }
-
-
 
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionOverviewResponse = ApiResponse<MaterialRequisitionData[]>;

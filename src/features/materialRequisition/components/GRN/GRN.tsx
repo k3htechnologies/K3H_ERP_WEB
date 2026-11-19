@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionDetailGRNData, type DeleteMaterialRequisitionGRN, type FilterWithGenerateMaterialRequisitionGRNPDF } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useNavigate, useParams } from "react-router-dom";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
@@ -26,7 +25,8 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { handleExportFile } from "@/core/utils/exportFile";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 interface GRNProps {
     matrialRequisitionDetailData: MaterialRequisitionDetailData[];
@@ -37,20 +37,23 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const { projectId } = useProject();
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
-    const isVendorFinalizationApproved = listState.VendorFinalizationApprovalStatus?.trim().toUpperCase() === "APPROVED";
-    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
-    const currentUniquekey = listState.Uniquekey
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.materialRequisitionId;
+    const currentUniquekey = listState.uniquekey;
+    const projectId = listState.projectId;
 
-    const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.MaterialRequisitionStatus?.toUpperCase())
+    const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.materialRequisitionStatus?.toUpperCase())
 
     const [, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
-    const { canAction } = useMenuPermissions('Get Material Requisition');
+
+    const employeeDepartmentMasterId = LocalStorageHelper.getStoredEmployeeData()?.DepartmentMasterId;
+
+    const canAction = Number(employeeDepartmentMasterId) === Number(listState.departmentMasterId);
+
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -137,10 +140,10 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
         // const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
 
         const isDirect =
-    GRN?.[0]?.MaterialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType
-        ?.trim()
-        .toUpperCase() === "DIRECT";
-        
+            GRN?.[0]?.MaterialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType
+                ?.trim()
+                .toUpperCase() === "DIRECT";
+
         const columns: TableColumn[] = [];
 
         if (isDirect) {
@@ -264,6 +267,18 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
     }, []);
 
     const GRNColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: 'VendorName',
+            label: 'Vendor Name',
+            width: '25',
+            render: (value?: string) => value || '-'
+        },
+        {
+            key: 'CompanyName',
+            label: 'Company Name',
+            width: '25',
+            render: (value?: string) => value || '-'
+        },
         {
             key: 'ChallanNumber',
             label: 'Challan Number',
@@ -504,7 +519,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction && isVendorFinalizationApproved && !materialRequisitionStatus && !isAllQuantityReceived}
+                isShowAddButton={canAction && !materialRequisitionStatus && !isAllQuantityReceived}
                 addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}
@@ -513,7 +528,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                     setIsViewGRNSummaryModalOpen(true);
                     loadGRNData();
                 }}
-                
+
                 addExtraButtonIcon={<ClipboardList className="h-4 w-4" />}
 
                 isShowExportButton={filteredGRN.length > 0}
@@ -572,6 +587,8 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                             {GRN?.map((item, index) => (
                                 <div key={index} className="bg-[#EFF6FF] rounded-lg border border-gray-300 p-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Vendor Name" value={item?.VendorName || '-'} />
+                                        <FieldItem label="Company Name" value={item?.CompanyName || '-'} />
                                         <FieldItem label="Challan Number" value={item?.ChallanNumber || '-'} />
                                         <FieldItem label="Challan" urls={item?.UploadChallanURL} isIcon isSetValue={false} />
                                         <FieldItem label="Proof Of Document" urls={item?.ProofOfDocumentURL} isIcon isSetValue={false} />

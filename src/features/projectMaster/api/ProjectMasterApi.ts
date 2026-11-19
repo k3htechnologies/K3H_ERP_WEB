@@ -13,7 +13,11 @@ export const ProjectMasterApi = {
 
     PULL_PROJECT_WITH_BANK_DETAILS: '/Project/PullProjectWithBankDetails',
     ADD_UPDATE_PROJECT_WITH_BANK_DETAILS: '/Project/AddUpdateProjectWithBankDetails',
-    DELETE_PROJECT_WITH_BANK_DETAILS: '/Project/DeleteProjectWithBankDetails'
+    DELETE_PROJECT_WITH_BANK_DETAILS: '/Project/DeleteProjectWithBankDetails',
+
+    CHECK_PROJECT_SETUP_STATUS: '/Project/CheckProjectSetupStatus'
+
+
 } as const
 
 export type ProjectMasterApiKeys = keyof typeof ProjectMasterApi

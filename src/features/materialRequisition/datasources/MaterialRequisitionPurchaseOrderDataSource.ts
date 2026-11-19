@@ -9,7 +9,6 @@ export abstract class MaterialRequisitionPurchaseOrderDatasource {
     abstract deleteMaterialRequisitionPurchaseOrder(params: DeleteMaterialRequisitionPurchaseOrder): Promise<MaterialRequisitionPurchaseOrderDeleteResponse>;
     abstract generateMaterialRequisitionPurchaseOrderPdf(params: GenerateMaterialRequisitionPurchaseOrderPdfData): Promise<GenerateMaterialRequisitionPurchaseOrderPdfSaveResponse>;
 }
-
 export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialRequisitionPurchaseOrderDatasource {
     
     private get k3hHttpClient() {
@@ -29,10 +28,7 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${MaterialRequisitionPurchaseOrderApi.PULL}?${queryParams.toString()}`, { signal }
-            )
-            return response;
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionPurchaseOrderApi.PULL}?${queryParams.toString()}`, { signal })
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION PURCHASE ORDER:', error);
@@ -49,12 +45,8 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
     async addUpdateMaterialRequisitionPurchaseOrder(formData: FormData): Promise<MaterialRequisitionPurchaseOrderSaveResponse> {
         try {
 
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
-                MaterialRequisitionPurchaseOrderApi.ADD_UPDATE,
-                formData
-            )
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(MaterialRequisitionPurchaseOrderApi.ADD_UPDATE, formData)
 
-            return response
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE MATERIAL REQUISITION PURCHASE ORDER :', error)
@@ -76,11 +68,8 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
                 Uniquekey: params.Uniquekey ?? '',
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${MaterialRequisitionPurchaseOrderApi.DELETE}?${queryParams.toString()}`
-            )
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(`${MaterialRequisitionPurchaseOrderApi.DELETE}?${queryParams.toString()}`)
 
-            return response
 
         } catch (error) {
 
@@ -98,12 +87,8 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
 
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                MaterialRequisitionPurchaseOrderApi.GENERATE_PURCHASE_ORDER_PDF,
-                params
-            )
-            return response
-
+              return await this.k3hHttpClient.postRequestWithAuthentication(MaterialRequisitionPurchaseOrderApi.GENERATE_PURCHASE_ORDER_PDF,params)
+            
         } catch (error) {
 
             console.error('ERROR: GENERATE MATERIAL REQUISITION PURCHASE ORDER PDF :', error)

@@ -387,6 +387,8 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
             ...params,
             value: params?.value || "",
             projectId: Number(projectId) || 0,
+            isAcessMemberApprovedParking: false,
+            isAcessOnlyApprovedParking: true,
         });
     }, [projectId, swapParkingFormData?.ParkingId]);
 

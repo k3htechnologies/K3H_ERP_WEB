@@ -4,6 +4,7 @@ import type {
     AddUpdateProjectMasterWithBankDetailsRequest,
     AddUpdateProjectMasterWithCompanyRequest,
     AddUpdateProjectMasterWithEmployeeRequest,
+    CheckProjectSetupStatusResponse,
     DeleteProjectMasterWithBankDetailsRequest,
     DeleteProjectMasterWithEmployeeRequest,
     FilterWithPaginationProjectMasterRequest,
@@ -148,6 +149,18 @@ export const projectMasterService = {
         try {
 
             return E.right(await projectMasterDatasource.deleteProjectMasterWithBankDetails(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallCheckProjectSetupStatus: async (ProjectId: number,PageName?:string, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CheckProjectSetupStatusResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.checkProjectSetupStatus(ProjectId,PageName, options?.signal));
 
         } catch (error: any) {
 

@@ -30,10 +30,12 @@ import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import { copyToClipboard } from '@/core/utils/comman';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 
 
 export const Vendor: React.FC = () => {
-  
+
   const [vendorList, setVendorList] = useState<VendorData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -109,6 +111,8 @@ export const Vendor: React.FC = () => {
           GSTNumber: filterParams.GSTNumber?.trim() || undefined,
           AadharCardNumber: filterParams.AadharCardNumber?.trim() || undefined,
           PanCardNumber: filterParams.PanCardNumber?.trim() || undefined,
+          FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+          ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
           SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns)
@@ -187,6 +191,8 @@ export const Vendor: React.FC = () => {
           GSTNumber: filters.GSTNumber?.trim() || undefined,
           AadharCardNumber: filters.AadharCardNumber?.trim() || undefined,
           PanCardNumber: filters.PanCardNumber?.trim() || undefined,
+          FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
+          ToDate: filters?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
           SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns),
           ExportType: exportType
@@ -234,7 +240,7 @@ export const Vendor: React.FC = () => {
   const vendorListForTable = useMemo(() => vendorList, [vendorList]);
 
   const handleViewVendorDetails = useCallback((row: VendorData) => {
-    updateListState({ vendorId: row.VendorId, vendorName: row.VendorName,OwnershipType:row.OwnershipType });
+    updateListState({ vendorId: row.VendorId, vendorName: row.VendorName, OwnershipType: row.OwnershipType });
     navigate('/vendor/view');
   }, [navigate, updateListState]);
 
@@ -513,9 +519,9 @@ export const Vendor: React.FC = () => {
     [canAction, handleViewVendorDetails, handleConfirmationDialogBoxOpen]
   )
 
-  
 
-  
+
+
   const requiredVendorColumnKeys: string[] = ['VendorName', 'Actions'];
   const allVendorColumnKeys: string[] = vendorColumns.map(c => c.key)
   const [selectedVendorColumnKeys, setSelectedVendorColumnKeys] = useState<string[]>(() => {
@@ -527,23 +533,23 @@ export const Vendor: React.FC = () => {
         return withRequired.filter(k => allVendorColumnKeys.includes(k));
       }
     } catch {
-      
+
     }
     return allVendorColumnKeys
   })
 
   useEffect(() => {
     setSelectedVendorColumnKeys(prev => Array.from(new Set([...prev, ...requiredVendorColumnKeys])).filter(k => allVendorColumnKeys.includes(k)));
-    
+
   }, [vendorColumns.length])
 
   const visibleVendorColumns = useMemo(
     () => vendorColumns.filter(col => selectedVendorColumnKeys.includes(col.key)),
     [vendorColumns, selectedVendorColumnKeys]
   );
-  
 
-  
+
+
   const applyFilters = () => {
     updateListState({ filters: tempFilters, page: 1 });
     loadVendors(1, tempFilters);
@@ -555,30 +561,30 @@ export const Vendor: React.FC = () => {
     updateListState({ filters: {}, page: 1 });
     loadVendors(1, {});
   };
-  
 
-  
+
+
   const handleAddVendor = () => {
     navigate('/vendor/add');
   };
-  
 
-  
+
+
 
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  
 
 
-  
+
+
   const downloadExcelSampleVendor = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
 
         const params: FilterPullExcelSample = {
           TableName: 'Vendor'
@@ -633,9 +639,9 @@ export const Vendor: React.FC = () => {
       "Importing Excel"
     );
   };
-  
 
-  
+
+
   const handleDeleteVendor = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -701,15 +707,15 @@ export const Vendor: React.FC = () => {
     )
   }
 
-  
 
-  
+
+
   const handleMagicLinkWithValidate = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
 
         const params: FilterMagicLinkWithValidate = {
           ClientRegistrationId: Number(LocalStorageHelper.getStoredEmployeeData()?.ClientRegistrationId),
@@ -768,7 +774,7 @@ export const Vendor: React.FC = () => {
       await handleCopyMagicLink();
     }
   };
-  
+
   return (
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full flex flex-col">
@@ -793,12 +799,12 @@ export const Vendor: React.FC = () => {
 
         onCustomize={() => setIsShowCustomizeVendorColumnsModal(true)}
 
-        
+
         isShowAddButton={canAction}
         addTitle="Add"
         onAdd={handleAddVendor}
 
-        
+
         isShowAddExtraButton={canAction}
         addExtraTitle="Share"
         onAddExtra={async () => {
@@ -807,12 +813,12 @@ export const Vendor: React.FC = () => {
         }}
 
 
-        
+
         isShowImportButton={canAction}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleVendor}
 
-        
+
         isShowExportButton={canExport && vendorListForTable.length > 0}
         onExportExcel={handleExportVendorExcel}
         onExportPdf={handleExportVendorPdf}
@@ -830,7 +836,7 @@ export const Vendor: React.FC = () => {
         onSort={handleSortColumn}
       />
 
-      {}
+      { }
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
@@ -850,7 +856,7 @@ export const Vendor: React.FC = () => {
           setSelectedVendorColumnKeys(withRequired)
           try {
             LocalStorageHelper.storeVendorTableColumns(JSON.stringify(withRequired))
-          } catch {  }
+          } catch { }
         }}
         columns={vendorColumns}
         selectedKeys={selectedVendorColumnKeys}
@@ -911,7 +917,7 @@ export const Vendor: React.FC = () => {
                 placeholder="Enter Company Type"
               />
             </div>
-             <div>
+            <div>
 
               <Input
                 label='Ownership Type'
@@ -921,7 +927,7 @@ export const Vendor: React.FC = () => {
                 placeholder="Enter Ownership Type"
               />
             </div>
-             <div>
+            <div>
 
               <Input
                 label='Business Type'
@@ -931,7 +937,7 @@ export const Vendor: React.FC = () => {
                 placeholder="Enter Business Type"
               />
             </div>
-             <div>
+            <div>
 
               <Input
                 label='Specialist'
@@ -990,6 +996,23 @@ export const Vendor: React.FC = () => {
                 value={tempFilters.PanCardNumber || ''}
                 onChange={e => handleFilterChange('PanCardNumber', e.target.value)}
                 placeholder="Enter PAN Card Number"
+              />
+            </div>
+            <div>
+              <DatePickerInput
+                label='From Date'
+                value={tempFilters.FromDate || ''}
+                onChange={value => handleFilterChange('FromDate', value || '')}
+                placeholder="Select From Date"
+              />
+            </div>
+
+            <div>
+              <DatePickerInput
+                label='To Date'
+                value={tempFilters.ToDate || ''}
+                onChange={value => handleFilterChange('ToDate', value || '')}
+                placeholder="Select To Date"
               />
             </div>
           </div>

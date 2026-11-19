@@ -36,6 +36,7 @@ export const ConstructionArea: React.FC = () => {
         ConstructionAreaId: 0,
         Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
         ProjectId: 0,
+        InventoryFloorId:0,
         InventoryFlatId: 0,
         AreaByPLLineSqMt: 0,
         MultiplierForAreaPercentage: 0,
@@ -166,6 +167,7 @@ export const ConstructionArea: React.FC = () => {
                     ConstructionAreaId: editingConstructionArea.ConstructionAreaId ?? 0,
                     Uniquekey: editingConstructionArea.Uniquekey ?? initialFormStateForConstructionAreaData().Uniquekey,
                     ProjectId: Number(projectId) || 0,
+                    InventoryFloorId: editingConstructionArea.InventoryFloorId ?? 0,
                     InventoryFlatId: editingConstructionArea.InventoryFlatId ?? 0,
                     AreaByPLLineSqMt: editingConstructionArea.AreaByPLLineSqMt ?? 0,
                     MultiplierForAreaPercentage: editingConstructionArea.MultiplierForAreaPercentage ?? 0,
@@ -187,6 +189,7 @@ export const ConstructionArea: React.FC = () => {
             ConstructionAreaId: formData.ConstructionAreaId,
             Uniquekey: formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
             ProjectId: projectId || 0,
+            InventoryFloorId: formData.InventoryFloorId ?? 0,
             InventoryFlatId: formData.InventoryFlatId ?? 0,
             AreaByPLLineSqMt: formData.AreaByPLLineSqMt ?? 0,
             MultiplierForAreaPercentage: formData.MultiplierForAreaPercentage ?? 0,
@@ -243,7 +246,7 @@ export const ConstructionArea: React.FC = () => {
 
                     setIsAddUpdateConstructionAreaModalOpen(false);
 
-                    const isAdd = formData.InventoryFlatId === 0;
+                    const isAdd = formData.InventoryFloorId === 0;
 
                     if (isAdd) {
 
@@ -256,15 +259,17 @@ export const ConstructionArea: React.FC = () => {
                             totalRecords: pagination.totalRecords + 1,
                             totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
                         });
+
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
                     }
+                    
                     else {
                         const updatedRecord = response.right.Data[0] as ConstructionAreaData;
 
                         setConstructionAreaDataList(prevData =>
                             prevData.map(item =>
-                                item.InventoryFlatId === formData.InventoryFlatId ? updatedRecord : item
+                                item.InventoryFlatId === formData.InventoryFlatId && item.InventoryFloorId === formData.InventoryFloorId ? updatedRecord : item
                             )
                         );
 

@@ -30,6 +30,8 @@ export interface AssetMasterData {
     AssetCost: number | null
     SupplierName: string | null
     AssetInvoiceURL: string | null
+    AssetImageURL: string | null
+    AssetQRCodeURL: string | null
     Status: string | null
     EmployeeName: string | null
     Department: string | null
@@ -61,6 +63,8 @@ export interface AddUpdateAssetMasterRequest {
     SupplierName: string | null
     AssetInvoiceURL: (File | string)[] | null;
     RemoveAssetInvoiceURL: string | '';
+    AssetImageURL: (File | string)[] | null;
+    RemoveAssetImageURL: string | '';
 }
 
 export interface DeleteAssetMasterRequest {

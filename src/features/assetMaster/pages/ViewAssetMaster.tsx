@@ -194,11 +194,17 @@ const ViewAssetPage: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="lg:col-span-3 pb-3 pt-3">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Asset Brand" value={editAssetData!.AssetBrand} />
                                             <FieldItem label="Asset Model" value={editAssetData!.AssetModel} />
                                             <FieldItem label="Serial Number" value={editAssetData!.SerialNumber} />
+
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 border-[#135bec2e] pb-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {editAssetData.AssetQRCodeURL && (<FieldItem label="QR Code" value={"QR Code"} urls={editAssetData.AssetQRCodeURL} isIcon={true} />)}
 
                                         </div>
                                     </div>
@@ -245,6 +251,7 @@ const ViewAssetPage: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Asset Cost (₹)" value={formatCurrency(editAssetData!.AssetCost)} />
                                             {editAssetData.AssetInvoiceURL && (<FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />)}
+                                            {editAssetData.AssetImageURL && (<FieldItem label="Asset Image" value={"Image"} urls={editAssetData.AssetImageURL} isIcon={true} />)}
                                         </div>
                                     </div>
                                 </div>

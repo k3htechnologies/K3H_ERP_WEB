@@ -364,13 +364,9 @@ export const PaymentSchedule: React.FC = () => {
                 align: 'center',
                 render: (_value, row) => {
 
-                    const isLocked =
-                        !(row?.BookingPaymentScheduleId > 0) ||
-                        !row?.DemandType?.trim();
+                    const isLocked =  !(row?.BookingPaymentScheduleId > 0) || !row?.DemandType?.trim();
 
-                    const isDisabled =
-                        isLocked ||
-                        bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
+                    const isDisabled = isLocked ||  bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
 
                     if (!canAction ||isLocked) return null;
 

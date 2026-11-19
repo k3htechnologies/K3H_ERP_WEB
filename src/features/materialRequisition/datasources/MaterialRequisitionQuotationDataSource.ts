@@ -1,14 +1,13 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddVendorForEnquiryRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
-import type { DeleteMaterialRequisitionQuotation, FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse, MaterialRequisitionSummaryOfQuotationListResponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
+import type { DeleteMaterialRequisitionQuotationRequest, DeletMaterialRequisitionQuotationResponse, FilterMaterialRequisitionQuotationRequest, FilterSelectedVendorForQuotationRequest, FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse, MaterialRequisitionSummaryOfQuotationListResponse, SelectedVendorForQuotationListResponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { MaterialRequisitionQuotationApi } from "@/features/materialRequisition/api/MaterialRequisitionQuotationApi";
-
 export abstract class MaterialRequisitionQuotationDatasource {
-    abstract pullMaterialRequisitionQuotation(params: AddVendorForEnquiryRequest, signal?: AbortSignal): Promise<MaterialRequisitionQuotationListResponse>;
-    abstract addUpdateMaterialRequisitionQuotation(FormData: FormData): Promise<MaterialRequisitionQuotationSaveReponse>;
-    abstract deleteMaterialRequisitionQuotation(params: DeleteMaterialRequisitionQuotation): Promise<DeleteMaterialRequisitionQuotation>;
+    abstract pullMaterialRequisitionQuotation(params: FilterMaterialRequisitionQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionQuotationListResponse>;
     abstract pullMaterialRequisitionSummaryOfQuotation(params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionSummaryOfQuotationListResponse>;
+    abstract addUpdateMaterialRequisitionQuotation(FormData: FormData): Promise<MaterialRequisitionQuotationSaveReponse>;
+    abstract deleteMaterialRequisitionQuotation(params: DeleteMaterialRequisitionQuotationRequest): Promise<DeletMaterialRequisitionQuotationResponse>;
+    abstract pullSelectedVendorForQuotation(params: FilterSelectedVendorForQuotationRequest, signal?: AbortSignal): Promise<SelectedVendorForQuotationListResponse>;
 }
 
 export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequisitionQuotationDatasource {
@@ -17,7 +16,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         return baseClient;
     }
 
-    async pullMaterialRequisitionQuotation(params: AddVendorForEnquiryRequest, signal?: AbortSignal): Promise<MaterialRequisitionQuotationListResponse> {
+    async pullMaterialRequisitionQuotation(params: FilterMaterialRequisitionQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionQuotationListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString()
@@ -27,10 +26,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
             if (params.ProjectId) queryParams.append('ProjectId', (params.ProjectId).toString());
             if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${MaterialRequisitionQuotationApi.PULL}?${queryParams.toString()}`, { signal }
-            )
-            return response;
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL}?${queryParams.toString()}`, { signal })
 
         } catch (error: any) {
 
@@ -45,15 +41,38 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         }
     }
 
+    async pullMaterialRequisitionSummaryOfQuotation(params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionSummaryOfQuotationListResponse> {
+
+        try {
+            const queryParams = new URLSearchParams({
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString()
+            })
+
+            if (params.VendorName?.trim()) queryParams.append('VendorName', params.VendorName.trim());
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL_SUMMARY_OF_QUITATION}?${queryParams.toString()}`, { signal })
+
+
+        } catch (error: any) {
+
+            console.error('ERROR: PULL MATERIAL REQUISITION SUMMARY OF QUOTATION :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMaterialRequisitionSummaryOfQuotation(params);
+            }
+
+            throw error
+        }
+    }
+
+
     async addUpdateMaterialRequisitionQuotation(FormData: FormData): Promise<MaterialRequisitionQuotationSaveReponse> {
         try {
 
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
-                MaterialRequisitionQuotationApi.ADD,
-                FormData
-            )
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(MaterialRequisitionQuotationApi.ADD, FormData)
 
-            return response;
 
         } catch (error) {
 
@@ -67,7 +86,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         }
     }
 
-    async deleteMaterialRequisitionQuotation(params: DeleteMaterialRequisitionQuotation): Promise<DeleteMaterialRequisitionQuotation> {
+    async deleteMaterialRequisitionQuotation(params: DeleteMaterialRequisitionQuotationRequest): Promise<DeletMaterialRequisitionQuotationResponse> {
         try {
             const queryParams = new URLSearchParams({
                 MaterialRequisitionQuotationTermsId: (params.MaterialRequisitionQuotationTermsId ?? 0).toString(),
@@ -76,11 +95,8 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
                 ProjectId: (params.ProjectId ?? 0).toString(),
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${MaterialRequisitionQuotationApi.DELETE}?${queryParams.toString()}`
-            )
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(`${MaterialRequisitionQuotationApi.DELETE}?${queryParams.toString()}`)
 
-            return response
 
         } catch (error) {
 
@@ -95,29 +111,29 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         }
     }
 
-    async pullMaterialRequisitionSummaryOfQuotation(params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, signal?: AbortSignal): Promise<MaterialRequisitionSummaryOfQuotationListResponse> {
-       
+    async pullSelectedVendorForQuotation(params: FilterSelectedVendorForQuotationRequest, signal?: AbortSignal): Promise<SelectedVendorForQuotationListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
-                ProjectId: (params.ProjectId ?? 0).toString()
+                Uniquekey: (params.Uniquekey ?? null)?.toString() || '',
+                ProjectId: (params.ProjectId ?? 0).toString(),
             })
+            
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-             if (params.VendorName?.trim()) queryParams.append('VendorName', params.VendorName.trim());
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL_SELECTED_VENDOR_FOR_QUOTATION}?${queryParams.toString()}`, { signal })
 
-            return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL_SUMMARY_OF_QUITATION}?${queryParams.toString()}`, { signal })
-             
 
-        } catch (error: any) {
+        } catch (error) {
 
-            console.error('ERROR: PULL MATERIAL REQUISITION SUMMARY OF QUOTATION :', error);
+            console.error('ERROR: PULL SELECTED VENDOR FOR ENQUIRY  :', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullMaterialRequisitionSummaryOfQuotation(params);
+                return await this.pullSelectedVendorForQuotation(params);
             }
-
             throw error
         }
     }
+
 }

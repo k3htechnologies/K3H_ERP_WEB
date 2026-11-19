@@ -24,6 +24,7 @@ export interface ConstructionAreaData {
   ConstructionAreaId: number;
   Uniquekey: string;
   ProjectId: number;
+  InventoryFloorId: number;
   InventoryFlatId: number;
   BuildingNumber: string;
   Wing: string;
@@ -53,6 +54,7 @@ export interface AddUpdateConstructionAreaRequest {
   ConstructionAreaId: number | 0;
   Uniquekey: string | "";
   ProjectId: number | 0;
+  InventoryFloorId: number;
   InventoryFlatId: number | 0;
   AreaByPLLineSqMt: number | 0;
   MultiplierForAreaPercentage: number | 0;

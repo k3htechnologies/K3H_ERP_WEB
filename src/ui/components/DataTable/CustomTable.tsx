@@ -1,4 +1,4 @@
-import React from "react"
+import React, { type ReactNode } from "react"
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
 import { useViewportHeight } from "@/core/utils/useViewportHeight"
 import NoDataView from "@/ui/components/NoDataView/NoDataView"
@@ -6,7 +6,7 @@ import { useHorizontalScroll } from "./useHorizontalScroll"
 
 export interface TableColumn {
   key: string
-  label: string
+  label: ReactNode
   render?: (value: any, row: any, index: number) => React.ReactNode
   sortable?: boolean
   width?: string

@@ -24,9 +24,12 @@ export interface MaterialRequisitionGRNData {
     UploadChallanURL: string | null
     ProofOfDocumentURL: string | null
     Remarks: string | null
+    VendorId: number | 0
+    VendorName: string | null
+    CompanyName: string | null
     IsInvoiceCreated :boolean
     IsInvoicePaymentCompleted:boolean
-    InvoiceStatus: string | null
+    ApprovalStatus: string | null
     ProjectId: number | 0
     CreatedById: number;
     CreatedBy: string;
@@ -82,6 +85,7 @@ export interface AddUpdateMaterialRequisitionGRNRequest {
     RemoveProofOfDocumentURL: string | '';
     Remarks: string
     ProjectId: number | 0
+    VendorId: number | 0
     MaterialRequisitionDetailGRNJSON: string
 }
 
@@ -111,6 +115,15 @@ export interface MaterialRequisitionDetailGRN {
     TotalReceivedQuantityByRequisition?: number
     IsTolerant?: boolean
     TolerancePercentage?: number
+
+    ApprovalStatus?: string;
+    VendorSystemGeneratedCode?: string;
+    VendorCompanyName?: string;
+    VendorName?: string;
+    VendorId?: number;
+    Amount?: number;
+    PurchaseOrderURL?: string;
+    POSystemGeneratedCode?: string;
 }
 
 export interface DeleteMaterialRequisitionGRN {

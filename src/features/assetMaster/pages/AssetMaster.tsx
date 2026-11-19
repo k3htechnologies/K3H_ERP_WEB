@@ -27,6 +27,8 @@ import { Trash2 } from 'lucide-react';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { colorsForAssetStatusComponent } from '../constant/statusColors';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
 
 export const AssetMaster: React.FC = () => {
 
@@ -112,7 +114,7 @@ export const AssetMaster: React.FC = () => {
           AssetBrand: filterParams.AssetBrand?.trim() || undefined,
           AssetModel: filterParams.AssetModel?.trim() || undefined,
           SerialNumber: filterParams.SerialNumber?.trim() || undefined,
-          EmployeeName :filterParams.EmployeeName?.trim() || undefined,
+          EmployeeName: filterParams.EmployeeName?.trim() || undefined,
           AssetCode: filterParams.AssetCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns)
         };
@@ -184,7 +186,7 @@ export const AssetMaster: React.FC = () => {
           AssetBrand: filters.AssetBrand?.trim() || undefined,
           AssetModel: filters.AssetModel?.trim() || undefined,
           SerialNumber: filters.SerialNumber?.trim() || undefined,
-          EmployeeName :filters.EmployeeName?.trim() || undefined,
+          EmployeeName: filters.EmployeeName?.trim() || undefined,
           AssetCode: filters.AssetCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns),
 
@@ -290,7 +292,14 @@ export const AssetMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'left',
-      render: (value) => value || ''
+      render: (value) => (
+        <TooltipText
+          text={value || '-'}
+          maxWidth="250px"
+          tooltipThreshold={25}
+        />
+      )
+
     },
     {
       key: 'AssetBrand',
@@ -298,7 +307,14 @@ export const AssetMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'left',
-      render: (value) => value || ''
+      render: (value) => (
+        <TooltipText
+          text={value || '-'}
+          maxWidth="250px"
+          tooltipThreshold={25}
+        />
+      )
+
     },
     {
       key: 'AssetModel',
@@ -306,7 +322,14 @@ export const AssetMaster: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'left',
-      render: (value) => value || ''
+      render: (value) => (
+        <TooltipText
+          text={value || '-'}
+          maxWidth="250px"
+          tooltipThreshold={25}
+        />
+      )
+
     },
     {
       key: 'SerialNumber',
@@ -315,6 +338,27 @@ export const AssetMaster: React.FC = () => {
       sortable: false,
       align: 'left',
       render: (value) => value || ''
+    },
+    {
+      key: 'AssetQRCodeURL',
+      label: 'QR Coce',
+      width: '15',
+      sortable: false,
+      align: 'left',
+      render: (value: string, row: any) => {
+        return (
+          <div className="flex items-center justify-between w-full">
+            <MultiImageViewer
+              images={parseDocumentUrls(row.AssetQRCodeURL)}
+              title={`${row.AssetCode} - QR Code`}
+              isIcon={false}
+              triggerLabel={value === '' || 'Purchase Order'}
+            />
+
+          </div>
+        );
+      },
+
     },
     {
       key: 'Status',

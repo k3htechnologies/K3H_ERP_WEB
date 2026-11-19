@@ -1,14 +1,13 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
 import { MaterialRequisitionQuotationDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionQuotationDataSource";
-import type { AddVendorForEnquiryRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
-import type {  DeleteMaterialRequisitionQuotation, FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse, MaterialRequisitionSummaryOfQuotationListResponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
+import type { DeleteMaterialRequisitionQuotationRequest, DeletMaterialRequisitionQuotationResponse, FilterMaterialRequisitionQuotationRequest, FilterSelectedVendorForQuotationRequest, FilterWithMaterialRequisitionSummaryOfQuotationRequest, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse, MaterialRequisitionSummaryOfQuotationListResponse, SelectedVendorForQuotationListResponse } from "../models/MaterialRequisitionQuotationModel";
 
 const materialRequisitionQuotationDatasource = new MaterialRequisitionQuotationDatasourceImpl
 
 export const materialRequisitionQuotationService = {
 
-    apiCallPullMaterialRequisitionQuotation: async (params: AddVendorForEnquiryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionQuotationListResponse>> => {
+    apiCallPullMaterialRequisitionQuotation: async (params: FilterMaterialRequisitionQuotationRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionQuotationListResponse>> => {
         try {
 
             return E.right(await materialRequisitionQuotationDatasource.pullMaterialRequisitionQuotation(params, options?.signal));
@@ -20,7 +19,19 @@ export const materialRequisitionQuotationService = {
         }
     },
 
-    apiCallToAddMaterialRequisitionQuotation: async (FormData: FormData): Promise<E.Either<Failure, MaterialRequisitionQuotationSaveReponse>> => {
+    apiCallPullMaterialRequisitionSummaryOfQuotation: async (params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionSummaryOfQuotationListResponse>> => {
+        try {
+
+            return E.right(await materialRequisitionQuotationDatasource.pullMaterialRequisitionSummaryOfQuotation(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallAddMaterialRequisitionQuotation: async (FormData: FormData): Promise<E.Either<Failure, MaterialRequisitionQuotationSaveReponse>> => {
         try {
 
             return E.right(await materialRequisitionQuotationDatasource.addUpdateMaterialRequisitionQuotation(FormData));
@@ -32,7 +43,7 @@ export const materialRequisitionQuotationService = {
         }
     },
 
-    apiCallDeleteMaterialRequisitionQuotation: async (params: DeleteMaterialRequisitionQuotation): Promise<E.Either<Failure, DeleteMaterialRequisitionQuotation>> => {
+    apiCallDeleteMaterialRequisitionQuotation: async (params: DeleteMaterialRequisitionQuotationRequest): Promise<E.Either<Failure, DeletMaterialRequisitionQuotationResponse>> => {
         try {
 
             return E.right(await materialRequisitionQuotationDatasource.deleteMaterialRequisitionQuotation(params));
@@ -45,10 +56,10 @@ export const materialRequisitionQuotationService = {
 
     },
 
-    apiCallPullMaterialRequisitionSummaryOfQuotation: async (params: FilterWithMaterialRequisitionSummaryOfQuotationRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionSummaryOfQuotationListResponse>> => {
+    apiCallPullSelectedVendorForQuotation: async (params: FilterSelectedVendorForQuotationRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, SelectedVendorForQuotationListResponse>> => {
         try {
 
-            return E.right(await materialRequisitionQuotationDatasource.pullMaterialRequisitionSummaryOfQuotation(params, options?.signal));
+            return E.right(await materialRequisitionQuotationDatasource.pullSelectedVendorForQuotation(params, options?.signal));
 
         } catch (error: any) {
 

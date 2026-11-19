@@ -91,7 +91,7 @@ export const PaymentScheduleMaster: React.FC = () => {
             PageNumber: page,
             PageSize: pagination.pageSize,
             ProjectId: Number(projectId),
-            PaymentScheduleSchemeMasterId: Number(schemeId) ?? formData.PaymentScheduleSchemeMasterId,
+            PaymentScheduleSchemeMasterId: schemeId !== undefined ? Number(schemeId) : (formData.PaymentScheduleSchemeMasterId) || 0,
             InventoryBuildingId: buildingId ?? formData.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: wingId ?? formData.InventoryFlatFloorBasementPodiumWingId,
             Stage: filterParams.Stage ?? undefined,
@@ -117,7 +117,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         "Loading Data ",
       );
     },
-    [projectId, formData.PaymentScheduleMasterId, pagination.currentPage, pagination.pageSize, addToast, setPagination],
+    [projectId, formData.PaymentScheduleSchemeMasterId, formData.InventoryBuildingId, formData.InventoryFlatFloorBasementPodiumWingId, pagination.currentPage, pagination.pageSize, addToast, setPagination],
   );
 
   useEffect(() => {
@@ -154,7 +154,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           Uniquekey: editingPaymentScheduleMasterData.Uniquekey ?? initialFormState().Uniquekey,
           Stage: editingPaymentScheduleMasterData.Stage ?? "",
           PaymentSchedulePercentage: editingPaymentScheduleMasterData.PaymentSchedulePercentage ?? "",
-          PaymentScheduleCummulativePercentage: editingPaymentScheduleMasterData.PaymentScheduleCummulativePercentage ?? "",
+          PaymentScheduleCummulativePercentage: editingPaymentScheduleMasterData.PaymentCummulativePercentage ?? "",
           ProjectId: Number(projectId),
           PaymentScheduleSchemeMasterId: editingPaymentScheduleMasterData.PaymentScheduleSchemeMasterId ?? null,
         });
@@ -173,7 +173,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setPagination({ currentPage: page });
-    loadPaymentScheduleMaster(1, {});
+    loadPaymentScheduleMaster(page, {}, undefined, Number(formData.PaymentScheduleSchemeMasterId), Number(formData.InventoryBuildingId), formData.InventoryFlatFloorBasementPodiumWingId,);
   };
 
   const handleConfirmationDialogBoxOpen = useCallback((row: PaymentScheduleMasterData) => {
@@ -191,22 +191,14 @@ export const PaymentScheduleMaster: React.FC = () => {
     setStageOptions(res.itemList);
   };
 
+  const totalPercentage = Number(PaymentScheduleMasterList[0]?.Total ?? 0);
+
   const calculateCumulative = (currentPercentage: number) => {
-    const totalExisting = PaymentScheduleMasterList.reduce(
-      (sum, item) =>
-        sum +
-        (editingPaymentScheduleMasterData && item.PaymentScheduleMasterId === editingPaymentScheduleMasterData.PaymentScheduleMasterId
-          ? 0
-          : Number(item.PaymentSchedulePercentage || 0)),
-      0,
-    );
 
-    return totalExisting + currentPercentage;
+    const existingPercentage = editingPaymentScheduleMasterData ? Number(editingPaymentScheduleMasterData.PaymentSchedulePercentage || 0) : 0;
+
+    return totalPercentage - existingPercentage + currentPercentage;
   };
-
-  const totalPercentage = useMemo(() => {
-    return PaymentScheduleMasterList.reduce((sum, item) => sum + Number(item.PaymentSchedulePercentage || 0), 0);
-  }, [PaymentScheduleMasterList]);
 
   const handleEditPaymentScheduleMaster = useCallback(
     async (row: PaymentScheduleMasterData) => {
@@ -215,8 +207,6 @@ export const PaymentScheduleMaster: React.FC = () => {
     },
     [projectId],
   );
-
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
   const validateUpdatePaymentScheduleMasterForm = (): {
     isValid: boolean;
@@ -247,7 +237,6 @@ export const PaymentScheduleMaster: React.FC = () => {
       errors: newErrors,
     };
   };
-  // PUSH FORM DATA
   const PushPaymentScheduleMasterFormData = (): AddUpdatePaymentScheduleMasterRequest => {
     return {
       PaymentScheduleMasterId: Number(formData.PaymentScheduleMasterId) || 0,
@@ -261,8 +250,6 @@ export const PaymentScheduleMaster: React.FC = () => {
       PaymentScheduleSchemeMasterId: formData.PaymentScheduleSchemeMasterId ?? 0,
     };
   };
-
-  //ADD UPDATE PAYMENT SCHEDULE DATA
   const handleAddEditPaymentScheduleMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -283,11 +270,13 @@ export const PaymentScheduleMaster: React.FC = () => {
         const response = await paymentScheduleMasterService.apiCallAddUpdatePaymentScheduleMaster(payload);
 
         if (E.isRight(response)) {
+
           setIsAddUpdateModalOpen(false);
 
           const isAdd = formData.PaymentScheduleMasterId === 0;
 
           if (isAdd) {
+            
             const newRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
             setPaymentScheduleMasterList((prevData) => [newRecord, ...prevData]);
@@ -298,21 +287,17 @@ export const PaymentScheduleMaster: React.FC = () => {
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
 
-            addToast({
-              type: "success",
-              title: response.right.SuccessMessage[0],
-            });
+            addToast({type: "success", title: response.right.SuccessMessage[0],  });
+
           } else {
+
             const updatedRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
             setPaymentScheduleMasterList((prevData) =>
               prevData.map((item) => (item.PaymentScheduleMasterId === formData.PaymentScheduleMasterId ? updatedRecord : item)),
             );
 
-            addToast({
-              type: "success",
-              title: response.right.SuccessMessage[0],
-            });
+            addToast({type: "success", title: response.right.SuccessMessage[0], });
           }
 
           totalPercentage;
@@ -331,9 +316,6 @@ export const PaymentScheduleMaster: React.FC = () => {
       Number(formData.PaymentScheduleMasterId) === 0 ? "Adding Payment Schedule" : "Updating Payment Schedule",
     );
   };
-  //#endregion
-
-  //#region TABLE COLUMNS
   const PaymentScheduleMasterColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -354,19 +336,12 @@ export const PaymentScheduleMaster: React.FC = () => {
         render: (value) => `${value || 0}%`,
       },
       {
-        key: "PaymentScheduleCummulativePercentage",
+        key: "PaymentCummulativePercentage",
         label: "Cumulative Percentage (%)",
         width: "15",
         sortable: false,
         align: "center",
-        render: (_value, _row, rowIndex) => {
-          const cumulative = PaymentScheduleMasterList.slice(0, rowIndex + 1).reduce(
-            (sum, item) => sum + Number(item.PaymentSchedulePercentage || 0),
-            0,
-          );
-
-          return `${cumulative}%`;
-        },
+        render: (value) => `${value || 0}%`,
       },
       {
         key: "Actions",
@@ -422,9 +397,6 @@ export const PaymentScheduleMaster: React.FC = () => {
     ],
     [canAction, calculateCumulative, handleEditPaymentScheduleMaster, handleConfirmationDialogBoxOpen],
   );
-  //#endregion
-
-  //#region TABLE PAGINATION INFO
   const PaymentScheduleMasterPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -436,10 +408,6 @@ export const PaymentScheduleMaster: React.FC = () => {
     [pagination, handlePageChange],
   );
   const PaymentScheduleMasterForTable = useMemo(() => PaymentScheduleMasterList, [PaymentScheduleMasterList]);
-
-  //#endregion
-
-  //#region DELETE PAYMENT SCHEDULE DATA
   const handleDeletePaymentScheduleMaster = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -482,10 +450,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           await loadPaymentScheduleMaster(pageToShow, {}, undefined, formData.PaymentScheduleSchemeMasterId ?? 0, formData.InventoryBuildingId, formData.InventoryFlatFloorBasementPodiumWingId);
 
-          addToast({
-            type: "success",
-            title: response.right.SuccessMessage?.[0],
-          });
+          addToast({type: "success", title: response.right.SuccessMessage?.[0], });
 
           setIsConfirmationDialogBoxOpen(false);
           setDeletePaymentScheduleMasterData(null);
@@ -501,16 +466,13 @@ export const PaymentScheduleMaster: React.FC = () => {
       "Deleting Payment Schedule",
     );
   };
-  //#endregion
 
-  //#region HANDLE FIELD CHANGE
   const handleFieldChange = (field: keyof AddUpdatePaymentScheduleMasterRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#region
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -604,7 +566,7 @@ export const PaymentScheduleMaster: React.FC = () => {
             </div>
           )}
         </div>
-        {/* TOTAL SUMMARY */}
+
         <div className="space-y-4 pt-5">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
             <div className="flex items-center gap-30">
@@ -634,8 +596,6 @@ export const PaymentScheduleMaster: React.FC = () => {
             )}
           </div>
 
-          {/* DATA TABLE */}
-
           <DataTable
             data={PaymentScheduleMasterForTable}
             columns={PaymentScheduleMasterColumns}
@@ -647,7 +607,6 @@ export const PaymentScheduleMaster: React.FC = () => {
           />
         </div>
       </div>
-      {/*ADD UPDATE MODAL */}
 
       <Modal
         isOpen={isAddUpdateModalOpen}
@@ -708,30 +667,24 @@ export const PaymentScheduleMaster: React.FC = () => {
                 label="Percentage (%)"
                 value={formData.PaymentSchedulePercentage?.toString() ?? ""}
                 required
+
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
+
                   if (val !== null) {
                     const percentageValue = filterNumbersWithDecimal(e.target.value);
 
                     handleFieldChange("PaymentSchedulePercentage", percentageValue);
 
                     const percentage = Number(percentageValue || 0);
-
                     const newTotal = calculateCumulative(percentage);
 
-                    if (newTotal > 100) {
-                      setErrors((prev) => ({
-                        ...prev,
-                        PaymentSchedulePercentage: "Total percentage cannot exceed 100%",
-                      }));
-                    } else {
-                      setErrors((prev) => ({
-                        ...prev,
-                        PaymentSchedulePercentage: "",
-                      }));
+                    handleFieldChange("PaymentScheduleCummulativePercentage", newTotal.toFixed(2));
 
-                      handleFieldChange("PaymentScheduleCummulativePercentage", newTotal.toFixed(2));
-                    }
+                    setErrors((prev) => ({
+                      ...prev,
+                      PaymentSchedulePercentage: newTotal > 100 ? "Total percentage cannot exceed 100%" : "",
+                    }));
                   }
                 }}
                 placeholder="Percentage"
@@ -742,8 +695,6 @@ export const PaymentScheduleMaster: React.FC = () => {
           </div>
         </div>
       </Modal>
-
-      {/* DELETE CONFIRMATION MODAL */}
 
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}

@@ -15,7 +15,7 @@ import { type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn }
 import * as E from "fp-ts/Either";
 import { projectDocumentService } from "@/features/projectDocument/services/ProjectDocumentService";
 import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/components/DataTable/DataTableExpandable";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -576,7 +576,7 @@ const ProjectDocument: React.FC = () => {
         sortable: false,
         align: "left",
         render: (value, row) =>
-          value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy(row.CreatedDate) : "-",
+          value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate) : "-",
       },
       {
         key: "Actions",

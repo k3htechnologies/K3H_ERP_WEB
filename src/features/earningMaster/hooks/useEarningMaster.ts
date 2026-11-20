@@ -62,7 +62,7 @@ export const useEarningMaster = () => {
   }>({});
   const [dropdownResetKey, setDropdownResetKey] = useState(0);
 
-  const [applicable, setApplicable] = useState<string>("Percenatge");
+  const [applicable, setApplicable] = useState<string>("Percentage");
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -172,7 +172,7 @@ export const useEarningMaster = () => {
       return
     }
 
-     await loadEarnings(1, filters, sortInfo, searchValue)
+    await loadEarnings(1, filters, sortInfo, searchValue)
   }
   //#endregion
 
@@ -225,7 +225,7 @@ export const useEarningMaster = () => {
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadEarnings(1, filters, sort, searchTerm || undefined);
-  }, [filters,searchTerm]);
+  }, [filters, searchTerm]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -247,7 +247,7 @@ export const useEarningMaster = () => {
 
   useEffect(() => {
     setSelectedEarningMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredEarningMasterColumnKeys])).filter(k => allEarningMasterColumnKeys.includes(k)));
-   
+
   }, [earningMasterColumns.length])
 
   const visibleEarningMasterColumns = useMemo(
@@ -311,7 +311,7 @@ export const useEarningMaster = () => {
     setDropdownLabels({});
     setErrors({});
     setDropdownResetKey(prev => prev + 1);
-    setApplicable("Percenatge");
+    setApplicable("Percentage");
   };
   //#endregion
 
@@ -340,7 +340,10 @@ export const useEarningMaster = () => {
       newErrors.Name = "Name is required"
     }
 
-    if (!formData.Value || Number(formData.Value) <= 0) {
+
+    const isGrossAmountEarningComponent = formData.Type?.trim().toUpperCase() === "GROSS AMOUNT - EARNING COMPONENT";
+
+    if (!isGrossAmountEarningComponent && Number(formData.Value) <= 0) {
       newErrors.Value = "Value is required";
     }
 
@@ -367,7 +370,7 @@ export const useEarningMaster = () => {
       EarningMasterId: formData.EarningMasterId,
       Uniquekey: formData.Uniquekey,
       Name: formData.Name,
-      Applicable: formData.Applicable==="" ?'Percenatge' :formData.Applicable,
+      Applicable: formData.Type?.trim().toUpperCase() === "GROSS AMOUNT - EARNING COMPONENT" ? '' : formData.Applicable === "" ? 'Percentage' : formData.Applicable,
       Type: formData.Type,
       Value: formData.Value,
       MinSalary: formData.MinSalary,

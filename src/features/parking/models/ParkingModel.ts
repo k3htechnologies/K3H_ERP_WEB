@@ -98,7 +98,9 @@ export interface FilterWithPaginationParkingRequest {
     Dimensions?: string
     DisplayParkingId?:string
     ParkingStatus?: string
+    ApprovalStatus?: string
     IsAcessOnlyApprovedParking?: boolean
+    IsAcessMemberApprovedParking?: boolean
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

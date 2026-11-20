@@ -43,7 +43,7 @@ const initialFormState = (): AddUpdateCompanyMasterWithBankDetailsRequest => ({
 });
 
 export const CompanyBank: React.FC = () => {
-   
+
    const [companyBankList, setCompanyBankList] = useState<CompanyMasterWithBankDetails[]>([]);
    const [isLoading, setIsLoading] = useState(false);
    const [loadingMessage, setLoadingMessage] = useState('');
@@ -266,64 +266,90 @@ export const CompanyBank: React.FC = () => {
                );
             }
          },
+
          {
             key: "Actions",
             label: "Actions",
-            width: '20',
-            sortable: false,
+            width: "12",
             fixed: "right",
             align: "center",
+            sortable: false,
             render: (_value, row) => {
-               if (!canAction) return null;
-               return (
-                  <div className="flex items-center justify-end ml-2 w-20">
-                     {canAction ?
-                        <>
-                           <Button
-                              onClick={(e) => {
-                                 e.preventDefault()
-                                 e.stopPropagation()
-                                 handleEditCompanyMasterBankDetails(row)
-                              }}
-                              color='transparent'
-                              fullWidth
-                              isborderRadius
-                              size='sm'
-                              title="Edit Bank Account"
-                              style={{
-                                 color: '#0B3251',
-                                 padding: '0px 8px'
-                              }}
-                              onMouseEnter={(e) => (e.currentTarget.style.color = '#1A4D73')}
-                              onMouseLeave={(e) => (e.currentTarget.style.color = '#0B3251')}
-                           >
-                              <Edit className="h-4 w-4" />
-                           </Button>
 
-                           <Button
-                              onClick={(e) => {
-                                 e.preventDefault()
-                                 e.stopPropagation()
-                                 handleConfirmationDialogBoxOpenForCompanyMasterBankDetails(row)
-                              }}
-                              color='transparent'
-                              fullWidth
-                              isborderRadius
-                              size='sm'
-                              style={{
-                                 color: 'red',
-                                 padding: '0px 8px'
-                              }}
-                              title="Delete Bank Account"
-                           >
-                              <Trash2 className="h-4 w-4" />
-                           </Button>
-                        </>
-                        : ""}
+               if (!canAction) return null;
+
+               const status = String(row?.Status ?? "").trim().toUpperCase();
+               const isClosed = status === "CLOSED";
+
+               const canEditDelete = !isClosed;
+
+               return (
+                  <div className="flex items-center justify-center gap-2">
+
+                     <Button
+                        onClick={(e) => {
+                           e.preventDefault();
+                           e.stopPropagation();
+
+                           if (!canEditDelete) return;
+
+                           handleEditCompanyMasterBankDetails(row);
+                        }}
+                        color="transparent"
+                        isborderRadius
+                        size="sm"
+                        disabled={!canEditDelete}
+                        style={{
+                           color: canEditDelete ? "#0B3251" : "#9CA3AF",
+                           cursor: canEditDelete ? "pointer" : "not-allowed",
+                           opacity: canEditDelete ? 1 : 0.5,
+                           padding: "4px 8px",
+                        }}
+                        title={
+                           isClosed
+                              ? "Closed bank account cannot be edited"
+                              : "Edit Bank Account"
+                        }
+                     >
+                        <Edit className="h-4 w-4" />
+                     </Button>
+
+                     <Button
+                        onClick={(e) => {
+                           e.preventDefault();
+                           e.stopPropagation();
+
+                           if (!canEditDelete) return;
+
+                           handleConfirmationDialogBoxOpenForCompanyMasterBankDetails(row);
+                        }}
+                        color="transparent"
+                        isborderRadius
+                        size="sm"
+                        disabled={!canEditDelete}
+                        style={{
+                           color: canEditDelete ? "red" : "#9CA3AF",
+                           cursor: canEditDelete ? "pointer" : "not-allowed",
+                           opacity: canEditDelete ? 1 : 0.5,
+                           padding: "4px 8px",
+                        }}
+                        title={
+                           isClosed
+                              ? "Closed bank account cannot be deleted"
+                              : "Delete Bank Account"
+                        }
+                     >
+                        <Trash2 className="h-4 w-4" />
+                     </Button>
+
                   </div>
-               )
-            }
-         }
+               );
+            },
+         },
+
+
+
+
       ], []);
 
    const handleFieldChange = (field: keyof AddUpdateCompanyMasterWithBankDetailsRequest, value: any) => {
@@ -400,7 +426,7 @@ export const CompanyBank: React.FC = () => {
          newErrors.Status = 'Status is required.'
       }
       if (!hasAnyDocumentFile(cancelChequeFiles, cancelChequeURL, removeCancelChequeUrls)) {
-         newErrors.CancelChequeURL = "File is required.";
+         newErrors.CancelChequeURL = "Cancel Cheque is required.";
       }
       return {
          isValid: Object.keys(newErrors).length === 0,
@@ -681,7 +707,7 @@ export const CompanyBank: React.FC = () => {
                         value={formData.Branch}
                         maxLength={100}
                         onChange={(e) => handleFieldChange('Branch', e.target.value)}
-                        placeholder="Enter Branch"
+                        placeholder="Enter Branch Name"
                      />
 
                   </div>

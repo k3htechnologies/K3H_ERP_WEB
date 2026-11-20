@@ -64,7 +64,21 @@ export const EarningMasterFormModal: React.FC<EarningMasterFormModalProps> = ({
               required
               value={formData.Name}
               onChange={(e) => onFieldChange('Name', String(e))}
-              options={CTC_EARNINGS.map((opt) => ({ label: opt.name, value: opt.id }))}
+
+              options={CTC_EARNINGS
+                .filter(opt => {
+                  const name = opt.name.trim().toUpperCase();
+
+                  return name !== "GROSS AMOUNT"
+                    && name !== "GROSS AMOUNT - EARNING COMPONENT";
+                })
+                .map(opt => ({
+                  label: opt.name,
+                  value: opt.id
+                }))
+              }
+
+
               error={errors.Name}
             />
           </div>
@@ -79,60 +93,64 @@ export const EarningMasterFormModal: React.FC<EarningMasterFormModalProps> = ({
               error={errors.Type}
             />
           </div>
+          {formData.Type.toUpperCase() != "GROSS AMOUNT - EARNING COMPONENT" && (
+            <>
+              <div >
+                <p className="text-sm text-gray-600 mb-2">
+                  Applicable *
+                </p>
+                <div className="flex gap-3">
+                  <RadioPill
+                    name="Applicable"
+                    label="Percentage"
+                    value={formData.Applicable ?? ''}
+                    checked={applicable === "Percentage"}
+                    onChange={() => {
+                      onFieldChange("Value", 0);
+                      setApplicable("Percentage");
+                      onFieldChange("Applicable", "Percentage");
+                    }}
+                  />
 
-          <div >
-            <p className="text-sm text-gray-600 mb-2">
-              Applicable *
-            </p>
-            <div className="flex gap-3">
-              <RadioPill
-                name="Applicable"
-                label="Percenatge"
-                value={formData.Applicable ?? ''}
-                checked={applicable === "Percenatge"}
-                onChange={() => {
-                  onFieldChange("Value", 0);
-                  setApplicable("Percenatge");
-                  onFieldChange("Applicable", "Percenatge");
-                }}
-              />
+                  <RadioPill
+                    name="Applicable"
+                    label="Lumpsum"
+                    value={formData.Applicable ?? ''}
+                    checked={applicable === "Lumpsum"}
+                    onChange={() => {
 
-              <RadioPill
-                name="Applicable"
-                label="Lumpsum"
-                value={formData.Applicable ?? ''}
-                checked={applicable === "Lumpsum"}
-                onChange={() => {
+                      onFieldChange("Value", 0);
+                      setApplicable("Lumpsum");
+                      onFieldChange("Applicable", "Lumpsum");
+                    }}
+                  />
+                </div>
+              </div>
 
-                  onFieldChange("Value", 0);
-                  setApplicable("Lumpsum");
-                  onFieldChange("Applicable", "Lumpsum");
-                }}
-              />
-            </div>
-          </div>
-          <div>
-            <Input
-              label={formData.Applicable === "Lumpsum" ? 'Value (Lumpsum)' : 'Value (%)'}
-              required
-              error={errors.Value}
-              type="text"
-              value={formData.Value ?? ''}
-              maxLength={10}
-              onChange={(e) => {
-                if (formData.Applicable === "Lumpsum") {
-                  onFieldChange("Value", filterNumbersWithDecimal(e.target.value))
-                }
-                else {
-                  const val = allowPercentage(e.target.value);
-                  if (val !== null) {
-                    onFieldChange("Value", filterNumbersWithDecimal(e.target.value))
-                  }
-                }
-              }}
-              placeholder="Enter Value"
-            />
-          </div>
+              <div>
+                <Input
+                  label={formData.Applicable === "Lumpsum" ? 'Value (Lumpsum)' : 'Value (%)'}
+                  required={formData.Type.toUpperCase() != "GROSS AMOUNT - EARNING COMPONENT" ? true : false}
+                  error={errors.Value}
+                  type="text"
+                  value={formData.Value ?? ''}
+                  maxLength={10}
+                  onChange={(e) => {
+                    if (formData.Applicable === "Lumpsum") {
+                      onFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                    }
+                    else {
+                      const val = allowPercentage(e.target.value);
+                      if (val !== null) {
+                        onFieldChange("Value", filterNumbersWithDecimal(e.target.value))
+                      }
+                    }
+                  }}
+                  placeholder="Enter Value"
+                />
+              </div>
+            </>
+          )}
 
           <div>
             <Input

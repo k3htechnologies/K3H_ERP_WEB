@@ -2,7 +2,9 @@ import type { Failure } from '@/core/api/FailureResponse';
 import { TenantDatasourceImpl } from '@/features/tenant/datasources/TenantDatasource'
 import type {
     FilterWithPaginationTenantRequest,
+    FilterTenantByIdRequest,
     TenantListResponse,
+    TenantByIdListResponse,
     DeleteTenantRequest,
     TenantDeleteResponse,
     TenantDocumentListResponse,
@@ -22,6 +24,18 @@ export const tenantService = {
         try {
 
             return E.right(await tenantDatasource.pullTenant(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullTenantById: async (params: FilterTenantByIdRequest): Promise<E.Either<Failure, TenantByIdListResponse>> => {
+        try {
+
+            return E.right(await tenantDatasource.pullTenantById(params));
 
         } catch (error: any) {
 

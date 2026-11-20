@@ -16,6 +16,7 @@ import useToast from "@/core/hooks/useToast";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { FilterWithPaginationAssetMasterRequest } from "@/features/assetMaster/models/AssetMasterModel";
 import { assetMasterService } from "@/features/assetMaster/services/AssetMasterService";
+import { formatCurrency } from "@/core/utils/comman";
 
 const ViewAssetPage: React.FC = () => {
 
@@ -175,71 +176,79 @@ const ViewAssetPage: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* ================= ASSET INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Asset Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                            <div className='bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex justify-between'>
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Asset Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Asset Name" value={editAssetData!.AssetName} />
-                                        <FieldItem label="Asset Code" value={editAssetData!.AssetCode} />
-                                        <FieldItem label="Asset Type" value={editAssetData!.AssetType} />
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Asset Name" value={editAssetData!.AssetName} />
+                                            <FieldItem label="Asset Code" value={editAssetData!.AssetCode} />
+                                            <FieldItem label="Asset Type" value={editAssetData!.AssetType} />
 
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="lg:col-span-3 pb-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Asset Brand" value={editAssetData!.AssetBrand} />
-                                        <FieldItem label="Asset Model" value={editAssetData!.AssetModel} />
-                                        <FieldItem label="Serial Number" value={editAssetData!.SerialNumber} />
+                                    <div className="lg:col-span-3 pb-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Asset Brand" value={editAssetData!.AssetBrand} />
+                                            <FieldItem label="Asset Model" value={editAssetData!.AssetModel} />
+                                            <FieldItem label="Serial Number" value={editAssetData!.SerialNumber} />
 
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
                         {/* ================= PURCHASE DETAILS ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Purchase Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem
-                                            label="Purchase Date"
-                                            value={
-                                                editAssetData!.PurchaseDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData!.PurchaseDate)
-                                                    : "-"
-                                            }
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                        />
-                                        <FieldItem
-                                            label="Warranty Expiry Date"
-                                            value={
-                                                editAssetData!.WarrantyExpiryDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetData!.WarrantyExpiryDate)
-                                                    : "-"
-                                            }
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                    Purchase Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem
+                                                label="Purchase Date"
+                                                value={
+                                                    editAssetData!.PurchaseDate
+                                                        ? formatDate_dd_MonthName_yy(editAssetData!.PurchaseDate)
+                                                        : "-"
+                                                }
 
-                                        />
-                                        <FieldItem label="Supplier Name" value={editAssetData!.SupplierName} />
+                                            />
+                                            <FieldItem
+                                                label="Warranty Expiry Date"
+                                                value={
+                                                    editAssetData!.WarrantyExpiryDate
+                                                        ? formatDate_dd_MonthName_yy(editAssetData!.WarrantyExpiryDate)
+                                                        : "-"
+                                                }
 
+                                            />
+                                            <FieldItem label="Supplier Name" value={editAssetData!.SupplierName} />
+
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Asset Cost (₹)" value={editAssetData!.AssetCost} />
-                                        {editAssetData.AssetInvoiceURL && (<FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />)}
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Asset Cost (₹)" value={formatCurrency(editAssetData!.AssetCost)} />
+                                            {editAssetData.AssetInvoiceURL && (<FieldItem label="Asset Invoice" value={"Invoice"} urls={editAssetData.AssetInvoiceURL} isIcon={true} />)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-
                         </section>
 
                     </div>
@@ -248,39 +257,43 @@ const ViewAssetPage: React.FC = () => {
                     <div className="lg:col-span-1 space-y-6">
 
                         {/* ================= AUDIT TRAIL ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Created By" value={editAssetData!.CreatedBy} />
-                                        <FieldItem
-                                            label="Created Date"
-                                            value={
-                                                editAssetData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(editAssetData!.CreatedDate)
-                                                    : "-"
-                                            }
+                            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#333333]">
+                                    Action Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Created By" value={editAssetData!.CreatedBy} />
+                                            <FieldItem
+                                                label="Created Date"
+                                                value={
+                                                    editAssetData!.CreatedDate
+                                                        ? formatDate_dd_MonthName_yy_hh_mm(editAssetData!.CreatedDate)
+                                                        : "-"
+                                                }
 
-                                        />
+                                            />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Modified By" value={editAssetData!.ModifiedBy} />
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={
-                                                editAssetData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(editAssetData!.ModifiedDate)
-                                                    : "-"
-                                            }
+                                    <div className="lg:col-span-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <FieldItem label="Modified By" value={editAssetData!.ModifiedBy} />
+                                            <FieldItem
+                                                label="Modified Date"
+                                                value={
+                                                    editAssetData!.ModifiedDate
+                                                        ? formatDate_dd_MonthName_yy_hh_mm(editAssetData!.ModifiedDate)
+                                                        : "-"
+                                                }
 
-                                        />
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -288,30 +301,34 @@ const ViewAssetPage: React.FC = () => {
 
                         {/* ================= AUDIT TRAIL ================= */}
                         {editAssetData.EmployeeName?.trim() !== '' && (
-                            <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Alloted Details
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                            <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
-                                            <FieldItem label="Department" value={editAssetData!.Department} />
+                                <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                        Alloted Details
+                                    </h4>
+                                </div>
+                                <div className="p-4 bg-white">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Employee Name" value={editAssetData!.EmployeeName} />
+                                                <FieldItem label="Department" value={editAssetData!.Department} />
 
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                            <FieldItem label="Designation" value={editAssetData!.Designation} />
-                                            <FieldItem label="Branch" value={editAssetData!.Branch} />
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Designation" value={editAssetData!.Designation} />
+                                                <FieldItem label="Branch" value={editAssetData!.Branch} />
 
 
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="lg:col-span-3 pt-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                            <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(editAssetData!.AssignedDate ?? '')} />
+                                        <div className="lg:col-span-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                                <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(editAssetData!.AssignedDate ?? '')} />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -336,34 +353,38 @@ const ViewAssetPage: React.FC = () => {
                                 return (
                                     <>
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] " >
-                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Asset Details
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                                            <div className='bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex justify-between'>
+                                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                                    Asset Details
+                                                </h4>
+                                            </div>
+                                            <div className="p-4 bg-white">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Employee Name" value={asset.EmployeeName} />
-                                                        <FieldItem label="Duration From" value={formatDate_dd_MonthName_yy(asset.AssignedDate ?? '')} />
-                                                        <FieldItem label="Duration To" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="Employee Name" value={asset.EmployeeName} />
+                                                            <FieldItem label="Duration From" value={formatDate_dd_MonthName_yy(asset.AssignedDate ?? '')} />
+                                                            <FieldItem label="Duration To" value={formatDate_dd_MonthName_yy(asset.ReturnDate ?? '')} />
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                        <FieldItem label="Department" value={asset.Department} />
-                                                        <FieldItem label="Designation" value={asset.Designation} />
-                                                        <FieldItem label="Branch" value={asset.Branch} />
+                                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                            <FieldItem label="Department" value={asset.Department} />
+                                                            <FieldItem label="Designation" value={asset.Designation} />
+                                                            <FieldItem label="Branch" value={asset.Branch} />
+                                                        </div>
                                                     </div>
-                                                </div>
 
-                                                <div className="lg:col-span-3 pt-3">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                                        <FieldItem label="Condition At Return" value={asset.ConditionOnReturn} />
+                                                    <div className="lg:col-span-3 pt-3">
+                                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                                            <FieldItem label="Condition At Return" value={asset.ConditionOnReturn} />
+                                                        </div>
                                                     </div>
-                                                </div>
 
+                                                </div>
                                             </div>
                                         </section>
                                     </>

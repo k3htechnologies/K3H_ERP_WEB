@@ -630,13 +630,13 @@ export const TenantBooking: React.FC = () => {
                         totalPages: newTotalPages
                     });
 
-                    await loadBookings(pageToShow, filters, sortInfo);
-
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
                     setIsConfirmationDialogBoxOpen(false);
 
                     setDeleteBookingData(null);
+
+                    await loadBookings(pageToShow, filters, sortInfo);
 
                 } else {
 

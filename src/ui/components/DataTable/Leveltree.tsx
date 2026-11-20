@@ -681,12 +681,7 @@ export const LevelTree = <T extends AnyRow>({
         </div>
       )}
 
-      <div className="overflow-auto flex-1 thin-scroll"
-      style={{maxHeight}}
-        // style={{
-        //   maxHeight: 'calc(10 * 2.5rem + 2.5rem)'
-        // }}
-      >
+      <div className="overflow-auto flex-1 thin-scroll" style={{maxHeight}} >
         <table className="border-collapse text-sm" style={{ width: 'max-content', minWidth: '100%' }}>
           <thead>
             <tr className="text-[14px] text-gray-300 tracking-wide">

@@ -15,7 +15,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { approvedBankFileService } from "@/features/approvedBank/services/ApprovedBankFileService";
 import useToast from "@/core/hooks/useToast";
 import { Edit, Trash2 } from "lucide-react";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import {  formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
@@ -251,7 +251,7 @@ export const ApprovedBankFile: React.FC = () => {
                     <div className="flex items-center gap-2 justify-between w-full">
                         <MultiImageViewer
                             images={parseDocumentUrls(row.ApprovedBankFileURL)}
-                            title="Document"
+                            title={row.ApprovedBankFileName}
                             triggerLabel={
                                 <TooltipText
                                     text={value || '-'}
@@ -265,18 +265,31 @@ export const ApprovedBankFile: React.FC = () => {
             }
         },
         {
-            key: 'CreatedBy',
+            key: 'ModifiedBy',
             label: 'Last Modified By',
-            width: '33',
-            align: 'center',
-            render: (value) => value || '-'
+            width: '20',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
         },
         {
-            key: 'CreatedDate',
+            key: 'ModifiedDate',
             label: 'Last Modified Date',
-            width: '33',
+            width: '20',
+            sortable: false,
             align: 'center',
-            render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy_hh_mm(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
+                        : '-'
         },
         {
             key: 'actions',
@@ -590,7 +603,7 @@ export const ApprovedBankFile: React.FC = () => {
                 }}
                 title={editingApprovedBankFileData ? 'Update Bank Documents' : 'Add Bank Documents'}
                 onSubmit={handleAddUpdateApprovedBankFile}
-                saveText='Save'
+                saveText={editingApprovedBankFileData ? 'Update' : 'Add'}
                 loading={isLoading}
                 size='xl'
             >

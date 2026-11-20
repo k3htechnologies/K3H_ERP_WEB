@@ -111,8 +111,8 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
         <div className="space-y-3 pt-4 sm:pt-5">
 
             <div className="bg-white rounded-xl p-4 h-[430px] border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-               
-               <p className="text-md text-gray-500 font-semibold pb-2 pl-4">Attendance Summary</p>
+
+                <p className="text-md text-gray-500 font-semibold pb-2 pl-4">Attendance Summary </p>
 
                 {employeeOverviewTable?.length > 0 ? (
                     <div className="min-w-[500px] sm:min-w-full flex-1 overflow-hidden flex flex-col">

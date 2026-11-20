@@ -54,9 +54,11 @@ export const Ticket: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [isShowCustomizeCallLogColumnsModal, setIsShowCustomizeCallLogColumnsModal] = useState(false);
+
     const [documentURLFiles, setDocumentURLFiles] = useState<(File | string)[]>([]);
     const [documentURL, setDocumentURL] = useState<string>("");
     const [removedDocumentURLs, setRemovedDocumentURLs] = useState<string[]>([]);
+
     const [editingTicketData, setEditingTicketData] = useState<TicketData | null>(null);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteTicketMasterData, setDeleteTicketMasterData] = useState<TicketData | null>(null)
@@ -83,6 +85,30 @@ export const Ticket: React.FC = () => {
     useEffect(() => {
         setTempFilters(filters);
     }, [filters]);
+
+    useEffect(() => {
+        if (isAddUpdateModalOpen) {
+            if (editingTicketData) {
+                setFormData({
+                    TicketId: editingTicketData.TicketId,
+                    Uniquekey: editingTicketData.Uniquekey || initialFormState().Uniquekey,
+                    SystemGeneratedCode: editingTicketData.SystemGeneratedCode || '',
+                    Platform: editingTicketData.Platform || '',
+                    Module: editingTicketData.Module || '',
+                    Priority: editingTicketData.Priority || '',
+                    TicketStatus: editingTicketData.TicketStatus || '',
+                    TicketDescription: editingTicketData.TicketDescription || '',
+                    TicketRemark: editingTicketData.TicketRemark || '',
+                    AttachmentURL: null,
+                    RemoveAttachmentURL: ''
+                });
+                setDocumentURLFiles([]);
+                setDocumentURL(editingTicketData.AttachmentURL || '');
+                setRemovedDocumentURLs([]);
+            }
+        }
+
+    }, [isAddUpdateModalOpen, editingTicketData])
 
     const debouncedSearch = useDebouncedCallback(
         (value: string, isSearch: boolean = true) => {
@@ -369,22 +395,6 @@ export const Ticket: React.FC = () => {
 
     const handleEditTicketMaster = useCallback((row: TicketData) => {
         setEditingTicketData(row);
-        setFormData({
-            ...initialFormState(),
-            TicketId: row.TicketId,
-            Uniquekey: row.Uniquekey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-            Platform: row.Platform ?? '',
-            Module: row.Module ?? '',
-            Priority: row.Priority ?? '',
-            TicketDescription: row.TicketDescription ?? '',
-            TicketRemark: row.TicketRemark ?? '',
-            TicketStatus: row.TicketStatus ?? 'Open',
-
-        });
-        setRemovedDocumentURLs([]);
-        setDocumentURLFiles([]);
-        setDocumentURL(row.AttachmentURL ?? "");
-
         setIsAddUpdateModalOpen(true);
     }, []);
 
@@ -546,7 +556,8 @@ export const Ticket: React.FC = () => {
                 width: '15',
                 align: 'center',
                 render: (_value, row) => {
-                    const isDisabled = row.AssignedStatus !== "Open" && row.AssignedStatus !== "";
+                    const isDisabled = !row.AssignedStatus.toLowerCase().includes("open");
+                    const isAlreadyAssigned = (row.AssignTicketHistory?.length ?? 0) > 0;
 
                     return (
                         <div className="flex items-center justify-center">
@@ -571,9 +582,9 @@ export const Ticket: React.FC = () => {
                                                 color="transparent"
                                                 size="sm"
                                                 style={{
-                                                    color: (!isDisabled) ? 'blue' : '#9CA3AF',
-                                                    cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
-                                                    opacity: (!isDisabled) ? 1 : 0.5,
+                                                    color: (!isDisabled || !isAlreadyAssigned) ? 'blue' : '#9CA3AF',
+                                                    cursor: (!isDisabled || !isAlreadyAssigned) ? 'pointer' : 'not-allowed',
+                                                    opacity: (!isDisabled || !isAlreadyAssigned) ? 1 : 0.5,
                                                     padding: '0px 8px'
                                                 }}
                                                 onClick={(e) => {
@@ -582,16 +593,16 @@ export const Ticket: React.FC = () => {
                                                     handleEditTicketMaster(row);
                                                 }}
                                                 leftIcon={<Edit className="h-4 w-4" />}
-                                                disabled={isDisabled}
+                                                disabled={isDisabled || isAlreadyAssigned}
                                             />
 
                                             <Button
                                                 color="transparent"
                                                 size="sm"
                                                 style={{
-                                                    color: (!isDisabled) ? 'red' : '#9CA3AF',
-                                                    cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
-                                                    opacity: (!isDisabled) ? 1 : 0.5
+                                                    color: (!isDisabled || !isAlreadyAssigned) ? 'red' : '#9CA3AF',
+                                                    cursor: (!isDisabled || !isAlreadyAssigned) ? 'pointer' : 'not-allowed',
+                                                    opacity: (!isDisabled || !isAlreadyAssigned) ? 1 : 0.5
                                                 }}
                                                 onClick={(e) => {
                                                     e.preventDefault();
@@ -599,7 +610,7 @@ export const Ticket: React.FC = () => {
                                                     handleConfirmationDialogBoxOpen(row);
                                                 }}
                                                 leftIcon={<Trash2 className="h-4 w-4" />}
-                                                disabled={isDisabled}
+                                                disabled={isDisabled || isAlreadyAssigned}
                                             />
                                         </>
                                     )}

@@ -6,6 +6,7 @@ export interface FilterWithPaginationOtherChargesRequest {
     IsCheckPermission?: boolean
     ProjectId?: number
     ChargeName?: string
+    ApplicableFor?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -14,6 +15,7 @@ export interface OtherChargesData {
     OtherChargesId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
+    ApplicableFor?: string
     ChargeName: string | null
     CalculatedOn: string | null
     Value: number | 0
@@ -33,6 +35,7 @@ export interface AddUpdateOtherChargesRequest {
     OtherChargesId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
+    ApplicableFor?: string
     ChargeName: string | null
     CalculatedOn: string | null
     Value: number | 0

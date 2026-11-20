@@ -136,7 +136,8 @@ const InventoryDashboard: React.FC = () => {
         Building: row?.Building ?? "",
         Wing: row?.Wing ?? "",
         ParkingStatus: status,
-        IsAcessOnlyApprovedParking:false
+        IsAcessOnlyApprovedParking:false,
+        IsAcessMemberApprovedParking:false,
       };
 
       await runApiWithLoader(

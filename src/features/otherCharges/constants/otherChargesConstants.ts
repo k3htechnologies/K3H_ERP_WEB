@@ -5,6 +5,7 @@ export const INITIAL_FORM_STATE: AddUpdateOtherChargesRequest = {
   OtherChargesId: 0,
   ProjectId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  ApplicableFor:'',
   ChargeName: '',
   CalculatedOn: null,
   Value: 0,
@@ -12,13 +13,20 @@ export const INITIAL_FORM_STATE: AddUpdateOtherChargesRequest = {
   GSTValue: 0
 };
 
-export const REQUIRED_COLUMN_KEYS: string[] = ['ChargeName', 'Actions'];
+export const REQUIRED_COLUMN_KEYS: string[] = ['ApplicableFor','ChargeName', 'Actions'];
 
 export const getInitialFormState = (): AddUpdateOtherChargesRequest => ({
   ...INITIAL_FORM_STATE
 });
 
 export const getOtherChargesColumns = (): TableColumn[] => [
+  {
+    key: 'ApplicableFor',
+    label: 'Applicable For',
+    width: '16',
+    sortable: false,
+    align: 'left'
+  },
   {
     key: 'ChargeName',
     label: 'Charges',

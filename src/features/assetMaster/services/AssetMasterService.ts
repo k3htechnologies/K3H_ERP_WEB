@@ -4,7 +4,9 @@ import type {
     DeleteAssetMasterRequest,
     AssetMasterListResponse,
     AssetMasterSaveResponse,
-    AssetMasterDeleteResponse
+    AssetMasterDeleteResponse,
+    FilterWithPaginationVerifyAssetMasterRequest,
+    VerifyAssetMasterListResponse
 } from '@/features/assetMaster/models/AssetMasterModel'
 import * as E from 'fp-ts/Either';
 import { AssetMasterDatasourceImpl } from '@/features/assetMaster/datasources/AssetMasterDatasource';
@@ -41,6 +43,18 @@ export const assetMasterService = {
         try {
 
             return E.right(await assetMasterDatasource.deleteAssetMaster(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullVerifyAssetMaster: async (params: FilterWithPaginationVerifyAssetMasterRequest): Promise<E.Either<Failure, VerifyAssetMasterListResponse>> => {
+        try {
+
+            return E.right(await assetMasterDatasource.pullVerifyAssetMaster(params));
 
         } catch (error: any) {
 

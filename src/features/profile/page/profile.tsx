@@ -184,6 +184,7 @@ export const Profile: React.FC = () => {
         { id: "Project", label: "Project" },
         { id: "Shift Policy", label: "Shift Policy" },
         { id: "Week Off Policy", label: "Week Off Policy" },
+        { id: "Letter", label: "Letter" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(employeeTabList[0].id);
@@ -1408,6 +1409,8 @@ export const Profile: React.FC = () => {
                         else if (t.id === 'Shift Policy') loadShiftMappings();
 
                         else if (t.id === 'Week Off Policy') loadWeekOffMappings();
+
+                        else if (t.id === "Letter") loadEmployeeLetterData();
 
                     }}
                 />

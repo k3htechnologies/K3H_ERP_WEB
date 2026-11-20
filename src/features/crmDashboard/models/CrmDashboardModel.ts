@@ -1,18 +1,17 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface CrmDashboardModel {
-    Table0: Table0[]   
-    Table1: Table1[]   
-    Table2: Table2[]   
-    Table3: Table3[]   
-    Table4: Table4[]   
-    Table5: Table5[]   
-    Table6: Table6[]  
+    Table0: Table0[]
+    Table1: Table1[]
+    Table2: Table2[]
+    Table3: Table3[]
+    Table4: Table4[]
+    Table5: Table5[]
 }
 
 export interface Table0 {
     TotalAgreementAmount: number
-    TotalAgreementGSTAmount: number 
+    TotalAgreementGSTAmount: number
     TotalAgreementTDSAmount: number
     TotalReceivedAgreementAmount: number
     TotalOutstandingAgreementValue: number
@@ -41,6 +40,8 @@ export interface Table2 {
     AgreementValue: number
     CreatedDate: string
     Flat: string
+    SalesAdvisor: string
+    SourcingManager: string
 }
 
 export interface Table3 {
@@ -55,24 +56,16 @@ export interface Table3 {
 }
 
 export interface Table4 {
-    Label: string
-    Agreement: number
-    GST: number
-    TDS: number
-}
-
-export interface Table5 {
-    PaymentScheduleName: string
-    Expected: number
-    Received: number
-    Pending: number
-}
-
-export interface Table6 {
     Name: string
     TotalCount: number
     ApprovedCount: number
     PendingCount: number
+}
+
+export interface Table5 {
+    Days: number
+    Title: string
+    Description: string
 }
 
 export type CrmDashboardResponse = ApiResponse<CrmDashboardModel>;

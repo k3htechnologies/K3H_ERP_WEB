@@ -55,7 +55,7 @@ export const technicalService = {
 
         }
     },
-       apiCallMaterialSubMaterialMasterUOMList: async (params: FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<E.Either<Failure, MaterialSubMaterialMasterUOMListResponse>> => {
+    apiCallMaterialSubMaterialMasterUOMList: async (params: FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<E.Either<Failure, MaterialSubMaterialMasterUOMListResponse>> => {
         try {
 
             return E.right(await technicalDatasource.getMaterialSubMaterialMasterUOM(params));

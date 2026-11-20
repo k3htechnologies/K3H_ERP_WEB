@@ -15,6 +15,7 @@ export interface FilterWithPaginationCompanyMasterRequest {
     PANNumber?: string
     TANNumber?: string
     IsDisplayBankDetails?: boolean
+
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -56,6 +57,7 @@ export interface CompanyMasterData {
     LastModifiedDate: string | null
     CompanyPartnerData: CompanyPartnerData[]
     CompanyWithBankDetailsData: CompanyMasterWithBankDetails[]
+
 }
 
 export interface CompanyPartnerData {

@@ -1686,27 +1686,7 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
-  // TEAM WORK SPACE
-  storeTaskTableColumns: (columns: string): void => {
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS, columns);
-    } catch (error) {
-      console.error("Error Task Columns Details:", error);
-    }
-  },
 
-  getTaskTableColumns: (): string | null => {
-    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
-    if (stored) {
-      try {
-        return localStorage.getItem(LOCAL_STORAGE_KEYS.TASK_SELECTED_COLUMNS);
-      } catch (error) {
-        console.error("Error reading Task Columns Details:", error);
-        return null;
-      }
-    }
-    return null;
-  },
 
   storeAgendaTaskTableColumns: (columns: string): void => {
     try {
@@ -1729,6 +1709,7 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  //COST TO COMPANY
   storeCostToCompanyTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS, columns);
@@ -1750,9 +1731,31 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  storeCallMonitoringTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CALL_MONITORING_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Call Monitoring Columns Details:", error);
+    }
+  },
+
+  getCallMonitoringTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_MONITORING_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_MONITORING_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Call Monitoring Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
 
   clearLocalStorageData: (): void => {
     try {
+
+      document.title = "H. RISHABRAJ ERP";
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_PROJECT);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
@@ -1858,6 +1861,10 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
 
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_MONITORING_SELECTED_COLUMNS);
+
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
@@ -1882,8 +1889,6 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_LAND);
-      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_REDEVELOPMENT);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_ROLE_MASTER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.JOB_OPENING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
@@ -1892,6 +1897,9 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.AGENDA_TASK);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MEETING);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COST_TO_COMPANY);
+
+
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COST_TO_COMPANY);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROCESS_SALARY);
 

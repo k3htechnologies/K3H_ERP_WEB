@@ -99,10 +99,13 @@ const ViewWeekOffMaster: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
 
                         {/* ================= BASIC DETAILS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                            <div className='bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex justify-between'>
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
                                 Week Off Policy Details
-                            </h4>
+                             </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
@@ -119,13 +122,18 @@ const ViewWeekOffMaster: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </section>
 
                         {/* ================= WEEK OFF DETAILS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
                                 Week Off Details
                             </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
@@ -144,6 +152,7 @@ const ViewWeekOffMaster: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                            </div>
                         </section>
                     </div>
 
@@ -151,11 +160,14 @@ const ViewWeekOffMaster: React.FC = () => {
                     <div className="lg:col-span-1 space-y-6">
 
                         {/* ================= AUDIT TRAIL ================= */}
-                        <section className="bg-white rounded-xl border border-gray-300 shadow-sm p-6">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
+                            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#333333]">
+                                    Action Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -186,6 +198,7 @@ const ViewWeekOffMaster: React.FC = () => {
                                         />
                                     </div>
                                 </div>
+                            </div>
                             </div>
                         </section>
 

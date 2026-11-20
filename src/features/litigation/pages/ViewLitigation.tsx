@@ -671,7 +671,7 @@ const ViewLitigation: React.FC = () => {
         <div className="grid grid-cols-12 gap-5 pt-5">
 
           <div className="col-span-7">
-            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+            <div className="bg-white rounded-lg border border-gray-300  p-4">
               {/* ================= CASE DETAILS ================= */}
               <section className="bg-white border-b border-[#135bec2e] px-4 pt-1 pb-4">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Case Details</h4>
@@ -748,7 +748,7 @@ const ViewLitigation: React.FC = () => {
 
             {(litigationStatus === "Closed" || litigationStatus === "Reopen") && (
               <div className="col-span-7 pt-3">
-                <div className="bg-white rounded-lg border border-[#135bec2e] shadow-sm p-4 mt-2">
+                <div className="bg-white rounded-lg border border-[#135bec2e] p-4 mt-2">
                   <section>
                     <h4 className="text-lg font-semibold text-gray-900 pb-2">Closure Details</h4>
 
@@ -800,7 +800,7 @@ const ViewLitigation: React.FC = () => {
             {/* =================CASE BRIEF DETAILS ================= */}
 
             <div className="col-span-7 pt-5">
-              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+              <div className="bg-white rounded-lg border border-gray-300 p-4">
                 <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Brief / Petition / Suit</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
@@ -813,7 +813,7 @@ const ViewLitigation: React.FC = () => {
             {/* =================CASE REMARKS DETAILS ================= */}
 
             <div className="col-span-7 pt-5">
-              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+              <div className="bg-white rounded-lg border border-gray-300  p-4">
                 <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Remarks / Comments</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
@@ -826,7 +826,7 @@ const ViewLitigation: React.FC = () => {
             {/* ================= ACTION DETAILS ================= */}
 
             <div className="col-span-7 pt-5">
-              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1">
+              <div className="bg-white rounded-lg border border-gray-300  p-1">
                 <section className="bg-white p-4 flex flex-col">
                   {/* Header Row */}
                   <div className="flex items-center justify-between mb-4">
@@ -892,7 +892,7 @@ const ViewLitigation: React.FC = () => {
 
           {/*  RIGHT SIDE  */}
           <div className="col-span-5">
-            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+            <div className="bg-white rounded-lg border border-gray-300  p-4 h-full">
               <div className="border-b pb-3">
                 <div className="flex items-center justify-between">
                   <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
@@ -1145,7 +1145,7 @@ const ViewLitigation: React.FC = () => {
         <div className="pt-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {docsWithUrls.length === 0 && (
-              <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <section className="md:col-span-4 bg-white rounded-xl  p-6 border border-gray-200">
                 <NoDataView message="No Documents Found" />
               </section>
             )}
@@ -1154,7 +1154,7 @@ const ViewLitigation: React.FC = () => {
               const urls = parseDocumentUrls(d.DocumentURL ?? "").filter((x) => x?.trim()?.length);
 
               return (
-                <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+                <div className="border border-gray-200 rounded-lg  flex flex-col h-full">
                   <div className="flex items-start justify-between p-2 gap-2">
                     <div className="flex flex-col">
                       <span className="line-clamp-2 break-all font-medium text-gray-900">{d.DocumentName}</span>

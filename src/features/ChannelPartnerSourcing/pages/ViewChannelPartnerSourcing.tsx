@@ -26,6 +26,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { SUPPORT_TYPE_OPTIONS } from "@/core/constants";
 import { isDateWithinPastDays } from "@/core/utils/comman";
 import type { ChannelPartnerData } from "@/features/ChannelPartner/models/ChannelPartnerModel";
+import CallMonitoring from "@/features/callMonitoring/pages/CallMonitoring";
 
 const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ChannelPartnerSourcingId: 0,
@@ -64,6 +65,13 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const { listState } = useChannelPartnerSourcingListState();
 
   const { projectId } = useProject();
+
+  const ChannelPartnerSourcingTabList = [
+    { id: "Overview", label: "Overview" },
+    { id: "CallLogs", label: "Call Logs" }
+  ]
+
+  const [channelPartnerSourcingActiveTab, setChannelPartnerSourcingActiveTab] = useState(ChannelPartnerSourcingTabList[0].id);
 
   useEffect(() => {
     if (listState.channelPartnerId) {
@@ -324,89 +332,99 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         isLoading={false}
       />
 
-      <div className="grid grid-cols-12 gap-4 pt-5">
-        <div className="col-span-5">
-          <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+      <div className="mt-5">
+        <Tabs
+          tabs={ChannelPartnerSourcingTabList}
+          defaultActive={channelPartnerSourcingActiveTab}
+          onTabChange={(t) => setChannelPartnerSourcingActiveTab(t.id)}
+          islarge
+        />
+      </div>
 
-            {/* HEADER DETAILS */}
-            <div className="pl-4 pb-4 border-b-2 border-gray-300">
-              <div className="flex flex-col gap-2">
+      {channelPartnerSourcingActiveTab === "Overview" && (
+        <div className="grid grid-cols-12 gap-4 pt-5">
+          <div className="col-span-5">
+            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
-                <div className="flex items-start">
-                  <span className="text-gray-500 font-medium text-sm w-[140px]">
-                    Company Name
-                  </span>
-                  <span className="text-gray-500 font-medium text-sm px-2">:</span>
-                  <span className="text-black text-sm break-all">
-                    {editChannelPartnerData?.CompanyName || '-'}
-                  </span>
+              {/* HEADER DETAILS */}
+              <div className="pl-4 pb-4 border-b-2 border-gray-300">
+                <div className="flex flex-col gap-2">
+
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium text-sm w-[140px]">
+                      Company Name
+                    </span>
+                    <span className="text-gray-500 font-medium text-sm px-2">:</span>
+                    <span className="text-black text-sm break-all">
+                      {editChannelPartnerData?.CompanyName || '-'}
+                    </span>
+                  </div>
+
+                  <div className="flex items-start">
+                    <span className="text-gray-500 font-medium text-sm w-[140px]">
+                      Firms Type
+                    </span>
+                    <span className="text-gray-500 font-medium text-sm px-2">:</span>
+                    <span className="text-black text-sm break-all">
+                      {editChannelPartnerData?.FirmsType || '-'}
+                    </span>
+                  </div>
+
                 </div>
+              </div>
 
-                <div className="flex items-start">
-                  <span className="text-gray-500 font-medium text-sm w-[140px]">
-                    Firms Type
-                  </span>
-                  <span className="text-gray-500 font-medium text-sm px-2">:</span>
-                  <span className="text-black text-sm break-all">
-                    {editChannelPartnerData?.FirmsType || '-'}
-                  </span>
+              {/* BASIC DETAILS */}
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Basic Details
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FieldItem label="CP Code" value={editChannelPartnerData?.SystemGeneratedCode || '-'} />
+                  <FieldItem label="Full Name" value={editChannelPartnerData?.Name || '-'} />
+                  <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId || '-'} />
+                  <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
+                  <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" : `${editChannelPartnerData?.MobileNumberCountryCode ?? "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
+
+                  <FieldItem label="Designation" value={editChannelPartnerData?.Designation || '-'} />
+                  <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality || '-'} />
+                  <FieldItem label="CP Type" value={editChannelPartnerData?.Type || '-'} />
                 </div>
-
-              </div>
-            </div>
-
-            {/* BASIC DETAILS */}
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Basic Details
-              </h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FieldItem label="CP Code" value={editChannelPartnerData?.SystemGeneratedCode || '-'} />
-                <FieldItem label="Full Name" value={editChannelPartnerData?.Name || '-'} />
-                <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId || '-'} />
-                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
-                <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" :  `${editChannelPartnerData?.MobileNumberCountryCode ?? "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
-                
-                <FieldItem label="Designation" value={editChannelPartnerData?.Designation || '-'} />
-                <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality || '-'} />
-                <FieldItem label="CP Type" value={editChannelPartnerData?.Type || '-'} />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pb-4 pt-4">
-                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
-                  Website URL
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pb-4 pt-4">
+                  <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                    Website URL
+                  </div>
+                  {editChannelPartnerData?.WebsiteURL !== "" ?
+                    <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
+                      onClick={() => window.open(editChannelPartnerData?.WebsiteURL, "_blank")}>
+                      {editChannelPartnerData?.WebsiteURL}
+                    </span> : "-"}
                 </div>
-                {editChannelPartnerData?.WebsiteURL !== "" ?
-                  <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
-                    onClick={() => window.open(editChannelPartnerData?.WebsiteURL, "_blank")}>
-                    {editChannelPartnerData?.WebsiteURL}
-                  </span> : "-"}
-              </div>
-            </section>
+              </section>
 
-            <hr className="border-t border-gray-200" />
+              <hr className="border-t border-gray-200" />
 
-            {/* RERA DETAILS */}
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                RERA Details
-              </h4>
+              {/* RERA DETAILS */}
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  RERA Details
+                </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FieldItem
-                  label="Available RERA Number"
-                  value={editChannelPartnerData?.RERANumber != "" ? 'Yes' : 'No'}
-                />
-                <FieldItem
-                  label="RERA Number"
-                  value={editChannelPartnerData?.RERANumber || '-'}
-                />
-              </div>
-            </section>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FieldItem
+                    label="Available RERA Number"
+                    value={editChannelPartnerData?.RERANumber != "" ? 'Yes' : 'No'}
+                  />
+                  <FieldItem
+                    label="RERA Number"
+                    value={editChannelPartnerData?.RERANumber || '-'}
+                  />
+                </div>
+              </section>
 
-            <hr className="border-t border-gray-200" />
+              <hr className="border-t border-gray-200" />
 
-            {/* ADDRESS DETAILS */}
-            
+              {/* ADDRESS DETAILS */}
+
               <section className="p-4">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                   Address
@@ -424,229 +442,234 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 </div>
               </section>
 
-            <hr className="border-t border-gray-200" />
+              <hr className="border-t border-gray-200" />
 
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Document Details
-              </h4>
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Document Details
+                </h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                   <FieldItem label="PAN Number" value={editChannelPartnerData?.PanNumber} urls={editChannelPartnerData?.PanCardURL} isIcon />
                   <FieldItem label="Aadhaar Number" value={editChannelPartnerData?.AadharCardNumber} urls={editChannelPartnerData?.AadharCardURL} isIcon />
                   <FieldItem label="GST Number" value={editChannelPartnerData?.GSTNumber} urls={editChannelPartnerData?.GSTCertificateURL} isIcon />
                 </div>
-            </section>
+              </section>
 
-            <hr className="border-t border-gray-200" />
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                IBM & OBM  Details
-              </h4>
+              <hr className="border-t border-gray-200" />
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  IBM & OBM  Details
+                </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                <FieldItem label="No Of IBM" value={editChannelPartnerData?.NoOfIbm} />
-                <FieldItem label="No Of OBM" value={editChannelPartnerData?.NoOfObm} />
-              </div>
-            </section>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  <FieldItem label="No Of IBM" value={editChannelPartnerData?.NoOfIbm} />
+                  <FieldItem label="No Of OBM" value={editChannelPartnerData?.NoOfObm} />
+                </div>
+              </section>
 
-            <hr className="border-t border-gray-200" />
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Primary & Secondary Project Portfolio
-              </h4>
+              <hr className="border-t border-gray-200" />
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Primary & Secondary Project Portfolio
+                </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-                <FieldItem label="Primary" value={editChannelPartnerData?.PrimaryProjectPortfolio} />
-                <FieldItem label="Secondary" value={editChannelPartnerData?.SecondaryProjectPortfolio} />
-                <FieldItem label="Micromarket Proximity" value={editChannelPartnerData?.MicromarketProximity} />
-              </div>
-            </section>
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                  <FieldItem label="Primary" value={editChannelPartnerData?.PrimaryProjectPortfolio} />
+                  <FieldItem label="Secondary" value={editChannelPartnerData?.SecondaryProjectPortfolio} />
+                  <FieldItem label="Micromarket Proximity" value={editChannelPartnerData?.MicromarketProximity} />
+                </div>
+              </section>
 
-            <hr className="border-t border-gray-200" />
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Action Details
-              </h4>
+              <hr className="border-t border-gray-200" />
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Action Details
+                </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
-                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
-                {editChannelPartnerData?.ModifiedBy && (
-                  <>
-                    <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
-                    <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
-                  </>
-                )}
-              </div>
-            </section>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
+                  <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
+                  {editChannelPartnerData?.ModifiedBy && (
+                    <>
+                      <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
+                      <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
+                    </>
+                  )}
+                </div>
+              </section>
+
+            </div>
 
           </div>
 
-        </div>
-
-        <div className="col-span-7">
-          <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
-            <div className="border-b pb-2 mt-1">
-              <div className="flex items-start justify-between">
-                <h1 className="text-lg font-semibold text-black">
-                  Remark & Activity
-                </h1>
-                {canAction && (
-                  <div className="flex items-center gap-2">
-                    <Button
-                      color="blue"
-                      size="sm"
-                      onClick={() => handleOpenRemarkModal()}
-                      title="Add Remark"
-                    >
-                      Add Remark
-                    </Button>
-                  </div>
-                )}
+          <div className="col-span-7">
+            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+              <div className="border-b pb-2 mt-1">
+                <div className="flex items-start justify-between">
+                  <h1 className="text-lg font-semibold text-black">
+                    Remark & Activity
+                  </h1>
+                  {canAction && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        color="blue"
+                        size="sm"
+                        onClick={() => handleOpenRemarkModal()}
+                        title="Add Remark"
+                      >
+                        Add Remark
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {/* IBM/OBM Tabs */}
-            <div className="mt-4">
-              <Tabs
+              {/* IBM/OBM Tabs */}
+              <div className="mt-4">
+                <Tabs
 
-                tabs={[
-                  { id: "ALL", label: "ALL" },
-                  { id: "IBM", label: "IBM" },
-                  { id: "OBM", label: "OBM" }
-                ]}
-                defaultActive={activeTab}
-                onTabChange={(tab: TabItem) => {
-                  setActiveTab(tab.id as "ALL" | "IBM" | "OBM");
-                }}
-                isChips={true}
-              />
-            </div>
+                  tabs={[
+                    { id: "ALL", label: "ALL" },
+                    { id: "IBM", label: "IBM" },
+                    { id: "OBM", label: "OBM" }
+                  ]}
+                  defaultActive={activeTab}
+                  onTabChange={(tab: TabItem) => {
+                    setActiveTab(tab.id as "ALL" | "IBM" | "OBM");
+                  }}
+                  isChips={true}
+                />
+              </div>
 
-            {/* Timeline */}
-            <div className="mt-3">
+              {/* Timeline */}
+              <div className="mt-3">
 
-              {sourcingDataList?.length > 0 ? (
-                sourcingDataList.map((item, index) => {
-                  const isModified = !!(item.ModifiedBy && item.ModifiedDate);
+                {sourcingDataList?.length > 0 ? (
+                  sourcingDataList.map((item, index) => {
+                    const isModified = !!(item.ModifiedBy && item.ModifiedDate);
 
-                  return (
+                    return (
 
-                    <div key={item.ChannelPartnerSourcingId} className="grid grid-cols-[24px_1fr] gap-3">
-                      {/* LEFT — DOT + LINE */}
-                      <div className="flex flex-col items-center">
-                        <div className="h-4 w-4 rounded-full bg-blue-600"></div>
+                      <div key={item.ChannelPartnerSourcingId} className="grid grid-cols-[24px_1fr] gap-3">
+                        {/* LEFT — DOT + LINE */}
+                        <div className="flex flex-col items-center">
+                          <div className="h-4 w-4 rounded-full bg-blue-600"></div>
 
-                        {index !== sourcingDataList.length - 1 && (
-                          <div className="w-[3px] bg-blue-600 flex-1"></div>
-                        )}
-                      </div>
+                          {index !== sourcingDataList.length - 1 && (
+                            <div className="w-[3px] bg-blue-600 flex-1"></div>
+                          )}
+                        </div>
 
-                      {/* RIGHT — CONTENT */}
-                      <div>
+                        {/* RIGHT — CONTENT */}
+                        <div>
 
-                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3">
 
-                          <span className="font-semibold text-gray-900">
+                            <span className="font-semibold text-gray-900">
 
-                            {formatDate_dd_MonthName_yy_hh_mm(isModified ? item.ModifiedDate! : item.CreatedDate ?? "")}
+                              {formatDate_dd_MonthName_yy_hh_mm(isModified ? item.ModifiedDate! : item.CreatedDate ?? "")}
 
-                          </span>
+                            </span>
 
-                          <span className="font-medium text-gray-400 text-sm">
+                            <span className="font-medium text-gray-400 text-sm">
 
-                            {isModified ? item.ModifiedBy : item.CreatedBy}
+                              {isModified ? item.ModifiedBy : item.CreatedBy}
 
-                          </span>
+                            </span>
 
-                          {index === 0 && canAction && item.IsAction && isDateWithinPastDays(item.CreatedDate, 2) ? (
-
-                            <div className="flex items-center gap-1 ml-auto">
+                            {index === 0 && canAction && item.IsAction && isDateWithinPastDays(item.CreatedDate, 2) ? (
 
                               <div className="flex items-center gap-1 ml-auto">
-                                <div
-                                  className={`flex h-[25px] w-[67px]
+
+                                <div className="flex items-center gap-1 ml-auto">
+                                  <div
+                                    className={`flex h-[25px] w-[67px]
                                               rounded-[6px]
                                               items-center justify-center
                                               font-bold text-sm
                                               ${item.IBM_OBM === "IBM"
-                                      ? "bg-[#8A38F5]/15 text-[#8A38F5]"
-                                      : item.IBM_OBM === "OBM"
-                                        ? "bg-[#FFF2E2] text-[#FF9F2D]"
-                                        : ""
-                                    } `}
+                                        ? "bg-[#8A38F5]/15 text-[#8A38F5]"
+                                        : item.IBM_OBM === "OBM"
+                                          ? "bg-[#FFF2E2] text-[#FF9F2D]"
+                                          : ""
+                                      } `}
+                                  >
+                                    {item.IBM_OBM || "-"}
+                                  </div>
+                                </div>
+
+                                <Button
+                                  color="transparent"
+                                  isborderRadius
+                                  size="sm"
+                                  title="Edit"
+                                  onClick={() => handleOpenRemarkModal(item)}
+                                  disabled={isLoading}
+                                  leftIcon={<Edit className="h-4 w-4" />}
+                                />
+
+                                <Button
+                                  color="transparent"
+                                  isborderRadius
+                                  size="sm"
+                                  style={{ color: "red", padding: "4px 8px" }}
+                                  title="Delete"
+                                  onClick={() => handleDeleteRemark(item)}
+                                  disabled={isLoading}
+                                  leftIcon={<Trash2 className="h-4 w-4" />}
+                                />
+
+                              </div>
+                            ) :
+                              <div className="flex items-center gap-1 ml-auto">
+                                <div className={`flex h-[25px] w-[67px]
+                                              rounded-[6px]
+                                              items-center justify-center
+                                              font-bold text-sm
+                                              ${item.IBM_OBM === "IBM"
+                                    ? "bg-[#8A38F5]/15 text-[#8A38F5]"
+                                    : item.IBM_OBM === "OBM"
+                                      ? "bg-[#FFF2E2] text-[#FF9F2D]"
+                                      : ""
+                                  } `}
+
+
                                 >
                                   {item.IBM_OBM || "-"}
                                 </div>
                               </div>
 
-                              <Button
-                                color="transparent"
-                                isborderRadius
-                                size="sm"
-                                title="Edit"
-                                onClick={() => handleOpenRemarkModal(item)}
-                                disabled={isLoading}
-                                leftIcon={<Edit className="h-4 w-4" />}
-                              />
+                            }
+                          </div>
 
-                              <Button
-                                color="transparent"
-                                isborderRadius
-                                size="sm"
-                                style={{ color: "red", padding: "4px 8px" }}
-                                title="Delete"
-                                onClick={() => handleDeleteRemark(item)}
-                                disabled={isLoading}
-                                leftIcon={<Trash2 className="h-4 w-4" />}
-                              />
-
-                            </div>
-                          ) :
-                            <div className="flex items-center gap-1 ml-auto">
-                              <div className={`flex h-[25px] w-[67px]
-                                              rounded-[6px]
-                                              items-center justify-center
-                                              font-bold text-sm
-                                              ${item.IBM_OBM === "IBM"
-                                  ? "bg-[#8A38F5]/15 text-[#8A38F5]"
-                                  : item.IBM_OBM === "OBM"
-                                    ? "bg-[#FFF2E2] text-[#FF9F2D]"
-                                    : ""
-                                } `}
-
-
-                              >
-                                {item.IBM_OBM || "-"}
-                              </div>
-                            </div>
-
-                          }
+                          {item.Support?.toLowerCase() !== "" && (
+                            <span className="block mt-1 text-xs text-gray-500 italic">
+                              Support: {item.Support || "-"}
+                            </span>
+                          )}
+                          <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
+                            {item.SourcingRemark || "-"}
+                          </p>
                         </div>
-
-                        {item.Support?.toLowerCase() !== "" && (
-                          <span className="block mt-1 text-xs text-gray-500 italic">
-                            Support: {item.Support || "-"}
-                          </span>
-                        )}
-                        <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
-                          {item.SourcingRemark || "-"}
-                        </p>
                       </div>
-                    </div>
-                  );
-                })
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <NoDataView message={`No remarks found for ${activeTab}`} />
-                </div>
-              )}
+                    );
+                  })
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <NoDataView message={`No remarks found for ${activeTab}`} />
+                  </div>
+                )}
 
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {channelPartnerSourcingActiveTab === "CallLogs" && (
+        <CallMonitoring pageName='Channel Partner Sourcing' id={listState.channelPartnerId} />
+      )}
 
       {/* Add/Edit Remark Modal */}
       <Modal

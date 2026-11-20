@@ -33,8 +33,10 @@ export const OtherCharges: React.FC = () => {
     isAddUpdateModalOpen,
     formData,
     isConfirmationDialogBoxOpen,
-    canAction,
-    canExport,
+    canActionSale,
+    canExportSale,
+    canActionTenant,
+    canExportTenant,
     otherChargesColumns,
 
     // Setters
@@ -126,19 +128,19 @@ export const OtherCharges: React.FC = () => {
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchOtherCharges}
-        isShowFilterButton={false}
+        isShowFilterButton={true}
         filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton
 
         // ADD
-        isShowAddButton={canAction && Number(projectId) > 0}
+        isShowAddButton={canActionSale || canActionTenant && Number(projectId) > 0}
         addTitle="Add"
         onAdd={handleAddOtherChargesModal}
         // IMPORT
         isShowImportButton={false}
         // EXPORT
-        isShowExportButton={canExport && otherChargesListForTable.length > 0}
+        isShowExportButton={canExportSale || canExportTenant && otherChargesListForTable.length > 0}
         onExportExcel={handleExportOtherChargesExcel}
         onExportPdf={handleExportOtherChargesPdf}
         exportLoading={isLoading}
@@ -152,7 +154,8 @@ export const OtherCharges: React.FC = () => {
         onSort={handleSortColumn}
         onView={handleViewOtherChargesDetails}
         onDelete={handleConfirmationDialogBoxOpen}
-        canAction={canAction}
+        canActionSale={canActionSale}
+        canActionTenant={canActionTenant}
         loading={isLoading}
       />
 
@@ -166,6 +169,8 @@ export const OtherCharges: React.FC = () => {
         onClear={clearFilters}
         tempFilters={tempFilters}
         onFilterChange={handleFilterChange}
+        canActionSale={canActionSale}
+        canActionTenant={canActionTenant}
       />
 
       <OtherChargesFormModal
@@ -178,13 +183,16 @@ export const OtherCharges: React.FC = () => {
         errors={errors}
         editingData={editingOtherChargesData}
         loading={isLoading}
+        canActionSale={canActionSale}
+        canActionTenant={canActionTenant}
       />
 
       <OtherChargesViewModal
         isOpen={isViewModalOpen}
         onClose={handleViewModalClose}
         data={viewOtherChargesData}
-        canAction={canAction}
+        canActionSale={canActionSale}
+        canActionTenant={canActionTenant}
         onEdit={handleEditOtherCharges}
         onDelete={handleConfirmationDialogBoxOpen}
       />

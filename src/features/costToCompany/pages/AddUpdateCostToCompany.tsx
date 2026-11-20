@@ -13,8 +13,10 @@ import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeM
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
+import { filterNumbers } from "@/core/utils/fileValidation";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 const initialFormStateForCostToCompany = (): AddUpdateCostToCompanyData => ({
     CostToCompanyId: 0,
@@ -121,8 +123,8 @@ export const AddUpdateCostToCompany: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {}
 
-        if (!formData.AnnualCTC) {
-            newErrors.AnnualCTC = "Annual CTC is required";
+        if (!formData.MonthlyCTC) {
+            newErrors.MonthlyCTC = "Monthly CTC is required";
         }
 
         if (!formData.EmployeeId) {
@@ -134,6 +136,13 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
         } if (!formData.EffectiveToDate) {
             newErrors.EffectiveToDate = "Effective To Date is required";
+        }
+
+        const effectiveFromDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.EffectiveFromDate ? new Date(formData.EffectiveFromDate) : undefined);
+        const effectiveToDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.EffectiveToDate ? new Date(formData.EffectiveToDate) : undefined);
+
+        if (formData?.EffectiveFromDate && formData.EffectiveToDate && !isToDateGreaterOrEqualFromDate(effectiveFromDate, effectiveToDate)) {
+            newErrors.EffectiveToDate = "Effective From Date must be greater than or equal to to Date";
         }
 
         return {
@@ -187,8 +196,8 @@ export const AddUpdateCostToCompany: React.FC = () => {
                 ...prev, [field]: value,
             };
 
-            if (field === "AnnualCTC") {
-                updatedData.MonthlyCTC = Number(value || 0) / 12;
+            if (field === "MonthlyCTC") {
+                updatedData.AnnualCTC = Number(value || 0) * 12;
             }
 
             return updatedData;
@@ -198,8 +207,8 @@ export const AddUpdateCostToCompany: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
 
-        if (field === "AnnualCTC" && errors.MonthlyCTC) {
-            setErrors((prev) => ({ ...prev, MonthlyCTC: "" }));
+        if (field === "MonthlyCTC" && errors.AnnualCTC) {
+            setErrors((prev) => ({ ...prev, AnnualCTC: "" }));
         }
     };
 
@@ -208,7 +217,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
             <div className="space-y-4 pb-3">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Cost To Company Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Cost To Company (CTC) Details</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -216,7 +225,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
                         <SingleSelectDropdownWithPagination
                             label="Employee Name"
                             required
-                            title="Select Employee"
+                            title="Select Employee Name"
                             size="lg"
                             dataFetchCallBack={fetchEmployeeMasterDropdown}
                             onSelected={(item) => {
@@ -235,20 +244,21 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
                     <div>
                         <Input
-                            label="Annual CTC"
-                            value={formData.AnnualCTC || ""}
-                            onChange={(e) => handleFieldChange("AnnualCTC", e.target.value)}
-                            placeholder="Enter Annual CTC"
+                            label='Monthly CTC'
+                            value={formData.MonthlyCTC || "0"}
+                            onChange={e => handleFieldChange('MonthlyCTC', Number(filterNumbers(e.target.value) || 0))}
+                            placeholder="Enter Monthly CTC"
                             required
                             maxLength={9}
-                            error={errors.AnnualCTC}
+                            error={errors.MonthlyCTC}
                         />
+                       
                     </div>
 
                     <div>
                         <Input
-                            label='Monthly CTC'
-                            value={formData.MonthlyCTC || "0"}
+                            label='Annual CTC'
+                            value={formData.AnnualCTC || "0"}
                             disabled
                             required
                         />
@@ -280,7 +290,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
                     <div>
                         <ToggleSwitch
-                            label="Is Provident Fund"
+                            label="Is Provident Fund (PF)"
                             name="IsProvidentFund"
                             value={formData.IsProvidentFund}
                             onChange={(name, value) => {
@@ -291,7 +301,7 @@ export const AddUpdateCostToCompany: React.FC = () => {
 
                     <div>
                         <ToggleSwitch
-                            label="Employees State Insurance Corporation"
+                            label="Employees State Insurance Corporation (ESIC)"
                             name="EmployeesStateInsuranceCorporation"
                             value={formData.EmployeesStateInsuranceCorporation}
                             onChange={(name, value) => {

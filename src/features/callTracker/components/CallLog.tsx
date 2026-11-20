@@ -410,7 +410,7 @@ export const CallLog: React.FC = () => {
             label: 'Location',
             width: '30',
             align: 'left',
-             render: (value) => (
+            render: (value) => (
                 <TooltipText
                     text={value || '-'}
                     maxWidth="180px"
@@ -495,7 +495,7 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const isLocked = !canAction || !row.IsEditable ;
+                const isLocked = !canAction || !row.IsEditable;
 
                 return (
                     <div className="flex items-center justify-center">
@@ -678,6 +678,7 @@ export const CallLog: React.FC = () => {
         );
     };
 
+
     return (
         <div>
 
@@ -826,7 +827,6 @@ export const CallLog: React.FC = () => {
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
                         <div>
-
                             <SinglePageSelection
                                 label="Call Status"
                                 placeholder="Select Call Status"
@@ -836,6 +836,7 @@ export const CallLog: React.FC = () => {
                                 options={CALL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                                 error={errors.Status} />
                         </div>
+
                         <div>
 
                             <SinglePageSelection

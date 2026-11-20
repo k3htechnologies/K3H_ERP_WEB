@@ -52,7 +52,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
   };
 
   const navClassName = isinline
-    ? `flex min-w-0 items-center gap-2 text-base font-semibold text-gray-900 ${className}`.trim()
+    ? `flex min-w-0 items-center gap-2 text-base font-semibold ${className}`.trim()
     : `mb-4 flex items-center space-x-2 rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm ${className}`.trim();
 
   const separatorClassName = isinline ? 'text-gray-500' : 'text-gray-400';
@@ -79,7 +79,7 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({
                 onClick={() => handleItemClick(item, index)}
                 className={
                   isinline
-                    ? 'shrink-0 text-left text-gray-900 transition-colors hover:text-blue-600'
+                    ? 'shrink-0 text-left text-blue-600 transition-colors hover:text-blue-800'
                     : 'text-left font-medium text-blue-600 transition-colors hover:text-blue-800'
                 }
                 title={item.label}

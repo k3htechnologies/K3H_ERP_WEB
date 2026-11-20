@@ -175,6 +175,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                         fontSize: '13px',
                         color: colors.message,
                         margin: '0',
+                        whiteSpace: 'pre-line', 
                         lineHeight: '1.4'
                     }}>
                         {message}

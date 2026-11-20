@@ -28,6 +28,7 @@ import type { SubMaterialMasterData } from "@/features/subMaterialMaster/models/
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 const initialFormState = (): AddUpdateSpecificationMaster => ({
     SpecificationMasterId: 0,
@@ -441,7 +442,13 @@ export const SpecificationMaster: React.FC = () => {
             width: '50',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || "-"}
+                    maxWidth="900px"
+                    tooltipThreshold={100}
+                />
+            ),
         },
         {
             key: 'ModifiedBy',
@@ -611,10 +618,16 @@ export const SpecificationMaster: React.FC = () => {
         {
             key: 'CategoryName',
             label: showL4 ? 'Sub Material Name' : showUomColumn ? 'Description' : 'Sub Category Name ',
-            width: '25',
+            width: '40',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || "-"}
+                    maxWidth="300px"
+                    tooltipThreshold={37}
+                />
+            ),
         },
 
         ...(showL4
@@ -982,23 +995,31 @@ export const SpecificationMaster: React.FC = () => {
 
                         <div>
                             {activeTab === "L4" ? (
-                                <Input
+
+                                <TextArea
                                     label="Description"
+                                    placeholder="Enter Description"
+                                    rows={3}
+                                    className="thin-scroll"
                                     value={parentNames.description ?? ""}
                                     disabled
                                 />
                             ) : (
-                                <Input
+                                <TextArea
                                     label={modalLabel}
                                     value={formData.CategoryName ?? ""}
                                     placeholder={`Enter ${modalLabel}`}
                                     onChange={(e) =>
                                         handleFieldChange("CategoryName", e.target.value)
                                     }
+                                    rows={activeTab !== "L3" ? 1 : 3}
+                                    className="thin-scroll"
                                     error={errors.CategoryName}
                                     maxLength={activeTab !== "L3" ? 100 : undefined}
                                     required
                                 />
+
+                                   
                             )}
                         </div>
 

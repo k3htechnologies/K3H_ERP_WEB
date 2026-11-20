@@ -30,7 +30,6 @@ import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
-import { cleanHtml } from '@/core/utils/comman';
 
 const initialFormState = (): AddUpdateTncMasterRequest => ({
   TermsAndConditionsMasterId: 0,
@@ -41,76 +40,41 @@ const initialFormState = (): AddUpdateTncMasterRequest => ({
 });
 
 export const TncMaster: React.FC = () => {
-
-  //#region STATE
   const [tncList, setTncList] = useState<TncMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
-  // TOAST
   const { addToast } = useToast();
-
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchTnc(value);
   }, 350);
-
-  //VIEW TNC MASTER MODAL STATES
   const [viewTncData, setViewTncData] = useState<TncMasterData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeTncColumnsModal, setIsShowCustomizeTncColumnsModal] = useState(false);
 
 
   const hasFetchedInitialTnc = useRef(false);
-
-  // EDIT TNC MASTER
   const [editingTncMasterData, setEditingTncMasterData] = useState<TncMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
-  //ADD UPDATE T&C MASTER
   const [formData, setFormData] = useState<AddUpdateTncMasterRequest>(() => initialFormState());
-
-  //DELETE TNC MASTER STATES
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 
   const [deleteTncMasterDetailsData, setDeleteTncMasterDetailsData] = useState<TncMasterData | null>(null)
-
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
-
-  //#endregion
-
-  //#regionTAB ACTIVITY
   const tncTabList = [
     { id: "Material Requisition", label: "Material Requisition" },
     { id: "Booking", label: "Booking" },
+    { id: "Employee Letter", label: "Employee Letter" },
   ];
 
   const [activeTab, setActiveTab] = useState<string>(tncTabList[0].id);
-
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
     if (hasFetchedInitialTnc.current) return;
     hasFetchedInitialTnc.current = true;
@@ -139,10 +103,6 @@ export const TncMaster: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingTncMasterData]);
-
-  //#endregion
-
-  //#region DATA LOAD
   const fetchTncList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadTnc(page, filters, sort ?? sortInfo);
   };
@@ -193,9 +153,6 @@ export const TncMaster: React.FC = () => {
       'Loading Terms & Conditions'
     );
   };
-  //#endregion
-
-  //#region SERACH T&C 
   const searchTnc = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
@@ -213,19 +170,11 @@ export const TncMaster: React.FC = () => {
     await loadTnc(1, filters, sortInfo, searchValue)
   };
 
-  //#endregion
-
-  //#region CLEAR SERACH T&C
-
   const clearSearchTnc = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     loadTnc(1, { DepartmentName: '' }, sortInfo, undefined);
   };
-
-  //#endregion
-
-  //#region EXPORT EXCEL | PDF
   const handleExportTnc = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -259,16 +208,9 @@ export const TncMaster: React.FC = () => {
 
   const handleExportTncExcel = () => handleExportTnc('Excel');
   const handleExportTncPdf = () => handleExportTnc('PDF');
-
-  //#endregion
-
-  //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = (page: number) => {
     fetchTncList(page);
   };
-  //#endregion
-
-  //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
 
@@ -279,9 +221,6 @@ export const TncMaster: React.FC = () => {
 
     loadTnc(1, updatedFilters, sort, searchTerm || undefined);
   }, [filters, searchTerm, activeTab]);
-  //#endregion
-
-  //#region TABLE PAGINATION INFO
   const tncPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -294,18 +233,10 @@ export const TncMaster: React.FC = () => {
   );
 
   const tncListForTable = useMemo(() => tncList, [tncList]);
-
-  //#endregion
-
-  //#region VIEW EDIT
   const handleViewTncDetails = useCallback((row: TncMasterData) => {
     setViewTncData(row);
     setIsViewModalOpen(true);
   }, []);
-
-  //#endregion
-
-  //#region EDIT T&C MASTER
 
   const handleEditTncMaster = useCallback((row: TncMasterData) => {
     setEditingTncMasterData({
@@ -318,18 +249,10 @@ export const TncMaster: React.FC = () => {
 
   }, [])
 
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
-
   const handleConfirmationDialogBoxOpen = useCallback((row: TncMasterData) => {
     setDeleteTncMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
-
-  //#endregion
-
-  //#region TABLE COLUMN
 
   const tncColumns = useMemo<TableColumn[]>(
     () => [
@@ -387,9 +310,6 @@ export const TncMaster: React.FC = () => {
     ],
     [handleViewTncDetails, handleViewTncDetails, handleEditTncMaster, handleConfirmationDialogBoxOpen]
   );
-  //#endregion
-
-  //#region CUSTOMIZE COLUMNS
   const requiredTncColumnKeys: string[] = ['Title'];
 
   const allTncColumnKeys: string[] = tncColumns.map(c => c.key);
@@ -403,7 +323,6 @@ export const TncMaster: React.FC = () => {
         return withRequired.filter(k => allTncColumnKeys.includes(k));
       }
     } catch {
-      // ignore
     }
     return allTncColumnKeys;
   });
@@ -414,16 +333,12 @@ export const TncMaster: React.FC = () => {
         allTncColumnKeys.includes(k)
       )
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tncColumns.length]);
 
   const visibleTncColumns = useMemo(
     () => tncColumns.filter(col => selectedTncColumnKeys.includes(col.key)),
     [tncColumns, selectedTncColumnKeys]
   );
-  //#endregion
-
-  //#region VIEW MODAL
   interface ViewTncDetailsModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -508,18 +423,11 @@ export const TncMaster: React.FC = () => {
       </Modal>
     );
   };
-  //#endregion
-
-  //#region FILTER HELPERS
   const applyFilters = () => {
     setFilters(tempFilters);
     loadTnc(1, tempFilters);
     setShowFilterPopup(false);
   };
-
-  //#endregion
-
-  //#region Clear 
 
   const clearFilters = () => {
     setTempFilters({});
@@ -527,16 +435,10 @@ export const TncMaster: React.FC = () => {
     loadTnc(1, {});
     setShowFilterPopup(false);
   };
-  //#endregion
-
-  //#region HANDLE FILTER CHNAGE
 
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
-  //#endregion
-
-  //#region ADD UPDATE EDIT T&C MASTER
 
   const handleFieldChange = (field: keyof AddUpdateTncMasterRequest, value: any) => {
 
@@ -553,8 +455,6 @@ export const TncMaster: React.FC = () => {
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
-
-  // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddTncMasterForm = (): {
 
     isValid: boolean
@@ -585,7 +485,7 @@ export const TncMaster: React.FC = () => {
       Uniquekey: formData.Uniquekey,
       Title: formData.Title,
       ModuleName: activeTab?.trim() || "",
-      Description: cleanHtml(formData.Description)
+      Description: formData.Description
     };
 
   };
@@ -670,10 +570,6 @@ export const TncMaster: React.FC = () => {
 
   };
 
-  //#endregion
-
-  //#region DELETE TNC MASTER
-
   const handleDeleteTncMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -738,8 +634,6 @@ export const TncMaster: React.FC = () => {
       'Delete T&C'
     )
   }
-
-  //#endregion
 
   return (
 
@@ -875,7 +769,6 @@ export const TncMaster: React.FC = () => {
           try {
             LocalStorageHelper.storeTncMasterTableColumns?.(JSON.stringify(withRequired));
           } catch {
-            // ignore
           }
         }}
         columns={tncColumns}

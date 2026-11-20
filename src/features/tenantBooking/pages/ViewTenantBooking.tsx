@@ -71,7 +71,7 @@ export const ViewTenantBooking: React.FC = () => {
                     PageSize: 1,
                     TenantId: tenantIdToFetch,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    IsCheckPermission: false,
                     BuildingId: buildingId,
                 };
 
@@ -112,7 +112,7 @@ export const ViewTenantBooking: React.FC = () => {
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: sourcePage === 'inventory' ? false : true,
+                    IsCheckPermission: false,
                     BookingSearchKey: "TENANT BOOKING",
                 };
 
@@ -491,7 +491,7 @@ export const ViewTenantBooking: React.FC = () => {
 
                                             <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                                                 <h4 className="text-sm font-semibold text-[#13367A]">
-                                                    Exisiting Unit Details
+                                                    Existing Unit Details
                                                 </h4>
                                             </div>
                                             <div className="p-4 bg-white">
@@ -632,7 +632,7 @@ export const ViewTenantBooking: React.FC = () => {
 
                                         <div className="divide-y divide-[#135bec2e]">
 
-                                            <div className="py-1">
+                                            <div className="py-4">
                                                 <FieldItem
                                                     label="Booking Registered"
                                                     value={
@@ -653,6 +653,9 @@ export const ViewTenantBooking: React.FC = () => {
                                                 )}
                                             </div>
 
+                                            <div className="py-4">
+                                                <FieldItem label="Adjust Purchase Area" value={`${bookingData?.AdjustPurchaseAreaSqFt ?? 0} SqFt`} isRow />
+                                            </div>
 
                                             <div className="py-4">
                                                 <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
@@ -821,10 +824,10 @@ export const ViewTenantBooking: React.FC = () => {
                                             const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
 
                                             return (
-                                                <div key={parking.ParkingId || index} className="pt-4">
-                                                    <h3 className="text-sm font-semibold text-gray-500">
+                                                <div key={parking.ParkingId || index} className={index === 0 ? "" : "pt-3"}>
+                                                    <span className="inline-flex items-center  bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
                                                         Parking {index + 1}
-                                                    </h3>
+                                                    </span>
                                                     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
                                                         <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
                                                         <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />

@@ -68,6 +68,38 @@ export interface DeleteAssetMasterRequest {
     UniqueKey: string
 }
 
+export interface FilterWithPaginationVerifyAssetMasterRequest {
+    AssetMasterId: number
+    Uniquekey: string
+}
+
+export interface VerifyAssetMasterData {
+    AssetMasterId: number | null
+    Uniquekey: string | null
+    AssetCode: string | null
+    AssetName: string | null
+    AssetType: string | null
+    AssetModel: string | null
+    AssetBrand: string | null
+    SerialNumber: string | null
+    PurchaseDate: string | null
+    WarrantyExpiryDate: string | null
+    AssetCost: number | null
+    SupplierName: string | null
+    AssetCategory: string | null
+    Location: string | null
+    Department: string | null
+    Designation: string | null
+    Remark: string | null
+    EmployeeName: string | null
+    EmployeeCode: string | null
+    HandoverCondition: string | null
+    AssignedBy: string | null
+    AssignedDate: string | null
+    AssetPhotoURL: string | null
+}
+
 export type AssetMasterListResponse = ApiResponse<AssetMasterData[]>;
 export type AssetMasterSaveResponse = ApiResponse<AssetMasterData[]>;
 export type AssetMasterDeleteResponse = ApiResponse<number>;
+export type VerifyAssetMasterListResponse = ApiResponse<VerifyAssetMasterData[]>;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePagination } from "@/core/hooks/usePagination";
 import {
   DataTable,
@@ -35,7 +35,7 @@ import type { FilterPullExcelSample } from "@/features/technical/models/Technica
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
-import { FileText, AlertTriangle, Copy } from "lucide-react";
+import { FileText, AlertTriangle, Copy, IdCard } from "lucide-react";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import { useEmployeeListState } from "@/features/employeeMaster/context/EmployeeListStateContext";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
@@ -47,6 +47,8 @@ import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { filterNumbers } from "@/core/utils/fileValidation";
 import { copyToClipboard } from "@/core/utils/comman";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { domToPng } from "modern-screenshot";
 
 export const EmployeeMaster: React.FC = () => {
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
@@ -74,6 +76,10 @@ export const EmployeeMaster: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<EmployeeMasterData | null>(null);
+  const idCardRef = useRef<HTMLDivElement>(null);
+  const [photoDataUrl, setPhotoDataUrl] = useState("");
 
   useEffect(() => {
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
@@ -165,6 +171,35 @@ export const EmployeeMaster: React.FC = () => {
       "Loading Employee",
     );
   };
+
+  useEffect(() => {
+    if (!isAddModalOpen) return;
+    const url = parseDocumentUrls(selectedEmployee?.ProfilePhotoURL)?.[0];
+    if (!url) {
+      setPhotoDataUrl("");
+      return;
+    }
+
+    technicalService.apiCallGetDownloadURL(url).then((res) => {
+
+      if (!E.isRight(res)) return;
+      const data: any = res.right;
+
+      if (data instanceof Blob) {
+
+        const reader = new FileReader();
+        reader.onloadend = () => setPhotoDataUrl(reader.result as string);
+        reader.readAsDataURL(data);
+
+      } else if (typeof data === "string") {
+        setPhotoDataUrl(data.startsWith("data:") ? data : `data:image/jpeg;base64,${data}`);
+
+      } else if (data?.Data || data?.FileContent) {
+        const b64 = data.Data ?? data.FileContent;
+        setPhotoDataUrl(b64.startsWith("data:") ? b64 : `data:image/jpeg;base64,${b64}`);
+      }
+    });
+  }, [isAddModalOpen, selectedEmployee]);
 
   const searchEmployees = async (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
@@ -293,6 +328,16 @@ export const EmployeeMaster: React.FC = () => {
     },
     [navigate, updateListState],
   );
+
+  const handleGenerateIDCard = useCallback((row: EmployeeMasterData) => {
+    setSelectedEmployee(row);
+
+    updateListState({
+      employeeId: row.EmployeeId,
+      employeeName: row.FullName,
+    });
+    setIsAddModalOpen(true)
+  }, [updateListState])
 
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
@@ -635,7 +680,7 @@ export const EmployeeMaster: React.FC = () => {
                   tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                 />
               )}
-              
+
               {value && (
                 <Button
                   onClick={async (e) => {
@@ -695,6 +740,24 @@ export const EmployeeMaster: React.FC = () => {
                 title="Employee Document"
               >
                 <FileText className="h-4 w-4" />
+              </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleGenerateIDCard(row);
+                }}
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{
+                  color: "blue",
+                  padding: "4px 8px",
+                }}
+                title="Employee Document"
+              >
+                <IdCard className="h-4 w-4" />
               </Button>
             </div>
           ) : null,
@@ -827,6 +890,34 @@ export const EmployeeMaster: React.FC = () => {
   };
 
   //#endregion
+
+  const handleDownloadIDCard = async () => {
+    if (!idCardRef.current) return;
+
+    try {
+      const dataUrl = await domToPng(idCardRef.current, {
+        scale: 3,
+        backgroundColor: "#ffffff",
+        features: {
+          removeControlCharacter: true,
+        },
+      });
+
+      const link = document.createElement("a");
+
+      link.download = `${selectedEmployee?.EmployeeCode || "Employee"
+        }-ID-Card.png`;
+
+      link.href = dataUrl;
+      link.click();
+
+      addToast({ type: "success", title: "ID Card downloaded successfully", });
+    } catch (error) {
+
+      console.error("Error capturing ID Card:", error);
+      addToast({ type: "error", title: "Unable to download ID Card", });
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -1133,6 +1224,235 @@ export const EmployeeMaster: React.FC = () => {
         </div>
       </Modal>
 
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => {
+          setIsAddModalOpen(false);
+          setPhotoDataUrl("");
+        }}
+        title="Employee ID Card"
+        size="xxl"
+        cancelText="Cancel"
+        saveText="Send To Print"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          void handleDownloadIDCard();
+        }}
+      >
+        <div ref={idCardRef}>
+
+          <div className="bg-white px-7 pt-1 pb-5">
+
+            <div className="flex justify-center items-start gap-11">
+
+              {/* FRONT SIDE */}
+              <div className="flex flex-col items-center">
+
+                {/* Hanging Strap */}
+                <div className="flex flex-col items-center h-[100px] relative z-20">
+                  <div
+                    className="w-11 h-[76px] border border-sky-200"
+                    style={{
+                      backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 3px, #bae6fd 3px, #bae6fd 4px)"
+                    }}
+                  />
+
+                  <div className="w-9 h-2 bg-gray-300 border border-gray-400 rounded-b-md" />
+
+                  <div className="w-5 h-12 bg-white border-[3px] border-gray-300 rounded-b-xl relative">
+                    <div className="absolute top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gray-500" />
+                  </div>
+
+                  {/* Handle / Strip */}
+                  <div className="w-10 h-2 bg-gray-300 border border-gray-400 rounded-full -mb-4 z-20" />
+                </div>
+
+                {/* Front Card */}
+                <section className="relative w-[260px] h-[400px] rounded-[16px] bg-white shadow-[0_12px_22px_rgba(0,0,0,0.20)] overflow-hidden">
+
+                  {/* Right Grey Background */}
+                  <div
+                    className="absolute top-0 right-0 w-[48%] h-[190px]"
+                    style={{
+                      background: "radial-gradient(circle at top left, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0) 60%), #858b94",
+                    }}
+                  />
+
+                  {/* Employee Name - Left Vertical Strip */}
+                  <div className="absolute left-0 top-0 bottom-0 w-[55px] flex items-center justify-center z-20">
+                    <p
+                      className="text-[#2999c5] font-extrabold text-[25px] tracking-wide whitespace-nowrap uppercase"
+                      style={{
+                        writingMode: "vertical-rl",
+                        transform: "rotate(180deg)"
+                      }}
+                    >
+                      {selectedEmployee?.FirstName || "-"} {selectedEmployee?.LastName || ""}
+                    </p>
+                  </div>
+
+                  {/* Company Logo */}
+                  <div className="absolute top-[30px] left-[45.5px] w-[180px] flex flex-col items-center z-10">
+                    <img
+                      src="/favicon.png"
+                      alt="Company Logo"
+                      className="w-[24px] h-[21px] object-contain"
+                    />
+
+                    <h3 className="mt-[6px] font-bold text-[14px] leading-none tracking-normal text-gray-700 whitespace-nowrap">
+                      H. RISHABRAJ
+                    </h3>
+                  </div>
+
+                  {/* Designation - Aligned with Blue Line */}
+                  <div className="absolute top-[10px] right-[13px] w-[14px] h-[170px] flex justify-center z-10">
+                    <p
+                      className="text-white text-[10px] font-medium tracking-wider whitespace-nowrap uppercase"
+                      style={{
+                        writingMode: "vertical-rl",
+                        transform: "rotate(180deg)"
+                      }}
+                    >
+                      {selectedEmployee?.Designation || "-"}
+                    </p>
+                  </div>
+
+                  {/* Employee Photo */}
+                  <div className="absolute top-[100px] left-[40px] w-[180px] h-[180px] rounded-full overflow-hidden bg-gray-200 z-10">
+                    {photoDataUrl && (
+                      <img src={photoDataUrl} className="w-full h-full object-cover" />
+                    )}
+                  </div>
+
+                  {/* Blue Design Line */}
+                  <div className="absolute right-[20px] top-[200px] h-[90px] w-[2px] bg-sky-500" />
+
+                  {/* Employee Details */}
+                  <div className="absolute bottom-[50px] left-[60px] right-2 text-[10px] text-gray-700 font-medium space-y-1">
+                    <p>
+                      BLOOD GROUP : {selectedEmployee?.BloodGroup || "-"}
+                    </p>
+
+                    <p>
+                      EMPLOYEE CODE : {selectedEmployee?.EmployeeCode || "-"}
+                    </p>
+                  </div>
+
+                </section>
+
+                <p className="mt-5 text-xs font-semibold tracking-wider text-gray-600">
+                  <span className="text-emerald-500">●</span> FRONT SIDE
+                </p>
+
+              </div>
+
+              {/* BACK SIDE */}
+              <div className="flex flex-col items-center">
+
+                {/* Hanging Strap - Same */}
+                <div className="flex flex-col items-center h-[100px] relative z-20">
+                  <div
+                    className="w-11 h-[76px] border border-sky-200"
+                    style={{
+                      backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 3px, #bae6fd 3px, #bae6fd 4px)"
+                    }}
+                  />
+
+                  <div className="w-9 h-2 bg-gray-300 border border-gray-400 rounded-b-md" />
+
+                  <div className="w-5 h-12 bg-white border-[3px] border-gray-300 rounded-b-xl relative">
+                    <div className="absolute top-1 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full bg-gray-500" />
+                  </div>
+
+                  {/* Handle / Strip */}
+                  <div className="w-10 h-2 bg-gray-300 border border-gray-400 rounded-full -mb-4 z-20" />
+                </div>
+
+                {/* Back Card */}
+                <section className="relative w-[260px] h-[400px] rounded-[16px]  bg-[#f8fafc] shadow-[0_12px_22px_rgba(0,0,0,0.20)] overflow-hidden">
+
+                  {/* Background Pattern */}
+                  <div
+                    className="absolute inset-0 opacity-40"
+                    style={{
+                      backgroundImage: `
+                repeating-linear-gradient( 25deg, transparent, transparent 24px, #dce5eb 25px, transparent 26px),
+                repeating-linear-gradient(  -25deg, transparent, transparent 35px, #dce5eb 36px, transparent 37px
+                )
+              `
+                    }}
+                  />
+
+                  {/* QR Code */}
+                  <div className="relative z-10 flex flex-col items-center pt-[60px]">
+
+                    <h2 className="text-[14px] font-extrabold text-gray-700">
+                      SCAN ME
+                    </h2>
+
+                    <p className="text-[10px] font-semibold text-gray-600">
+                      TO VISIT OUR WEBSITE
+                    </p>
+
+                    {/* QR Code Image */}
+                    <div className="w-[105px] h-[105px] mt-2 bg-white">
+                      <img
+                        src="/QRCode.png"
+                        alt="Company QR Code"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Corporate Office */}
+                  <div className="absolute top-[230px] left-3 right-3 z-10 text-center text-[10px] text-gray-600">
+
+                    <p className="font-bold text-[12px]">
+                      Corporate Office
+                    </p>
+
+                    <p className="leading-[15px]">
+                      13th Floor, Rishabraj Chembers, Road No .10, Daulat Nagar,Borivali (East),
+                      Mumbai,Maharashtra 400066
+                    </p>
+                  </div>
+
+                  {/* Emergency Contact */}
+                  <div className="absolute bottom-[60px] left-3 right-3 z-10 text-center text-gray-600">
+
+                    <p className="font-bold text-[12px]">
+                      Emergency contact
+                    </p>
+
+                    <p className="text-[12px]">
+                      {selectedEmployee?.PersonalMobileNumber || "-"} / {selectedEmployee?.EmergencyMobileNumber}
+                    </p>
+                  </div>
+
+                  {/* Disclaimer */}
+                  <div className="absolute bottom-[8px] left-3 right-3 z-10 text-[7px] font-semibold text-gray-700 leading-[10px]">
+                    *Disclaimer: This card is the sole property of
+                    H. Rishabraj Group and in case if found please
+                    send to the above address. In case the employee
+                    leaves the organisation, kindly handover the
+                    same to the Company.
+                  </div>
+
+                </section>
+
+                <p className="mt-5 text-xs font-semibold tracking-wider text-gray-600">
+                  <span className="text-purple-500">●</span>
+                  BACK SIDE
+                </p>
+
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </Modal>
+
       <ExportImport
         open={showImportModal}
         onClose={() => setShowImportModal(false)}
@@ -1141,7 +1461,7 @@ export const EmployeeMaster: React.FC = () => {
           uploadExcel(file, mergeExisting);
         }}
       />
-    </div>
+    </div >
   );
 };
 

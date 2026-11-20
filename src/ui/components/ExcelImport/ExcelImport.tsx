@@ -5,12 +5,14 @@ import RadioPill from "../forms/RadioPill";
 
 export default function ExportImport({
   open,
-  isTenantAllotemnt,
+  isDisplayYesNoOption=true,
+  isDisplayCommanNote=true,
   onClose,
   onUpload
 }: {
   open: boolean;
-  isTenantAllotemnt?: boolean;
+  isDisplayYesNoOption?: boolean;
+  isDisplayCommanNote?: boolean;
   onClose: () => void;
   onUpload: (file: File, mergeExisting: string) => void;
 }) {
@@ -93,7 +95,7 @@ export default function ExportImport({
           maxFiles={1}
           error={errorMessage}
         />
-        {!isTenantAllotemnt && (
+        {isDisplayYesNoOption && (
           <div>
             <p className="text-sm text-gray-600 mb-2">
               Do you want to upload the file with existing record?
@@ -124,7 +126,7 @@ export default function ExportImport({
           <p className="font-medium text-gray-800">Notes:</p>
 
           <ul className="list-disc list-inside space-y-1">
-            {!isTenantAllotemnt ? (
+            {isDisplayCommanNote ? (
               <>
                 <li>
                   If <span className="font-medium">Yes</span> is selected, existing records will be kept and new data will be merged.

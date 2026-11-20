@@ -705,6 +705,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             <FieldItem label="Business Category" value={editProjectData?.BussinessCategory} isRow />
                                             <FieldItem label="Federation" value={editProjectData?.IsFederation ? "YES" : "NO"} isRow />
                                             <FieldItem label="Federation Amount" value={formatCurrency(editProjectData?.FederationAmount ?? 0)} isRow />
+                                            <FieldItem label="Lock And Key" value={editProjectData?.IsLockAndKey ? "YES" : "NO"} isRow />
                                         </div>
 
                                         <div className="w-full xl:w-[400px] space-y-4">

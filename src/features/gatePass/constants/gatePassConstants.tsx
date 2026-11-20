@@ -1,6 +1,7 @@
 import type { AddUpdateGatePassRequest } from '@/features/gatePass/models/GatePassModel';
 import type { TableColumn } from '@/ui/components/DataTable/DataTable';
 
+
 export const INITIAL_FORM_STATE: AddUpdateGatePassRequest = {
     ExternalId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
@@ -16,7 +17,7 @@ export const INITIAL_FORM_STATE: AddUpdateGatePassRequest = {
     RemovePhotoURL: "",
 };
 
-export const REQUIRED_COLUMN_KEYS: string[] = ['FullName', 'Actions'];
+export const REQUIRED_COLUMN_KEYS: string[] = ['FullName','Actions'];
 
 export const getInitialFormState = (): AddUpdateGatePassRequest => ({
     ...INITIAL_FORM_STATE,
@@ -74,8 +75,15 @@ export const getGatePassTableColumns = (): TableColumn[] => [
         sortable: false,
         align: 'left'
     },
-
     {
+        key: 'ApprovalStatus',
+        label: 'Approval Status',
+        width: '30',
+        sortable: false,
+        align: 'left'
+    },
+
+     {
         key: 'OutDateTime',
         label: 'Out Date / Time',
         width: '30',

@@ -1,5 +1,6 @@
 export const TenantApi = {
     PULL: '/Tenant/PullTenant',
+    PULL_BY_ID: '/Tenant/PullTenantById',
     ADD_UPDATE: '/Tenant/AddUpdateTenant',
     DELETE: '/Tenant/DeleteTenant',
     

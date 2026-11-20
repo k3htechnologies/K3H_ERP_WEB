@@ -19,7 +19,7 @@ import type { FilterWithPaginationTaskDetailsRequest, TaskDetails } from '@/feat
 import { TASK_TYPE } from '@/features/task/constants/taskConstants';
 import type { CalendarEvent } from '@/ui/components/Calender/CalendarEvent';
 import CustomCalendar, { type CalendarView } from '@/ui/components/Calender/CustomCalendar';
-import { toLocalDateKey } from '@/ui/components/Calender/CalendarUtils';
+import { toLocalDateKey, parseEventDateTime } from '@/ui/components/Calender/CalendarUtils';
 
 export const Event: React.FC = () => {
   const [meetingList, setMeetingList] = useState<MeetingMasterData[]>([]);
@@ -142,8 +142,8 @@ export const Event: React.FC = () => {
       .map((meeting) => {
         if (!meeting.MeetingDate || !meeting.MeetingStartTime) return null;
 
-        const dateKey = meeting.MeetingDate.split('T')[0];
-        const start = `${dateKey}T${meeting.MeetingStartTime}`;
+        const dateKey = meeting.MeetingDate.split('T')[0].trim();
+        const start = `${dateKey}T${meeting.MeetingStartTime.trim()}`;
 
         return {
           id: meeting.MeetingId,
@@ -151,7 +151,7 @@ export const Event: React.FC = () => {
           title: meeting.MeetingTitle || '',
           start,
           end: meeting.MeetingEndTime
-            ? `${dateKey}T${meeting.MeetingEndTime}`
+            ? `${dateKey}T${meeting.MeetingEndTime.trim()}`
             : undefined,
           room: meeting.RoomName || meeting.MeetingLocation,
           CreatedBy: meeting.CreatedBy,
@@ -164,7 +164,7 @@ export const Event: React.FC = () => {
       .map((task) => {
         if (!task.DueDate) return null;
 
-        const dateKey = task.DueDate.split('T')[0];
+        const dateKey = task.DueDate.split('T')[0].trim();
 
         return {
           id: task.TaskId,
@@ -183,8 +183,8 @@ export const Event: React.FC = () => {
       .map((booking) => {
         if (!booking.MeetingDate || !booking.StartTime) return null;
 
-        const dateKey = booking.MeetingDate.split('T')[0];
-        const start = `${dateKey}T${booking.StartTime}`;
+        const dateKey = booking.MeetingDate.split('T')[0].trim();
+        const start = `${dateKey}T${booking.StartTime.trim()}`;
 
         return {
           id: booking.ConferenceRoomBookingId,
@@ -195,7 +195,7 @@ export const Event: React.FC = () => {
             booking.Purpose?.trim() ||
             'Conference',
           start,
-          end: booking.EndTime ? `${dateKey}T${booking.EndTime}` : undefined,
+          end: booking.EndTime ? `${dateKey}T${booking.EndTime.trim()}` : undefined,
           CreatedDate: booking.CreatedDate,
         };
       })
@@ -215,7 +215,7 @@ export const Event: React.FC = () => {
   const eventsForSelectedDate = useMemo(() => {
     const selectedDateKey = toLocalDateKey(currentDate);
     return filteredCalendarEvents.filter(
-      (event) => event.start.split('T')[0] === selectedDateKey,
+      (event) => parseEventDateTime(event.start).dateStr === selectedDateKey,
     );
   }, [filteredCalendarEvents, currentDate]);
 
@@ -296,11 +296,13 @@ export const Event: React.FC = () => {
 
           <div className="thin-scroll min-h-0 w-full flex-1 overflow-auto">
             <CustomCalendar
+              layout="flexible"
               view={view}
               currentDate={currentDate}
               selectedDate={currentDate}
               events={filteredCalendarEvents}
               onDateChange={setCurrentDate}
+              onEventClick={handleOpenViewEvent}
               renderDayEvents={({ dayEvents, onEventClick }) =>
                 groupEventsByType(dayEvents).slice(0, 3).map((group) => (
                   <EventTypeBadge

@@ -98,8 +98,8 @@ export const Vendor: React.FC = () => {
           IsCheckPermission: true,
           VendorType: filterParams.VendorType?.trim() || undefined,
           VendorId: filterParams.VendorId ? Number(filterParams.VendorId) : undefined,
-          VendorName: searchtext ?? filterParams.VendorName?.trim() ?? undefined,
-          CompanyName: filterParams.CompanyName?.trim() || undefined,
+          VendorName: filterParams.VendorName?.trim() ?? undefined,
+          CompanyName: searchtext ?? filterParams.CompanyName?.trim() ?? undefined,
           CompanyType: filterParams.CompanyType?.trim() || undefined,
           OwnershipType: filterParams.OwnershipType?.trim() || undefined,
           VendorBusinessType: filterParams.VendorBusinessType?.trim() || undefined,
@@ -777,7 +777,7 @@ export const Vendor: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Vendor Name"
+        searchPlaceholder="Search By Company Name"
         onSearchChange={(v) => {
           updateListState({ searchTerm: v });
           debouncedSearch(v)

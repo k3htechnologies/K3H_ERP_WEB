@@ -26,6 +26,7 @@ export interface PaymentScheduleMasterData {
   BuildingNumber: string | null;
   InventoryFlatFloorBasementPodiumWingId?: number;
   Wing: string | null;
+  Total: number | 0;
   CreatedById: number | 0;
   CreatedBy: string | "";
   CreatedDate: string | null;

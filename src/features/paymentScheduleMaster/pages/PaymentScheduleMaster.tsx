@@ -43,6 +43,7 @@ export const PaymentScheduleMaster: React.FC = () => {
   const [PaymentScheduleMasterList, setPaymentScheduleMasterList] = useState<PaymentScheduleMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [totalPercentage, setTotalPercentage] = useState<number>(0);
 
   const [stageOptions, setStageOptions] = useState<{ label: string; value: string }[]>([]);
 
@@ -91,7 +92,9 @@ export const PaymentScheduleMaster: React.FC = () => {
             PageNumber: page,
             PageSize: pagination.pageSize,
             ProjectId: Number(projectId),
-            PaymentScheduleSchemeMasterId: Number(schemeId) ?? formData.PaymentScheduleSchemeMasterId,
+            PaymentScheduleSchemeMasterId: schemeId !== undefined
+              ? Number(schemeId)
+              : Number(formData.PaymentScheduleSchemeMasterId) || 0,
             InventoryBuildingId: buildingId ?? formData.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: wingId ?? formData.InventoryFlatFloorBasementPodiumWingId,
             Stage: filterParams.Stage ?? undefined,
@@ -101,7 +104,11 @@ export const PaymentScheduleMaster: React.FC = () => {
           const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMaster(params);
 
           if (E.isRight(response)) {
+
             setPaymentScheduleMasterList(response.right.Data);
+
+            setTotalPercentage(Number(response.right.Data?.[0]?.Total ?? 0));
+
             setPagination({
               currentPage: page,
               totalRecords: response.right.TotalNumberOfRecord,
@@ -117,11 +124,11 @@ export const PaymentScheduleMaster: React.FC = () => {
         "Loading Data ",
       );
     },
-    [projectId, formData.PaymentScheduleMasterId, pagination.currentPage, pagination.pageSize, addToast, setPagination],
-  );
+    [projectId, formData.PaymentScheduleSchemeMasterId, formData.InventoryBuildingId, formData.InventoryFlatFloorBasementPodiumWingId, pagination.pageSize, addToast, setPagination]);
 
   useEffect(() => {
     setFormData(initialFormState());
+
 
     setStageOptions([]);
 
@@ -173,7 +180,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setPagination({ currentPage: page });
-    loadPaymentScheduleMaster(1, {});
+    loadPaymentScheduleMaster(page, {}, undefined, Number(formData.PaymentScheduleSchemeMasterId), formData.InventoryBuildingId, formData.InventoryFlatFloorBasementPodiumWingId);
   };
 
   const handleConfirmationDialogBoxOpen = useCallback((row: PaymentScheduleMasterData) => {
@@ -203,10 +210,6 @@ export const PaymentScheduleMaster: React.FC = () => {
 
     return totalExisting + currentPercentage;
   };
-
-  const totalPercentage = useMemo(() => {
-    return PaymentScheduleMasterList.reduce((sum, item) => sum + Number(item.PaymentSchedulePercentage || 0), 0);
-  }, [PaymentScheduleMasterList]);
 
   const handleEditPaymentScheduleMaster = useCallback(
     async (row: PaymentScheduleMasterData) => {
@@ -287,35 +290,30 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           const isAdd = formData.PaymentScheduleMasterId === 0;
 
-          if (isAdd) {
-            const newRecord = response.right.Data[0] as PaymentScheduleMasterData;
+          const updatedRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
-            setPaymentScheduleMasterList((prevData) => [newRecord, ...prevData]);
+          setTotalPercentage(Number(updatedRecord.Total ?? 0));
+
+          if (isAdd) {
+            setPaymentScheduleMasterList((prevData) => [updatedRecord, ...prevData]);
 
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
-
-            addToast({
-              type: "success",
-              title: response.right.SuccessMessage[0],
-            });
           } else {
-            const updatedRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
             setPaymentScheduleMasterList((prevData) =>
-              prevData.map((item) => (item.PaymentScheduleMasterId === formData.PaymentScheduleMasterId ? updatedRecord : item)),
+              prevData.map((item) =>
+                item.PaymentScheduleMasterId === formData.PaymentScheduleMasterId
+                  ? updatedRecord
+                  : item
+              )
             );
-
-            addToast({
-              type: "success",
-              title: response.right.SuccessMessage[0],
-            });
           }
 
-          totalPercentage;
+          addToast({ type: "success", title: response.right.SuccessMessage[0], });
 
           setEditingPaymentScheduleMasterData(null);
         } else {

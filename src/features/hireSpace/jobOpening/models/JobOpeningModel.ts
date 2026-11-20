@@ -11,6 +11,7 @@ export interface FilterWithPaginationJobOpeningRequest {
     ExperienceYears?: number
     RoleName?: string
     JobRoleStatus?: boolean
+    ShowAll?: boolean
     ExportType?: 'Excel' | 'PDF'
 }
 
@@ -49,12 +50,12 @@ export interface AddUpdateJobOpeningRequest {
     JobQualification: string
     JobSkills: string
     WorkMode: string
-    ExperienceYears: number
-    ExperienceMonths: number
+    ExperienceYears: number | null
+    ExperienceMonths: number | null
     NumberOfOpenings: number
     WorkLocation: string
     EmploymentType: string
-    JobRoleStatus: boolean
+    JobRoleStatus: boolean | null
 }
 
 export interface DeleteJobOpeningRequest {

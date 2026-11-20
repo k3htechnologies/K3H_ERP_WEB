@@ -167,11 +167,9 @@ export const ViewCostToCompany: React.FC = () => {
                     {canExport && (
                         <Button
                             type="button"
-                            size="mxs"
+                            size="sm"
                             color="blue"
                             colorMode="gradient_light"
-                            defineWidth
-                            style={{ width: '95px' }}
                             leftIcon={<Download className="h-4 w-4" />}
                             onClick={(e) => {
                                 e.preventDefault();
@@ -179,7 +177,7 @@ export const ViewCostToCompany: React.FC = () => {
                                 handleExportCostToCompanyByIdPdf();
                             }}
                         >
-                            Export
+                            PDF
                         </Button>
                     )}
                 </div>
@@ -191,25 +189,25 @@ export const ViewCostToCompany: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-x-4 p-4 gap-4">
                     <FieldItem label="Employee Code" value={costToCompanyData?.EmployeeCode} isRow />
                     <FieldItem label="Department" value={costToCompanyData?.Department} isRow />
+                     <FieldItem label="Joining Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.JoiningDate ?? "-")} isRow />
                     <FieldItem label="Designation" value={costToCompanyData?.Designation} isRow />
+                    <FieldItem label="Pan Card No." value={costToCompanyData?.PanCardNumber} isRow />
                     <FieldItem label="Branch" value={costToCompanyData?.Branch} isRow />
-                    <FieldItem label="Joining Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.JoiningDate ?? "-")} isRow />
-                    <FieldItem label="PanCard No." value={costToCompanyData?.PanCardNumber} isRow />
                     <FieldItem label="Bank Name" value={costToCompanyData?.BankName} isRow />
                     <FieldItem label="Account No." value={costToCompanyData?.AccountNo} isRow />
-                    <FieldItem label="Monthly CTC" value={formatCurrency(costToCompanyData?.MonthlyCTC)} isRow />
-                    <FieldItem label="Annual CTC" value={formatCurrency(costToCompanyData?.AnnualCTC)} isRow />
-                    <FieldItem label="Effective From Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.EffectiveFromDate ?? "-")} isRow />
-                    <FieldItem label="Effective To Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.EffectiveToDate ?? "-")} isRow />
+                    <FieldItem label="Monthly" value={formatCurrency(costToCompanyData?.MonthlyCTC)} isRow />
+                    <FieldItem label="Annual" value={formatCurrency(costToCompanyData?.AnnualCTC)} isRow />
+                    <FieldItem label="From Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.EffectiveFromDate ?? "-")} isRow />
+                    <FieldItem label="To Date" value={formatDate_dd_MonthName_yy(costToCompanyData?.EffectiveToDate ?? "-")} isRow />
                     <FieldItem label="Provident Fund" value={costToCompanyData?.IsProvidentFund === true ? "Yes" : "No"} isRow />
-                    <FieldItem label="Employees State Insurance Corporation" value={costToCompanyData?.EmployeesStateInsuranceCorporation === true ? "Yes" : "No"} isRow />
+                    <FieldItem label="ESIC" value={costToCompanyData?.EmployeesStateInsuranceCorporation === true ? "Yes" : "No"} isRow />
                 </div>
 
                 <div className="overflow-hidden">
                     <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
-                        <div className="px-4 py-3">Earning Name</div>
-                        <div className="px-3 py-3 text-right">Monthly Amount</div>
-                        <div className="px-3 py-3 text-right">Yearly Amount</div>
+                        <div className="px-4 py-3">Earning</div>
+                        <div className="px-3 py-3">Monthly</div>
+                        <div className="px-3 py-3">Yearly</div>
                     </div>
 
                     <div className="bg-[#f2f7fd] text-sm text-gray-800">
@@ -220,11 +218,11 @@ export const ViewCostToCompany: React.FC = () => {
                                 >
                                     <div className="px-4 py-2">{item.EarningName}</div>
 
-                                    <div className="px-3 py-2 text-right tabular-nums">
+                                    <div className="px-3 py-2">
                                         {formatCurrency(Number(item.MonthlyAmount ?? 0))}
                                     </div>
 
-                                    <div className="px-3 py-2 text-right tabular-nums">
+                                    <div className="px-3 py-2">
                                         {formatCurrency(Number(item.YearlyAmount ?? 0))}
                                     </div>
                                 </div>
@@ -239,23 +237,23 @@ export const ViewCostToCompany: React.FC = () => {
                     <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
                         <div className="px-4 py-3">Total Earnings</div>
 
-                        <div className="px-3 py-3 text-right tabular-nums">
+                        <div className="px-3 py-3">
                             {formatCurrency(totalMonthlyEarnings)}
                         </div>
 
-                        <div className="px-3 py-3 text-right tabular-nums">
+                        <div className="px-3 py-3">
                             {formatCurrency(totalYearlyEarnings)}
                         </div>
                     </div>
                 </div>
 
-                <div className="h-6 border-y border-[#9aafd0] bg-white" />
+                <div className="h-1 border-y border-[#9aafd0] bg-white" />
 
                 <div className="overflow-hidden">
                     <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
-                        <div className="px-4 py-3">Deduction Name</div>
-                        <div className="px-3 py-3 text-right">Monthly Amount</div>
-                        <div className="px-3 py-3 text-right">Yearly Amount</div>
+                        <div className="px-4 py-3">Deduction</div>
+                        <div className="px-3 py-3">Monthly</div>
+                        <div className="px-3 py-3">Yearly</div>
                     </div>
 
                     <div className=" bg-[#f2f7fd] text-sm text-gray-800">
@@ -266,11 +264,11 @@ export const ViewCostToCompany: React.FC = () => {
                                 >
                                     <div className="px-4 py-2">{item.DeductionName}</div>
 
-                                    <div className="px-3 py-2 text-right tabular-nums">
+                                    <div className="px-3 py-2">
                                         {formatCurrency(Number(item.MonthlyAmount ?? 0))}
                                     </div>
 
-                                    <div className="px-3 py-2 text-right tabular-nums">
+                                    <div className="px-3 py-2">
                                         {formatCurrency(Number(item.YearlyAmount ?? 0))}
                                     </div>
                                 </div>
@@ -285,11 +283,11 @@ export const ViewCostToCompany: React.FC = () => {
                     <div className="grid grid-cols-[2fr_1fr_1fr] bg-[#193b7d] text-sm font-semibold text-white">
                         <div className="px-4 py-3">Total Deductions</div>
 
-                        <div className="px-3 py-3 text-right tabular-nums">
+                        <div className="px-3 py-3">
                             {formatCurrency(totalMonthlyDeductions)}
                         </div>
 
-                        <div className="px-3 py-3 text-right tabular-nums">
+                        <div className="px-3 py-3">
                             {formatCurrency(totalYearlyDeductions)}
                         </div>
 

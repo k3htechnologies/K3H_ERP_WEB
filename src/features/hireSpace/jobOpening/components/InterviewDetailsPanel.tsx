@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Eye } from 'lucide-react';
+import { Edit } from 'lucide-react';
 import { convert_hh_mm_ss_to_hh_mm } from '@/core/utils/dateFormat';
 import { getNameInitials } from '@/core/utils/getNameInitials';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -13,11 +13,7 @@ interface InterviewDetailsPanelProps {
   interviews: CandidateInterviewData[];
   emptyMessage: string;
   canAction: boolean;
-  isViewOnly: boolean;
   onEdit: (interview: CandidateInterviewData) => void;
-  onView: (interview: CandidateInterviewData) => void;
-  onViewAll: () => void;
-  showViewAllButton: boolean;
   className?: string;
 }
 
@@ -27,23 +23,19 @@ export const InterviewDetailsPanel: React.FC<InterviewDetailsPanelProps> = ({
   interviews,
   emptyMessage,
   canAction,
-  isViewOnly,
   onEdit,
-  onView,
-  onViewAll,
-  showViewAllButton,
   className = '',
 }) => {
   return (
-    <section className={`flex min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white p-4 ${className}`}>
+    <section className={`flex h-[89vh] min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 bg-white p-4 ${className}`}>
       <div className="mb-4 flex shrink-0 items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-gray-900">{heading}</h2>
+        <h2 className="text-md font-semibold text-gray-900">{heading}</h2>
         <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium uppercase leading-none text-blue-600">
           {interviewCount} {interviewCount === 1 ? 'Interview' : 'Interviews'}
         </span>
       </div>
 
-      <div className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto pr-1">
+      <div className="thin-scroll min-h-0 flex-1 space-y-3 overflow-y-auto !overflow-x-hidden pr-1">
         {interviews.length === 0 ? (
           <NoDataView message={emptyMessage} />
         ) : (
@@ -55,34 +47,23 @@ export const InterviewDetailsPanel: React.FC<InterviewDetailsPanelProps> = ({
             return (
               <div
                 key={interview.InterviewId}
-                className="rounded-lg border border-gray-200 bg-white px-4 py-3 transition-colors hover:border-blue-300 hover:bg-gray-50"
+                className="rounded-lg border border-gray-200 bg-white px-4 py-3"
               >
-                <div className="mb-3 flex items-start justify-between gap-2">
-                  <span className="text-sm font-semibold ">
+                <div className="mb-1 flex items-center justify-between gap-2">
+                  <span className="text-sm font-semibold">
                     {convert_hh_mm_ss_to_hh_mm(interview.InterviewTime || '')}
                   </span>
                   {canAction && (
-                    isViewOnly ? (
-                      <Button
-                        color="transparent"
-                        size="sm"
-                        isborderRadius
-                        title="View"
-                        onClick={() => onView(interview)}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <Button
-                        color="transparent"
-                        size="sm"
-                        isborderRadius
-                        title="Edit"
-                        onClick={() => onEdit(interview)}
-                      >
-                        <Edit className="h-4 w-4 text-blue-700" />
-                      </Button>
-                    )
+                    <Button
+                      color="transparent"
+                      size="xs"
+                      defineWidth
+                      isborderRadius
+                      title="Edit"
+                      onClick={() => onEdit(interview)}
+                    >
+                      <Edit className="h-4 w-4 text-blue-700" />
+                    </Button>
                   )}
                 </div>
 
@@ -128,14 +109,6 @@ export const InterviewDetailsPanel: React.FC<InterviewDetailsPanelProps> = ({
           })
         )}
       </div>
-
-      {showViewAllButton && (
-        <div className="mt-4 shrink-0">
-          <Button onClick={onViewAll} color="blue" fullWidth>
-            View All Interviews
-          </Button>
-        </div>
-      )}
     </section>
   );
 };

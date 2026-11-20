@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
+import type { ParkingData } from "@/features/parking/models/ParkingModel";
 
 export interface FilterProjectInventoryExistsRequest {
     ProjectId: number,
@@ -79,11 +80,16 @@ export interface InventoryFlatData {
     BookingCreatedById: number;
     BookingCreatedBy: string;
     BookingCreatedDate: string | null
+    BookingApprovalStatus?: string | null
 
     TenantId?: number;   
     TenantSystemGeneratedCode?:string;
     TenantBuildingId?: number;
     TenantBuildingName?: string;
+    AdjustPurchaseAreaSqFt?: number;
+    TenantInventoryAndAdjustPurchaseAreaDetailsId?:number;
+    ParkingId?:string
+    ParkingData?: ParkingData[]; 
 }
 
 export interface InventoryFlatSpecificationData {

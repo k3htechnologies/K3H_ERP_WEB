@@ -33,6 +33,7 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
+            if (params.ApplicableFor) queryParams.append('ApplicableFor', params.ApplicableFor.toString());
             if (params.ChargeName) queryParams.append('ChargeName', params.ChargeName.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);

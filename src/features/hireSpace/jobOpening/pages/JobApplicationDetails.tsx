@@ -11,6 +11,7 @@ import { getNameInitials } from '@/core/utils/getNameInitials';
 import { Loader } from '@/core/utils/loader';
 import { useViewportHeight } from '@/core/utils/useViewportHeight';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
+import { SkillBadges } from '@/features/hireSpace/jobOpening/components';
 import { useJobOpeningListState } from '@/features/hireSpace/jobOpening/context/JobOpeningListStateContext';
 import type {
   AddUpdateCandidateRemarkRequest,
@@ -23,6 +24,7 @@ import type {
 } from '@/features/hireSpace/jobOpening/models/CandidateModel';
 import { CandidateService } from '@/features/hireSpace/jobOpening/services/CandidateService';
 import { CandidateInterviewService } from '@/features/hireSpace/jobOpening/services/CandidateInterviewService';
+import { getInterviewStatusColor } from '@/features/hireSpace/jobOpening/utils/Status';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
@@ -65,7 +67,8 @@ export const JobApplicationDetails: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const [remarkText, setRemarkText] = useState('');
   const [remarkError, setRemarkError] = useState('');
-  const candidatesListHeight = useViewportHeight(255, 350, 900);
+  const [isRemarkSubmitted, setIsRemarkSubmitted] = useState(false);
+  const candidatePanelHeight = useViewportHeight(190, 415, 965);
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchCandidates(value);
@@ -213,6 +216,7 @@ export const JobApplicationDetails: React.FC = () => {
   useEffect(() => {
     setRemarkText('');
     setRemarkError('');
+    setIsRemarkSubmitted(false);
   }, [selectedCandidateId]);
 
   const searchCandidates = async (searchValue: string) => {
@@ -281,6 +285,8 @@ export const JobApplicationDetails: React.FC = () => {
 
         if (E.isRight(response)) {
           addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+          setRemarkText('');
+          setIsRemarkSubmitted(true);
           await loadCandidateRemarks(payload.CandidateId);
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -297,6 +303,14 @@ export const JobApplicationDetails: React.FC = () => {
 
   const handleStageChange = async (newStage: string) => {
     if (!selectedCandidate) return;
+    if (newStage === selectedCandidate.ApplicationStatus) return;
+
+    if (!isRemarkSubmitted) {
+      setRemarkError('Please submit a remark to change the stage.');
+      return;
+    }
+
+    setRemarkError('');
 
     await runApiWithLoader(
       setIsLoading,
@@ -312,6 +326,8 @@ export const JobApplicationDetails: React.FC = () => {
 
         if (E.isRight(response)) {
           addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+          setIsRemarkSubmitted(false);
+          await loadCandidateRemarks(selectedCandidate.CandidateId);
           await loadApplicationStages();
           await loadCandidates(searchTerm.trim() ? searchTerm.trim() : undefined);
         } else {
@@ -350,7 +366,7 @@ export const JobApplicationDetails: React.FC = () => {
 
       <TableActionToolbar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Name"
+        searchPlaceholder="Search By Candidate Name"
         onSearchChange={(v) => {
           setSearchTerm(v);
           debouncedSearch(v);
@@ -363,7 +379,7 @@ export const JobApplicationDetails: React.FC = () => {
       />
 
       <div className=" grid min-w-0 grid-cols-1 gap-5 lg:grid-cols-4">
-        <div className="min-w-0 lg:col-span-1">
+        <div className="min-w-0 lg:col-span-1 bg-white">
           <aside className="flex flex-col rounded-lg border border-gray-200 p-4">
             <h2 className="shrink-0 pb-3 text-base font-semibold text-gray-900">Stages</h2>
             <Tabs
@@ -378,35 +394,37 @@ export const JobApplicationDetails: React.FC = () => {
         <div className="min-w-0 lg:col-span-3">
           <Breadcrumb isinline items={inlineBreadcrumbItems} className="mb-3" />
 
-          <div className=" bg-white grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
-            <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 p-4">
-              <h2 className="pb-3 text-base font-semibold text-gray-500">Candidates</h2>
+          <div className=" grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2">
+            <section
+              className="bg-white flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 p-4"
+              style={{ height: candidatePanelHeight }}
+            >
+              <h2 className="shrink-0 pb-3 text-sm text-base font-semibold text-gray-500">Candidates</h2>
 
-              <div
-                className="thin-scroll min-h-0 space-y-3 overflow-y-auto pr-1"
-                style={{ maxHeight: candidatesListHeight }}
-              >
+              <div className="thin-scroll min-h-0 w-full min-w-0 flex-1 space-y-5 overflow-y-auto !overflow-x-hidden pr-1">
                 {candidates.length === 0 ? (
                   <NoDataView message="No candidates match this filter" />
                 ) : (
                   candidates.map((row) => {
+                    const { bg, text } = getInterviewStatusColor(row.ApplicationStatus || '');
+
                     return (
                       <div
                         key={row.CandidateId}
-                        className={`cursor-pointer rounded-lg border p-3 transition-colors ${
+                        className={`min-w-0 cursor-pointer overflow-hidden rounded-lg border p-3 transition-colors ${
                           selectedCandidateId === row.CandidateId
-                            ? 'border-blue-300 bg-blue-50'
+                            ? 'border-l-4 border-l-[#00236f] bg-[#f3f3fe]'
                             : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-gray-50'
                         }`}
                         onClick={() => setSelectedCandidateId(row.CandidateId)}
                       >
-                        <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="mb-6 flex items-start justify-between gap-3">
                           <div className="flex min-w-0 flex-1 items-center gap-3">
                             {row.Photograph ? (
                               <img
                                 src={row.Photograph}
                                 alt={row.FullName || '-'}
-                                className="h-10 w-10 shrink-0 rounded-full border border-gray-300 object-cover"
+                                className="h-12 w-12 shrink-0 rounded-full border border-gray-300 object-cover shadow-sm"
                               />
                             ) : (
                               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-600 text-sm font-semibold text-white">
@@ -418,53 +436,69 @@ export const JobApplicationDetails: React.FC = () => {
                               <TooltipText
                                 text={row.FullName || '-'}
                                 maxWidth="100%"
-                                tooltipThreshold={18}
                                 isApplyBgTextColor
                               />
                               <TooltipText
                                 text={row.CurrentRole || '-'}
                                 maxWidth="100%"
-                                tooltipThreshold={22}
+                                tooltipClassName="text-sm"
                               />
                             </div>
                           </div>
 
-                          <span className="shrink-0 rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium uppercase text-gray-600">
+                          <span
+                            className="shrink-0 rounded-full px-2.5 py-1 text-xs font-medium"
+                            style={{
+                              backgroundColor: bg,
+                              color: text,
+                            }}
+                          >
                             {row.ApplicationStatus}
                           </span>
                         </div>
 
                         <div className="mb-3 border-t border-gray-200" />
 
-                        <div className="grid grid-cols-2 gap-3 text-sm">
-                          <span className="flex min-w-0 items-center gap-2 text-gray-600">
-                            <Briefcase className="h-4 w-4 shrink-0" />
-                            {row.YearsOfExperience ? `${row.YearsOfExperience} Years of Experience` : '-'}
-                          </span>
-                          <span className="flex min-w-0 items-center gap-2 text-gray-600">
-                            <Building className="h-4 w-4 shrink-0" />
-                            {row.CurrentCompany || '-'}
-                          </span>
-                          <span className="flex min-w-0 items-center gap-2 text-gray-600">
-                            <Calendar className="h-4 w-4 shrink-0" />
-                            Applied {formatDate_dd_MonthName_yy(row.CreatedDate || '')}
-                          </span>
-                          <div className="flex items-center justify-end">
-                            <Button
-                              title="Download resume"
-                              color="transparent"
-                              size="sm"
-                              isborderRadius
-                              disabled={!row.ResumeUrl}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                if (row.ResumeUrl) {
-                                  window.open(row.ResumeUrl, '_blank');
-                                }
-                              }}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
+                        <div className="flex min-w-0 flex-col gap-3 text-sm">
+                          <div className="flex min-w-0 items-center gap-4">
+                            <span className="flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-600">
+                              <Briefcase className="h-4 w-4 shrink-0" />
+                              {row.YearsOfExperience ? `${row.YearsOfExperience} Years of Experience` : '-'}
+                            </span>
+                            <span className="flex min-w-0 flex-1 items-center gap-2 text-gray-600">
+                              <Building className="h-4 w-4 shrink-0" />
+                              <TooltipText
+                                text={row.CurrentCompany || '-'}
+                                maxWidth="100%"
+                                tooltipThreshold={16}
+                                isApplyBgTextColor
+                              />
+                            </span>
+                          </div>
+                          <div className="flex min-w-0 items-center justify-between gap-2">
+                            <span className="flex min-w-0 items-center gap-2 whitespace-nowrap text-gray-600">
+                              <Calendar className="h-4 w-4 shrink-0" />
+                              Applied {formatDate_dd_MonthName_yy(row.CreatedDate || '')}
+                            </span>
+                            <div className="flex shrink-0 items-center justify-end rounded bg-blue-50/70 backdrop-blur-sm">
+                              <Button
+                                title="Download resume"
+                                color="transparent"
+                                size="sm"
+                                isborderRadius
+                                disabled={!row.ResumeUrl}
+                                className="!bg-transparent !text-[#135BEC]"
+                                style={{ color: '#135BEC' }}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  if (row.ResumeUrl) {
+                                    window.open(row.ResumeUrl, '_blank');
+                                  }
+                                }}
+                              >
+                                <Download className="h-4 w-4 text-[#135BEC]" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -474,7 +508,10 @@ export const JobApplicationDetails: React.FC = () => {
               </div>
             </section>
 
-            <section className="flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 p-4">
+            <section
+              className="bg-white flex min-h-0 min-w-0 flex-col overflow-hidden rounded-lg border border-gray-200 p-4"
+              style={{ height: candidatePanelHeight }}
+            >
               {selectedCandidate ? (
                 <>
                   <div className="bg-white flex min-h-0 flex-1 flex-col">
@@ -495,48 +532,59 @@ export const JobApplicationDetails: React.FC = () => {
                         )}
 
                         <div className="min-w-0 flex-1">
-                          <TooltipText
-                            text={selectedCandidate.FullName || '-'}
-                            maxWidth="100%"
-                            tooltipThreshold={22}
-                            isApplyBgTextColor
-                            tooltipClassName="text-xl font-semibold text-gray-900"
-                          />
-                          {selectedCandidate.Email ? (
-                            <a
-                              href={`mailto:${selectedCandidate.Email}`}
-                              className="mb-2.5 block truncate text-sm text-blue-600 hover:underline"
-                              title={selectedCandidate.Email}
-                            >
-                              {selectedCandidate.Email}
-                            </a>
-                          ) : (
-                            <span className="mt-0.5 block text-sm text-gray-500">-</span>
-                          )}
-                          <TooltipText
-                            text={selectedCandidate.WorkLocation || '-'}
-                            maxWidth="100%"
-                            tooltipThreshold={28}
-                            isApplyBgTextColor
-                            tooltipClassName="text-sm text-gray-500"
-                          />
-
-                          {canAction && (
-                            <Button
-                              type="button"
-                              onClick={() => handleScheduleInterview(selectedCandidate)}
-                              color="green"
-                              colorMode="light"
-                              size="sm"
-                              rightIcon={<Calendar className="h-4 w-4" />}
-                            >
-                              Schedule Interview
-                            </Button>
-                          )}
+                          <div className="flex min-w-0 items-center justify-between gap-3">
+                            <div className="min-w-0 flex-1">
+                              <TooltipText
+                                text={selectedCandidate.FullName || '-'}
+                                maxWidth="100%"
+                                tooltipThreshold={22}
+                                isApplyBgTextColor
+                                tooltipClassName="text-md font-semibold text-gray-900"
+                              />
+                            </div>
+                            {canAction && (
+                              <div className="shrink-0">
+                                <Button
+                                  onClick={() => handleScheduleInterview(selectedCandidate)}
+                                  disabled={selectedCandidate.ApplicationStatus !== 'Interview'}
+                                  color="green"
+                                  colorMode="light"
+                                  size="sm"
+                                  rightIcon={<Calendar className="h-4 w-4" />}
+                                  style={{ border: 'none' }}
+                                >
+                                  Schedule Interview
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                          <div className="mt-1 flex flex-col gap-1">
+                            {selectedCandidate.Email ? (
+                              <a
+                                href={`mailto:${selectedCandidate.Email}`}
+                                className="block truncate text-sm text-blue-600 hover:underline"
+                                title={selectedCandidate.Email}
+                              >
+                                {selectedCandidate.Email}
+                              </a>
+                            ) : (
+                              <span className="block text-sm text-gray-500">-</span>
+                            )}
+                            <span className="block text-sm text-gray-500">
+                              {selectedCandidate.MobileNo || '-'}
+                            </span>
+                            <TooltipText
+                              text={selectedCandidate.WorkLocation || '-'}
+                              maxWidth="100%"
+                              tooltipThreshold={28}
+                              isApplyBgTextColor
+                              tooltipClassName="text-sm text-gray-500"
+                            />
+                          </div>
                         </div>
                       </div>
 
-                      <div className="mt-4">
+                      <div className="mt-4 [&_label]:!flex-1">
                         <Tabs
                           tabs={CANDIDATE_DETAILS_TABS}
                           defaultActive={activeTab}
@@ -546,55 +594,77 @@ export const JobApplicationDetails: React.FC = () => {
                       </div>
                     </div>
 
-                    <div
-                      className="thin-scroll min-h-0 overflow-x-hidden overflow-y-auto py-4"
-                      style={{ maxHeight: candidatesListHeight }}
-                    >
+                    <div className="thin-scroll min-h-0 flex-1 overflow-x-hidden overflow-y-auto py-4">
                       {activeTab === 'Overview' && (
                         <div>
                           <div className="grid grid-cols-1 gap-x-5 gap-y-6 sm:grid-cols-2">
                             <FieldItem
-                              label="Current Position"
+                              label="Current Role"
                               value={`${selectedCandidate.CurrentRole || '-'} at ${
                                 selectedCandidate.CurrentCompany || '-'
                               }`}
                             />
-                        <FieldItem
-                          label="Experience"
-                          value={
-                            selectedCandidate.YearsOfExperience
-                              ? `${selectedCandidate.YearsOfExperience} years`
-                              : ""}
+                            <FieldItem
+                              label="Experience"
+                              value={
+                                selectedCandidate.YearsOfExperience
+                                  ? `${selectedCandidate.YearsOfExperience} years`
+                                  : ''}
                             />
                             <FieldItem
-                              label="Expected Salary"
+                              label="Current CTC"
+                              value={
+                                selectedCandidate.CurrentSalary
+                                  ? `₹ ${selectedCandidate.CurrentSalary}`
+                                  : ''}
+                            />
+                            <FieldItem
+                              label="Expected CTC"
                               value={
                                 selectedCandidate.ExpectedSalary
                                   ? `₹ ${selectedCandidate.ExpectedSalary}`
-                                  : ""}
+                                  : ''}
                             />
-
                             <FieldItem
                               label="Notice Period"
                               value={
                                 selectedCandidate.NoticePeriod
                                   ? `${selectedCandidate.NoticePeriod} days`
-                                  : ""}
+                                  : ''}
+                            />
+                            <FieldItem
+                              label="Referred By"
+                              value={selectedCandidate.SourceId}
+                            />
+                            <FieldItem
+                              label="Address"
+                              value={
+                                <TooltipText
+                                  text={selectedCandidate.WorkLocation}
+                                  maxWidth="100%"
+                                  tooltipThreshold={50}
+                                  tooltipClassName="text-sm font-medium"
+                                />
+                              }
+                              className="sm:col-span-2"
+                            />
+                            <FieldItem
+                              label="Reason For Change"
+                              value={selectedCandidate.ReasonForChange}
+                              className="sm:col-span-2"
                             />
                           </div>
 
                           <hr className="mt-6 border-t border-gray-200" />
 
-                          <p className="mb-3 mt-4 text-sm font-normal uppercase text-gray-500">
-                            Top Skills
+                          <p className="mb-3 mt-4 text-sm font-normal text-gray-500">
+                            Skills
                           </p>
-                          <span className="text-sm font-medium text-gray-900">
-                            {selectedCandidate.Skills|| '-'}
-                          </span>
+                          <SkillBadges skills={selectedCandidate.Skills} />
 
                           <hr className="mt-6 border-t border-gray-200" />
 
-                          <p className="mb-3 mt-4 text-sm font-normal uppercase text-gray-500">
+                          <p className="mb-3 mt-4 text-sm font-normal text-gray-500">
                             Education
                           </p>
                           <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
@@ -625,19 +695,28 @@ export const JobApplicationDetails: React.FC = () => {
                               >
                                 Add Remark
                               </label>
-                              <Input
-                                id="candidate-remark"
-                                type="text"
-                                size="sm"
-                                value={remarkText}
-                                onChange={(event) => {
-                                  setRemarkText(event.target.value);
-                                  setRemarkError('');
-                                }}
-                                placeholder="Enter Remark"
-
-                                error={remarkError}
-                              />
+                              <div className="flex items-start gap-2">
+                                <div className="min-w-0 flex-1">
+                                  <Input
+                                    id="candidate-remark"
+                                    size="sm"
+                                    value={remarkText}
+                                    onChange={(event) => {
+                                      setRemarkText(event.target.value);
+                                      setRemarkError('');
+                                    }}
+                                    placeholder="Enter Remark"
+                                    error={remarkError}
+                                  />
+                                </div>
+                                <Button
+                                  color="blue"
+                                  size="sm"
+                                  disabled={isLoading}
+                                >
+                                  Submit
+                                </Button>
+                              </div>
                             </form>
                           )}
 
@@ -687,7 +766,13 @@ export const JobApplicationDetails: React.FC = () => {
 
                                   <div className="pb-5">
                                     <div className="flex items-start justify-between gap-3">
-                                      <h4 className="text-base font-semibold text-gray-900">
+                                      <h4
+                                        className={`text-base text-gray-900 ${
+                                          index === timeline.length - 1
+                                            ? 'font-semibold'
+                                            : 'font-normal'
+                                        }`}
+                                      >
                                         {item.Stage}
                                       </h4>
                                       <span className="shrink-0 whitespace-nowrap text-sm text-gray-500">
@@ -718,20 +803,22 @@ export const JobApplicationDetails: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 flex-col gap-2 border-t border-gray-200 bg-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                    <span className="text-sm text-gray-500">Current Stage:</span>
-                    <div className="w-full sm:w-36">
-                      <SinglePageSelection
-                        size="sm"
-                        searchable={false}
-                        isShowClearSelection={false}
-                        value={selectedCandidate.ApplicationStatus || ''}
-                        disabled={!canAction || isLoading}
-                        options={stageOptions}
-                        onChange={(value) => handleStageChange(String(value))}
-                      />
+                  {activeTab === 'Remark' && (
+                    <div className="flex shrink-0 flex-col gap-2 border-t border-gray-200 bg-blue-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                      <span className="text-sm text-gray-500">Current Stage:</span>
+                      <div className="w-full sm:w-36">
+                        <SinglePageSelection
+                          size="sm"
+                          searchable={true}
+                          isShowClearSelection={false}
+                          value={selectedCandidate.ApplicationStatus || ''}
+                          disabled={!canAction || isLoading}
+                          options={stageOptions}
+                          onChange={(value) => handleStageChange(String(value))}
+                        />
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               ) : (
                 <NoDataView message="Select a candidate to view details" />

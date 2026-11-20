@@ -10,7 +10,6 @@ import type {
     SetEmployeeMPINRequest,
     UpdateEmployeeMasterRequest,
     EmployeeMasterUpdateResponse,
-    UpdateEmployeeProfilePhoto,
     UpdateEmployeeProfilePhotoSaveResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel';
 

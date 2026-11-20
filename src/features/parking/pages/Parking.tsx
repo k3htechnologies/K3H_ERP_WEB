@@ -47,6 +47,9 @@ import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import { useNavigate } from "react-router-dom";
+import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
+import { useTenantBookingListState } from "@/features/tenantBooking/context/TenantBookingListStateContext";
 
 interface ParkingGroupedByBuilding {
   BuildingNumber: string;
@@ -66,8 +69,9 @@ interface ParkingGroupedByFloor {
 }
 
 const Parking = () => {
-  //#region STATE MANAGEMENT
-
+  const navigate = useNavigate();
+  const { updateListState } = useBookingListState();
+  const { updateTenantListState } = useTenantBookingListState();
   const [parkingData, setParkingData] = useState<ParkingData[]>([]);
   const [groupedParking, setGroupedParking] = useState<ParkingGroupedByBuilding[]>([]);
   const [selectedBuildingIndex, setSelectedBuildingIndex] = useState<number | null>(null);
@@ -106,17 +110,14 @@ const Parking = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-  // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [buildingName, setBuildingName] = useState<string | null>("");
   const [floor, setFloor] = useState<string | null>("");
 
-  // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
 
-  // Save tab state when it changes
   useEffect(() => {
     localStorage.setItem("parkingActiveTab", activeTab);
   }, [activeTab]);
@@ -126,9 +127,6 @@ const Parking = () => {
   const { canAction, canExport } = useMenuPermissions();
   const { canAction: canBookingAction } = useMenuPermissions("/booking");
 
-  //#region INIT
-
-  // Clear all state when project changes
   useEffect(() => {
     if (!projectId) {
       setParkingData([]);
@@ -141,7 +139,6 @@ const Parking = () => {
       return;
     }
 
-    // Clear all state when project changes
     setParkingData([]);
     setGroupedParking([]);
     setSelectedBuildingIndex(null);
@@ -610,9 +607,49 @@ const Parking = () => {
         label: "Owner",
         width: "200px",
         sortable: false,
-        render: (value: string) => {
+        render: (value: string, row: any) => {
           if (!value) return "-";
-          return <span className="text-[#135BEC] font-semibold">{value}</span>;
+          const parking = row as ParkingData;
+
+          const handleOwnerNameClick = () => {
+            if (parking.BookingId && parking.BookingId > 0) {
+              const isTenantBooking = parking.ParkingStatus === "Member";
+
+              if (isTenantBooking) {
+                updateTenantListState({
+                  bookingId: parking.BookingId,
+                  bookingName: parking.OwnerName || "",
+                });
+              } else {
+                updateListState({
+                  bookingId: parking.BookingId,
+                  bookingName: parking.OwnerName || "",
+                });
+              }
+
+              navigate(
+                isTenantBooking
+                  ? "/tenantBooking/view"
+                  : "/booking/view",
+                {
+                  state: { sourcePage: "parking" },
+                }
+              );
+            }
+          };
+
+          return (
+            <TooltipText
+              text={value || "-"}
+              maxWidth="250px"
+              tooltipThreshold={25}
+              onClick={
+                Number(parking.BookingId) > 0
+                  ? handleOwnerNameClick
+                  : undefined
+              }
+            />
+          );
         },
       },
       {
@@ -653,7 +690,7 @@ const Parking = () => {
         },
       },
     ],
-    [canAction, handleEditParking],
+    [canAction, handleEditParking, navigate],
   );
 
   const handleApprovalLog = () => {
@@ -766,6 +803,8 @@ const Parking = () => {
 
       <ExportImport
         open={showImportModal}
+        isDisplayYesNoOption={false}
+        isDisplayCommanNote={true}
         onClose={() => setShowImportModal(false)}
         onUpload={(file, mergeExisting) => {
           setShowImportModal(false);
@@ -915,7 +954,6 @@ const Parking = () => {
           </div>
         ))}
 
-      {/* Update Parking Modal */}
       <Modal
         isOpen={isUpdateParkingModalOpen}
         onClose={() => {
@@ -930,7 +968,7 @@ const Parking = () => {
         size="lg"
         loading={isLoading}
       >
-        <div className="space-y-4">
+        <div className="space-y-10 p-6 bg-blue-100">
           <div className="grid grid-cols-1 gap-4">
             <Input
               label="Parking Number"
@@ -1039,7 +1077,7 @@ const Parking = () => {
         </div>
       </Modal>
 
-      {/* Approval Log History */}
+
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
         title="Parking"
@@ -1049,7 +1087,6 @@ const Parking = () => {
         request={approvalLogRequest}
       />
 
-      {/* Approval Action Modal */}
       <ApprovalActionModal
         title="Parking"
         isOpen={isApprovalActionModalOpen}

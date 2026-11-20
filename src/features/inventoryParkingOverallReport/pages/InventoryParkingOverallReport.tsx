@@ -848,7 +848,8 @@ export const InventoryParkingOverallReport: React.FC = () => {
                 BuildingNumber: row.BuildingNumber ?? "",
                 Wing: ["", "Total"].includes(row.Wing!) ? "" : row.Wing ?? "",
                 ParkingStatus: status,
-                IsAcessOnlyApprovedParking: false
+                IsAcessOnlyApprovedParking: false,
+                IsAcessMemberApprovedParking:false,
             };
 
             await runApiWithLoader(

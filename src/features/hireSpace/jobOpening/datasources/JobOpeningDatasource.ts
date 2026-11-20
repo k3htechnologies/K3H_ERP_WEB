@@ -36,6 +36,7 @@ export class JobOpeningDatasourceImpl implements JobOpeningDatasource {
             if (params.EmploymentType?.trim()) queryParams.append('EmploymentType', params.EmploymentType.trim())
             if (params.ExperienceYears) queryParams.append('ExperienceYears', params.ExperienceYears.toString())
             if (params.RoleName?.trim()) queryParams.append('RoleName', params.RoleName.trim())
+            if (params.ShowAll !== undefined) queryParams.append('ShowAll', params.ShowAll.toString())
             if (params.JobRoleStatus !== undefined) queryParams.append('JobRoleStatus', params.JobRoleStatus.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 

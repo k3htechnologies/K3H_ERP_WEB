@@ -46,7 +46,7 @@ export const getPageInfo = (path: string) => {
       };
     case "companyMaster":
       return {
-        title: "Company Master",
+        title: "Company Details",
         description: "Single source of truth for company information",
       };
 
@@ -77,7 +77,14 @@ export const getPageInfo = (path: string) => {
         title: "UOM Master",
         description: "Standardized Units for Accurate Property Management.",
       };
+      
+      case "vendorManagementDashboard":
+      return {
+        title: "Vendor Management Dashboard",
+        description: "Centralized dashboard for vendor management operations",
+      };
 
+      
     case "vendor":
       return {
         title: "Vendor Management",
@@ -210,6 +217,12 @@ export const getPageInfo = (path: string) => {
       return {
         title: "Payroll Report",
         description: "Comprehensive payroll reports for accurate financial tracking",
+      };
+
+    case "costToCompany":
+      return {
+        title: "Cost To Company",
+        description: "Overview of your system and key metrics",
       };
 
     //DOCUMENT MANAGEMENT
@@ -533,6 +546,11 @@ export const getPageInfo = (path: string) => {
         title: "AOP Achievement",
         description: "Recognize and Reward Top Performers",
       };
+      case "darAllocation":
+      return {
+        title: "DAR Allocation",
+        description: "Recognize and Reward Top Performers",
+      };
 
     // MARKETING
     case "content":
@@ -591,6 +609,12 @@ export const getPageInfo = (path: string) => {
         description: "Comprehensive report for collection management with real-time insights and actionable data",
       };
 
+      case "clientLoanReport":
+      return {
+        title: "Client Loan Report",
+        description: "Comprehensive report for client loan management with real-time insights and actionable data",
+      };
+
     case "brokerage":
       return {
         title: "Brokerage",
@@ -617,7 +641,7 @@ export const getPageInfo = (path: string) => {
       };
     case "constructionArea":
       return {
-        title: "construction Area",
+        title: "Construction Area",
         description: "Overview of your system and key metrics",
       };
 

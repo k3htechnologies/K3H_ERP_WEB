@@ -6,8 +6,8 @@ import CompanyBankDetails from "@/features/companyMaster/pages/CompanyBankDetail
 export const ViewCompanyMasterWithBank: React.FC = () => {
 
     const CompanyMasterWithBankTabList = [
-        { id: 'Table', label: 'Table' },
-        { id: 'Grid', label: 'Grid' },
+        { id: 'Overview', label: 'Overview' },
+        { id: 'Bank Details', label: 'Bank Details' },
     ];
 
     const [activeTab, setActiveTab] = useState(CompanyMasterWithBankTabList[0].id);
@@ -24,8 +24,8 @@ export const ViewCompanyMasterWithBank: React.FC = () => {
                 />
             </div>
 
-            {activeTab === 'Table' && <CompanyMaster />}
-            {activeTab === 'Grid' && <CompanyBankDetails />}
+            {activeTab === 'Overview' && <CompanyMaster />}
+            {activeTab === 'Bank Details' && <CompanyBankDetails />}
 
         </div>
     );

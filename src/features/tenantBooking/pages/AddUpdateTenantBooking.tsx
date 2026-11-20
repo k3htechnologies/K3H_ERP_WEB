@@ -50,6 +50,7 @@ import { fetchTenantBySystemGeneratedCode } from "@/features/tenant/tenantDropDo
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { fetchBuildingDropdown } from "@/features/building/buildingDropdown";
 import Tabs from "@/ui/components/Tab/Tab";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const initialFormState = (): AddUpdateBookingRequest => ({
   BookingId: 0,
@@ -131,6 +132,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
     { id: "MOFA", label: "MOFA" },
   ];
   const [activeTab, setActiveTab] = useState(CarpetAreaPurchasedSqFtTabList[0].id);
+
+  // DELETE BOOKING OTHER CHARGES STATES
+  const [isConfirmationDialogBoxOpenForOtherCharges, setIsConfirmationDialogBoxOpenForOtherCharges] = useState(false);
+  const [deleteBookingOtherChargesData, setDeleteBookingOtherChargesData] = useState<{ row: AddUpdateBookingOtherChargesRequest; index: number; } | null>(null);
 
   const [selectedWing, setSelectedWing] = useState<string>("");
   const [selectedFloor, setSelectedFloor] = useState<string>("");
@@ -254,7 +259,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
         TenantId: existingTenantId,
         TenantSystemGeneratedCode: existingTenantCode,
         TenantBuildingId: existingTenantBuildingId,
-        TenantBuildingName: existingTenantBuildingName
+        TenantBuildingName: existingTenantBuildingName,
+        AdjustPurchaseAreaSqFt: flatDataFromState.AdjustPurchaseAreaSqFt
       });
 
       setSelectedWing(flatDataFromState.Wing || "");
@@ -346,25 +352,30 @@ export const AddUpdateTenantBooking: React.FC = () => {
     applicants.forEach((applicant: any, index: number) => {
 
       const applicantName = applicant?.ApplicantName || `Applicant ${index + 1}`;
+      const applicantType = applicant?.ApplicantType || `Applicant ${index + 1}`;
+
+      if (!applicant?.ApplicantEmailId?.trim()) {
+        errors.push(`${applicantType} (${applicantName}) : E-Mail ID is required.`);
+      }
 
       if (!applicant?.PhotoURL?.trim()) {
-        errors.push(`${applicantName}: Photo is required.`);
+        errors.push(`${applicantType} (${applicantName}) : Photo is required.`);
       }
 
       if (!applicant?.AadharCardNumber?.trim()) {
-        errors.push(`${applicantName}: Aadhaar Card Number is required.`);
+        errors.push(`${applicantType} (${applicantName}) : Aadhaar Card Number is required.`);
       }
 
       if (!applicant?.AadharCardURL?.trim()) {
-        errors.push(`${applicantName}: Aadhaar Card Document is required.`);
+        errors.push(`${applicantType} (${applicantName}) : Aadhaar Card Document is required.`);
       }
 
       if (!applicant?.PanNumber?.trim()) {
-        errors.push(`${applicantName}: PAN Card Number is required.`);
+        errors.push(`${applicantType} (${applicantName}) : PAN Card Number is required.`);
       }
 
       if (!applicant?.PanCardURL?.trim()) {
-        errors.push(`${applicantName}: PAN Card Document is required.`);
+        errors.push(`${applicantType} (${applicantName}) : PAN Card Document is required.`);
       }
     });
 
@@ -390,7 +401,15 @@ export const AddUpdateTenantBooking: React.FC = () => {
 
     if (validationErrors.length > 0) {
 
-      addToast({ type: "error", title: validationErrors[0] });
+      addToast({
+        type: "error",
+        title: "Please fix the following errors:",
+        message: validationErrors
+          .map((error: string, index: number) => `${index + 1}. ${error}`)
+          .join("\n"),
+        duration: 20000
+      });
+
     }
     return;
   };
@@ -503,6 +522,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
                 TenantId: booking.TenantId || 0,
                 TenantSystemGeneratedCode: "",
                 TenantBuildingId: booking.TenantBuildingId || 0,
+                AdjustPurchaseAreaSqFt: booking.AdjustPurchaseAreaSqFt || 0
               });
             }
             setParkingId(booking.ParkingId ?? null);
@@ -706,6 +726,11 @@ export const AddUpdateTenantBooking: React.FC = () => {
     [cumulativePercentages, canAction, paymentScheduleOptions],
   );
 
+  const handleConfirmationDialogBoxOpenForOtherCharges = (row: AddUpdateBookingOtherChargesRequest, index: number) => {
+    setDeleteBookingOtherChargesData({ row, index });
+    setIsConfirmationDialogBoxOpenForOtherCharges(true);
+  };
+
   const otherChargesColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -749,9 +774,50 @@ export const AddUpdateTenantBooking: React.FC = () => {
         align: "right",
         render: (value) => formatCurrency(value) || "0",
       },
+      {
+        key: 'actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row, index) => (
+          canAction ? (
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleConfirmationDialogBoxOpenForOtherCharges(row as AddUpdateBookingOtherChargesRequest, index);
+                }}
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'red' }}
+                title="Delete"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : null
+        )
+      }
     ],
     [canAction],
   );
+
+  const handleDeleteOtherCharges = () => {
+    if (!deleteBookingOtherChargesData) return;
+
+    const { index } = deleteBookingOtherChargesData;
+
+    setOtherCharges(prev => prev.filter((_, i) => i !== index));
+
+    setIsConfirmationDialogBoxOpenForOtherCharges(false);
+    setDeleteBookingOtherChargesData(null);
+
+    addToast({ type: "success", title: "Other Charges deleted successfully" });
+  };
+
   const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
@@ -768,7 +834,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
     if (Number(tenantList?.InventoryFlatId) > 0 && formData.InventoryFlatId !== tenantList?.InventoryFlatId) {
       newErrors.TenantId = "The allotted unit does not match the unit selected in the tenant booking";
     }
-
+   
     if (!formData.PermanentAddress) {
       newErrors.PermanentAddress = "Permanent Address is required";
     } else if (formData.PermanentAddress.trim().length < 25) {
@@ -808,13 +874,6 @@ export const AddUpdateTenantBooking: React.FC = () => {
     if (!formData.RegistrationDate) {
       newErrors.RegistrationDate = "Registration Date is required";
     }
-
-    if (!formData.FlatAlterationRemark?.trim()) {
-      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
-    } else if (formData.FlatAlterationRemark.trim().length < 25) {
-      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark must be at least 25 characters";
-    }
-
 
     if (!formData.PaymentRemark?.trim()) {
       newErrors.PaymentRemark = "Payment Related Remark is required";
@@ -989,6 +1048,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
       value: params?.value || "",
       projectId: projectId || 0,
       displayParkingId: parkingId || "",
+      parkingStatus: "Member",
+      isAcessOnlyApprovedParking: false,
+      isAcessMemberApprovedParking:true,
+      approvalStatus: "Approved"
     });
   }, [projectId, parkingId]);
 
@@ -1014,6 +1077,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
           PageSize: 500,
           IsCheckPermission: false,
           ProjectId: Number(projectId),
+          ApplicableFor: "Tenant"
         };
 
         const response = await otherChargesService.apiCallPullOtherCharges(params);
@@ -1173,6 +1237,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
                   setTenantUniqueCode((e.target.value).toUpperCase());
                   setTenantId(0);
 
+
+
                 }}
                 placeholder="Search By Tenant Code"
                 leftIcon={<Search className="h-4 w-4 text-gray-400" />}
@@ -1183,13 +1249,13 @@ export const AddUpdateTenantBooking: React.FC = () => {
           {tenantUniqueCode && tenantUniqueCode.trim() !== "" && (
             Number(tenantId) > 0 ? (
               <div className="pt-5">
-                
+
 
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
                   <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                     <h4 className="text-sm font-semibold text-[#13367A]">
-                      Exisiting Unit Details
+                      Existing Unit Details
                     </h4>
                   </div>
                   <div className="p-4 bg-white">
@@ -1408,7 +1474,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
 
             {formData.BookingType === "FLAT" && selectedFlatData && (
               <div className="pt-5 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3">
                   <FieldItem label="Building" value={selectedFlatData?.BuildingNumber || "-"} />
 
                   <FieldItem label="Wing" value={selectedFlatData?.Wing || selectedWing || "-"} />
@@ -1422,6 +1488,8 @@ export const AddUpdateTenantBooking: React.FC = () => {
                   <FieldItem label="Configuration" value={selectedFlatData?.FlatConfiguration || "-"} />
 
                   <FieldItem label="RERA Carpet Area" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
+
+                  <FieldItem label="Adjust Purchase Area" value={selectedFlatData?.AdjustPurchaseAreaSqFt ? `${selectedFlatData.AdjustPurchaseAreaSqFt} SqFt` : 0} />
                 </div>
               </div>
             )}
@@ -1453,38 +1521,43 @@ export const AddUpdateTenantBooking: React.FC = () => {
             {parkingData && parkingData.length > 0 && (
 
 
-              <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
-                <h4 className="text-lg font-semibold text-gray-900">
-                  Parking Details
-                </h4>
+              <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
 
-                {parkingData.map((parking, index) => {
+                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                  <h4 className="text-sm font-semibold text-[#13367A]">
+                    Parking Details
+                  </h4>
+                </div>
+                <div className="p-4 bg-white">
 
-                  const isLast = index === (parkingData?.length ?? 0) - 1;
+                  {parkingData.map((parking, index) => {
 
-                  return (
-                    <div key={parking.ParkingId || index} className="pt-4">
-                      <h3 className="text-sm font-semibold text-gray-500">
-                        Parking {index + 1}
-                      </h3>
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
-                        <FieldItem label="Parking Number" value={parking.ParkingNumber} />
-                        <FieldItem label="Building" value={parking.BuildingNumber} />
-                        <FieldItem label="Wing" value={parking.Wing} />
+                    const isLast = index === (parkingData?.length ?? 0) - 1;
+
+                    return (
+                      <div key={parking.ParkingId || index} className={index === 0 ? "" : "pt-3"}>
+                        <span className="inline-flex items-center  bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                          Parking {index + 1}
+                        </span>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                          <FieldItem label="Parking Number" value={parking.ParkingNumber} />
+                          <FieldItem label="Building" value={parking.BuildingNumber} />
+                          <FieldItem label="Wing" value={parking.Wing} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                          <FieldItem label="Floor" value={parking.Floor} />
+                          <FieldItem label="Category" value={parking.ParkingCategory} />
+                          <FieldItem label="Type" value={parking.ParkingType} />
+                        </div>
+                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                          <FieldItem label="Size" value={parking.ParkingSubType} />
+                          <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
+                          <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                        </div>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
-                        <FieldItem label="Floor" value={parking.Floor} />
-                        <FieldItem label="Category" value={parking.ParkingCategory} />
-                        <FieldItem label="Type" value={parking.ParkingType} />
-                      </div>
-                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
-                        <FieldItem label="Size" value={parking.ParkingSubType} />
-                        <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
-                        <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </section>
             )}
           </div>
@@ -1557,10 +1630,10 @@ export const AddUpdateTenantBooking: React.FC = () => {
                     );
                   }
 
-                  if(agreementValue===0){
+                  if (agreementValue === 0) {
                     setPaymentSchedules([]);
                   }
-                 
+
 
                   if (Boolean(formData.IsApplicableOtherCharge)) {
 
@@ -1861,7 +1934,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Additional Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
               <div>
-                <TextArea required className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
+                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
                 <TextArea required className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
@@ -1906,7 +1979,7 @@ export const AddUpdateTenantBooking: React.FC = () => {
         isLoading={isLoading}
       />
 
-      {/* ADD PAYMENT SCHEDULE MODAL */}
+
       <Modal
         isOpen={isPaymentScheduleModalOpen}
         onClose={() => {
@@ -2096,6 +2169,16 @@ export const AddUpdateTenantBooking: React.FC = () => {
         </div>
       </Modal>
 
+      <DeleteDialog
+        isOpen={isConfirmationDialogBoxOpenForOtherCharges}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpenForOtherCharges(false);
+          setDeleteBookingOtherChargesData(null);
+        }}
+        onConfirm={handleDeleteOtherCharges}
+        loading={isLoading}
+        pageName="other charges"
+      />
 
     </div>
   );

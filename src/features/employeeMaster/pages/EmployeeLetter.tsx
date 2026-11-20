@@ -28,6 +28,9 @@ import RichTextEditor from "@/ui/components/forms/RichTextEditor";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { updateFilter } from "@/core/utils/filterHelper";
 import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 
 const initialFormState = (): AddUpdateEmployeeLetter => ({
     EmployeeLetterId: 0,
@@ -182,7 +185,7 @@ export const EmployeeLetter: React.FC = () => {
             EmployeeId: employeeId,
             Title: formData.Title,
             DocumentName: formData.DocumentName,
-            DocumentURL: formData.DocumentURL
+            DocumentURL: formData.DocumentURL,
         }
     }
 
@@ -335,12 +338,21 @@ export const EmployeeLetter: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
+                    const updatedRecord = response.right.Data[0] as EmployeeLetterData;
+
+                    setEmployeeLetterList(prevData =>
+                        prevData.map(item =>
+                            item.EmployeeLetterId === employeeLetterShowEmployee.EmployeeLetterId
+                                ? updatedRecord
+                                : item
+                        )
+                    )
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
                     setIsConfirmationDialogBoxOpenShowEmployee(false);
-                    setEmployeeLetterShowEmployee(null);
 
-                    await loadEmployeeLetter(1, {});
+                    setEmployeeLetterShowEmployee(null);
 
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -381,7 +393,7 @@ export const EmployeeLetter: React.FC = () => {
                 align: 'left',
                 render: (value, row) => {
 
-                    const isDisabled = !canAction || row.IsAcceptEmployee === true;
+                    const isDisabled = !canAction || row.IsShowEmployee === true || row.IsAcceptEmployee === true;
 
                     return (
                         <div className="flex items-center justify-between gap-2">
@@ -390,6 +402,7 @@ export const EmployeeLetter: React.FC = () => {
                                 maxWidth="300px"
                                 tooltipThreshold={40}
                             />
+
 
                             <div className="flex items-center gap-1">
                                 <Button
@@ -442,6 +455,26 @@ export const EmployeeLetter: React.FC = () => {
                 render: (value) => value || ''
             },
             {
+                key: 'DocumentURL',
+                label: 'PDF',
+                width: '15',
+                sortable: false,
+                align: 'left',
+                render: (value: string, row: any) => {
+                    return (
+                        <div className="flex items-center justify-between w-full">
+                            <MultiImageViewer
+                                images={parseDocumentUrls(row.DocumentURL)}
+                                title={row.Title}
+                                isIcon={false}
+                                triggerLabel={value === '' || 'PDF'}
+                            />
+
+                        </div>
+                    );
+                }
+            },
+            {
                 key: "IsShowEmployee",
                 label: "Show Employee",
                 width: "15",
@@ -449,27 +482,24 @@ export const EmployeeLetter: React.FC = () => {
                 fixed: "left",
                 align: "left",
                 render: (value: boolean, row: EmployeeLetterData) => (
-
-                    <button
-                        type="button"
-                        disabled={value || isLoading}
-                        onClick={() => {
-                            if (value || isLoading) return;
+                    <ToggleSwitch
+                        label=""
+                        name={`IsShowEmployee_${row.EmployeeLetterId}`}
+                        value={value === true}
+                        disabled={value === true || isLoading || !canAction}
+                        onChange={(checked) => {
+                            if (!checked || value === true || isLoading || !canAction) {
+                                return;
+                            }
 
                             setEmployeeLetterShowEmployee(row);
                             setIsConfirmationDialogBoxOpenShowEmployee(true);
                         }}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full ${value ? "bg-green-600 cursor-not-allowed" : "bg-gray-300"
-                            }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 rounded-full bg-white shadow ${value ? "translate-x-6" : "translate-x-1"
-                                }`}
-                        />
-                    </button>
-
+                    />
                 ),
             },
+
+
             {
                 key: "IsAcceptEmployee",
                 label: "Employee Accepted",
@@ -685,7 +715,7 @@ export const EmployeeLetter: React.FC = () => {
                 onSubmit={handleAddUpdateEmployeeLetter}
                 saveText={editingEmployeeLetterData ? 'Update' : 'Add'}
                 loading={isLoading}
-                size='xl'
+                size='half-screen'
             >
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
@@ -720,11 +750,13 @@ export const EmployeeLetter: React.FC = () => {
                                 label="Document"
                                 title="Document"
                                 size="lg"
-                                dataFetchCallBack={fetchTncByModuleName("Material Requisition")}
+                                dataFetchCallBack={fetchTncByModuleName("EMPLOYEE LETTER")}
                                 onSelected={(item) => handleFieldChange("DocumentURL", item?.value)}
                                 error={errors.DocumentURL}
                                 required
                             />
+
+
                         </div>
 
                         {formData?.DocumentURL && (
@@ -807,7 +839,7 @@ export const EmployeeLetter: React.FC = () => {
                 confirmText="Yes"
                 cancelText="Cancel"
                 loading={isLoading}
-                variant='info'
+                variant='generate'
             />
 
         </div>

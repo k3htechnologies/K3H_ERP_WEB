@@ -163,27 +163,30 @@ export const Conference: React.FC = () => {
         {rooms.length === 0 ? (
           <NoDataView message="No Conference Rooms Found" />
         ) : (
-          <div className="flex flex-wrap gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="flex flex-nowrap items-stretch gap-3.5 overflow-x-auto thin-scroll rounded-xl border border-gray-200 bg-gray-50 p-4">
             {rooms.map((room) => (
               <div
                 key={room.ConferenceRoomId}
-                className="w-[210px] shrink-0 rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm"
+                className="w-[210px] shrink-0 rounded-lg border border-gray-200 bg-white p-2.5 shadow-sm flex flex-col justify-between"
               >
-                <img
-                  src={room.ImageUrl}
-                  alt={room.RoomName}
-                  className="h-[92px] w-full rounded-lg object-cover"
-                />
-                <h3
-                  className="mt-3 truncate text-sm font-medium text-gray-900"
-                  title={room.RoomName}
-                >
-                  {room.RoomName}
-                </h3>
-                <p className="mt-2 text-xs text-gray-500">
-                  Capacity {room.Capacity} people • Booking{' '}
-                  {room.TotalBookingCount}
-                </p>
+                <div>
+                  <img
+                    src={room.ImageUrl}
+                    alt={room.RoomName}
+                    className="h-[92px] w-full rounded-lg object-cover"
+                  />
+
+                  <h3
+                    className="mt-3 truncate text-sm font-medium text-gray-900"
+                    title={room.RoomName}
+                  >
+                    {room.RoomName}
+                  </h3>
+                  <p className="mt-2 text-xs text-gray-500">
+                    Capacity {room.Capacity} people • Booking{' '}
+                    {room.TotalBookingCount}
+                  </p>
+                </div>
                 {canAction && (
                   <div className="mt-3 flex items-center justify-center">
                     <Button

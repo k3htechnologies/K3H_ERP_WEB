@@ -137,6 +137,7 @@ export const LOCAL_STORAGE_KEYS = {
     TASK_SELECTED_COLUMNS: 'task.selectedColumns',
     AGENDA_TASK_SELECTED_COLUMNS: 'agendaTask.selectedColumns',
 
+    CALL_MONITORING_SELECTED_COLUMNS: 'callMonitoring.selectedColumns'
 
 } as const
 
@@ -177,6 +178,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
     COST_TO_COMPANY: 'costToCompany.listState',
-    PROCESS_SALARY: 'processSalary.listState'
+    PROCESS_SALARY: 'processSalary.listState',
+
 
 } as const

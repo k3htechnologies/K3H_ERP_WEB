@@ -16,8 +16,8 @@ export const groupEventsByType = (events: CalendarEvent[]): GroupedCalendarEvent
     type,
     firstEvent: grouped[0],
     label:
-      type === 'CONFERENCE' && grouped.length === 1
-        ? grouped[0].title || 'Conference'
+      grouped.length === 1
+        ? grouped[0].title?.trim() || `${type.charAt(0)}${type.slice(1).toLowerCase()}`
         : `${type.charAt(0)}${type.slice(1).toLowerCase()} [${grouped.length}]`,
   }));
 

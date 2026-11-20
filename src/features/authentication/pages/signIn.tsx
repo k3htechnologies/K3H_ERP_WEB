@@ -26,6 +26,7 @@ export function SignIn() {
     const navigate = useNavigate();
     const [showMpin, setShowMpin] = useState(false);
 
+
     useEffect(() => {
         if (resendTimer <= 0) return;
 
@@ -350,7 +351,7 @@ export function SignIn() {
                                     <h2 style={{ fontSize: '24px', fontWeight: 700, color: '#1a1a1a' }}>Verify MPIN</h2>
                                 </div>
 
-                                <Input
+                                 <Input
                                     autoFocus
                                     type={showMpin ? "text" : "password"}
                                     placeholder="Enter MPIN"

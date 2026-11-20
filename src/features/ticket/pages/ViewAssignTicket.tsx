@@ -20,7 +20,7 @@ import { ASSIGN_STATUS_TYPE_OPTIONS } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { fetchCollaboratorWithTicketsDropdown } from '@/features/employeeMaster/employeeMasterDropDown'
-import { formatDate_dd_mm_yyyy, convert_date_yy_mm_dd_To_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { formatDate_dd_mm_yyyy, convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
@@ -107,7 +107,9 @@ export const ViewAssignTicket = () => {
                 TicketId: ticketData.TicketId || 0,
                 AssignToEmployeeId: ticketData.EmployeeId || 0,
                 CollaboratorsEmployeeId: ticketData.CollaboratorsEmployeeId || '',
-                ResolvedTillDate: ticketData.ResolvedTillDate ? formatDate_dd_mm_yyyy(ticketData.ResolvedTillDate) : '',
+                ResolvedTillDate: ticketData.ResolvedTillDate
+                    ? formatDate_dd_mm_yyyy(ticketData.ResolvedTillDate)
+                    : convert_date_yy_mm_dd_To_dd_mm_yyyy(new Date()),
                 AssignedStatus: ticketData.AssignedStatus || 'Open',
                 TicketRemark: ticketData.AssignedRemark || '',
             });
@@ -139,7 +141,11 @@ export const ViewAssignTicket = () => {
         fd.append("CollaboratorsEmployeeId", String(formData.CollaboratorsEmployeeId));
         fd.append("AssignedStatus", String(formData.AssignedStatus));
         fd.append("TicketRemark", String(formData.TicketRemark));
-        fd.append("ResolvedTillDate", String(formData.ResolvedTillDate));
+        const convertedResolvedTillDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(
+            formData.ResolvedTillDate
+        );
+
+        fd.append("ResolvedTillDate", convertedResolvedTillDate ?? "");
 
         return fd;
 
@@ -158,11 +164,18 @@ export const ViewAssignTicket = () => {
             newErrors.AssignToEmployeeId = 'Primary Assignee is required';
         }
 
+        if (!formData.AssignedStatus) {
+            newErrors.AssignedStatus = "Assigned Status is required";
+        }
+
         if (!formData.ResolvedTillDate) {
 
             newErrors.ResolvedTillDate = "Estimated Completion Date is required";
 
-        } else {
+        }
+
+
+        else {
 
             const today = convert_date_yy_mm_dd_To_dd_mm_yyyy(new Date());
 
@@ -320,6 +333,8 @@ export const ViewAssignTicket = () => {
                                 required
                                 label="Estimated Completion Date"
                                 value={formData.ResolvedTillDate}
+                                isDisplayCurrentDate
+                                minDate={new Date(new Date().setDate(new Date().getDate()))}
                                 placeholder="Enter Estimated Completion Date"
                                 onChange={(date) =>
                                     handleFieldChange("ResolvedTillDate", date)
@@ -328,16 +343,18 @@ export const ViewAssignTicket = () => {
                                 disabled={isLoading}
                             />
                         </div>
-                        <div >
+                        <div>
                             <SinglePageSelection
                                 label="Assigned Status"
                                 placeholder="Assigned Status"
+                                required
                                 value={formData.AssignedStatus}
                                 onChange={(e) => handleFieldChange("AssignedStatus", String(e))}
                                 options={ASSIGN_STATUS_TYPE_OPTIONS.map((opt) => ({
                                     label: opt.name,
                                     value: opt.id,
                                 }))}
+                                error={errors.AssignedStatus}
                             />
                         </div>
 

@@ -637,7 +637,7 @@ function App() {
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
-          <Route path='verifyAsset' element={<VerifyAssetMaster />} />
+          <Route path="/:assetMasterId/:uniqueKey" element={<VerifyAssetMaster />} />
           <Route path='privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 

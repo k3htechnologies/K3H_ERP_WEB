@@ -8,12 +8,14 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Loader } from "@/core/utils/loader";
 import { Box, Check, Info, MessageCircleMore, User, Users } from "lucide-react";
 import ImageCarousel from "@/ui/components/ImageViewer/ImageCarousel";
+import { useParams } from "react-router-dom";
 
 export const VerifyAssetMaster: React.FC = () => {
     const [VerifyAssetMasterData, setVerifyAssetMasterData] = useState<VerifyAssetMasterData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { addToast } = useToast();
+    const { assetMasterId, uniqueKey } = useParams();
 
     useEffect(() => {
         loadVerifyAssetMaster();
@@ -25,9 +27,9 @@ export const VerifyAssetMaster: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationVerifyAssetMasterRequest = {
-                    AssetMasterId: 164,
-                    Uniquekey: "587ba955-d0e4-f111-876a-405b7f9dada5"
-                }
+                    AssetMasterId: Number(assetMasterId),
+                    Uniquekey: uniqueKey ?? ""
+                };
 
                 const response = await assetMasterService.apiCallPullVerifyAssetMaster(params);
 
@@ -39,7 +41,7 @@ export const VerifyAssetMaster: React.FC = () => {
 
                 } else {
                     addToast({ type: "error", title: response.left.message })
-                } 
+                }
             }, undefined,
             (error: any) => {
                 addToast({ type: 'error', title: error.message });
@@ -69,7 +71,6 @@ export const VerifyAssetMaster: React.FC = () => {
 
                 <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
 
-                    {/* ASSET IMAGE */}
                     <div className="w-full lg:w-[220px] shrink-0">
                         <div className="relative w-full lg:w-[220px] h-[160px] lg:h-[150px] rounded-lg overflow-hidden bg-gray-100">
                             <ImageCarousel
@@ -84,7 +85,6 @@ export const VerifyAssetMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* ASSET NAME AND DETAILS */}
                     <div className="flex-1 min-w-0">
                         <div className="flex flex-col xl:flex-row gap-4 xl:gap-8">
                             <div className="flex-1 min-w-0 space-y-2">
@@ -109,10 +109,7 @@ export const VerifyAssetMaster: React.FC = () => {
                     </div>
                 </div>
 
-                {/* CURRENT HOLDER AND CONDITION */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
-
-                    {/* CURRENT HOLDER */}
                     <div className="flex items-center gap-3 bg-[#F2F7FC] rounded-lg p-3 ">
 
                         <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center shrink-0">
@@ -135,7 +132,6 @@ export const VerifyAssetMaster: React.FC = () => {
 
                     </div>
 
-                    {/* CONDITION */}
                     <div className="flex items-center gap-3 bg-[#F2F7FC] rounded-lg p-3 ">
 
                         <div className="w-10 h-10 rounded-full bg-emerald-600 flex items-center justify-center shrink-0">
@@ -216,7 +212,6 @@ export const VerifyAssetMaster: React.FC = () => {
             <div className="grid grid-cols-1 xl:grid-cols-1 gap-4 pt-4">
                 <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
 
-                    {/* HEADER */}
                     <div className="flex items-center justify-between gap-3 border-b border-gray-200 pb-3 mb-3">
 
                         <div className="flex items-center gap-2">
@@ -232,7 +227,6 @@ export const VerifyAssetMaster: React.FC = () => {
                         </span>
                     </div>
 
-                    {/* EMPLOYEE DETAILS */}
                     <div className="pb-3 border-b border-gray-200">
                         <p className="text-sm font-semibold text-slate-800">
                             {VerifyAssetMasterData?.EmployeeName ?? "-"}
@@ -243,7 +237,6 @@ export const VerifyAssetMaster: React.FC = () => {
                         </span>
                     </div>
 
-                    {/* ASSIGNMENT INFORMATION */}
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 pt-3">
                         <FieldItem label="Assigned By" value={VerifyAssetMasterData?.AssignedBy ?? "-"} />
                         <FieldItem label="Assigned Date" value={VerifyAssetMasterData?.AssignedDate ?? "-"} />

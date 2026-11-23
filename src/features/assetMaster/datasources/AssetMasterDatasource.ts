@@ -115,7 +115,7 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
             })
 
             const response = await this.k3hHttpClient.getRequestWithoutAuthentication(
-                `${AssetMasterApi.PULL}?${queryParams.toString()}`,
+                `${AssetMasterApi.PULL_VERIFY_ASSET_MASTER}?${queryParams.toString()}`,
             )
             return response;
         } catch (error: any) {
@@ -129,4 +129,5 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
             throw error
         }
     }
+
 }

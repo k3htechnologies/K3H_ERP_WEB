@@ -98,6 +98,7 @@ export interface FilterSelectedVendorForQuotationRequest {
     MaterialRequisitionId?: number
     Uniquekey?: string
     ProjectId: number | 0
+    MaterialRequisitionDetailId?:string
     ExportType?:'Excel' | 'PDF' | 'VENDOR COMPARISON CHART'
 }
 
@@ -142,6 +143,7 @@ export interface SelectedVendorQuotationData {
     SystemGeneratedCode: string;
     ProjectName: string;
 }
+
 
 export type MaterialRequisitionQuotationListResponse = ApiResponse<MaterialRequisitionQuotationTermsData[]>;
 export type MaterialRequisitionQuotationSaveReponse = ApiResponse<MaterialRequisitionQuotationTermsData>;

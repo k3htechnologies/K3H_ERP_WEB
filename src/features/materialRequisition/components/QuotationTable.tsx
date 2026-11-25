@@ -1,6 +1,5 @@
 import { useMemo, useState, useCallback, useEffect } from "react"
 import { DataTableEditable, type EditableColumnGroup, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable"
-import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import { computeAmountInstallation, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { Input } from "@/ui/components/forms/Input"
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation"
@@ -40,11 +39,12 @@ interface Props {
     MaterialRequisitionApprovalStatus?: string
     VendorGSTNumber?: string
     CompanyGSTNumber?: string
-    IsPendingMaterialRequisitionDetail?:boolean
+    IsPendingMaterialRequisitionDetail?: boolean
     addToast?: ReturnType<typeof useToast>["addToast"]
+    onCancel?: () => void;
 }
 
-const normalizeRows = (items: Row[]): Row[] => items.map(row =>Number(row.MaterialRequisitionDetailId) === 0 ? { ...row, MaterialName: row.MaterialName ?? "" } : row);
+const normalizeRows = (items: Row[]): Row[] => items.map(row => Number(row.MaterialRequisitionDetailId) === 0 ? { ...row, MaterialName: row.MaterialName ?? "" } : row);
 
 export const QuotationTable: React.FC<Props> = ({
     data,
@@ -56,7 +56,8 @@ export const QuotationTable: React.FC<Props> = ({
     VendorGSTNumber,
     CompanyGSTNumber,
     IsPendingMaterialRequisitionDetail,
-    addToast
+    addToast,
+    onCancel
 }) => {
     const [rows, setRows] = useState<Row[]>(() => normalizeRows(data))
     const [stagedRows, setStagedRows] = useState<Row[]>(() => normalizeRows(data))
@@ -108,22 +109,29 @@ export const QuotationTable: React.FC<Props> = ({
 
         setStagedRows(updatedRows);
 
-        onChange?.(updatedRows);
-
     }, [onChange]);
 
     const handleSave = () => {
+
+        const invalidInstallationRow = stagedRows.find(row =>
+            Number(row.MaterialRequisitionDetailId) !== 0 &&
+            Number(row.MaterialPerUnit || 0) > 0 &&
+            Number(row.Installation || 0) > 0 &&
+            Number(row.Installation || 0) >= Number(row.MaterialPerUnit || 0)
+        );
+
+        if (invalidInstallationRow) {
+
+            addToast?.({ type: "error", title: "Unit Price must be greater than Installation Amount" });
+            return;
+        }
 
         const invalidPercentageRow = stagedRows.find(row => {
             const cgst = Number(row.CGST || 0);
             const sgst = Number(row.SGST || 0);
             const igst = Number(row.TGST || 0);
 
-            return (
-                cgst >= 100 ||
-                sgst >= 100 ||
-                igst >= 100
-            );
+            return (cgst >= 100 || sgst >= 100 || igst >= 100);
         });
 
         if (invalidPercentageRow) {
@@ -161,9 +169,10 @@ export const QuotationTable: React.FC<Props> = ({
 
 
     const handleCancel = () => {
-        setStagedRows(rows)
+        setStagedRows(normalizeRows(rows));
         setIsEditing(false)
         onEditModeChange?.(false)
+        onCancel?.();
     }
 
     const GROUPS: EditableColumnGroup[] = [
@@ -175,9 +184,8 @@ export const QuotationTable: React.FC<Props> = ({
 
 
     const hasAmount = (row: Row) => {
-        const amount = Number(row.MaterialRequisitionDetailId) === 0
-            ? Number(row.Amount || 0)
-            : computeAmountInstallation(row);
+
+        const amount = Number(row.MaterialRequisitionDetailId) === 0 ? Number(row.Amount || 0) : computeAmountInstallation(row);
 
         return amount > 0;
     };
@@ -208,7 +216,7 @@ export const QuotationTable: React.FC<Props> = ({
     const columns: EditableTableColumn[] = useMemo(() => [
         {
             key: "MaterialOrService",
-            label: "MATERIAL / SERVICE",
+            label: "MATERIAL (M) / SERVICE (S)",
             type: "readonly",
             editable: false,
             width: 200,
@@ -216,35 +224,47 @@ export const QuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             cellClassName: "font-medium text-gray-900",
             render: (_value, row) => {
-                const isService = Number(row?.MaterialRequisitionDetailId) === 0
+                const isService = Number(row?.MaterialRequisitionDetailId) === 0;
+
                 return (
-                    <div className="flex flex-col">
-                        {isService ? (
-                            <span className="text-gray-900">
-                                {row?.MaterialName || ""}
-                            </span>
-                        ) : row.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT" ? (
-                            <>
+                    <div className="flex items-start gap-2">
+
+                        <span
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${isService
+                                ? "bg-purple-100 text-purple-700"
+                                : "bg-blue-100 text-blue-700"
+                                }`}
+                            title={isService ? "Service" : "Material"}
+                        >
+                            {isService ? "S" : "M"}
+                        </span>
+
+                        <div className="flex min-w-0 flex-col">
+                            {isService ? (
                                 <span className="text-gray-900">
                                     {row?.MaterialName || ""}
                                 </span>
-                                <span className="text-gray-400 text-xs">
-                                    <TooltipText text={row?.SubMaterialName || ""} />
-                                </span>
-                            </>
-                        ) : (
-                            <span className="text-gray-900">
-                                {row?.Level4Name || ""}
-                            </span>
-                        )}
+                            ) : row.MaterialRequisitionType?.trim().toUpperCase() === "IN - DIRECT" ? (
+                                <>
+                                    <span className="text-gray-900">
+                                        {row?.MaterialName || ""}
+                                    </span>
 
-                        <span className={`mt-1 inline-block px-2 py-0.5 text-xs rounded-full font-semibold w-fit
-                           ${isService ? "bg-purple-100 text-purple-700" : "bg-blue-100 text-blue-700"}`}>
-                            {isService ? "SERVICE" : "MATERIAL"}
-                        </span>
+                                    <span className="text-gray-500 text-xs whitespace-normal break-words">
+                                        {row?.SubMaterialName || ""}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-gray-900">
+                                    {row?.Level4Name || ""}
+                                </span>
+                            )}
+                        </div>
+
                     </div>
-                )
+                );
             }
+
         },
         {
             key: "MaterialQuantity",
@@ -335,7 +355,7 @@ export const QuotationTable: React.FC<Props> = ({
                 return (
                     <div className="flex justify-end w-full">
                         <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
-                            {row?.Installation || ''}
+                            {row?.Installation || 0}
                         </span>
                     </div>
                 )
@@ -352,10 +372,8 @@ export const QuotationTable: React.FC<Props> = ({
 
                 return (
                     <Input
-
                         type="text"
                         value={row?.Installation ?? 0}
-
                         onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
 
                     />
@@ -374,7 +392,7 @@ export const QuotationTable: React.FC<Props> = ({
             prefix: "₹",
             headerClassName: "bg-[#253E60] text-white tracking-[1px]",
 
-            
+
             renderEditor: (_value, onChange, row) => {
 
                 if (Number(row.MaterialRequisitionDetailId) === 0 && !hasFinalizedRow) {
@@ -387,7 +405,7 @@ export const QuotationTable: React.FC<Props> = ({
                         />
                     )
                 }
-                
+
                 return (
                     <span className="w-full block text-right pr-1 font-bold text-black-300">
                         {formatCurrency(computeAmountInstallation(row))}
@@ -510,7 +528,7 @@ export const QuotationTable: React.FC<Props> = ({
                     />
                 );
             },
-            cellClassName: (value) =>   value !== 0  ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold bg-gray-100"
+            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold bg-gray-100"
         },
         {
             key: "Total",
@@ -529,7 +547,7 @@ export const QuotationTable: React.FC<Props> = ({
     return (
         <div className="space-y-4 rounded-xl">
             <div className="flex items-center justify-between">
-                <div className="text-lg font-semibold text-gray-900">
+                <div className="text-md font-medium text-gray-900">
                     Quotation
                 </div>
                 {

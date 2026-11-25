@@ -29,6 +29,7 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
+    VendorId:0,
     MaterialRequisitionInvoiceId: 0,
     InvoiceNumber: '',
     InvoiceAmount: 0,
@@ -44,7 +45,7 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionGRNId: 0,
 })
 
-const CreateInvoice: React.FC = () => {
+const AddUpdateInvoice: React.FC = () => {
 
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [invoiceSummaryData, setInvoiceSummaryData] = useState<MaterialRequisitionInvoiceSummaryData | null>(null);
@@ -60,7 +61,6 @@ const CreateInvoice: React.FC = () => {
     const currentUniquekey = listState.uniquekey
     const projectId = listState.projectId;
     const { MaterialRequisitionGRNId, MaterialRequisitionInvoiceId } = useParams<{ MaterialRequisitionGRNId?: string, MaterialRequisitionInvoiceId?: string }>();
-    const systemGeneratedCode = listState.systemGeneratedCode;
     const navigate = useNavigate();
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
@@ -75,7 +75,6 @@ const CreateInvoice: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const materialRequisitionInvoiceId = MaterialRequisitionInvoiceId ? Number(MaterialRequisitionInvoiceId) : 0;
     const isAddMode = materialRequisitionInvoiceId === 0;
-
     const [editInvoiceAmount, setEditInvoiceAmount] = useState<number>();
 
     useEffect(() => {
@@ -189,6 +188,7 @@ const CreateInvoice: React.FC = () => {
                             MaterialRequisitionInvoiceId: e.MaterialRequisitionInvoiceId ?? prev.MaterialRequisitionInvoiceId,
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
                             ProjectId: e.ProjectId ?? prev.ProjectId,
+                            VendorId: e.VendorId ?? prev.VendorId,
                             MaterialRequisitionGRNId: e.MaterialRequisitionGRNId ?? prev.MaterialRequisitionGRNId,
                             MaterialRequisitionId: e.MaterialRequisitionId ?? prev.MaterialRequisitionId,
                             InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
@@ -334,7 +334,9 @@ const CreateInvoice: React.FC = () => {
                 width: '10',
                 sortable: false,
                 align: 'left',
-                render: (value?: string) => value || '-'
+                render: (value, row) => {
+                    return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                }
             },
         );
 
@@ -371,7 +373,7 @@ const CreateInvoice: React.FC = () => {
             newErrors.InvoiceDate = ' Invoice Date is required.';
         }
         if (!formData.InvoiceDueDate) {
-            newErrors.InvoiceDueDate = ' Invoice Due Date is required.';
+            newErrors.InvoiceDueDate = ' Due Date is required.';
 
         } else if (formData?.InvoiceDate && formData.InvoiceDueDate && !isToDateGreaterOrEqualFromDate(invoiceDate, invoiceDueDate)) {
             newErrors.InvoiceDueDate = "Invoice Due Date must be greater than or equal to Invoice Date";
@@ -386,7 +388,7 @@ const CreateInvoice: React.FC = () => {
 
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceUrls) && !hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
             newErrors.UploadInvoiceURL = "Either Invoice or Performa Invoice is required.";
-            newErrors.PerformaInvoiceURL = "Either Invoice or Performa Invoice is required.";
+            newErrors.PerformaInvoiceURL = "Either Performa Invoice or Invoice is required.";
         }
 
         return {
@@ -403,6 +405,7 @@ const CreateInvoice: React.FC = () => {
         fd.append("MaterialRequisitionId", Number(currentMaterialRequisitionId).toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("ProjectId", projectId!.toString());
+        fd.append("VendorId",  Number(materialRequisitionGRNData?.VendorId).toString() );
         fd.append("InvoiceNumber", formData.InvoiceNumber ?? "");
         fd.append("InvoiceDate", formData.InvoiceDate ?? "");
         fd.append("InvoiceDueDate", formData.InvoiceDueDate ?? "");
@@ -484,9 +487,9 @@ const CreateInvoice: React.FC = () => {
 
             <div className="pb-4">
                 <HeaderActionBar
-                    titleText={'Create Invoice :'}
-                    subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={listState.materialRequisitionStatus ?? ''}
+                    subTitleText={`Create Invoice : ${listState.systemGeneratedCode ?? "-"}`}
+                    subSubTitleText={listState?.projectName ?? "-"}
+                    subSubSubTitleText={listState.approvalStatus ?? ''}
                     cancelText="Cancel"
                     EditText="Edit"
                     onCancel={() =>
@@ -496,7 +499,7 @@ const CreateInvoice: React.FC = () => {
                 />
             </div>
 
-            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg  border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
 
                     <div className="mb-5">
@@ -576,15 +579,15 @@ const CreateInvoice: React.FC = () => {
                 </div>
             </div>
 
-            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg  border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                         <FieldItem label="Challan Number" value={materialRequisitionGRNData?.ChallanNumber || '-'} />
                         <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
                         <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
-                        <FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks || '-'} />
-
+                        {materialRequisitionGRNData?.Remarks?.trim() ? (<FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData.Remarks} />) : (<FieldItem label="Remarks" value="-" />)}
+                        
 
                     </div>
                 </div>
@@ -751,4 +754,4 @@ const CreateInvoice: React.FC = () => {
         </div>
     )
 }
-export default CreateInvoice;
+export default AddUpdateInvoice;

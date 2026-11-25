@@ -1,30 +1,16 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePagination } from "@/core/hooks/usePagination";
-import {
-  DataTable,
-  type FilterInfo,
-  type PaginationInfo,
-  type SortInfo,
-  type TableColumn,
-} from "@/ui/components/DataTable/DataTable";
+import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
-import type {
-  EmployeeMasterData,
-  FilterWithPaginationEmployeeMasterRequest,
-} from "@/features/employeeMaster/models/EmployeeMasterModel";
-
+import type { EmployeeMasterData, FilterWithPaginationEmployeeMasterRequest, GenerateEmployeeIdCardRequest, } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
 import { Modal } from "@/ui/components/Modal/Modal";
-import {
-  convert_dd_mm_yyyy_To_Yyyy_mm_dd,
-  formatDate_dd_mm_yyyy,
-  formatDate_dd_MonthName_yy,
-} from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
@@ -35,7 +21,7 @@ import type { FilterPullExcelSample } from "@/features/technical/models/Technica
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { Button, Input } from "@/ui/components/forms";
 import { updateFilter } from "@/core/utils/filterHelper";
-import { FileText, AlertTriangle, Copy } from "lucide-react";
+import { FileText, AlertTriangle, Copy, IdCard } from "lucide-react";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import { useEmployeeListState } from "@/features/employeeMaster/context/EmployeeListStateContext";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
@@ -47,21 +33,21 @@ import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { filterNumbers } from "@/core/utils/fileValidation";
 import { copyToClipboard } from "@/core/utils/comman";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 export const EmployeeMaster: React.FC = () => {
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const navigate = useNavigate();
-
   const { listState, updateListState } = useEmployeeListState();
   const { pagination, setPagination } = usePagination(20);
   const sortInfo = listState.sortInfo;
   const searchTerm = listState.searchTerm;
   const filters = listState.filters;
-
   const { addToast } = useToast();
-
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchEmployees(value);
   }, 350);
@@ -74,6 +60,9 @@ export const EmployeeMaster: React.FC = () => {
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
+
+  const [isGenerateIdCardDialogOpen, setIsGenerateIdCardDialogOpen] = useState(false);
+  const [selectedEmployeeForIdCard, setSelectedEmployeeForIdCard] = useState<EmployeeMasterData | null>(null);
 
   useEffect(() => {
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
@@ -93,12 +82,7 @@ export const EmployeeMaster: React.FC = () => {
     return await loadEmployees(page, filters, sort ?? sortInfo);
   };
 
-  const loadEmployees = async (
-    page: number,
-    filterParams: FilterInfo,
-    sortInfo?: SortInfo,
-    searchtext?: string,
-  ) => {
+  const loadEmployees = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -107,17 +91,11 @@ export const EmployeeMaster: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          EmployeeId: filterParams.EmployeeId
-            ? Number(filterParams.EmployeeId)
-            : undefined,
-
+          EmployeeId: filterParams.EmployeeId ? Number(filterParams.EmployeeId) : undefined,
           EmployeeCode: filterParams.EmployeeCode?.trim() || undefined,
-          EmployeeName:
-            searchtext ?? filterParams.EmployeeName?.trim() ?? undefined,
+          EmployeeName: searchtext ?? filterParams.EmployeeName?.trim() ?? undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
-
           Gender: filterParams.Gender?.trim() || undefined,
-
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           DesignationName: filterParams.DesignationName?.trim() || undefined,
           BranchName: filterParams.BranchName?.trim() || undefined,
@@ -126,9 +104,7 @@ export const EmployeeMaster: React.FC = () => {
           ReportPersonName: filterParams.ReportPersonName?.trim() || undefined,
           BankName: filterParams.BankName?.trim() || undefined,
           BankBranchName: filterParams.BankBranchName?.trim() || undefined,
-
-          IsEmployeeOnProbation:
-            filterParams.IsEmployeeOnProbation ?? undefined,
+          IsEmployeeOnProbation: filterParams.IsEmployeeOnProbation ?? undefined,
           IsIdCardIssued: filterParams.IsIdCardIssued ?? undefined,
           FromDateOfBirth: filterParams.FromDateOfBirth || undefined,
           ToDateOfBirth: filterParams.ToDateOfBirth || undefined,
@@ -139,17 +115,14 @@ export const EmployeeMaster: React.FC = () => {
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
         };
 
-        const response =
-          await employeeMasterService.apiCallPullEmployeeMaster(params);
+        const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
 
         if (E.isRight(response)) {
           setEmployeeList(response.right.Data);
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(
-              response.right.TotalNumberOfRecord / pagination.pageSize,
-            ),
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -221,8 +194,7 @@ export const EmployeeMaster: React.FC = () => {
           ExportType: exportType,
         };
 
-        const response =
-          await employeeMasterService.apiCallPullEmployeeMaster(params);
+        const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
 
         handleExportFile(response, exportType, "Employee Master", addToast);
 
@@ -240,9 +212,11 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeeExcel = () => handleExportEmployees("Excel");
   const handleExportEmployeePdf = () => handleExportEmployees("PDF");
 
-  const handlePageChange = useCallback((page: number) => {
-    updateListState({ page });
-  }, [sortInfo, updateListState],
+  const handlePageChange = useCallback(
+    (page: number) => {
+      updateListState({ page });
+    },
+    [sortInfo, updateListState],
   );
 
   const handleSortColumn = useCallback(
@@ -261,12 +235,7 @@ export const EmployeeMaster: React.FC = () => {
       pageSize: pagination.pageSize,
       onPageChange: handlePageChange,
     }),
-    [
-      pagination.currentPage,
-      pagination.totalPages,
-      pagination.totalRecords,
-      pagination.pageSize,
-    ],
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
   );
 
   const employeesForTable = useMemo(() => employeeList, [employeeList]);
@@ -294,13 +263,20 @@ export const EmployeeMaster: React.FC = () => {
     [navigate, updateListState],
   );
 
+
+
+  const handleConfirmationGenerateIdCard = useCallback((row: EmployeeMasterData) => {
+    setSelectedEmployeeForIdCard(row);
+    setIsGenerateIdCardDialogOpen(true);
+  }, []);
+
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
       {
         key: "EmployeeCode",
         label: "Employee Code",
         sortable: true,
-        width: '150px',
+        width: "150px",
         align: "left",
         fixed: "left",
         render: (value, row) => {
@@ -328,33 +304,25 @@ export const EmployeeMaster: React.FC = () => {
         key: "FullName",
         label: "Full Name",
         sortable: true,
-        width: '220px',
+        width: "220px",
         align: "left",
         render: (value, row) => {
-
           const fullName = (row?.FullName ?? "").trim();
 
           const initials = getNameInitials(fullName);
 
           const profilePhotoURL = row?.ProfilePhotoURL;
 
-          const hasProfile =
-            profilePhotoURL &&
-            profilePhotoURL !== "" &&
-            profilePhotoURL !== "—";
+          const hasProfile = profilePhotoURL && profilePhotoURL !== "" && profilePhotoURL !== "—";
 
           return (
             <div className={`flex items-center justify-between gap-3`}>
-
               <div className="flex items-center gap-3">
                 {hasProfile ? (
-                  <img
-                    src={profilePhotoURL}
-                    alt={fullName}
-                    className="w-7 h-7 rounded-full object-cover border border-gray-300"
-                  />
+                  <img src={profilePhotoURL} alt={fullName} className="w-7 h-7 rounded-full object-cover border border-gray-300" />
                 ) : (
-                  <div className="w-7 h-7 rounded-full
+                  <div
+                    className="w-7 h-7 rounded-full
                        bg-blue-200 
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
@@ -409,13 +377,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "14",
         sortable: true,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="160px"
-            tooltipThreshold={16}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
       },
       {
         key: "Designation",
@@ -423,13 +385,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "14",
         sortable: true,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="160px"
-            tooltipThreshold={16}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
       },
       {
         key: "Branch",
@@ -437,13 +393,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "14",
         sortable: false,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="160px"
-            tooltipThreshold={16}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
       },
       {
         key: "CompanyName",
@@ -451,13 +401,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "14",
         sortable: false,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="160px"
-            tooltipThreshold={16}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
       },
       {
         key: "ReportPersonName",
@@ -465,13 +409,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "14",
         sortable: true,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="160px"
-            tooltipThreshold={16}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} />,
       },
 
       {
@@ -528,13 +466,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "18",
         sortable: false,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="220px"
-            tooltipThreshold={22}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="220px" tooltipThreshold={22} />,
       },
       {
         key: "BankBranchName",
@@ -542,13 +474,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "18",
         sortable: false,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="220px"
-            tooltipThreshold={22}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="220px" tooltipThreshold={22} />,
       },
       {
         key: "IFSCCode",
@@ -572,13 +498,7 @@ export const EmployeeMaster: React.FC = () => {
         width: "18",
         sortable: false,
         align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="220px"
-            tooltipThreshold={22}
-          />
-        ),
+        render: (value) => <TooltipText text={value || "-"} maxWidth="220px" tooltipThreshold={22} />,
       },
       {
         key: "OfficeMobileNumber",
@@ -589,53 +509,52 @@ export const EmployeeMaster: React.FC = () => {
         render: (value) => (value ? `+91 ${value}` : "-"),
       },
       {
-        key: 'CountryName',
-        label: 'Country',
-        width: '14',
+        key: "CountryName",
+        label: "Country",
+        width: "14",
         sortable: false,
-        align: 'left',
-        render: value => value || '-'
+        align: "left",
+        render: (value) => value || "-",
       },
       {
-        key: 'DistrictName',
-        label: 'District',
-        width: '14',
+        key: "DistrictName",
+        label: "District",
+        width: "14",
         sortable: false,
-        align: 'left',
-        render: value => value || '-'
+        align: "left",
+        render: (value) => value || "-",
       },
       {
-        key: 'CityName',
-        label: 'City',
-        width: '14',
+        key: "CityName",
+        label: "City",
+        width: "14",
         sortable: false,
-        align: 'left',
-        render: value => value || '-'
+        align: "left",
+        render: (value) => value || "-",
       },
       {
-        key: 'VillageName',
-        label: 'Village',
-        width: '15',
+        key: "VillageName",
+        label: "Village",
+        width: "15",
         sortable: false,
-        align: 'left',
-        render: (value) => value || '-'
+        align: "left",
+        render: (value) => value || "-",
       },
       {
-        key: 'MPIN',
-        label: 'MPIN',
+        key: "MPIN",
+        label: "MPIN",
         sortable: false,
-        align: 'left',
+        align: "left",
         render: (value) => {
           return (
             <div className="flex items-center gap-2">
-
               {value && (
                 <TooltipText
-                  text={value || '-'}
+                  text={value || "-"}
                   tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
                 />
               )}
-              
+
               {value && (
                 <Button
                   onClick={async (e) => {
@@ -643,15 +562,15 @@ export const EmployeeMaster: React.FC = () => {
                     e.stopPropagation();
                     const success = await copyToClipboard(value);
                     if (success) {
-                      addToast({ type: 'success', title: `${value} Copied!` });
+                      addToast({ type: "success", title: `${value} Copied!` });
                     }
                   }}
                   color="transparent"
                   size="sm"
                   style={{
-                    padding: '2px 6px',
-                    color: '#6B7280',
-                    cursor: 'pointer'
+                    padding: "2px 6px",
+                    color: "#6B7280",
+                    cursor: "pointer",
                   }}
                   title="Copy"
                 >
@@ -660,7 +579,41 @@ export const EmployeeMaster: React.FC = () => {
               )}
             </div>
           );
-        }
+        },
+      },
+      {
+        key: "EmployeeIdCardFrontURL",
+        label: "ID Card",
+        width: "180px",
+        sortable: false,
+        align: "center",
+        render: (_value, row: EmployeeMasterData) => (
+          <div className="flex items-center justify-center gap-2">
+            {row.EmployeeIdCardFrontURL && (
+              <div className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
+                <MultiImageViewer
+                  images={parseDocumentUrls(row.EmployeeIdCardFrontURL)}
+                  title="Employee ID Card - Front"
+                  triggerLabel="Front"
+                  isWrap={false}
+                />
+              </div>
+            )}
+
+            {row.EmployeeIdCardBackURL && (
+              <div className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-700">
+                <MultiImageViewer
+                  images={parseDocumentUrls(row.EmployeeIdCardBackURL)}
+                  title="Employee ID Card - Back"
+                  triggerLabel="Back"
+                  isWrap={false}
+                />
+              </div>
+            )}
+
+            {!row.EmployeeIdCardFrontURL && !row.EmployeeIdCardBackURL && <span className="text-gray-400">-</span>}
+          </div>
+        ),
       },
       {
         key: "LastLogin",
@@ -696,48 +649,55 @@ export const EmployeeMaster: React.FC = () => {
               >
                 <FileText className="h-4 w-4" />
               </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleConfirmationGenerateIdCard(row);
+                }}
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{
+                  color: "blue",
+                  padding: "4px 8px",
+                }}
+                title="Generate Id Card"
+              >
+                <IdCard className="h-4 w-4" />
+              </Button>
             </div>
           ) : null,
       },
     ],
-    [canAction, handleViewEmployeeDetails, handleViewEmployeeDocument],
+    [canAction, handleViewEmployeeDetails, handleViewEmployeeDocument, handleConfirmationGenerateIdCard],
   );
 
-  const requiredEmployeeColumnKeys: string[] = ["FullName", 'Actions'];
+  const requiredEmployeeColumnKeys: string[] = ["FullName", "Actions"];
 
   const allEmployeeColumnKeys: string[] = employeeColumns.map((c) => c.key);
 
-  const [selectedEmployeeColumnKeys, setSelectedEmployeeColumnKeys] = useState<
-    string[]
-  >(() => {
+  const [selectedEmployeeColumnKeys, setSelectedEmployeeColumnKeys] = useState<string[]>(() => {
     try {
       const saved = LocalStorageHelper.getEmployeeMasterTableColumns?.();
       if (saved) {
         const parsed = JSON.parse(saved) as string[];
-        const withRequired = Array.from(
-          new Set([...parsed, ...requiredEmployeeColumnKeys]),
-        );
+        const withRequired = Array.from(new Set([...parsed, ...requiredEmployeeColumnKeys]));
         return withRequired.filter((k) => allEmployeeColumnKeys.includes(k));
       }
-    } catch {
-      // ignore
-    }
+    } catch { }
     return allEmployeeColumnKeys;
   });
 
   useEffect(() => {
     setSelectedEmployeeColumnKeys((prev) =>
-      Array.from(new Set([...prev, ...requiredEmployeeColumnKeys])).filter(
-        (k) => allEmployeeColumnKeys.includes(k),
-      ),
+      Array.from(new Set([...prev, ...requiredEmployeeColumnKeys])).filter((k) => allEmployeeColumnKeys.includes(k)),
     );
   }, [employeeColumns.length]);
 
   const visibleEmployeeColumns = useMemo(
-    () =>
-      employeeColumns.filter((col) =>
-        selectedEmployeeColumnKeys.includes(col.key),
-      ),
+    () => employeeColumns.filter((col) => selectedEmployeeColumnKeys.includes(col.key)),
     [employeeColumns, selectedEmployeeColumnKeys],
   );
 
@@ -761,26 +721,18 @@ export const EmployeeMaster: React.FC = () => {
     setTempFilters((prev) => updateFilter(prev, key, value));
   };
 
-
   const downloadExcelSampleEmployeeMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const params: FilterPullExcelSample = {
           TableName: "EMPLOYEE MASTER",
         };
 
         const response = await technicalService.apiCallPullExcelSample(params);
 
-        handleExportFile(
-          response,
-          "Excel",
-          "Employee Master",
-          addToast,
-          "Sample file download successfully",
-        );
+        handleExportFile(response, "Excel", "Employee Master", addToast, "Sample file download successfully");
 
         return response;
       },
@@ -793,8 +745,7 @@ export const EmployeeMaster: React.FC = () => {
     );
   };
 
-  const handleDownloadExcelSampleEmployeeMaster = () =>
-    downloadExcelSampleEmployeeMaster();
+  const handleDownloadExcelSampleEmployeeMaster = () => downloadExcelSampleEmployeeMaster();
 
   const uploadExcel = async (file: File, mergeExisting: string) => {
     await runApiWithLoader(
@@ -826,7 +777,85 @@ export const EmployeeMaster: React.FC = () => {
     );
   };
 
-  //#endregion
+  const handleGenerateEmployeeIdCard = useCallback(
+    async (row: EmployeeMasterData) => {
+
+      const requiredFields = [
+        { label: "Employee Photo", value: row.ProfilePhotoURL },
+        { label: "First Name", value: row.FirstName },
+        { label: "Last Name", value: row.LastName },
+        { label: "Blood Group", value: row.BloodGroup },
+        { label: "Department", value: row.Department },
+        { label: "Designation", value: row.Designation },
+        { label: "Personal Mobile Number", value: row.PersonalMobileNumber },
+        { label: "Emergency Mobile Number", value: row.EmergencyMobileNumber },
+      ];
+
+      const missingFields = requiredFields.filter((field) => {
+          const value = String(field.value ?? "").trim();
+          return !value || value === "-";
+        }).map((field) => field.label);
+
+      if (missingFields.length > 0) {
+
+        addToast({ type: "error", title: `Please complete the following employee details: ${missingFields.join(", ")}`, });
+        setIsGenerateIdCardDialogOpen(false);
+        setSelectedEmployeeForIdCard(null);
+        return;
+
+      }
+
+      await runApiWithLoader(
+        setIsLoading,
+        setLoadingMessage,
+        async () => {
+
+          const params: GenerateEmployeeIdCardRequest = {
+            EmployeeId: row.EmployeeId,
+          };
+
+          const response = await employeeMasterService.apiCallGenerateEmployeeIdCard(params);
+
+          if (E.isRight(response)) {
+
+            const updatedEmployee = response.right.Data?.[0] as EmployeeMasterData | undefined;
+
+            if (updatedEmployee) {
+
+              setEmployeeList((prev) => prev.map((item) =>
+                  item.EmployeeId === row.EmployeeId
+                    ? {
+                      ...item,
+                      EmployeeIdCardFrontURL: updatedEmployee.EmployeeIdCardFrontURL,
+                      EmployeeIdCardBackURL: updatedEmployee.EmployeeIdCardBackURL,
+                    }
+                    : item,
+                ),
+              );
+
+            }
+
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
+
+            setIsGenerateIdCardDialogOpen(false);
+            
+            setSelectedEmployeeForIdCard(null);
+
+          } else {
+            addToast({ type: "error", title: response.left.message });
+          }
+        },
+        undefined,
+
+        (error: any) => {
+          addToast({ type: "error", title: error.message });
+        },
+        undefined,
+        "Generate Id card",
+      );
+    },
+    [addToast],
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -882,17 +911,11 @@ export const EmployeeMaster: React.FC = () => {
         isOpen={isShowCustomizeEmployeeColumnsModal}
         onClose={() => setIsShowCustomizeEmployeeColumnsModal(false)}
         onApply={(keys) => {
-          const withRequired = Array.from(
-            new Set([...keys, ...requiredEmployeeColumnKeys]),
-          );
+          const withRequired = Array.from(new Set([...keys, ...requiredEmployeeColumnKeys]));
           setSelectedEmployeeColumnKeys(withRequired);
           try {
-            LocalStorageHelper.storeEmployeeMasterTableColumns?.(
-              JSON.stringify(withRequired),
-            );
-          } catch {
-            // ignore
-          }
+            LocalStorageHelper.storeEmployeeMasterTableColumns?.(JSON.stringify(withRequired));
+          } catch { }
         }}
         columns={employeeColumns}
         selectedKeys={selectedEmployeeColumnKeys}
@@ -920,9 +943,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Employee Code"
                 value={tempFilters.EmployeeCode || ""}
-                onChange={(e) =>
-                  handleFilterChange("EmployeeCode", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("EmployeeCode", e.target.value)}
                 placeholder="Enter Employee Code"
               />
             </div>
@@ -931,9 +952,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Employee Name"
                 value={tempFilters.EmployeeName || ""}
-                onChange={(e) =>
-                  handleFilterChange("EmployeeName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("EmployeeName", e.target.value)}
                 placeholder="Enter Employee Name"
               />
             </div>
@@ -942,9 +961,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Personal Mobile Number"
                 value={tempFilters.MobileNumber || ""}
-                onChange={(e) =>
-                  handleFilterChange("MobileNumber", filterNumbers(e.target.value))
-                }
+                onChange={(e) => handleFilterChange("MobileNumber", filterNumbers(e.target.value))}
                 placeholder="Enter Personal Mobile Number"
                 maxLength={13}
               />
@@ -962,11 +979,11 @@ export const EmployeeMaster: React.FC = () => {
               <SinglePageSelection
                 label="Active / Inactive"
                 placeholder="Select Active / Inactive"
-                value={tempFilters.ActiveInactive || ''}
-                onChange={e => handleFilterChange('ActiveInactive', String(e))}
-                options={ACTIVE_INACTIVE_OPTIONS.map(opt => ({
+                value={tempFilters.ActiveInactive || ""}
+                onChange={(e) => handleFilterChange("ActiveInactive", String(e))}
+                options={ACTIVE_INACTIVE_OPTIONS.map((opt) => ({
                   label: opt.name,
-                  value: opt.id
+                  value: opt.id,
                 }))}
               />
             </div>
@@ -975,9 +992,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Department"
                 value={tempFilters.DepartmentName || ""}
-                onChange={(e) =>
-                  handleFilterChange("DepartmentName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("DepartmentName", e.target.value)}
                 placeholder="Enter Department"
               />
             </div>
@@ -986,9 +1001,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Designation"
                 value={tempFilters.DesignationName || ""}
-                onChange={(e) =>
-                  handleFilterChange("DesignationName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("DesignationName", e.target.value)}
                 placeholder="Enter Designation"
               />
             </div>
@@ -997,9 +1010,7 @@ export const EmployeeMaster: React.FC = () => {
                 label="Branch"
                 type="text"
                 value={tempFilters.BranchName || ""}
-                onChange={(e) =>
-                  handleFilterChange("BranchName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("BranchName", e.target.value)}
                 placeholder="Enter Branch"
               />
             </div>
@@ -1008,9 +1019,7 @@ export const EmployeeMaster: React.FC = () => {
                 label="Company Name"
                 type="text"
                 value={tempFilters.CompanyName || ""}
-                onChange={(e) =>
-                  handleFilterChange("CompanyName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("CompanyName", e.target.value)}
                 placeholder="Enter Company Name"
               />
             </div>
@@ -1019,9 +1028,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Report Person Name"
                 value={tempFilters.ReportPersonName || ""}
-                onChange={(e) =>
-                  handleFilterChange("ReportPersonName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("ReportPersonName", e.target.value)}
                 placeholder="Enter Report Person Name"
               />
             </div>
@@ -1048,9 +1055,7 @@ export const EmployeeMaster: React.FC = () => {
                 type="text"
                 label="Bank Branch Name"
                 value={tempFilters.BankBranchName || ""}
-                onChange={(e) =>
-                  handleFilterChange("BankBranchName", e.target.value)
-                }
+                onChange={(e) => handleFilterChange("BankBranchName", e.target.value)}
                 placeholder="Enter Bank Branch Name"
               />
             </div>
@@ -1062,9 +1067,7 @@ export const EmployeeMaster: React.FC = () => {
                 label="On Probation"
                 name="IsEmployeeOnProbation"
                 value={tempFilters.IsEmployeeOnProbation === "1"}
-                onChange={(name, value) =>
-                  handleFilterChange(name, value ? "1" : "0")
-                }
+                onChange={(name, value) => handleFilterChange(name, value ? "1" : "0")}
               />
             </div>
 
@@ -1073,9 +1076,7 @@ export const EmployeeMaster: React.FC = () => {
                 label="Card Issued"
                 name="IdCardIssued"
                 value={tempFilters.IdCardIssued === "1"}
-                onChange={(name, value) =>
-                  handleFilterChange(name, value ? "1" : "0")
-                }
+                onChange={(name, value) => handleFilterChange(name, value ? "1" : "0")}
               />
             </div>
 
@@ -1083,12 +1084,7 @@ export const EmployeeMaster: React.FC = () => {
               <DatePickerInput
                 label="From DOB"
                 value={formatDate_dd_mm_yyyy(tempFilters.FromDateOfBirth)}
-                onChange={(val) =>
-                  handleFilterChange(
-                    "FromDateOfBirth",
-                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val),
-                  )
-                }
+                onChange={(val) => handleFilterChange("FromDateOfBirth", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
               />
             </div>
 
@@ -1096,12 +1092,7 @@ export const EmployeeMaster: React.FC = () => {
               <DatePickerInput
                 label="To DOB"
                 value={formatDate_dd_mm_yyyy(tempFilters.ToDateOfBirth)}
-                onChange={(val) =>
-                  handleFilterChange(
-                    "ToDateOfBirth",
-                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val),
-                  )
-                }
+                onChange={(val) => handleFilterChange("ToDateOfBirth", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
               />
             </div>
 
@@ -1109,24 +1100,14 @@ export const EmployeeMaster: React.FC = () => {
               <DatePickerInput
                 label="From Joining Date"
                 value={formatDate_dd_mm_yyyy(tempFilters.FromJoiningDate)}
-                onChange={(val) =>
-                  handleFilterChange(
-                    "FromJoiningDate",
-                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val),
-                  )
-                }
+                onChange={(val) => handleFilterChange("FromJoiningDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
               />
             </div>
             <div>
               <DatePickerInput
                 label="To Joining Date"
                 value={formatDate_dd_mm_yyyy(tempFilters.ToJoiningDate)}
-                onChange={(val) =>
-                  handleFilterChange(
-                    "ToJoiningDate",
-                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val),
-                  )
-                }
+                onChange={(val) => handleFilterChange("ToJoiningDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
               />
             </div>
           </div>
@@ -1140,6 +1121,25 @@ export const EmployeeMaster: React.FC = () => {
           setShowImportModal(false);
           uploadExcel(file, mergeExisting);
         }}
+      />
+
+      <DeleteDialog
+        isOpen={isGenerateIdCardDialogOpen}
+        onClose={() => {
+          setIsGenerateIdCardDialogOpen(false);
+          setSelectedEmployeeForIdCard(null);
+        }}
+        onConfirm={async () => {
+          if (!selectedEmployeeForIdCard) return;
+
+          await handleGenerateEmployeeIdCard(selectedEmployeeForIdCard);
+        }}
+        loading={isLoading}
+        pageName="Employee ID Card"
+        title="Are you sure you want to generate the Employee ID Card?"
+        message="Once the Employee ID Card is generated, it cannot be deleted."
+        confirmText="Generate"
+        variant="generate"
       />
     </div>
   );

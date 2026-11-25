@@ -56,6 +56,8 @@ export interface MaterialWiseVendorQuotation {
     GSTCertificateURL?: string;
     Logistics?: string;
     Amount?: number;
+    PerPieceAmount?: number;
+    ExpectedDeliveryInDays?: number;
     Installation?: number;
     CGST?: number;
     SGST?: number;

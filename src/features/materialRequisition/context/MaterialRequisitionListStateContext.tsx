@@ -9,6 +9,7 @@ export type MaterialRequisitionListState = {
     filters: FilterInfo;
     sortInfo: SortInfo | undefined;
     projectId: number;
+    projectName: string;
     materialRequisitionId: number;
     systemGeneratedCode: string;
     uniquekey: string;
@@ -42,6 +43,7 @@ const getInitialState = (): MaterialRequisitionListState => {
                 sortInfo: parsed.sortInfo,
 
                 projectId: parsed.projectId ?? 0,
+                projectName: parsed.projectName || "",
 
                 materialRequisitionId: parsed.materialRequisitionId || 0,
                 systemGeneratedCode: parsed.systemGeneratedCode || "",
@@ -51,7 +53,7 @@ const getInitialState = (): MaterialRequisitionListState => {
                 companyGSTNumber: parsed.companyGSTNumber || "",
                 materialRequisitionStatus: parsed.materialRequisitionStatus || "",
                 approvalStatus: parsed.approvalStatus || "",
-                departmentMasterId:parsed.departmentMasterId || 0,
+                departmentMasterId: parsed.departmentMasterId || 0,
             };
         }
 
@@ -67,6 +69,7 @@ const getInitialState = (): MaterialRequisitionListState => {
         filters: {},
         sortInfo: undefined,
         projectId: 0,
+        projectName: "",
         materialRequisitionId: 0,
         systemGeneratedCode: "",
         uniquekey: "",
@@ -75,7 +78,7 @@ const getInitialState = (): MaterialRequisitionListState => {
         companyGSTNumber: "",
         materialRequisitionStatus: "",
         approvalStatus: "",
-        departmentMasterId:0,
+        departmentMasterId: 0,
     };
 };
 
@@ -113,12 +116,12 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
 
     const updateListState = useCallback((updates: Partial<MaterialRequisitionListState>) => {
 
-            setListState(prev => ({
-                ...prev,
-                ...updates
-            }));
+        setListState(prev => ({
+            ...prev,
+            ...updates
+        }));
 
-        },
+    },
         []
     );
 
@@ -143,7 +146,7 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             filters: {},
             sortInfo: undefined,
             projectId: 0,
-
+            projectName: "",
             materialRequisitionId: 0,
             systemGeneratedCode: "",
             uniquekey: "",
@@ -152,7 +155,7 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             companyGSTNumber: "",
             materialRequisitionStatus: "",
             approvalStatus: "",
-            departmentMasterId:0,
+            departmentMasterId: 0,
         };
 
         setListState(defaultState);
@@ -166,12 +169,13 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             materialRequisitionId: 0,
             systemGeneratedCode: "",
             uniquekey: "",
+            projectName:"",
             fromDate: "",
             toDate: "",
             companyGSTNumber: "",
             materialRequisitionStatus: "",
             approvalStatus: "",
-            departmentMasterId:0,
+            departmentMasterId: 0,
         }));
 
     }, []);

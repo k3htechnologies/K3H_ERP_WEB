@@ -120,6 +120,8 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
             })
             
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+            if (params.MaterialRequisitionDetailId) queryParams.append('MaterialRequisitionDetailId', params.MaterialRequisitionDetailId);
+            
 
             return await this.k3hHttpClient.getRequestWithAuthentication(`${MaterialRequisitionQuotationApi.PULL_SELECTED_VENDOR_FOR_QUOTATION}?${queryParams.toString()}`, { signal })
 

@@ -33,7 +33,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
     const { canAction: canMakePayments } = useMenuPermissions('Make Payments');
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.materialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
-    const systemGeneratedCode = listState.systemGeneratedCode;
 
     const initialFormState = () => ({
         PaymentMode: "",
@@ -326,16 +325,20 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
             <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
             <div className="pb-5">
+
                 <HeaderActionBar
                     titleText={'Make Payment :'}
-                    subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={listState.materialRequisitionStatus ?? ''}
+                    subTitleText={`${listState.systemGeneratedCode ?? "-"}`}
+                    subSubTitleText={listState?.projectName ?? "-"}
+                    subSubSubTitleText={listState.approvalStatus ?? ''}
                     cancelText="Cancel"
-                    onCancel={() =>
+                     onCancel={() =>
                         navigate("/materialRequisition/view", {
                             state: { activeTab: "Invoice" }
                         })}
                 />
+
+                
             </div>
             <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Customer Bank Details</h3>
@@ -356,6 +359,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                         <SingleSelectDropdownWithPagination
                             label="Bank Name"
                             required
+                            size="lg"
                             title="Select Bank"
                             dataFetchCallBack={fetchBankListMasterDropdown}
                             initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
@@ -472,7 +476,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                             label="Project Bank Name"
                             required
                             title="Select Project Bank Name"
-                            size="lg"
+                            size="md"
                             dataFetchCallBack={fetchProjectBankList}
                             onSelected={(item) => {
                                 if (!item) {

@@ -10,6 +10,10 @@ export interface FilterWithPaginationMaterialRequisition {
     FromDate?: string | null
     ToDate?: string | null
     MaterialRequisitionStatus?: string | null
+    MaterialRequisitionType?: string | null
+    CompanyName?: string | null
+    Department?: string | null
+    ApprovalStatus?: string | null
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }

@@ -96,7 +96,6 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
         fd.append('ExpectedPaymentInDays', String(expectedPaymentDays[term.MaterialRequisitionQuotationTermsId] ?? term.ExpectedPaymentInDays ?? 0));
         fd.append('Total', String(computeLinesTotal(lines)));
 
-        // Keep the service name in the exact Logistics key expected by the SP.
         const quotationRows = lines.map((row: any) => ({
             ...row,
             Logistics: Number(row.MaterialRequisitionDetailId) === 0
@@ -128,6 +127,7 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
         if (computeLinesTotal(lines) === 0) {
 
             addToast({ type: "error", title: "Please add a price for atleast one quotation item." });
+            
             return;
         }
 
@@ -190,7 +190,7 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
                                             <div className="flex items-center gap-3">
 
 
-                                                <div className="font-medium text-gray-900 text-base">
+                                                <div className="font-semibold text-gray-900 text-base">
                                                     {vendor.VendorName || "-"}
                                                 </div>
 
@@ -275,6 +275,28 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
                                                     CompanyGSTNumber={listState.companyGSTNumber}
                                                     IsPendingMaterialRequisitionDetail={ispendingMaterialRequisitionDetail}
                                                     addToast={addToast}
+                                                    onCancel={() => {
+                                                        setQuotationFiles([]);
+                                                        setRemovedQuotationUrls([]);
+
+                                                        setExpectedDeliveryDays(prev => {
+                                                            const updated = { ...prev };
+                                                            delete updated[term.MaterialRequisitionQuotationTermsId];
+                                                            return updated;
+                                                        });
+
+                                                        setExpectedPaymentDays(prev => {
+                                                            const updated = { ...prev };
+                                                            delete updated[term.MaterialRequisitionQuotationTermsId];
+                                                            return updated;
+                                                        });
+
+                                                        setLiveQuotationLines(prev => {
+                                                            const updated = { ...prev };
+                                                            delete updated[quotationKey];
+                                                            return updated;
+                                                        });
+                                                    }}
                                                 />
 
                                                 <div className="flex justify-between text-sm bg-green-100 p-3">
@@ -353,6 +375,7 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
                                                     ) : (
                                                         <div className="w-[250px]">
                                                             <MultiFilePicker
+                                                                key={`${quotationKey}-${editingQuotationKey === quotationKey}`}
                                                                 placeholder="Upload Quotation"
                                                                 value={quotationFiles}
                                                                 onChange={setQuotationFiles}
@@ -378,6 +401,8 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
                                     })}
                                 </div>
                             }
+
+
                         />
 
                     )

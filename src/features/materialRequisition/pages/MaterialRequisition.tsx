@@ -92,6 +92,10 @@ export const MaterialRequisition: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(filterParams?.ProjectId ?? 0),
+                    MaterialRequisitionType: filterParams?.MaterialRequisitionType ?? undefined,
+                    Department: filterParams?.Department ?? undefined,
+                    CompanyName: filterParams?.CompanyName ?? undefined,
+                    ApprovalStatus: filterParams?.ApprovalStatus ?? undefined,
                     MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
                     SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
                     FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
@@ -135,10 +139,11 @@ export const MaterialRequisition: React.FC = () => {
             systemGeneratedCode: row.SystemGeneratedCode ?? "",
             uniquekey: row.Uniquekey ?? "",
             projectId: row.ProjectId ?? 0,
+            projectName: row.ProjectName ?? "",
             companyGSTNumber: row.CompanyGSTNumber ?? "",
             materialRequisitionStatus: row.MaterialRequisitionStatus ?? "",
             approvalStatus: row.ApprovalStatus ?? "",
-            departmentMasterId:row.DepartmentMasterId ?? 0
+            departmentMasterId: row.DepartmentMasterId ?? 0
         });
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
@@ -207,6 +212,7 @@ export const MaterialRequisition: React.FC = () => {
                             onClick={() => handleNavigateToView(row)}
                         />
 
+
                         {value && (
                             <Button
                                 onClick={async (e) => {
@@ -229,7 +235,10 @@ export const MaterialRequisition: React.FC = () => {
                                 <Copy className="h-3.5 w-3.5" />
                             </Button>
                         )}
+
+
                     </div>
+
                 );
             }
         },
@@ -249,10 +258,28 @@ export const MaterialRequisition: React.FC = () => {
             align: 'left',
             render: (value) => (value) || '-'
         },
+        {
+            key: "ApprovalStatus",
+            label: "Approval Status",
+            width: "18",
+            sortable: false,
+            align: "center",
+            render: (value, row) => (
 
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApproval}
+                    isIcons={true}
+                    onHistory={() => handleApprovalLog(row)}
+                    onApprove={() => handleApproveRejectMaterialRequisition(row, "approve")}
+                    onReject={() => handleApproveRejectMaterialRequisition(row, "reject")}
+                />
+
+            )
+        },
         {
             key: 'MaterialRequisitionStatus',
-            label: 'Status',
+            label: 'MR Status',
             width: '15',
             sortable: false,
             align: 'left',
@@ -278,6 +305,14 @@ export const MaterialRequisition: React.FC = () => {
             },
         },
         {
+            key: 'MaterialRequisitionType',
+            label: 'Type',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => (value) || '-'
+        },
+        {
             key: 'Department',
             label: 'Department',
             width: '15',
@@ -286,51 +321,33 @@ export const MaterialRequisition: React.FC = () => {
             render: (value) => (value) || '-'
         },
         {
-        key: 'ModifiedBy',
-        label: 'Last Modified By',
-        width: '33',
-        sortable: false,
-        align: 'left',
-        render: (value, row) => (
-          <TooltipText
-            text={value || row.CreatedBy || '-'}
-            maxWidth="180px"
-            tooltipThreshold={18}
-          />
-        )
-      },
-      {
-        key: 'ModifiedDate',
-        label: 'Last Modified Date',
-        width: '33',
-        sortable: false,
-        align: 'center',
-        render: (value, row) =>
-          value
-            ? formatDate_dd_MonthName_yy_hh_mm(value)
-            : row.CreatedDate
-              ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
-              : '-'
-      },
-        {
-            key: "ApprovalStatus",
-            label: "Approval Status",
-            width: "18",
+            key: 'ModifiedBy',
+            label: 'Last Modified By',
+            width: '33',
             sortable: false,
-            align: "center",
+            align: 'left',
             render: (value, row) => (
-
-                <ApprovalActions
-                    approvalStatus={value || "-"}
-                    showApproval={row.IsApproval}
-                    isIcons={true}
-                    onHistory={() => handleApprovalLog(row)}
-                    onApprove={() => handleApproveRejectMaterialRequisition(row, "approve")}
-                    onReject={() => handleApproveRejectMaterialRequisition(row, "reject")}
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
                 />
-
             )
         },
+        {
+            key: 'ModifiedDate',
+            label: 'Last Modified Date',
+            width: '33',
+            sortable: false,
+            align: 'center',
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy_hh_mm(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
+                        : '-'
+        },
+
         {
             key: 'TotalPoAmount',
             label: 'Total PO Amount (₹)',
@@ -431,7 +448,7 @@ export const MaterialRequisition: React.FC = () => {
                 );
             }
         },
-        
+
     ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction, handleApprovalLog, handleApproveRejectMaterialRequisition]);
 
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
@@ -584,6 +601,10 @@ export const MaterialRequisition: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(filters?.ProjectId ?? 0),
+                    Department: filters?.Department ?? undefined,
+                    CompanyName: filters?.CompanyName ?? undefined,
+                    ApprovalStatus: filters?.ApprovalStatus ?? undefined,
+                    MaterialRequisitionType: filters?.MaterialRequisitionType ?? undefined,
                     MaterialRequisitionStatus: filters?.MaterialRequisitionStatus ?? undefined,
                     SystemGeneratedCode: searchTerm ?? filters?.SystemGeneratedCode ?? undefined,
                     FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
@@ -763,6 +784,45 @@ export const MaterialRequisition: React.FC = () => {
                             }))}
                             value={String(tempFilters?.ProjectId ?? '')}
                             onChange={(value) => handleFilterChange('ProjectId', String(value))}
+                        />
+                    </div>
+
+                    <div>
+                        <Input type="text"
+                            label='Company Name'
+                            value={tempFilters?.CompanyName ?? ''}
+                            onChange={e => handleFilterChange('CompanyName', e.target.value)}
+                            placeholder="Enter Company Name" />
+                    </div>
+
+                    <div>
+                        <Input type="text"
+                            label='Department'
+                            value={tempFilters?.Department ?? ''}
+                            onChange={e => handleFilterChange('Department', e.target.value)}
+                            placeholder="Enter Department" />
+                    </div>
+
+                    <div>
+                        <Input type="text"
+                            label='Approval Status'
+                            value={tempFilters?.ApprovalStatus ?? ''}
+                            onChange={e => handleFilterChange('ApprovalStatus', e.target.value)}
+                            placeholder="Enter Approval Status" />
+                    </div>
+
+                    <div>
+                        <SinglePageSelection
+                            label="Material Requisition Type"
+                            placeholder="Select Material Requisition Type"
+                            value={tempFilters?.MaterialRequisitionType || ""}
+                            options={[
+                                { label: "Direct", value: "DIRECT" },
+                                { label: "In - Direct", value: "IN - DIRECT" }
+                            ]}
+                            onChange={(value) =>
+                                handleFilterChange('MaterialRequisitionType', String(value))
+                            }
                         />
                     </div>
 

@@ -33,7 +33,7 @@ const Enquiry: React.FC<InquiryProps> = ({ materialRequisitionDetailData }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const { addToast } = useToast();
-    const { canAction } = useMenuPermissions('Get Quotation');
+    const { canAction } = useMenuPermissions('Get Enquiry');
 
 
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
@@ -468,9 +468,7 @@ const Enquiry: React.FC<InquiryProps> = ({ materialRequisitionDetailData }) => {
 
                                             <div className="flex flex-col items-center justify-center text-center py-10">
 
-                                                <p className="text-sm text-gray-500">
-                                                    Please select materials to view vendors.
-                                                </p>
+                                                <NoDataView message="Please select materials to view vendors" />
 
                                             </div>
 

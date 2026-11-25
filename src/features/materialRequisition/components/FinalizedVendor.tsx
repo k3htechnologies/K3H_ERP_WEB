@@ -17,6 +17,10 @@ import ApprovalActions from "@/features/modulesWorkflowApproval/components/Appro
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { materialRequisitionFinalizedVendorService } from "../services/MaterialRequisitionFinalizedVendorService";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { materialRequisitionQuotationService } from "../services/MaterialRequisitionQuotationService";
+import type { FilterSelectedVendorForQuotationRequest } from "../models/MaterialRequisitionQuotationModel";
+import Checkbox from "@/ui/components/forms/Checkbox";
 interface VendorColumn {
     VendorId: number;
     VendorName: string;
@@ -58,11 +62,14 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<FinalizedVendorApprovalSelection | null>(null);
-    const { canAction } = useMenuPermissions('Finalized Vendor');
+    const { canAction } = useMenuPermissions('Finalize Vendor');
     const isEditDisabled =
         !canAction ||
         ["CLOSED", "COMPLETED"].includes(listState.materialRequisitionStatus?.trim().toUpperCase() ?? "") ||
         listState.approvalStatus?.trim().toUpperCase() !== "APPROVED";
+
+    const [isCompareMode, setIsCompareMode] = useState(false);
+    const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
 
     const vendorColumns = useMemo<VendorColumn[]>(() => {
@@ -201,7 +208,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
 
     const handleApprovalLog = (material: MaterialWiseQuotation, vendor: MaterialWiseVendorQuotation) => {
         const request: ModulesApprovalStatusRequest = {
-            ModuleName: "FINALIZED VENDOR APPROVAL",
+            ModuleName: "FINALIZE VENDOR APPROVAL",
             Id: Number(materialRequisitionId),
             SubId: material.MaterialRequisitionDetailId,
             SubSubId: vendor.VendorId,
@@ -232,6 +239,40 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
 
     const columns = useMemo<TableColumn[]>(() => {
 
+        const selectColumn: TableColumn = {
+            key: "select",
+            label: (
+                <Checkbox
+                    size="sm"
+                    checked={quotationData.length > 0 && quotationData.every(item => selectedIds.includes(item.MaterialRequisitionDetailId))}
+                    onChange={() => {
+                        const allSelected = quotationData.length > 0 && quotationData.every(item => selectedIds.includes(item.MaterialRequisitionDetailId));
+
+                        setSelectedIds(allSelected ? [] : quotationData.map(item => item.MaterialRequisitionDetailId));
+                    }}
+                />
+            ),
+            align: "center",
+            width: "5",
+            sortable: false,
+            fixed: "left",
+            render: (_value, row: MaterialWiseQuotation) => (
+                <Checkbox
+                    size="sm"
+                    checked={selectedIds.includes(row.MaterialRequisitionDetailId)}
+                    onChange={() => {
+                        const id = row.MaterialRequisitionDetailId;
+
+                        setSelectedIds(prev =>
+                            prev.includes(id)
+                                ? prev.filter(x => x !== id)
+                                : [...prev, id]
+                        );
+                    }}
+                />
+            )
+        };
+
         const materialColumn: TableColumn = {
             key: "MaterialName",
             label: (
@@ -247,24 +288,25 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
             ),
             sortable: false,
             width: "25",
-            fixed: "left",
             align: "left",
 
             render: (_value, row: MaterialWiseQuotation) => {
                 return (
                     <div className="flex flex-col gap-2 py-2">
 
-                        <div>
-                            <span className="inline-block max-w-full rounded bg-[#B45309] px-2 py-0.5 text-[11px] font-medium text-white whitespace-normal break-words">
+                        <div className="min-w-0 w-full">
+                            <span className="inline-block max-w-full rounded bg-[#B45309] px-2 py-0.5 text-[11px] font-medium text-white whitespace-normal break-words [overflow-wrap:anywhere] align-top">
                                 {row.MaterialRequisitionType?.toUpperCase() === "DIRECT" ? row.Level4Name ?? "-" : row.MaterialName ?? "-"}
                             </span>
                         </div>
 
-                        {row.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT" && (
-                            <p className="text-[13px] font-medium text-slate-800 leading-5 break-words">
-                                {row.SubMaterialName}
-                            </p>
-                        )}
+                        <div className="min-w-0 flex-1">
+                            {row.MaterialRequisitionType?.toUpperCase() === "IN - DIRECT" && (
+                                <p className="text-[13px] font-medium text-slate-800 leading-5 whitespace-normal break-words [overflow-wrap:anywhere]">
+                                    {row.SubMaterialName}
+                                </p>
+                            )}
+                        </div>
 
                         <div className="border-t border-slate-100 mt-1" />
 
@@ -411,10 +453,14 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
                                     </span>
 
                                 </div>
-
-                                <span className={`text-[14px] font-bold whitespace-nowrap ${isSelected ? "text-emerald-700" : "text-slate-800"} `}  >
-                                    {formatCurrency(vendorQuotation.Amount ?? 0)}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className={`text-[14px] font-bold whitespace-nowrap ${isSelected ? "text-emerald-700" : "text-slate-800"} `}  >
+                                        {formatCurrency(vendorQuotation.Amount ?? 0)}
+                                    </span>
+                                    <span className="text-[11px] font-medium text-slate-500 whitespace-nowrap">
+                                        (Incl. GST)
+                                    </span>
+                                </div>
 
                             </div>
 
@@ -434,33 +480,15 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
 
                                 </div>
 
-                                {Number(vendorQuotation.CGST ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="text-slate-400">CGST</span>
-                                        <span className="text-slate-600">  {vendorQuotation.CGST}% </span>
-                                    </div>
-                                )}
 
-                                {Number(vendorQuotation.SGST ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="text-slate-400">SGST</span>
-                                        <span className="text-slate-600"> {vendorQuotation.SGST}% </span>
-                                    </div>
-                                )}
-
-                                {Number(vendorQuotation.UGST ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="text-slate-400">UGST</span>
-                                        <span className="text-slate-600">   {vendorQuotation.UGST}%  </span>
-                                    </div>
-                                )}
-
-                                {Number(vendorQuotation.TGST ?? 0) > 0 && (
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="text-slate-400">TGST</span>
-                                        <span className="text-slate-600"> {vendorQuotation.TGST}% </span>
-                                    </div>
-                                )}
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-slate-400">Per Piece Amount</span>
+                                    <span className="text-slate-600">  {formatCurrency(vendorQuotation.PerPieceAmount ?? 0)} </span>
+                                </div>
+                                <div className="flex items-center justify-between gap-2">
+                                    <span className="text-slate-400">Delivery Days</span>
+                                    <span className="text-slate-600"> {vendorQuotation.ExpectedDeliveryInDays}% </span>
+                                </div>
 
                             </div>
 
@@ -487,14 +515,12 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
         );
 
         return [
-
+            ...(isCompareMode ? [selectColumn] : []),
             materialColumn,
-
             ...dynamicVendorColumns
-
         ];
 
-    }, [vendorColumns, selectedVendors, handleApprovalLog, handleApproveRejectFinalizedVendor]);
+    }, [vendorColumns, selectedVendors, selectedIds, isCompareMode, quotationData, handleApprovalLog, handleApproveRejectFinalizedVendor]);
 
 
     const handleFinalizeVendor = async () => {
@@ -551,6 +577,8 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
 
                     setQuotationData(response.right.Data);
 
+                    await onload?.();
+
                 } else {
 
                     addToast({ type: "error", title: response.left.message });
@@ -590,7 +618,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
         }
 
         const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "FINALIZED VENDOR APPROVAL",
+            ModuleName: "FINALIZE VENDOR APPROVAL",
             Id: Number(materialRequisitionId),
             SubId: approvalRowData.MaterialRequisitionDetailId,
             SubSubId: approvalRowData.VendorId,
@@ -631,7 +659,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
                 addToast({ type: "error", title: error.message, });
             },
             undefined,
-            approvalActionType === "approve" ? "Approving Finalized Vendor" : "Rejecting Finalized Vendor"
+            approvalActionType === "approve" ? "Approving Finalize Vendor" : "Rejecting Finalize Vendor"
         );
     };
 
@@ -649,6 +677,43 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
             });
 
     }, [quotationData]);
+
+
+    const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
+
+        if (selectedIds.length === 0) {
+            addToast({ type: "error", title: "Please select at least one material." });
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterSelectedVendorForQuotationRequest = {
+                    MaterialRequisitionId: Number(materialRequisitionId),
+                    Uniquekey: uniquekey ?? "",
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionDetailId: selectedIds.join(","),
+                    ExportType: exportType
+                }
+
+                const response = await materialRequisitionQuotationService.apiCallPullSelectedVendorForQuotation(params)
+
+                if (E.isRight(response)) {
+
+                    handleExportFile(response, 'Excel', 'Vendor Comparison', addToast);
+                }
+                return response
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Export'
+        );
+    };
+    const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART')
 
     return (
 
@@ -673,9 +738,50 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
                     </p>
 
                 </div>
-                {!isEditDisabled && (
-                    <div className="flex items-center gap-3">
 
+
+                <div className="flex items-center gap-3">
+
+                    <Button
+                        type="button"
+                        size="sm"
+                        color={isCompareMode ? "cancel" : undefined}
+                        style={isCompareMode
+                            ? undefined
+                            : {
+                                color: "#135BEC",
+                                backgroundColor: "#E8F0FF",
+                                padding: "4px 8px",
+                            }
+                        }
+                        onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsCompareMode(prev => !prev);
+                            setSelectedIds([]);
+                        }}
+                    >
+                        {isCompareMode ? "Cancel" : "Compare"}
+                    </Button>
+
+
+
+                    {selectedIds.length > 0 && (
+                        <Button
+                            type="button"
+                            color="blue"
+                            size="sm"
+                            variant="solid"
+                            colorMode="gradient_dark"
+                            disabled={selectedIds.length === 0 || isLoading}
+                            onClick={handleExportCompareVendorExcel}
+                            style={{ width: "250px" }}
+                        >
+                            Generate Compare Chart ({selectedIds.length})
+                        </Button>
+                    )}
+
+                    {!isEditDisabled && (
                         <Button
                             type="button"
                             color="blue"
@@ -692,9 +798,9 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
                         >
                             Finalize Vendor
                         </Button>
+                    )}
+                </div>
 
-                    </div>
-                )}
 
             </div>
 
@@ -708,16 +814,18 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
 
             />
 
+
+
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                title='Finalized Vendor'
+                title='Finalize Vendor'
                 titleText={vendorName ?? ""}
                 subTitleText={quotation ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest} />
 
             <ApprovalActionModal
-                title="Finalized Vendor"
+                title="Finalize Vendor"
                 isOpen={isApprovalActionModalOpen}
                 onClose={() => setIsApprovalActionModalOpen(false)}
                 actionType={approvalActionType}

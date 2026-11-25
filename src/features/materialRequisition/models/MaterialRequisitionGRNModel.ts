@@ -71,6 +71,10 @@ export interface MaterialRequisitionDetailGRNData {
     ModifiedById: number | 0,
     ModifiedBy: string | null,
     ModifiedDate: string | null,
+
+    VendorCompanyName: string;
+    VendorName: string;
+    VendorId: number;
 }
 
 export interface AddUpdateMaterialRequisitionGRNRequest {

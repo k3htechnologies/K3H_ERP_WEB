@@ -236,7 +236,7 @@ import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pag
 import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
 import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
-import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
 import ViewMaterialRequisitionReport from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
@@ -268,6 +268,8 @@ import VendorManagementDashboard from '@/features/vendorManagementDashboard/page
 import { ProcessSalaryListStateProvider } from '@/features/processSalary/context/ProcessSalaryListStateContext';
 import ProcessSalary from '@/features/processSalary/pages/ProcessSalary';
 import ViewProcessSalaryDetails from '@/features/processSalary/pages/ViewProcessSalaryDetails';
+import AddUpdateInvoice from '@/features/materialRequisition/components/invoice/AddUpdateInvoice';
+import VerifyAssetMaster from '@/features/assetMaster/pages/VerifyAssetMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -646,7 +648,7 @@ function App() {
             <Route path="materialRequisition/grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="/materialRequisition/addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
+            <Route path="/materialRequisition/addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><AddUpdateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="/materialRequisition/makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
 
@@ -666,6 +668,8 @@ function App() {
           <Route path='Terms' element={<Terms />} />
           <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
+          <Route path="/verifyAsset/:assetMasterId/:uniqueKey" element={<VerifyAssetMaster />} />
+
 
         </Routes>
       </Suspense>

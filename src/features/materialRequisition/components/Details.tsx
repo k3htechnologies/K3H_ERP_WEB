@@ -154,7 +154,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
     const handleApprovalFinalizedVendorLog = (row: MaterialRequisitionDetailData) => {
 
         const request: ModulesApprovalStatusRequest = {
-            ModuleName: "FINALIZED VENDOR APPROVAL",
+            ModuleName: "FINALIZE VENDOR APPROVAL",
             Id: listState.materialRequisitionId ?? 0,
             SubId: row.MaterialRequisitionDetailId,
             SubSubId: row.VendorId,
@@ -257,7 +257,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
             columns.push(
                 {
                     key: "MaterialName",
-                    label: "Material",
+                    label: "Material / Sub Material",
                     align: "left",
                     width: "40",
                     render: (value, row) => (
@@ -330,7 +330,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                                 isIcons={true}
                                 onHistory={() => handleApprovalFinalizedVendorLog(row)}
                             />
-                        ) : value}
+                        ) : '-'}
                     </div>
                 )
             },
@@ -366,7 +366,14 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                         label: 'PO Code',
                         sortable: false,
                         width: '20',
+                        fixed: 'left',
+                        align: 'left',
                         render: (value) => {
+
+                            if (!value?.trim()) {
+                                return <span className="text-xs text-gray-400">-</span>;
+                            }
+
                             return (
                                 <div className="flex items-center gap-2">
 
@@ -374,7 +381,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                                         text={value || '-'}
                                         maxWidth="180px"
                                         tooltipThreshold={30}
-                                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"/>
+                                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap" />
 
                                     {value && (
                                         <Button
@@ -433,31 +440,47 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                         render: (value) => formatCurrency(value) || 0
                     },
                     {
-                key: "PurchaseOrderCreatedBy",
-                label: "Created By / Date",
-                sortable: false,
-                width: "20",
-                fixed: "left",
-                align: "left",
-                render: (value, row) => (
-                    <div className="flex flex-col items-start gap-1">
+                        key: "PurchaseOrderCreatedBy",
+                        label: "PO Created By / Date",
+                        sortable: false,
+                        width: "20",
+                        fixed: "left",
+                        align: "left",
+                        render: (value, row) => (
+                            <div className="flex flex-col items-start gap-1">
 
-                        <span className="text-xs font-semibold text-slate-800">
-                            {value || "-"}
-                        </span>
+                                <span className="text-xs font-semibold text-slate-800">
+                                    {value || "-"}
+                                </span>
 
-                        {row.PurchaseOrderCreatedDate && (
-                            <span className="inline-block rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500">
-                                {formatDate_dd_MonthName_yy_hh_mm(row.PurchaseOrderCreatedDate)}
-                            </span>
-                        )}
+                                {row.PurchaseOrderCreatedDate && (
+                                    <span className="inline-block rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500">
+                                        {formatDate_dd_MonthName_yy_hh_mm(row.PurchaseOrderCreatedDate)}
+                                    </span>
+                                )}
 
-                    </div>
-                ),
-                rowSpan: (_row, index, data) =>
-                    getRowSpan(data, index, ["POSystemGeneratedCode"])
-            },
+                            </div>
+                        ),
+                        rowSpan: (_row, index, data) =>
+                            getRowSpan(data, index, ["POSystemGeneratedCode"])
+                    },
+
                 ]
+            },
+            {
+                key: "MaterialReceivedQuantityTillDate",
+                label: "Received Quantity (GRN)",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    const quantity = value ?? 0;
+                    const unit = isDirect ? row.Level4SubMaterialUomCode : row.UomCode;
+                    return (
+                        <span className="inline-flex items-center rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 whitespace-nowrap">
+                            {quantity} {unit || ""}
+                        </span>
+                    );
+                }
             },
 
         )
@@ -469,7 +492,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
             ModuleName: "INVOICE APPROVAL",
             Id: listState.materialRequisitionId ?? 0,
             SubId: row.MaterialRequisitionInvoiceId ?? 0,
-           ProjectId: Number(projectId),
+            ProjectId: Number(projectId),
         };
         setInvoiceNumber(row.InvoiceNumber);
         setInvoiceAmount(row.InvoiceAmount);
@@ -510,6 +533,28 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
     const MaterialRequisitionInvoiceColumns = useMemo<any[]>(
         () => [
+            {
+
+                key: "VendorName",
+                label: "Vendor / Company Name",
+                align: "left",
+                width: "20",
+                render: (value: string, row: any) => (
+                    <div className="flex flex-col items-start gap-0.5">
+
+                        <span className="text-xs font-semibold text-slate-800">
+                            {value || "-"}
+                        </span>
+
+                        {row.VendorCompanyName && (
+                            <span className="inline-block max-w-full rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500 whitespace-normal break-words">
+                                {row.VendorCompanyName}
+                            </span>
+                        )}
+
+                    </div>
+                )
+            },
             {
                 key: "InvoiceNumber",
                 label: "Invoice Number",
@@ -720,7 +765,8 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                         {handleExportMaterialRequisition && canExport && (
                             <Button
                                 size="sm"
-                                color="red"
+                                color="blue"
+                                colorMode="gradient_light"
                                 onClick={() => handleExportMaterialRequisition()}>
                                 PDF
                             </Button>
@@ -809,7 +855,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                 </div>
             </section>
 
-            {listState.approvalStatus?.toUpperCase() === "APPROVED" &&  (
+            {listState.approvalStatus?.toUpperCase() === "APPROVED" && (
                 <section className="border border-[#33333321] rounded-xl overflow-hidden mt-5">
                     <div className="bg-[#FCE7F3] px-4 py-2 border-b border-[#D0D7DE]">
                         <h4 className="text-sm font-semibold text-[#BE185D] flex items-center gap-2">
@@ -900,7 +946,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
 
             <ApprovalLogModal
                 isOpen={isApprovalFinalizedVendorLogModalOpen}
-                title='Finalized Vendor'
+                title='Finalize Vendor'
                 titleText={vendorName ?? ""}
                 subTitleText={quotation ?? ""}
                 onClose={() => setIsApprovalFinalizedVendorLogModalOpen(false)}

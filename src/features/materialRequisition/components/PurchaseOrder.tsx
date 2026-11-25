@@ -103,6 +103,27 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
         setIsAddUpdateModalOpen(true);
     }
 
+    const validateUploadPOVendor = (): boolean => {
+
+        const selectedMaterials = materialRequisitionDetailData.filter(item =>
+            selectedIds.includes(Number(item.MaterialRequisitionDetailId))
+        );
+
+        const uniqueVendorIds = new Set(
+            selectedMaterials.map(item => Number(item.VendorId))
+        );
+
+        if (uniqueVendorIds.size > 1) {
+            addToast({
+                type: "error",
+                title: "Upload PO is allowed only for materials from the same vendor."
+            });
+            return false;
+        }
+
+        return true;
+    };
+
     const validateGeneratePurchaseOrderForm = (): {
 
         isValid: boolean
@@ -123,8 +144,9 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                 newErrors.TermsCondition = "Terms & Condition is required.";
             }
         } else {
+
             if (!hasAnyDocumentFile(purchaseOrderFiles, purchaseOrderURL, removedPurchaseOrderUrls)) {
-                newErrors.PurchaseOrderURL = "Purchase Order is required.";
+                newErrors.PurchaseOrderURL = "Upload Purchase Order Document.";
             }
         }
 
@@ -161,6 +183,8 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
             setErrors(validation.errors)
             return
         }
+
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -273,7 +297,7 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                     MaterialRequisitionId: Number(currentMaterialRequisitionId),
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
                     Uniquekey: deleteGeneratePurchaseOrderData.Uniquekey || "",
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(projectId),
                 };
 
                 const response = await materialRequisitionPurchaseOrderService.apiCallDeleteMaterialRequisitionPurchaseOrder(params);
@@ -481,9 +505,9 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                 },
                 rowSpan: (_row, index, data) => getRowSpan(data, index, ['POSystemGeneratedCode'])
             },
-             {
+            {
                 key: "PurchaseOrderCreatedBy",
-                label: "Created By / Date",
+                label: "PO Created By / Date",
                 sortable: false,
                 width: "20",
                 fixed: "left",
@@ -507,18 +531,39 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                     getRowSpan(data, index, ["POSystemGeneratedCode"])
             },
             {
+                key: "MaterialReceivedQuantityTillDate",
+                label: "Received Quantity (GRN)",
+                align: "left",
+                width: "30",
+                render: (value, row) => {
+                    const quantity = value ?? 0;
+                    const unit = isDirect ? row.Level4SubMaterialUomCode : row.UomCode;
+                    return (
+                        <span className="inline-flex items-center rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 whitespace-nowrap">
+                            {quantity} {unit || ""}
+                        </span>
+                    );
+                }
+            },
+
+            {
                 key: "PurchaseOrderURL",
                 label: "PO",
                 width: "15",
                 sortable: false,
                 align: "left",
-                fixed:"right",
+                fixed: "right",
 
                 render: (value: string, row: any) => {
 
                     const hasPO = Boolean(value?.trim());
 
-                    const canDeletePO = canGeneratePurchaseOrder && hasPO && Number(row.NumberOfGRN || 0) === 0;
+                    const poMaterials = materialRequisitionDetailData.filter(item => item.PurchaseOrderURL === row.PurchaseOrderURL);
+
+                    const hasAnyGRN = poMaterials.some(item => Number(item.MaterialReceivedQuantityTillDate ?? 0) > 0);
+
+                    const canDeletePO = canGeneratePurchaseOrder && hasPO && !hasAnyGRN;
+
 
                     return (
                         <div className="flex items-center gap-2">
@@ -527,32 +572,32 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                                 <>
                                     <MultiImageViewer
                                         images={parseDocumentUrls(row.PurchaseOrderURL)}
-                                       title={row.POSystemGeneratedCode  ? `Purchase Order - ${row.POSystemGeneratedCode}` : "View"}
+                                        title={row.POSystemGeneratedCode ? `Purchase Order - ${row.POSystemGeneratedCode}` : "View"}
                                         isIcon={false}
                                         triggerLabel="Purchase Order"
                                     />
 
-                                    {Number(row.NumberOfGRN || 0) === 0 && (
-                                        <Button
-                                            type="button"
-                                            color="transparent"
-                                            size="sm"
-                                            disabled={!canDeletePO}
-                                            style={{
-                                                color: canDeletePO ? "#dc2626" : "#9CA3AF",
-                                                padding: "4px 8px",
-                                                cursor: canDeletePO ? "pointer" : "not-allowed",
-                                                opacity: canDeletePO ? 1 : 0.5
-                                            }}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
 
-                                                handleConfirmationDialogBoxOpen(row);
-                                            }}
-                                            leftIcon={<Trash2 className="h-4 w-4" />}
-                                        />
-                                    )}
+                                    <Button
+                                        type="button"
+                                        color="transparent"
+                                        size="sm"
+                                        disabled={!canDeletePO}
+                                        style={{
+                                            color: canDeletePO ? "#dc2626" : "#9CA3AF",
+                                            padding: "4px 8px",
+                                            cursor: canDeletePO ? "pointer" : "not-allowed",
+                                            opacity: canDeletePO ? 1 : 0.5
+                                        }}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+
+                                            handleConfirmationDialogBoxOpen(row);
+                                        }}
+                                        leftIcon={<Trash2 className="h-4 w-4" />}
+                                    />
+
                                 </>
                             ) : (
                                 <span className="text-xs text-gray-400">-</span>
@@ -564,7 +609,8 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
 
                 rowSpan: (_row, index, data) => getRowSpan(data, index, ["PurchaseOrderURL"])
             },
-           
+
+
 
         )
         return columns;
@@ -618,6 +664,9 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
 
                                 <Button
                                     onClick={() => {
+
+                                        if (!validateUploadPOVendor()) return;
+
                                         setIsUploadPO(true);
                                         setPurchaseOrderFiles([]);
                                         setPurchaseOrderURL("")
@@ -646,14 +695,15 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                 isOpen={isAddUpdateModalOpen}
 
                 onClose={() => {
-                    setSelectedIds([]);
                     setIsAddUpdateModalOpen(false);
                     setIsUploadPO(false);
                     setFormData(initialFormState());
                     setErrors({});
                     setPurchaseOrderFiles([]);
                 }}
-                title={isUploadPO ? "Upload Purchase Order" : "Purchase Order"}
+                
+                title={isUploadPO ? "Upload Purchase Order" : "Generate Purchase Order"}
+
                 onSubmit={(e) => {
                     e.preventDefault();
 
@@ -675,8 +725,8 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
 
                         <div>
                             <MultiFilePicker
-                                label="Upload PO"
-                                placeholder="Select PO"
+                                label="Upload Purchase Order"
+                                placeholder="Select Purchase Order"
                                 required
                                 error={errors.PurchaseOrderURL}
                                 value={purchaseOrderFiles}

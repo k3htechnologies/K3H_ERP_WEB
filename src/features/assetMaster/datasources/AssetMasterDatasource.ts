@@ -6,7 +6,9 @@ import type {
     DeleteAssetMasterRequest,
     AssetMasterListResponse,
     AssetMasterSaveResponse,
-    AssetMasterDeleteResponse
+    AssetMasterDeleteResponse,
+    FilterWithPaginationVerifyAssetMasterRequest,
+    VerifyAssetMasterListResponse
 } from '@/features/assetMaster/models/AssetMasterModel'
 
 export abstract class AssetMasterDatasource {
@@ -14,6 +16,8 @@ export abstract class AssetMasterDatasource {
     abstract pullAssetMaster(params: FilterWithPaginationAssetMasterRequest, signal?: AbortSignal): Promise<AssetMasterListResponse>;
     abstract addUpdateAssetMaster(data: FormData): Promise<AssetMasterSaveResponse>;
     abstract deleteAssetMaster(params: DeleteAssetMasterRequest): Promise<AssetMasterDeleteResponse>;
+    abstract pullVerifyAssetMaster(params: FilterWithPaginationVerifyAssetMasterRequest): Promise<VerifyAssetMasterListResponse>;
+
 }
 
 export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
@@ -101,6 +105,27 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
 
             }
 
+            throw error
+        }
+    }
+
+    async pullVerifyAssetMaster(params: FilterWithPaginationVerifyAssetMasterRequest): Promise<VerifyAssetMasterListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                AssetMasterId: (params.AssetMasterId ?? 0).toString(),
+                Uniquekey: (params.Uniquekey ?? ""),
+            })
+
+            return await this.k3hHttpClient.getRequestWithoutAuthentication(`${AssetMasterApi.PULL_VERIFY_ASSET_MASTER}?${queryParams.toString()}`,)
+
+        } catch (error: any) {
+
+            console.error('ERROR: PULL VERIFY ASSET MASTER :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullVerifyAssetMaster(params);
+            }
             throw error
         }
     }

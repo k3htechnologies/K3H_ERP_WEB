@@ -40,12 +40,20 @@ export interface MaterialRequisitionInvoiceData {
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: string;
+
+    VendorName: string;
+    VendorCompanyName: string;
+    VendorMobileNumber: string;
+    VendorMobileNumberCountryCode: string;
+    VendorGSTNumber: string;
+    VendorId: number | 0,
 }
 
 export interface AddUpdateMaterialRequisitionInvoice {
     MaterialRequisitionInvoiceId: number | 0;
     Uniquekey: string | null;
     ProjectId: number | 0;
+    VendorId: number | 0;
     MaterialRequisitionId: number | 0;
     InvoiceNumber: string | null;
     InvoiceDate: string | null;

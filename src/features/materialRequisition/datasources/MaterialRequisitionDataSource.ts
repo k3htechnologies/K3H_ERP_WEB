@@ -31,6 +31,10 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
             if (params.FromDate) queryParams.append('FromDate', params.FromDate);
             if (params.ToDate) queryParams.append('ToDate', params.ToDate);
             if (params.MaterialRequisitionStatus?.trim()) queryParams.append('MaterialRequisitionStatus', params.MaterialRequisitionStatus.trim());
+            if (params.MaterialRequisitionType?.trim()) queryParams.append('MaterialRequisitionType', params.MaterialRequisitionType.trim());
+            if (params.Department?.trim()) queryParams.append('Department', params.Department.trim());
+            if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
+            if (params.ApprovalStatus?.trim()) queryParams.append('ApprovalStatus', params.ApprovalStatus.trim());
             
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

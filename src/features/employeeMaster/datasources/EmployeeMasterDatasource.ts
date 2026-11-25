@@ -8,7 +8,9 @@ import type {
     SetEmployeeMPINRequest,
     EmployeeMPINRequestResponse,
     UpdateEmployeeMasterRequest,
-    EmployeeMasterUpdateResponse
+    EmployeeMasterUpdateResponse,
+    GenerateEmployeeIdCardResponse,
+    GenerateEmployeeIdCardRequest
 } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
@@ -17,6 +19,8 @@ export abstract class EmployeeMasterDatasource {
     abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse>;
+    abstract setEmployeeMPIN(params: SetEmployeeMPINRequest): Promise<EmployeeMPINRequestResponse>;
+    abstract generateEmployeeIdCard(params: GenerateEmployeeIdCardRequest): Promise<GenerateEmployeeIdCardResponse>
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -80,7 +84,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.pullEmployeeMaster(params);
+                return await this.pullEmployeeMaster(params);
             }
             throw error
         }
@@ -141,7 +145,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.addUpdateEmployeeMaster(params);
+                return await this.addUpdateEmployeeMaster(params);
             }
 
 
@@ -152,18 +156,14 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
     async updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse> {
 
         try {
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                EmployeeMasterApi.UPDATE,
-                params
-            )
-            return response
+            return await this.k3hHttpClient.postRequestWithAuthentication(EmployeeMasterApi.UPDATE, params);
         } catch (error) {
 
             console.error('ERROR: UPDATE Employee Master:', error)
 
-           if (error instanceof TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                return   await this.updateEmployeeMaster(params);
+                return await this.updateEmployeeMaster(params);
             }
             throw error
         }
@@ -173,19 +173,35 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                EmployeeMasterApi.SET_EMPLOYEE_MPIN,
-                params
-            )
+            return await this.k3hHttpClient.postRequestWithAuthentication(EmployeeMasterApi.SET_EMPLOYEE_MPIN, params)
 
-            return response
         } catch (error) {
 
             console.error('Error: SET MPIN:', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.setEmployeeMPIN(params);
+                return await this.setEmployeeMPIN(params);
+            }
+
+
+            throw error
+        }
+    }
+
+    async generateEmployeeIdCard(params: GenerateEmployeeIdCardRequest): Promise<GenerateEmployeeIdCardResponse> {
+
+        try {
+
+            return await this.k3hHttpClient.postRequestWithAuthentication(EmployeeMasterApi.GENERATE_EMPLOYEE_ID_CARD, params);
+
+        } catch (error) {
+
+            console.error('Error: GENERATE EMPLOYEE ID CARD:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.generateEmployeeIdCard(params);
             }
 
 

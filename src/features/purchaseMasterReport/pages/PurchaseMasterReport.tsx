@@ -8,7 +8,7 @@ import usePagination from "@/core/hooks/usePagination";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import useToast from "@/core/hooks/useToast";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { Button, Input } from "@/ui/components/forms";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -194,7 +194,7 @@ export const PurchaseMasterReport: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'center',
-            render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+            render: value => (value ? formatDate_dd_MonthName_yy_hh_mm(value) : '-')
         },
         {
             key: "MaterialCode",
@@ -274,7 +274,7 @@ export const PurchaseMasterReport: React.FC = () => {
             width: '12',
             sortable: false,
             align: 'center',
-            render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            render: (value?: string) => value ? formatDate_dd_MonthName_yy_hh_mm(value) : '-'
         },
         {
             key: 'CreatedBy',

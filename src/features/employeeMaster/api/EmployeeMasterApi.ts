@@ -16,6 +16,7 @@ export const EmployeeMasterApi = {
 
     SET_EMPLOYEE_MPIN: '/Employee/SetEmployeeMPIN',
     UPDATE: '/Employee/UpdateEmployee',
+    GENERATE_EMPLOYEE_ID_CARD: '/Employee/GenerateEmployeeIdCard',
 
     PULL_EMPLOYEE_LETTER: '/EmployeeLetter/PullEmployeeLetter',
     ADD_UPDATE_EMPLOYEE_LETTER: '/EmployeeLetter/AddUpdateEmployeeLetter',

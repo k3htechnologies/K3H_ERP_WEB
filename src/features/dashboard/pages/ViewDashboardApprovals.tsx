@@ -291,7 +291,7 @@ const ViewDashboardApprovals: React.FC = () => {
 
             // FINALIZED VENDOR / INVOICE APPROVAL
             case "Material Requisition":
-            case "Finalized Vendor":
+            case "Finalize Vendor":
             case "Invoice Approval":
                 return [
                      {

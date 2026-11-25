@@ -15,6 +15,7 @@ export const computeAmount = (r: any): number => {
 };
 
 export const computeAmountInstallation = (r: any): number => {
+    
     const quantity = Number(r.MaterialQuantity || 0);
     const unitPrice = Number(r.MaterialPerUnit || 0);
     const installation = Number(r.Installation || 0);

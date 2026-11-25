@@ -673,6 +673,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                             </div>
 
                         </section>
+
+
                         {/* ================== ADDRESS ================== */}
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
@@ -745,7 +747,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                             <FieldItem label="Office E-mail ID" value={safe(employeeData!.OfficeEmailId)} />
                                         </div>
                                     </div>
-                                    <div className="lg:col-span-3">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem
                                                 label="Probation Date"
@@ -758,6 +760,38 @@ export const ViewEmployeeMaster: React.FC = () => {
                                             />
 
                                             <FieldItem label="MPIN" value={safe(employeeData!.MPIN)} />
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                            <div className="flex flex-col gap-2">
+                                                <span className="text-sm text-gray-500">
+                                                   ID Card
+                                                </span>
+
+                                                {(() => {
+                                                    const idCardUrls = [
+                                                        ...parseDocumentUrls(employeeData?.EmployeeIdCardFrontURL ?? ""),
+                                                        ...parseDocumentUrls(employeeData?.EmployeeIdCardBackURL ?? "")
+                                                    ].filter(Boolean);
+
+                                                    return idCardUrls.length > 0 ? (
+                                                        <MultiImageViewer
+                                                            images={idCardUrls}
+                                                            title="Employee ID Card"
+                                                            triggerLabel="View ID Card"
+                                                            isIcon={false}
+                                                            isWrap={false}
+                                                        />
+                                                    ) : (
+                                                        <span className="text-sm text-gray-400">
+                                                            Not Generated
+                                                        </span>
+                                                    );
+                                                })()}
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>

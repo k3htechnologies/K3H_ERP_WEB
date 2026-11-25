@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionDetailGRNData, type DeleteMaterialRequisitionGRN, type FilterWithGenerateMaterialRequisitionGRNPDF } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type DeleteMaterialRequisitionGRN, type FilterWithGenerateMaterialRequisitionGRNPDF } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
@@ -46,7 +46,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
     const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.materialRequisitionStatus?.toUpperCase())
 
-    const [, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
+
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
 
@@ -62,25 +62,17 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
     useEffect(() => {
         if (!projectId) return;
-        loadGRNData()
+        loadMaterialRequisitionGRN()
     }, [projectId, currentMaterialRequisitionId]);
 
     const handleAddGRN = useCallback(async () => {
         await onload?.();
-
-        navigate('/materialRequisition/grn/add', {
-            state: {
-                matrialRequisitionDetailData,
-            },
-        });
+        navigate('/materialRequisition/grn/add', { state: { matrialRequisitionDetailData, }, });
     }, [navigate, matrialRequisitionDetailData, onload]);
 
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
-
-        return GRN.filter(item =>
-            item.ChallanNumber?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        return GRN.filter(item => item.ChallanNumber?.toLowerCase().includes(searchTerm.toLowerCase()));
     }, [GRN, searchTerm]);
 
     const clearSearchGRN = () => {
@@ -98,7 +90,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
         );
     }, [navigate]);
 
-    const loadGRNData = async () => {
+    const loadMaterialRequisitionGRN = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -115,9 +107,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
                     const data = response.right.Data;
 
-                    SetGRN(data)
-
-                    SetGRNData(data?.[0]?.MaterialRequisitionDetailGRNData ?? []);
+                    SetGRN(data);
 
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -133,16 +123,9 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
         );
     };
 
-
-
     const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() => {
 
-        // const isDirect = matrialRequisitionDetailData?.[0]?.MaterialRequisitionType?.toUpperCase() === "DIRECT";
-
-        const isDirect =
-            GRN?.[0]?.MaterialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType
-                ?.trim()
-                .toUpperCase() === "DIRECT";
+        const isDirect = GRN?.[0]?.MaterialRequisitionDetailGRNData?.[0]?.MaterialRequisitionType?.trim().toUpperCase() === "DIRECT";
 
         const columns: TableColumn[] = [];
 
@@ -256,10 +239,6 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
         return columns;
     }, [GRN]);
 
-    const firstGRNId = useMemo(() => {
-        const id = GRN[0]?.MaterialRequisitionGRNId;
-        return id != null ? String(id) : undefined;
-    }, [GRN]);
 
     const handleConfirmationDialogBoxOpen = useCallback((row: MaterialRequisitionGRNData) => {
         setDeleteMaterialRequisitionDetailGRNData(row);
@@ -268,17 +247,28 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
     const GRNColumns = useMemo<TableColumn[]>(() => [
         {
-            key: 'VendorName',
-            label: 'Vendor Name',
-            width: '25',
-            render: (value?: string) => value || '-'
+
+            key: "VendorName",
+            label: "Vendor / Company Name",
+            align: "left",
+            width: "20",
+            render: (value: string, row: any) => (
+                <div className="flex flex-col items-start gap-0.5">
+
+                    <span className="text-xs font-semibold text-slate-800">
+                        {value || "-"}
+                    </span>
+
+                    {row.CompanyName && (
+                        <span className="inline-block max-w-full rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500 whitespace-normal break-words">
+                            {row.CompanyName}
+                        </span>
+                    )}
+
+                </div>
+            )
         },
-        {
-            key: 'CompanyName',
-            label: 'Company Name',
-            width: '25',
-            render: (value?: string) => value || '-'
-        },
+
         {
             key: 'ChallanNumber',
             label: 'Challan Number',
@@ -343,20 +333,26 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
         },
         {
             key: "ModifiedBy",
-            label: "Last Modified By",
-            width: "15",
+            label: "Last Modified By / Date",
+            width: "20",
             sortable: false,
             align: "left",
-            render: (value, row) => <TooltipText text={value || row.CreatedBy || "-"} maxWidth="180px" tooltipThreshold={18} />,
-        },
-        {
-            key: "ModifiedDate",
-            label: "Last Modified Date",
-            width: "15",
-            sortable: false,
-            align: "left",
-            render: (value, row) =>
-                value ? formatDate_dd_MonthName_yy_hh_mm(value) : row.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate) : "-",
+            render: (value, row) => (
+                
+                <div className="flex flex-col items-start gap-1">
+
+                    <span className="text-xs font-semibold text-slate-800">
+                        {value || row.CreatedBy || "-"}
+                    </span>
+
+                    {(row.ModifiedDate || row.CreatedDate) && (
+                        <span className="inline-block rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500">
+                            {formatDate_dd_MonthName_yy_hh_mm(row.ModifiedDate || row.CreatedDate)}
+                        </span>
+                    )}
+
+                </div>
+            ),
         },
         {
             key: 'actions',
@@ -364,9 +360,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
             width: '10',
             align: 'center',
             render: (_: any, row: MaterialRequisitionGRNData) => {
-
-
-                const isFirstRow = String(row.MaterialRequisitionGRNId) === firstGRNId;
+                const isFirstRow = GRN.find(item => item.VendorId === row.VendorId)?.MaterialRequisitionGRNId === row.MaterialRequisitionGRNId;
 
 
                 const canEditDelete =
@@ -418,7 +412,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                 );
             }
         }
-    ], [canAction, materialRequisitionStatus, firstGRNId, handleConfirmationDialogBoxOpen, handleGRNEdit]);
+    ], [GRN, canAction, materialRequisitionStatus, handleConfirmationDialogBoxOpen, handleGRNEdit]);
 
     const handleDeleteMaterialRequisitionDetailGRNRequest = async () => {
 
@@ -448,7 +442,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
                     setDeleteMaterialRequisitionDetailGRNData(null);
 
-                    await loadGRNData();
+                    await loadMaterialRequisitionGRN();
 
                     await onload?.();
 
@@ -507,6 +501,9 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
 
     const handleExportMaterialRequisitionGRNPdf = () => handleExportMaterialRequisitionGRN('PDF')
 
+    const hasPurchaseOrder = useMemo(() => {
+        return matrialRequisitionDetailData?.some(item => Boolean(item.PurchaseOrderURL?.trim())) ?? false;
+    }, [matrialRequisitionDetailData]);
     return (
         <div className="pt-5">
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
@@ -519,18 +516,16 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                     setSearchTerm(v);
                 }}
                 onClearSearch={clearSearchGRN}
-                isShowAddButton={canAction && !materialRequisitionStatus && !isAllQuantityReceived}
+                isShowAddButton={canAction && !materialRequisitionStatus && !isAllQuantityReceived && hasPurchaseOrder}
                 addTitle="Add"
                 onAdd={handleAddGRN}
                 isShowAddExtraButton={true}
                 addExtraTitle='Summary'
                 onAddExtra={() => {
                     setIsViewGRNSummaryModalOpen(true);
-                    loadGRNData();
+                    loadMaterialRequisitionGRN();
                 }}
-
                 addExtraButtonIcon={<ClipboardList className="h-4 w-4" />}
-
                 isShowExportButton={filteredGRN.length > 0}
                 onExportPdf={handleExportMaterialRequisitionGRNPdf}
 
@@ -593,7 +588,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                                         <FieldItem label="Challan" urls={item?.UploadChallanURL} isIcon isSetValue={false} />
                                         <FieldItem label="Proof Of Document" urls={item?.ProofOfDocumentURL} isIcon isSetValue={false} />
                                         <FieldItem label="Vehicle Number" value={item?.VehicleNumber || '-'} />
-                                        <FieldInfoTooltip label="Remarks" value={item?.Remarks || '-'} />
+                                        {item?.Remarks?.trim() ? (<FieldInfoTooltip label="Remarks" value={item.Remarks} />) : (<FieldItem label="Remarks" value="-" />)}
                                         <FieldItem label="Created By / Date" value={item.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate || '-')} />
 
                                         {item.ModifiedBy !== '' ?

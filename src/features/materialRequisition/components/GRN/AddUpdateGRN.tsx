@@ -5,19 +5,20 @@ import * as E from "fp-ts/Either";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { Input } from "@/ui/components/forms/Input";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { filterChallanNumber, filterNumbers, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
+import { filterChallanNumber, filterNumbersWithDecimal, hasAnyDocumentFile, isValidVehicleNumber } from "@/core/utils/fileValidation";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import type { MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -50,11 +51,8 @@ export const AddUpdateGRN = () => {
     const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
     const [removedProofOfDocumentUrls, setRemovedProofOfDocumentUrls] = useState<string[]>([]);
     const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
-
-    const { canAction } = useMenuPermissions('Get Material Requisition');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const navigate = useNavigate();
-
     const [selectedVendorId, setSelectedVendorId] = useState<number | null>(null);
 
 
@@ -67,6 +65,8 @@ export const AddUpdateGRN = () => {
 
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.materialRequisitionId;
     const currentUniquekey = listState.uniquekey;
+    const employeeDepartmentMasterId = LocalStorageHelper.getStoredEmployeeData()?.DepartmentMasterId;
+    const canAction = Number(employeeDepartmentMasterId) === Number(listState.departmentMasterId);
 
     const materialRequisitionGRNId = MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0;
     const isAddMode = materialRequisitionGRNId === 0;
@@ -74,6 +74,8 @@ export const AddUpdateGRN = () => {
     const location = useLocation();
 
     const { matrialRequisitionDetailData = [], } = location.state ?? {};
+
+    const [grnQuantityInputs, setGRNQuantityInputs] = useState<Record<string, string>>({});
 
     useEffect(() => {
         if (matrialRequisitionDetailData.length > 0) {
@@ -86,11 +88,11 @@ export const AddUpdateGRN = () => {
 
     useEffect(() => {
         if (!isAddMode) {
-            loadGRNData();
+            loadMaterialRequisitionGRN();
         }
     }, [currentMaterialRequisitionId]);
 
-    const loadGRNData = async () => {
+    const loadMaterialRequisitionGRN = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -119,6 +121,8 @@ export const AddUpdateGRN = () => {
                             Remarks: e.Remarks ?? "",
                             VehicleNumber: e.VehicleNumber ?? "",
                         }));
+
+                        setSelectedVendorId(Number(e.VendorId));
 
                         setMaterialList(
                             (e.MaterialRequisitionDetailGRNData ?? []).map(item => {
@@ -154,7 +158,11 @@ export const AddUpdateGRN = () => {
                                     MaterialRequisitionDetailId: item.MaterialRequisitionDetailId ?? 0,
                                     IsTolerant: Detail?.IsTolerant ?? false,
                                     TolerancePercentage: Detail?.TolerancePercentage ?? 0,
-                                    TotalReceivedQuantityByRequisition: Detail.TotalReceivedQuantityByRequisition ?? 0
+                                    TotalReceivedQuantityByRequisition: Detail.TotalReceivedQuantityByRequisition ?? 0,
+
+                                    VendorId: Detail.VendorId ?? 0,
+                                    VendorCompanyName: Detail.VendorCompanyName ?? "",
+                                    VendorName: Detail.VendorName ?? ""
                                 };
                             }));
 
@@ -217,18 +225,16 @@ export const AddUpdateGRN = () => {
         form.append('Uniquekey', formData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6");
         form.append('Remarks', formData.Remarks ?? '');
         form.append('ChallanNumber', formData.ChallanNumber);
-        form.append('VehicleNumber', formData.VehicleNumber ?? '');
+        form.append('VehicleNumber', formData.VehicleNumber?.toUpperCase() ?? '');
         form.append('MaterialRequisitionGRNId', formData.MaterialRequisitionGRNId.toString());
         form.append('VendorId', String(selectedVendorId ?? 0));
 
-        const filtered = materialList
-            .filter(item => item.TotalReceivedMaterialQuantity > 0)
-            .map(item => ({
-                MaterialRequisitionDetailGRNId: item.MaterialRequisitionDetailGRNId ?? 0,
-                MaterialRequisitionDetailId: item.MaterialRequisitionDetailId,
-                TotalReceivedMaterialQuantity: item.TotalReceivedMaterialQuantity,
-                QualityAnalystRemark: item.QualityAnalystRemark,
-            }));
+        const filtered = materialList.filter(item => Number(item.MaterialRequisitionDetailGRNId ?? 0) !== 0 || Number(item.TotalReceivedMaterialQuantity ?? 0) > 0).map(item => ({
+            MaterialRequisitionDetailGRNId: item.MaterialRequisitionDetailGRNId ?? 0,
+            MaterialRequisitionDetailId: item.MaterialRequisitionDetailId,
+            TotalReceivedMaterialQuantity: item.TotalReceivedMaterialQuantity,
+            QualityAnalystRemark: item.QualityAnalystRemark,
+        }));
 
         form.append('MaterialRequisitionDetailGRNJSON', JSON.stringify(filtered));
         form.append("ProjectId", projectId!.toString());
@@ -255,6 +261,7 @@ export const AddUpdateGRN = () => {
 
 
         setErrors({});
+
         const validation = validateMaterialRequisitionGRNForm();
 
         if (!validation.isValid) {
@@ -262,12 +269,10 @@ export const AddUpdateGRN = () => {
             return;
         }
 
-        const receivedMaterials = materialList.filter(item => Number(item.TotalReceivedMaterialQuantity) > 0);
+        const receivedMaterials = materialList.filter(item => Number(item.MaterialRequisitionDetailGRNId ?? 0) > 0 || Number(item.TotalReceivedMaterialQuantity ?? 0) > 0);
 
         if (receivedMaterials.length === 0) {
-            addToast({
-                type: "error", title: "Please enter Received Quantity for at least one Material"
-            });
+            addToast({ type: "error", title: "Please enter Received Quantity for at least one Material" });
             return;
         }
 
@@ -361,31 +366,26 @@ export const AddUpdateGRN = () => {
             columns.push(
                 {
                     key: "MaterialName",
-                    label: "Material",
+                    label: "Material / Sub Material",
                     align: "left",
-                    width: "30",
-                    render: (value) => (
-                        <TooltipText
-                            text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
-                        />
+                    width: "40",
+                    render: (value, row) => (
+                        <div className="flex flex-col items-start gap-0.5 w-max">
+
+                            <span className="text-xs font-semibold text-slate-800">
+                                {value || "-"}
+                            </span>
+
+                            {row.SubMaterialName && (
+                                <span className="inline-block max-w-full rounded-sm bg-blue-50 px-1.5 py-0.5 text-[12px] leading-tight text-slate-500 whitespace-normal break-words">
+                                    {row.SubMaterialName}
+
+                                </span>
+                            )}
+
+                        </div>
                     )
-                },
-                {
-                    key: "SubMaterialName",
-                    label: "Sub Material",
-                    align: "left",
-                    width: "30",
-                    render: (value) => (
-                        <TooltipText
-                            text={value || "-"}
-                            maxWidth="250px"
-                            tooltipThreshold={25}
-                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                        />
-                    )
-                },
+                }
 
             );
         }
@@ -400,26 +400,25 @@ export const AddUpdateGRN = () => {
                     value ? formatDate_dd_MonthName_yy(value) : "-"
             },
             {
-                key: "VendorDetailsGroup",
-                label: "Vendor Details",
-                align: "center",
+                key: "VendorName",
+                label: "Vendor / Company Name",
+                align: "left",
+                width: "20",
+                render: (value, row) => (
+                    <div className="flex flex-col items-start gap-0.5">
 
-                children: [
-                    {
-                        key: "VendorCompanyName",
-                        label: "Company Name",
-                        align: "left",
-                        width: "30",
-                        render: (value) => value || "-"
-                    },
-                    {
-                        key: "VendorName",
-                        label: "Name",
-                        align: "left",
-                        width: "30",
-                        render: (value) => value || "-"
-                    },
-                ]
+                        <span className="text-xs font-semibold text-slate-800">
+                            {value || "-"}
+                        </span>
+
+                        {row.VendorCompanyName && (
+                            <span className="inline-block max-w-full rounded-sm bg-blue-50 px-1.5 py-0.5 text-[11px] leading-tight text-slate-500 whitespace-normal break-words">
+                                {row.VendorCompanyName}
+                            </span>
+                        )}
+
+                    </div>
+                )
             },
 
             {
@@ -429,11 +428,16 @@ export const AddUpdateGRN = () => {
                 children: [
                     {
                         key: "MaterialQuantity",
-                        label: "Total",
+                        label: "Quantity & Units",
                         align: "left",
                         width: "30",
                         render: (value, row) => {
-                            return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                            const quantity = value ?? 0; const unit = isDirect ? row.Level4SubMaterialUomCode : row.UomCode;
+                            return (
+                                <span className="inline-flex items-center rounded bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-700 whitespace-nowrap">
+                                    {quantity} {unit || ""}
+                                </span>
+                            );
                         }
                     },
                     {
@@ -442,22 +446,39 @@ export const AddUpdateGRN = () => {
                         align: "left",
                         width: "30",
                         render: (value, row) => {
-                            return isDirect ? `${value ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${value ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+
+                            const originalReceivedQuantity = isAddMode ? 0 : Number(row.OriginalReceivedQuantity ?? 0);
+
+                            const receivedTillDate = Math.max(0, Number(value ?? 0) - originalReceivedQuantity);
+
+                            const uom = isDirect ? row.Level4SubMaterialUomCode : row.UomCode;
+
+                            return `${receivedTillDate} ${uom ?? ""}`.trim();
                         }
                     },
                     {
-                        key: 'PendingQuantity',
-                        label: 'Pending',
-                        width: '10',
+                        key: "PendingQuantity",
+                        label: "Pending",
+                        width: "10",
                         sortable: false,
-                        align: 'left',
+                        align: "left",
                         render: (_value, row) => {
 
-                            const materialQuantity = row.MaterialQuantity
-                            const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
-                            const pending = materialQuantity - materialReceivedQuantityTillDate
+                            const materialQuantity = Number(row.MaterialQuantity ?? 0);
 
-                            return isDirect ? `${pending ?? 0} ${row.Level4SubMaterialUomCode ?? ""}`.trim() : `${pending ?? 0} ${row.UomCode ?? ""}`.trim() ?? 0;
+                            const totalReceived = Number(row.MaterialReceivedQuantityTillDate ?? 0);
+
+                            const originalReceivedQuantity = isAddMode ? 0 : Number(row.OriginalReceivedQuantity ?? 0);
+
+                            const nowReceived = Number(row.TotalReceivedMaterialQuantity ?? 0);
+
+                            const receivedTillDate = Math.max(0, totalReceived - originalReceivedQuantity);
+
+                            const pendingQuantity = Math.max(0, materialQuantity - receivedTillDate - nowReceived);
+
+                            const uom = isDirect ? row.Level4SubMaterialUomCode : row.UomCode;
+
+                            return `${pendingQuantity.toFixed(2)} ${uom ?? ""}`.trim();
                         }
                     },
                     {
@@ -467,58 +488,72 @@ export const AddUpdateGRN = () => {
                         width: "30",
                         render: (value: any, row) => {
 
-                            const materialQuantity = row.MaterialQuantity
-                            const materialReceivedQuantityTillDate = row.MaterialReceivedQuantityTillDate
-                            const pendingQuantity = materialQuantity - materialReceivedQuantityTillDate
-                            const isPendingQtyZero = pendingQuantity <= 0;
+                            const materialQuantity = Number(row.MaterialQuantity ?? 0);
+
+                            const totalReceived = Number(row.MaterialReceivedQuantityTillDate ?? 0);
+
+                            const originalReceivedQuantity = isAddMode ? 0 : Number(row.OriginalReceivedQuantity ?? 0);
+
+                            const receivedTillDate = Math.max(0, totalReceived - originalReceivedQuantity);
+
+                            const maxAllowedQuantity = Number(Math.max(0, materialQuantity - receivedTillDate).toFixed(2) );
+
+                            const isPendingQtyZero = maxAllowedQuantity <= 0;
+
                             const isOtherVendorSelected = selectedVendorId !== null && selectedVendorId !== Number(row.VendorId);
+
+                            const quantityKey = `${row.MaterialRequisitionDetailId}-${row.VendorId}`;
+
                             return (
                                 <Input
                                     label=""
-                                    value={value ?? 0}
+                                    type="text"
+                                    inputMode="decimal"
+                                    value={grnQuantityInputs[quantityKey] ?? String(value ?? 0)}
                                     maxLength={9}
                                     disabled={isPendingQtyZero || isOtherVendorSelected}
                                     onChange={(e) => {
 
-                                        const raw = filterNumbers(e.target.value);
+                                        const raw = filterNumbersWithDecimal(e.target.value);
+
                                         const receivedQuantity = Number(raw);
 
-                                        if (receivedQuantity > pendingQuantity) {
-                                            addToast({ type: "error", title: `Received Quantity cannot exceed Pending Quantity (${pendingQuantity})`, });
+                                        if (!Number.isFinite(receivedQuantity)) return;
+
+                                        if (receivedQuantity > maxAllowedQuantity) {
+                                            addToast({ type: "error", title: `Received Quantity cannot exceed ${maxAllowedQuantity.toFixed(2)}`, });
                                             return;
                                         }
 
-                                        if (receivedQuantity < 0) return;
+                                        setGRNQuantityInputs(prev => ({ ...prev, [quantityKey]: raw }));
 
                                         if (receivedQuantity > 0) {
                                             setSelectedVendorId(Number(row.VendorId));
                                         }
 
-                                        setMaterialList(prev => {
+                                        const updatedList = materialList.map(item => {
 
-                                            const updatedList = prev.map(item => {
+                                            if (item.MaterialRequisitionDetailId === row.MaterialRequisitionDetailId && Number(item.VendorId) === Number(row.VendorId)) {
+                                                return {
+                                                    ...item,
+                                                    TotalReceivedMaterialQuantity: receivedQuantity
+                                                };
+                                            }
 
-                                                if (item.MaterialRequisitionDetailId === row.MaterialRequisitionDetailId && Number(item.VendorId) === Number(row.VendorId)) {
-                                                    return {
-                                                        ...item,
-                                                        TotalReceivedMaterialQuantity: receivedQuantity
-                                                    };
-                                                }
+                                            return item;
+                                        });
 
-                                                return item;
-                                            });
+                                        setMaterialList(updatedList);
 
-
+                                        if (isAddMode) {
                                             const hasReceivedQuantity = updatedList.some(item => Number(item.TotalReceivedMaterialQuantity) > 0);
 
                                             if (!hasReceivedQuantity) {
                                                 setSelectedVendorId(null);
                                             }
-
-                                            return updatedList;
-                                        });
+                                        }
                                     }}
-                                    max={pendingQuantity}
+                                    max={maxAllowedQuantity}
                                 />
                             );
                         },
@@ -529,18 +564,26 @@ export const AddUpdateGRN = () => {
         );
 
         return columns;
-    }, [materialList]);
+    }, [materialList, selectedVendorId, addToast,isAddMode,grnQuantityInputs]);
 
     return (
         <>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5 pt-5">
                 <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
+                <div className="flex-1 space-y-2  overflow-y-auto thin-scroll">
 
-                <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
+                    <HeaderActionBar
+                        subTitleText={`Goods Received Notes (GRN) Details : ${listState.systemGeneratedCode ?? "-"}`}
+                        subSubTitleText={listState?.projectName ?? "-"}
+                        subSubSubTitleText={listState?.approvalStatus ?? "-"}
+                        cancelText="Cancel"
+                        onCancel={() => navigate(-1)}
+                        EditText="Edit"
+                        canAction={false}
 
-                    <div className="space-y-6">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Good Received Notes (GRN) Details</h3>
+                    />
 
+                    <div className="space-y-6 pt-5">
 
                         <CustomTable
                             columns={matrialRequisitionDetailColumns}

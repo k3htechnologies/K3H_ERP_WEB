@@ -88,6 +88,8 @@ export interface EmployeeMasterData {
   DrivingLicenceNumber: string | ''
   VoterCardNumber: string | ''
   ProfilePhotoURL: string | ''
+  EmployeeIdCardFrontURL: string | ''
+  EmployeeIdCardBackURL: string | ''
   MPIN: string | ''
   ClientRegistrationId: number | 0
   CreatedById: number | 0
@@ -232,9 +234,13 @@ export interface SetEmployeeMPINRequest {
   UniqueKey: string | null;
   MPIN: string;
 }
+export interface GenerateEmployeeIdCardRequest {
+  EmployeeId: number;
+}
 
 export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterUpdateResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMPINRequestResponse = ApiResponse<String>;
+export type GenerateEmployeeIdCardResponse  = ApiResponse<EmployeeMasterData[]>;

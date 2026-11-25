@@ -123,7 +123,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionInvoiceSummary = {
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    VendorId:0
+                    VendorId: 0
                 };
 
                 const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoiceSummary(params);
@@ -153,8 +153,8 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
     const handleEditInvoice = useCallback((row: MaterialRequisitionInvoiceData) => {
         navigate(`/materialRequisition/addInvoice/add/${row.MaterialRequisitionGRNId}/${row.MaterialRequisitionInvoiceId}`);
     }, [navigate]);
-
-    const handleMakePayment = useCallback((row: MaterialRequisitionInvoiceData) => {
+    
+    const handleViewPayment = useCallback((row: MaterialRequisitionInvoiceData) => {
         navigate(`/materialRequisition/invoicePayment/${row.MaterialRequisitionGRNId}`);
     }, [navigate]);
 
@@ -241,13 +241,23 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
             align: 'center',
             render: (_value, row) => (
                 <div>
+                    
+
                     {row.IsInvoiceCreated === false && !materialRequisitionStatus && (
                         <Button
                             color="blue"
                             size="sm"
+                            disabled={Number(row.POPendingAmount ?? 0) <= 0}
+                            style={{
+                                opacity: Number(row.POPendingAmount ?? 0) <= 0 ? 0.5 : 1,
+                                cursor: Number(row.POPendingAmount ?? 0) <= 0 ? "not-allowed"  : "pointer"
+                            }}
+                            title={
+                                Number(row.POPendingAmount ?? 0) <= 0 ? "PO amount is fully paid"  : "Add Invoice"
+                            }
                             onClick={() => handleCreateInvoice(row)}
                         >
-                            Create Invoice
+                            Add Invoice
                         </Button>
                     )}
 
@@ -259,7 +269,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                 background: "#00AC00"
                             }}
 
-                            onClick={() => handleMakePayment(row)}
+                            onClick={() => handleViewPayment(row)}
                         >
                             Make Payment
                         </Button>
@@ -271,7 +281,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                             variant="solid"
                             colorMode="extraLight"
                             size="sm"
-                            onClick={() => handleMakePayment(row)}
+                            onClick={() => handleViewPayment(row)}
                         >
                             View Payment
                         </Button>
@@ -283,7 +293,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                             variant="solid"
                             colorMode="extraLight"
                             size="sm"
-                            onClick={() => handleMakePayment(row)}
+                            onClick={() => handleViewPayment(row)}
                         >
                             View Payment
                         </Button>
@@ -291,7 +301,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                 </div>
             )
         }
-    ], [handleMakePayment, handleMakePayment, handleCreateInvoice]);
+    ], [handleViewPayment, handleCreateInvoice, materialRequisitionStatus, invoiceSummaryData]);
 
     const handleApprovalLog = (row: MaterialRequisitionInvoiceData) => {
         const request: ModulesApprovalStatusRequest = {
@@ -442,7 +452,11 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
             {invoiceSummaryData.map((item, index) => {
                 const vendorId = Number(item.VendorId);
 
-                const vendorInvoiceData = InvoiceForTable.filter(invoice => Number(invoice.VendorId) === vendorId );
+                const vendorInvoiceData = InvoiceForTable
+                    .filter(invoice => Number(invoice.VendorId) === vendorId)
+                    .map(invoice => ({
+                        ...invoice, POPendingAmount: Number(item?.POPendingAmount ?? 0)
+                    }));
 
                 const pageSize = 20;
                 const currentPage = vendorWiseGRNPages[vendorId] ?? 1;
@@ -455,15 +469,15 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                     totalPages,
                     totalRecords,
                     pageSize,
-                    onPageChange: (page: number) =>handlePageChange(page, vendorId),
+                    onPageChange: (page: number) => handlePageChange(page, vendorId),
                 };
 
-                const paginatedVendorData = vendorInvoiceData.slice((currentPage - 1) * pageSize, currentPage * pageSize );
+                const paginatedVendorData = vendorInvoiceData.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
                 return (
                     <React.Fragment key={vendorId || index}>
 
-                        <div key={item.FinalVendor ?? index} className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+                        <div key={item.FinalVendor ?? index} className="gap-x-4 bg-[#EFF6FF] rounded-lg  border border-gray-300 p-4 mb-4">
                             <div className="lg:col-span-5 pb-3">
 
                                 <div className="mb-5">
@@ -500,19 +514,11 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
                                     </h3>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                        <FieldItem
-                                            label="Total (₹)"
-                                            value={formatCurrency(item?.POAmount)}
-                                        />
+                                        <FieldItem label="Total (₹)" value={formatCurrency(item?.POAmount)} />
 
-                                        <FieldItem
-                                            label="Paid (₹)"
-                                            value={formatCurrency(item?.POPaidAmount)}
-                                        />
+                                        <FieldItem label="Paid (₹)" value={formatCurrency(item?.POPaidAmount)} />
 
-                                        <FieldItem
-                                            label="Pending (₹)"
-                                            value={formatCurrency(item?.POPendingAmount)}
+                                        <FieldItem label="Pending (₹)" value={formatCurrency(item?.POPendingAmount)}
                                         />
                                     </div>
                                 </div>

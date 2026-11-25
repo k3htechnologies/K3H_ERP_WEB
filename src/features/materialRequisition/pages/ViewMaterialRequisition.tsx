@@ -46,15 +46,16 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [closeCompletedRemarkError, setCloseCompletedRemarkError] = useState("");
 
     const { canAction: canMaterialRequisitionView } = useMenuPermissions('Get Material Requisition');
+    const { canView: canGetEnquiryView } = useMenuPermissions('Get Enquiry');
     const { canView: canGetQuotationView } = useMenuPermissions('Get Quotation');
-    const { canView: canFinalizedVendorView } = useMenuPermissions('Finalized Vendor');
+    const { canView: canFinalizedVendorView } = useMenuPermissions('Finalize Vendor');
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
 
         { id: "Details", label: "Details" },
-        canGetQuotationView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Enquiry", label: "Enquiry" } : null,
+        canGetEnquiryView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Enquiry", label: "Enquiry" } : null,
         canGetQuotationView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Quotation", label: "Quotation" } : null,
         canFinalizedVendorView && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Finalize Vendor", label: "Finalize Vendor" } : null,
         canGeneratePurchaseOrder && listState.approvalStatus.toUpperCase() === "APPROVED" ? { id: "Purchase Order", label: "Purchase Order" } : null,
@@ -65,7 +66,12 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState<string>(location.state?.activeTab || MaterialRequisitionTabList?.[0]?.id || '');
 
+    const requisitionStatus = matrialRequisitionData?.MaterialRequisitionStatus?.trim().toUpperCase();
 
+    const canCloseOrComplete = matrialRequisitionData !== null &&
+        !!requisitionStatus &&
+        !["COMPLETED", "CLOSED"].includes(requisitionStatus) &&
+        listState?.approvalStatus?.trim().toUpperCase() === "APPROVED";
 
     useEffect(() => {
         if (!projectId || !currentMaterialRequisitionId || currentMaterialRequisitionId === 0) return;
@@ -163,7 +169,7 @@ export const ViewMaterialRequisition: React.FC = () => {
         );
     };
 
-    
+
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
         updateListState({ materialRequisitionId: row.MaterialRequisitionId });
@@ -229,11 +235,10 @@ export const ViewMaterialRequisition: React.FC = () => {
                     />
 
                 </div>
+                {canCloseOrComplete && (
+                    <div className="flex justify-end gap-2">
 
-                <div className="flex justify-end gap-2">
 
-                    {!["Completed", "Closed"].includes(matrialRequisitionData?.MaterialRequisitionStatus?.trim() ?? "") && 
-                     ["APPROVED"].includes(listState?.approvalStatus?.toUpperCase()) &&(
                         <div className="flex justify-end pb-2 pl-2 gap-2">
                             <Button
                                 size="sm"
@@ -243,6 +248,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                                     backgroundColor: '#FFF2F2'
                                 }}
                                 onClick={() => {
+                                    setCloseCompletedRemarkError("");
+
                                     setSelectedMaterialRequisitionItem({
                                         MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
                                         Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
@@ -265,6 +272,9 @@ export const ViewMaterialRequisition: React.FC = () => {
                                     backgroundColor: '#E8F7E8'
                                 }}
                                 onClick={() => {
+
+                                    setCloseCompletedRemarkError("");
+
                                     setSelectedMaterialRequisitionItem({
                                         MaterialRequisitionId: matrialRequisitionData?.MaterialRequisitionId ?? 0,
                                         Uniquekey: matrialRequisitionData?.Uniquekey ?? "",
@@ -278,10 +288,11 @@ export const ViewMaterialRequisition: React.FC = () => {
                                 Completed
                             </Button>
                         </div>
-                    )}
 
 
-                </div>
+
+                    </div>
+                )}
             </div>
 
             <div className="pt-5">
@@ -298,8 +309,8 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Details' && <Details matrialRequisitionData={matrialRequisitionData} matrialRequisitionDetailData={matrialRequisitionDetailData} materialRequisitionInvoiceData={materialRequisitionInvoiceData} handleExportMaterialRequisition={handleExportMaterialRequisition} />}
             {activeTab === 'Enquiry' && <Enquiry materialRequisitionDetailData={matrialRequisitionDetailData} />}
             {activeTab === 'Quotation' && <Quotation materialRequisitionDetailData={matrialRequisitionDetailData} />}
-            {activeTab === 'Finalize Vendor' && <FinalizedVendor onload={loadMaterialRequisitionOverview}  />}
-            {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} materialRequisitionDetailData={matrialRequisitionDetailData}/>}
+            {activeTab === 'Finalize Vendor' && <FinalizedVendor onload={loadMaterialRequisitionOverview} />}
+            {activeTab === 'Purchase Order' && <PurchaseOrder onload={loadMaterialRequisitionOverview} materialRequisitionDetailData={matrialRequisitionDetailData} />}
             {activeTab === 'GRN' && (<GRN matrialRequisitionDetailData={matrialRequisitionDetailData} onload={loadMaterialRequisitionOverview} />)}
             {activeTab === 'Invoice' && <Invoice onApprovalSuccess={loadMaterialRequisitionOverview} />}
 
@@ -308,6 +319,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 onClose={() => {
                     setIsCloseRequisitionDialogOpen(false);
                     setSelectedMaterialRequisitionItem(null);
+                    setCloseCompletedRemarkError("");
                 }}
                 title={selectedMaterialRequisitionItem?.Type === "Completed"
                     ? "Complete Requisition"
@@ -330,16 +342,15 @@ export const ViewMaterialRequisition: React.FC = () => {
                         value={
                             selectedMaterialRequisitionItem?.CloseCompletionRemark ?? ""
                         }
-                        onChange={(e) =>
-                            setSelectedMaterialRequisitionItem(prev =>
-                                prev
-                                    ? {
-                                        ...prev,
-                                        CloseCompletionRemark: e.target.value
-                                    }
-                                    : prev
-                            )
-                        }
+                        onChange={(e) => {
+                            
+                            const value = e.target.value;
+                            setSelectedMaterialRequisitionItem(prev => prev ? { ...prev, CloseCompletionRemark: value } : prev);
+
+                            if (value.trim()) {
+                                setCloseCompletedRemarkError("");
+                            }
+                        }}
                     />
 
 
@@ -376,7 +387,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             </Modal>
 
-            
+
         </div>
     );
 };

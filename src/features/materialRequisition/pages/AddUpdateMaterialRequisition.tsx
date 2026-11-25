@@ -18,7 +18,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { filterNumbers } from "@/core/utils/fileValidation";
+import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { BudgetData } from "@/features/budget/models/BudgetModel";
 import {
@@ -143,7 +143,7 @@ export const AddUpdateMaterialRequisition = () => {
     const [deleteMaterialDetailsData, setDeleteMaterialDetailsData] = useState<{ row: AddUpdateMaterialRequisitionDetailRequest; index: number } | null>(null);
 
     const [originalMaterialQuantity, setOriginalMaterialQuantity] = useState(0);
-
+    const [quantityInput, setQuantityInput] = useState<string>("");
     useEffect(() => {
         if (!MaterialRequisitionId) return;
         loadDetailsdata();
@@ -298,6 +298,7 @@ export const AddUpdateMaterialRequisition = () => {
         setEditIndex(null);
         setMaterialData(initialFormState());
         setOriginalMaterialQuantity(0);
+        setQuantityInput("");
     }
 
     const validateMaterialForm = (): {
@@ -408,6 +409,7 @@ export const AddUpdateMaterialRequisition = () => {
         });
 
         setOriginalMaterialQuantity(Number(row.MaterialQuantity ?? 0));
+        setQuantityInput(String(row.MaterialQuantity ?? ""));
 
         if (isDirect && row.LevelId4) {
             const selected = projectBudgetList.find(
@@ -503,6 +505,7 @@ export const AddUpdateMaterialRequisition = () => {
         });
         setEditIndex(null);
         setMaterialData(initialFormState());
+        setQuantityInput("");
     };
 
     const handleConfirmationDialogBoxOpen = (row: AddUpdateMaterialRequisitionDetailRequest, index: number) => {
@@ -1077,7 +1080,7 @@ export const AddUpdateMaterialRequisition = () => {
                             <Info size={15} className="shrink-0 text-blue-600" />
 
                             <p className="text-sm leading-5 text-blue-700">
-                                
+
 
                                 {active === "Direct"
                                     ? "This material will be sourced from the approved project budget."
@@ -1340,12 +1343,10 @@ export const AddUpdateMaterialRequisition = () => {
 
                                     />
 
-
                                     <Input
                                         label="Quantity"
                                         required
                                         value={materialData.MaterialQuantity || ""}
-                                        maxLength={9}
                                         onChange={(e) => {
                                             const value = filterNumbers(e.target.value);
 
@@ -1560,15 +1561,14 @@ export const AddUpdateMaterialRequisition = () => {
                                     <Input
                                         label="Quantity"
                                         required
-                                        value={materialData.MaterialQuantity}
+                                        value={quantityInput}
                                         onChange={(e) => {
-                                            const value = filterNumbers(e.target.value);
-                                            setMaterialData(prev => ({ ...prev, MaterialQuantity: value === "" ? 0 : Number(value) }));
+                                            const value = filterNumbersWithDecimal(e.target.value);
+                                            setQuantityInput(value);
+                                            setMaterialData(prev => ({ ...prev, MaterialQuantity: Number(value || 0) }));
                                         }}
                                         placeholder="Enter Quantity"
-                                        maxLength={9}
                                         error={errors.MaterialQuantity}
-                                        rightIcon={inDirectSubMaterialDetails?.UomCode}
                                     />
 
                                     <div>

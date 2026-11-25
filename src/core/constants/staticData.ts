@@ -760,8 +760,6 @@ export const MASTER_DATA = {
     "JobSkills",
   ],
 
-  materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
-
   materialRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
 
   priorityOptions: ['Critical', 'Non - Critical'],
@@ -952,7 +950,7 @@ export const WORK_MODE_OPTIONS = toOptions(MASTER_DATA.workMode);
 export const EXPERIENCE_RANGE_OPTIONS = toOptions(MASTER_DATA.experienceYears);
 
 export const JOB_OPENING_LOCKED_EDIT_FIELDS = MASTER_DATA.jobOpeningLockedEditFields;
-export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
+
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 export const PRIORITY_OPTIONS = toOptions(MASTER_DATA.priorityOptions);
 export const APPLICABLE_FOR_OPTIONS = toOptions(MASTER_DATA.applicableFor);

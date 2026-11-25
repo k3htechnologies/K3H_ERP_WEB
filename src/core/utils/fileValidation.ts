@@ -577,17 +577,12 @@ export const isValidAPF = (apf: string): boolean => {
 };
 
 
-
 export const isValidVehicleNumber = (value: string): boolean => {
     if (!value?.trim()) return false;
 
-    const normalized = value
-        .trim()
-        .toUpperCase()
-        .replace(/[\s-]+/g, "");
+    const normalized = value .trim() .toUpperCase() .replace(/[\s-]+/g, "");
 
-    const regex =
-        /^(?:[A-Z]{2}\d{1,2}[A-Z]{1,3}\d{1,4}|\d{2}BH\d{4}[A-Z]{2})$/;
+    const regex = /^(?:[A-Z]{2}\d{2}[A-Z]{1,3}\d{1,4}|\d{2}BH\d{4}[A-Z]{1,2}|\d{1,4})$/;
 
     return regex.test(normalized);
 };

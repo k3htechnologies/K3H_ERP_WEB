@@ -34,16 +34,15 @@ const InvoicePayment: React.FC = () => {
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionInvoiceData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    
+
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string; }>();
     const { listState } = useMaterialRequisitionListState();
-    const projectId  = listState.projectId;
+    const projectId = listState.projectId;
     const materialRequisitionStatus = ["COMPLETED", "CLOSED"].includes(listState.materialRequisitionStatus?.toUpperCase())
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.materialRequisitionId;
     const currentUniquekey = listState.uniquekey
-    const systemGeneratedCode = listState.systemGeneratedCode;
     const navigate = useNavigate();
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
@@ -69,7 +68,7 @@ const InvoicePayment: React.FC = () => {
 
     const handleApprovalLog = (row: MaterialRequisitionInvoiceData) => {
         const request: ModulesApprovalStatusRequest = {
-            ModuleName: "ADD INVOICE",
+            ModuleName: "INVOICE APPROVAL",
             Id: currentMaterialRequisitionId ?? 0,
             SubId: row.MaterialRequisitionInvoiceId ?? 0,
             ProjectId: projectId ?? 0,
@@ -367,8 +366,9 @@ const InvoicePayment: React.FC = () => {
             <div className="pb-4">
                 <HeaderActionBar
                     titleText={'Make Payment :'}
-                    subTitleText={systemGeneratedCode ?? "-"}
-                    subSubTitleText={listState.materialRequisitionStatus ?? ''}
+                    subTitleText={`${listState.systemGeneratedCode ?? "-"}`}
+                    subSubTitleText={listState?.projectName ?? "-"}
+                    subSubSubTitleText={listState.approvalStatus ?? ''}
                     cancelText="Cancel"
                     onCancel={() =>
                         navigate("/materialRequisition/view", {
@@ -377,16 +377,15 @@ const InvoicePayment: React.FC = () => {
                 />
             </div>
 
-            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-5">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-<FieldItem label="Vendor Name" value={materialRequisitionGRNData?.VendorName || '-'} />
-<FieldItem label="Vendor Company Name" value={materialRequisitionGRNData?.CompanyName || '-'} />
+                        <FieldItem label="Vendor Name" value={materialRequisitionGRNData?.VendorName || '-'} />
+                        <FieldItem label="Vendor Company Name" value={materialRequisitionGRNData?.CompanyName || '-'} />
                         <FieldItem label="Challan Number" value={materialRequisitionGRNData?.ChallanNumber || '-'} />
                         <FieldItem label="Challan" urls={materialRequisitionGRNData?.UploadChallanURL} isIcon isSetValue={false} />
                         <FieldItem label="Vehicle Number" value={materialRequisitionGRNData?.VehicleNumber || '-'} />
-                        <FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks || '-'} />
-
+                        {materialRequisitionGRNData?.Remarks?.trim() ? (<FieldInfoTooltip label="Remarks" value={materialRequisitionGRNData?.Remarks} />) : (<FieldItem label="Remarks" value="-" />)}
                     </div>
                 </div>
 
@@ -406,7 +405,7 @@ const InvoicePayment: React.FC = () => {
                     <div className="mb-4">
                         <div className="flex items-center justify-between border-b border-gray-200 pb-2 mb-2">
                             <h3 className="text-md  font-semibold text-gray-700">
-                                Invoice Details (₹)
+                                Invoice Details
                             </h3>
 
                             <div className="flex items-center gap-2">
@@ -449,7 +448,7 @@ const InvoicePayment: React.FC = () => {
                             <FieldItem
                                 label="Amount Paid Till Date"
                                 value={
-                                    <span className="text-green-600 font-semibold">
+                                    <span className="text-green-500 text-[15px] font-semibold">
                                         {formatCurrency(invoiceData?.InvoiceAmountPaidTillDate)}
                                     </span>
                                 }
@@ -458,7 +457,7 @@ const InvoicePayment: React.FC = () => {
                             <FieldItem
                                 label="TDS Paid Till Date"
                                 value={
-                                    <span className="text-green-600 font-semibold">
+                                    <span className="text-green-500 font-semibold text-[15px]">
                                         {formatCurrency(invoiceData?.InvoiceTDSPaidTillDate)}
                                     </span>
                                 }
@@ -467,7 +466,7 @@ const InvoicePayment: React.FC = () => {
 
                             <FieldItem label=" Amount to be Paid"
                                 value={
-                                    <span className="text-red-600 font-semibold">
+                                    <span className="text-red-500 text-[15px] font-semibold">
                                         {formatCurrency(PendingAmount)}
                                     </span>
                                 } />
@@ -486,7 +485,7 @@ const InvoicePayment: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem label="Invoice" urls={invoiceData?.UploadInvoiceURL} isSetValue={false} isIcon />
-                            <FieldItem label="Performance Report" urls={invoiceData?.PerformaInvoiceURL} isSetValue={false} isIcon />
+                            <FieldItem label="Performance Invoice" urls={invoiceData?.PerformaInvoiceURL} isSetValue={false} isIcon />
                             <FieldItem label="Measurement Report" urls={invoiceData?.MeasurementReportURL} isSetValue={false} isIcon />
                         </div>
                     </div>
@@ -516,7 +515,7 @@ const InvoicePayment: React.FC = () => {
 
                                 <div className="flex items-center gap-1">
                                     {index === 0 && !["COMPLETED", "CLOSED"].includes(listState.materialRequisitionStatus?.toUpperCase()) && (
-                                        
+
                                         <Button
                                             onClick={(e) => {
                                                 e.preventDefault();
@@ -543,11 +542,13 @@ const InvoicePayment: React.FC = () => {
                                 <FieldItem label="Amount Paid (₹)" value={formatCurrency(item.AmountPaid)} isIcon={true} />
                                 <FieldItem label="TDS Amount (₹)" value={formatCurrency(item.TDSAmount)} isIcon={true} />
                                 <FieldItem label="Payment Mode" value={item.PaymentMode || "-"} />
+
                                 {item.AccountNumber && (<FieldItem label="Account Number" value={item.AccountNumber || "-"} />)}
                                 {item.IFSCCode && (<FieldItem label="IFSC Code" value={item.IFSCCode || "-"} />)}
                                 {item.PaymentType && (<FieldItem label="Payment Type" value={item.PaymentType ?? ''} />)}
+
                                 {item.TransactionNumber && (<FieldItem
-                                    label="Transaction Number"
+                                    label={`${item.PaymentMode} Number`}
                                     urls={item.TransactionReceiptURL}
                                     value={item.TransactionNumber || "-"}
                                     isIcon
@@ -580,6 +581,7 @@ const InvoicePayment: React.FC = () => {
                                 </div>
 
                                 <FieldItem label="Account Type" value={item.ProjectAcType || "-"} isRow={false} />
+                                
                             </div>
                         </div>
 

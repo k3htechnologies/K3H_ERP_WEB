@@ -289,7 +289,7 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
             sortable: false,
             width: "25",
             align: "left",
-
+            fixed: "left",
             render: (_value, row: MaterialWiseQuotation) => {
                 return (
                     <div className="flex flex-col gap-2 py-2">
@@ -742,27 +742,29 @@ export const FinalizedVendor: React.FC<FinalizedVendorProps> = ({ onload }) => {
 
                 <div className="flex items-center gap-3">
 
-                    <Button
-                        type="button"
-                        size="sm"
-                        color={isCompareMode ? "cancel" : undefined}
-                        style={isCompareMode
-                            ? undefined
-                            : {
-                                color: "#135BEC",
-                                backgroundColor: "#E8F0FF",
-                                padding: "4px 8px",
+                    {quotationData.length > 0 && (
+                        <Button
+                            type="button"
+                            size="sm"
+                            color={isCompareMode ? "cancel" : undefined}
+                            style={isCompareMode
+                                ? undefined
+                                : {
+                                    color: "#135BEC",
+                                    backgroundColor: "#E8F0FF",
+                                    padding: "4px 8px",
+                                }
                             }
-                        }
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setIsCompareMode(prev => !prev);
-                            setSelectedIds([]);
-                        }}
-                    >
-                        {isCompareMode ? "Cancel" : "Compare"}
-                    </Button>
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsCompareMode(prev => !prev);
+                                setSelectedIds([]);
+                            }}
+                        >
+                            {isCompareMode ? "Cancel" : "Compare"}
+                        </Button>
+                    )}
 
 
 

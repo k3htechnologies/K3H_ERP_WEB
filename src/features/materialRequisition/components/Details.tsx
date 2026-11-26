@@ -569,7 +569,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                         );
                     }
                     return (
-                        <span className="font-medium text-black">
+                        <span className="font-medium text-black text-[14px]">
                             {value || "-"}
                         </span>
                     );
@@ -600,7 +600,7 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
             },
             {
                 key: 'PerformaInvoiceURL',
-                label: 'Performa',
+                label: 'Proforma',
                 width: '15',
                 sortable: false,
                 align: 'left',

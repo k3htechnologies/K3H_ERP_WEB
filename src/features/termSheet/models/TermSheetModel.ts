@@ -12,6 +12,7 @@ export interface FilterWithPaginationTermSheetRequest {
     NameOfInstitutionBankNBFC?: string
     ProjectName?: string
     CompanyName?: string
+    Type?:string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

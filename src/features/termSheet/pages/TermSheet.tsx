@@ -107,6 +107,7 @@ export const TermSheet: React.FC = () => {
           ApprovalStatus: filterParams.ApprovalStatus ?? undefined,
           ProjectName: searchtext ?? filterParams.ProjectName ?? undefined,
           CompanyName: filterParams.CompanyName ?? undefined,
+          Type: filterParams.Type ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, TermSheetColumns)
         };
 
@@ -161,6 +162,7 @@ export const TermSheet: React.FC = () => {
           ApprovalStatus: filters.ApprovalStatus ?? undefined,
           ProjectName: filters.ProjectName ?? undefined,
           CompanyName: filters.CompanyName ?? undefined,
+          Type: filters.Type ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, TermSheetColumns),
           ExportType: exportType,
         };
@@ -832,6 +834,15 @@ export const TermSheet: React.FC = () => {
               value={tempFilters?.NameOfInstitutionBankNBFC ?? ""}
               onChange={(e) => handleFilterChange("NameOfInstitutionBankNBFC", e.target.value)}
               placeholder="Enter Name of Institution / Bank / NBFC"
+            />
+          </div>
+          <div>
+            <Input
+              type="text"
+              label="Type"
+              value={tempFilters?.Type ?? ""}
+              onChange={(e) => handleFilterChange("Type", e.target.value)}
+              placeholder="Enter Type"
             />
           </div>
 

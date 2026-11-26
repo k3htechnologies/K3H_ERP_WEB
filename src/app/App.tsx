@@ -235,9 +235,9 @@ import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRe
 import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
 import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 import AddUpdateGRN from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
-import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
+import InvoicePayment from '@/features/materialRequisition/components/Invoice/InvoicePayment';
 
-import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
+import MakePayment from '@/features/materialRequisition/components/Invoice/MakePayment';
 import HireSpaceDashboard from '@/features/hireSpaceDashboard/pages/HireSpaceDashboard';
 import ViewMaterialRequisitionReport from '@/features/materialRequisitionReport/pages/ViewMaterialRequisitionReport';
 import PurchaseMasterReport from '@/features/purchaseMasterReport/pages/PurchaseMasterReport';
@@ -268,7 +268,7 @@ import VendorManagementDashboard from '@/features/vendorManagementDashboard/page
 import { ProcessSalaryListStateProvider } from '@/features/processSalary/context/ProcessSalaryListStateContext';
 import ProcessSalary from '@/features/processSalary/pages/ProcessSalary';
 import ViewProcessSalaryDetails from '@/features/processSalary/pages/ViewProcessSalaryDetails';
-import AddUpdateInvoice from '@/features/materialRequisition/components/invoice/AddUpdateInvoice';
+import AddUpdateInvoice from '@/features/materialRequisition/components/Invoice/AddUpdateInvoice';
 import VerifyAssetMaster from '@/features/assetMaster/pages/VerifyAssetMaster';
 
 // Loading component for Suspense fallback

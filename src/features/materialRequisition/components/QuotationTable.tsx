@@ -24,11 +24,13 @@ type Row =
         MaterialRequisitionDetailId?: number
         IsFinalized: boolean;
         ApprovalStatus: string | null;
+        IsFinalizedByOtherVendor: boolean;
     }
 
 interface Props {
     data: Row[]
     isEditable?: boolean
+    isAnotherVendorEditing?: boolean;
     columns?: EditableTableColumn[]
     onChange?: (rows: Row[]) => void
     vendorId?: number
@@ -57,7 +59,8 @@ export const QuotationTable: React.FC<Props> = ({
     CompanyGSTNumber,
     IsPendingMaterialRequisitionDetail,
     addToast,
-    onCancel
+    onCancel,
+    isAnotherVendorEditing
 }) => {
     const [rows, setRows] = useState<Row[]>(() => normalizeRows(data))
     const [stagedRows, setStagedRows] = useState<Row[]>(() => normalizeRows(data))
@@ -113,19 +116,12 @@ export const QuotationTable: React.FC<Props> = ({
 
     const handleSave = () => {
 
-        const invalidInstallationRow = stagedRows.find(row =>
-            Number(row.MaterialRequisitionDetailId) !== 0 &&
-            Number(row.MaterialPerUnit || 0) > 0 &&
-            Number(row.Installation || 0) > 0 &&
-            Number(row.Installation || 0) >= Number(row.MaterialPerUnit || 0)
-        );
+        const invalidInstallationRow = stagedRows.find(row => Number(row.MaterialRequisitionDetailId) !== 0 && Number(row.Installation || 0) > 0 && Number(row.MaterialPerUnit || 0) <= 0);
 
         if (invalidInstallationRow) {
-
-            addToast?.({ type: "error", title: "Unit Price must be greater than Installation Amount" });
+            addToast?.({ type: "error", title: "Unit Price must be greater than 0 when Installation Amount is entered" });
             return;
         }
-
         const invalidPercentageRow = stagedRows.find(row => {
             const cgst = Number(row.CGST || 0);
             const sgst = Number(row.SGST || 0);
@@ -211,7 +207,7 @@ export const QuotationTable: React.FC<Props> = ({
     };
 
     const { isSameState, isDifferentState } = getGSTType();
-    const hasFinalizedRow = rows.some(row => row.IsFinalized === true);
+    const hasFinalizedRow = rows.some(row => row.IsFinalizedByOtherVendor === true);
 
     const columns: EditableTableColumn[] = useMemo(() => [
         {
@@ -291,7 +287,7 @@ export const QuotationTable: React.FC<Props> = ({
         },
         {
             key: "MaterialPerUnit",
-            label: "UNIT PRICE (₹)",
+            label: "PRICE / UNIT (₹)",
             type: "number",
             editable: isEditing,
             width: 120,
@@ -316,7 +312,7 @@ export const QuotationTable: React.FC<Props> = ({
             },
             renderEditor: (_value, onChange, row) => {
 
-                if (row.IsFinalized || Number(row.MaterialRequisitionDetailId) === 0) {
+                if (row.IsFinalizedByOtherVendor || Number(row.MaterialRequisitionDetailId) === 0) {
                     return <div className="flex justify-end w-full">
                         <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
                             {row?.MaterialPerUnit || '-'}
@@ -337,7 +333,7 @@ export const QuotationTable: React.FC<Props> = ({
         },
         {
             key: "Installation",
-            label: "INSTALL (₹)",
+            label: "INSTALL / UNIT (₹)",
             type: "number",
             editable: isEditing,
             width: 120,
@@ -362,7 +358,7 @@ export const QuotationTable: React.FC<Props> = ({
             },
             renderEditor: (_value, onChange, row) => {
 
-                if (row.IsFinalized || Number(row.MaterialRequisitionDetailId) === 0) {
+                if (row.IsFinalizedByOtherVendor || Number(row.MaterialRequisitionDetailId) === 0) {
                     return <div className="flex justify-end w-full">
                         <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1">
                             {row?.Installation || '-'}
@@ -430,7 +426,7 @@ export const QuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalized) {
+                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalizedByOtherVendor) {
                     return (
                         <span className="text-gray-400 text-right block">
                             {row.CGST || "-"}
@@ -468,7 +464,7 @@ export const QuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalized) {
+                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalizedByOtherVendor) {
                     return (
                         <span className="text-gray-300 text-right block">
                             {row.SGST || "-"}
@@ -504,7 +500,7 @@ export const QuotationTable: React.FC<Props> = ({
             suffix: "%",
             renderEditor: (_value, onChange, row) => {
 
-                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalized) {
+                if ((Number(row.MaterialRequisitionDetailId) === 0 && hasFinalizedRow) || !isSameState || !hasAmount(row) || row.IsFinalizedByOtherVendor) {
                     return (
                         <span className="text-gray-300 text-right block">
                             {row.TGST ?? "-"}
@@ -547,39 +543,50 @@ export const QuotationTable: React.FC<Props> = ({
     return (
         <div className="space-y-4 rounded-xl">
             <div className="flex items-center justify-between">
-                <div className="text-md font-medium text-gray-900">
-                    Quotation
-                </div>
-                {
-                    !isEditDisabled && (
-                        !isEditing ? (
 
-                            <button
-                                onClick={() => {
-                                    setIsEditing(true)
-                                    onEditModeChange?.(true)
-                                }}
-                                className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                                Edit
-                            </button>
-                        ) : (
-                            <div className="flex gap-2">
+                <div className="flex flex-col gap-1">
 
-                                <button
-                                    onClick={handleCancel}
-                                    className="px-4 py-2 text-md bg-gray-200 hover:bg-gray-300 rounded-lg">
-                                    Cancel
-                                </button>
+                    <div className="text-md font-medium text-gray-900">
+                        Quotation
+                    </div>
 
-                                <button
-                                    onClick={handleSave}
-                                    className="px-4 py-2 text-md bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
-                                    Save
-                                </button>
-
-                            </div>
-                        )
+                    {(isEditing || isAnotherVendorEditing) && (
+                        <span className="text-xs font-medium text-blue-600">
+                            <strong>Note:</strong> Only one vendor quotation can be edited
+                            at a time. Please save or cancel before editing another.
+                        </span>
                     )}
+
+                </div>
+
+                {!isEditDisabled && !isAnotherVendorEditing && (!isEditing ? (
+
+                    <button
+                        onClick={() => {
+                            setIsEditing(true)
+                            onEditModeChange?.(true)
+                        }}
+                        className="px-4 py-2 text-md bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                        Edit
+                    </button>
+                ) : (
+                    <div className="flex gap-2">
+
+                        <button
+                            onClick={handleCancel}
+                            className="px-4 py-2 text-md bg-gray-200 hover:bg-gray-300 rounded-lg">
+                            Cancel
+                        </button>
+
+                        <button
+                            onClick={handleSave}
+                            className="px-4 py-2 text-md bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg">
+                            Save
+                        </button>
+
+                    </div>
+                )
+                )}
             </div>
 
             <DataTableEditable

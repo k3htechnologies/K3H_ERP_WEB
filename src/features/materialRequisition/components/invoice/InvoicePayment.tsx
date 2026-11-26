@@ -368,7 +368,7 @@ const InvoicePayment: React.FC = () => {
                     titleText={'Make Payment :'}
                     subTitleText={`${listState.systemGeneratedCode ?? "-"}`}
                     subSubTitleText={listState?.projectName ?? "-"}
-                    subSubSubTitleText={listState.approvalStatus ?? ''}
+                    subSubSubTitleText={listState.materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                     onCancel={() =>
                         navigate("/materialRequisition/view", {
@@ -485,7 +485,7 @@ const InvoicePayment: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem label="Invoice" urls={invoiceData?.UploadInvoiceURL} isSetValue={false} isIcon />
-                            <FieldItem label="Performance Invoice" urls={invoiceData?.PerformaInvoiceURL} isSetValue={false} isIcon />
+                            <FieldItem label="Proforma Invoice" urls={invoiceData?.PerformaInvoiceURL} isSetValue={false} isIcon />
                             <FieldItem label="Measurement Report" urls={invoiceData?.MeasurementReportURL} isSetValue={false} isIcon />
                         </div>
                     </div>

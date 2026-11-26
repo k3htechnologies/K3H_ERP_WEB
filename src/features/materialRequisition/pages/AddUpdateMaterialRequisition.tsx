@@ -1075,7 +1075,7 @@ export const AddUpdateMaterialRequisition = () => {
                         />
 
 
-                        <div className="flex items-center gap-2 rounded-md border border-blue-300 bg-blue-50/70 px-3 py-2.5">
+                        <div className="flex items-center gap-2 rounded-md border border-blue-300 bg-white px-3 py-2.5">
 
                             <Info size={15} className="shrink-0 text-blue-600" />
 

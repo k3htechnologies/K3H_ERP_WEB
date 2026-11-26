@@ -556,24 +556,24 @@ const Enquiry: React.FC<InquiryProps> = ({ materialRequisitionDetailData }) => {
                                                             </div>
 
                                                             {/* Vendor Details */}
-                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 mt-3 pt-3 border-t border-gray-100 pl-6">
+                                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-3 mt-3 pt-3 border-t border-gray-100 pl-6">
 
                                                                 <div className="text-sm text-gray-500">
-                                                                    <FieldItem label="Mobile Number" value={item?.MobileNumber ? `${item?.MobileNumberCountryCode || "+91"} ${item.MobileNumber}` : "-"} isRow isUsedForInventoryFlat />
+                                                                    <FieldItem label="Mobile Number" value={item?.MobileNumber ? `${item?.MobileNumberCountryCode || "+91"} ${item.MobileNumber}` : "-"} isRow={false} isUsedForInventoryFlat />
                                                                 </div>
 
                                                                 <div className="text-sm text-gray-500">
-                                                                    <FieldItem label="E-Mail ID" value={item?.EmailId ?? '-'} isRow isUsedForInventoryFlat />
+                                                                    <FieldItem label="E-Mail ID" value={item?.EmailId ?? '-'} isRow={false} isUsedForInventoryFlat />
                                                                 </div>
 
                                                                 <div className="text-sm text-gray-500">
-                                                                    <FieldItem label="GST Number" value={item?.GSTNumber ?? '-'} isRow isUsedForInventoryFlat />
+                                                                    <FieldItem label="GST Number" value={item?.GSTNumber ?? '-'} isRow={false} isUsedForInventoryFlat />
                                                                 </div>
 
                                                             </div>
                                                             <div className="grid grid-cols-1 sm:grid-cols-1 gap-x-4 gap-y-3 mt-3 pl-6">
                                                                 <div className="text-sm text-gray-500">
-                                                                    <FieldItem label="Address" value={item?.Address ?? '-'} isRow isUsedForInventoryFlat />
+                                                                    <FieldItem label="Address" value={item?.Address ?? '-'} isRow={false} isUsedForInventoryFlat />
                                                                 </div>
                                                             </div>
 

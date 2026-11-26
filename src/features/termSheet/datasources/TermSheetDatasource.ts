@@ -87,6 +87,7 @@ export class TermSheetDatasourceImpl implements TermSheetDatasource {
             if (params.TermSheetDetailsId) { queryParams.append('TermSheetDetailsId', params.TermSheetDetailsId.toString()) }
             if (params.NameOfInstitutionBankNBFC?.trim()) { queryParams.append('NameOfInstitutionBankNBFC', params.NameOfInstitutionBankNBFC.trim()) }
             if (params.ProjectName?.trim()) { queryParams.append('ProjectName', params.ProjectName.trim()) }
+            if (params.Type?.trim()) { queryParams.append('Type', params.Type.trim()) }
             if (params.CompanyName?.trim()) { queryParams.append('CompanyName', params.CompanyName.trim()) }
             if (params.SortBy?.trim()) { queryParams.append('SortBy', params.SortBy.trim()) }
             if (params.ExportType) { queryParams.append('ExportType', params.ExportType) }

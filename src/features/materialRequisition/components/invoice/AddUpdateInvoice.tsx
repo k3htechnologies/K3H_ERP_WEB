@@ -387,8 +387,8 @@ const AddUpdateInvoice: React.FC = () => {
 
 
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceUrls) && !hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
-            newErrors.UploadInvoiceURL = "Either Invoice or Performa Invoice is required.";
-            newErrors.PerformaInvoiceURL = "Either Performa Invoice or Invoice is required.";
+            newErrors.UploadInvoiceURL = "Either Invoice or Proforma Invoice is required.";
+            newErrors.PerformaInvoiceURL = "Either Proforma Invoice or Invoice is required.";
         }
 
         return {
@@ -489,7 +489,7 @@ const AddUpdateInvoice: React.FC = () => {
                 <HeaderActionBar
                     subTitleText={`Create Invoice : ${listState.systemGeneratedCode ?? "-"}`}
                     subSubTitleText={listState?.projectName ?? "-"}
-                    subSubSubTitleText={listState.approvalStatus ?? ''}
+                    subSubSubTitleText={listState.materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                     EditText="Edit"
                     onCancel={() =>
@@ -691,8 +691,8 @@ const AddUpdateInvoice: React.FC = () => {
 
                         <div>
                             <MultiFilePicker
-                                label="Performa Invoice"
-                                placeholder="Select Performa Invoice"
+                                label="Proforma Invoice"
+                                placeholder="Select Proforma Invoice"
                                 required={!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceUrls)}
                                 error={errors.PerformaInvoiceURL}
                                 value={performaInvoiceURLFiles}
@@ -731,7 +731,6 @@ const AddUpdateInvoice: React.FC = () => {
                             value={formData.Remarks ?? ""}
                             onChange={(e) => handleFieldChange("Remarks", e.target.value)}
                             placeholder="Enter Remarks"
-                            maxLength={250}
                             error={errors.Remarks}
                         />
                     </div>

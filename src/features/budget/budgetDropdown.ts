@@ -30,12 +30,12 @@ export const fetchProjectBudget = async ( projectId: number,approvalStatus? :str
             return [];
         }
 
-        const responseEither =
-            await budgetService.apiCallPullBudget({
+        const responseEither = await budgetService.apiCallPullBudget({
                 PageSize: 100000,
                 PageNumber: 1,
                 ProjectId: projectId,
-                ApprovalStatus:approvalStatus?.trim()
+                ApprovalStatus:approvalStatus?.trim(),
+                IsCheckPermission:false
             });
 
         if (E.isLeft(responseEither)) {
@@ -68,12 +68,10 @@ export const getBudgetL1Dropdown = (budgetList: BudgetData[]): BudgetDropdownIte
 
     const unique = new Map<number, BudgetDropdownItem>();
 
-    budgetList
-        .filter(
+    budgetList .filter(
             item =>
                 item.LevelType === "L1" &&
-                item.LevelId1 > 0
-        )
+                item.LevelId1 > 0)
         .forEach(item => {
 
             if (!unique.has(item.LevelId1)) {

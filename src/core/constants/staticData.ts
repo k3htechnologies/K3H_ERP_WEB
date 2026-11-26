@@ -54,7 +54,7 @@ export const MASTER_DATA = {
 
   bloodGroups: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
 
-  firmsType: ["LLP", "Private Limited Company", "Proprietorship"],
+  firmsType: ["LLP","Partnership", "Private Limited Company", "Proprietorship"],
 
   ownershipType: ["Owner", "Partner"],
 

@@ -42,7 +42,6 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
     const [editingQuotationKey, setEditingQuotationKey] = useState<string | null>(null);
     const [quotationFiles, setQuotationFiles] = useState<(File | string)[]>([]);
     const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([]);
-    const [editingVendorIds, setEditingVendorIds] = useState<number[]>([]);
 
     useEffect(() => {
         if (!projectId) return
@@ -127,27 +126,37 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
         if (computeLinesTotal(lines) === 0) {
 
             addToast({ type: "error", title: "Please add a price for atleast one quotation item." });
-            
+
             return;
         }
 
-        await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
 
-            const payload = buildPayload(vendor, term, lines)
+                const payload = buildPayload(vendor, term, lines)
 
-            const response = await materialRequisitionQuotationService.apiCallAddMaterialRequisitionQuotation(payload)
+                const response = await materialRequisitionQuotationService.apiCallAddMaterialRequisitionQuotation(payload)
 
-            if (E.isRight(response)) {
+                if (E.isRight(response)) {
 
-                await pullSelectedVendorForQuotation();
+                    await pullSelectedVendorForQuotation();
 
-                addToast({ type: "success", title: response.right.SuccessMessage[0] })
-            }
-            else {
-                addToast({ type: "error", title: response.left.message })
-            }
-            return response
-        })
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] })
+                }
+                else {
+                    addToast({ type: "error", title: response.left.message })
+                }
+                return response
+            },
+
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Save Quotation"
+        )
+
     }
 
     return (
@@ -252,23 +261,15 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
 
                                                         setEditingQuotationKey(editing ? quotationKey : null);
 
-                                                        setEditingVendorIds(prev =>
-                                                            editing
-                                                                ? [...new Set([...prev, vendor.VendorId])]
-                                                                : prev.filter(id => id !== vendor.VendorId)
-                                                        );
                                                     }}
-
-
+                                                    isAnotherVendorEditing={editingQuotationKey !== null && editingQuotationKey !== quotationKey }
                                                     onChange={(updatedLines) => {
                                                         setLiveQuotationLines(prev => ({
                                                             ...prev,
                                                             [quotationKey]: updatedLines
                                                         }));
                                                     }}
-                                                    onSave={(updatedLines) =>
-                                                        handleAddMaterialRequisitionQuotation(vendor, term, updatedLines)
-                                                    }
+                                                    onSave={(updatedLines) => handleAddMaterialRequisitionQuotation(vendor, term, updatedLines)  }
                                                     MaterialRequisitionStatus={listState.materialRequisitionStatus}
                                                     MaterialRequisitionApprovalStatus={listState.approvalStatus}
                                                     VendorGSTNumber={vendor.GSTNumber}
@@ -303,7 +304,7 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
 
                                                     <span>Expected Delivery (Days)</span>
                                                     <span>
-                                                        {editingVendorIds.includes(vendor.VendorId) ? (
+                                                        {editingQuotationKey === quotationKey ? (
 
                                                             <Input
                                                                 type="text"
@@ -331,7 +332,7 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
                                                 <div className="flex justify-between text-sm bg-gray-100 p-3">
                                                     <span>Expected Payment (Days)</span>
                                                     <span>
-                                                        {editingVendorIds.includes(vendor.VendorId) ? (
+                                                        {editingQuotationKey === quotationKey ? (
 
                                                             <Input
                                                                 type="text"
@@ -361,7 +362,7 @@ export const Quotation: React.FC<QuotationProps> = ({ materialRequisitionDetailD
                                                         {editingQuotationKey !== quotationKey ? "View Quotation" : "Upload Quotation"}
                                                     </span>
 
-                                                    {!editingVendorIds.includes(vendor.VendorId) ? (
+                                                    {editingQuotationKey !== quotationKey ? (
 
                                                         <div className="inline-flex items-end gap-1 px-2 py-2.5 border border-amber-500 text-amber-600 rounded text-sm font-medium cursor-pointer transition">
                                                             <p>Quotation</p>

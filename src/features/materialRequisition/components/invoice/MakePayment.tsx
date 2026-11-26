@@ -330,7 +330,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({ total
                     titleText={'Make Payment :'}
                     subTitleText={`${listState.systemGeneratedCode ?? "-"}`}
                     subSubTitleText={listState?.projectName ?? "-"}
-                    subSubSubTitleText={listState.approvalStatus ?? ''}
+                    subSubSubTitleText={listState.materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                      onCancel={() =>
                         navigate("/materialRequisition/view", {

@@ -4,7 +4,7 @@ import Details from "@/features/materialRequisition/components/Details";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Invoice } from "@/features/materialRequisition/components/invoice/Invoice";
+import { Invoice } from "@/features/materialRequisition/components/Invoice/Invoice";
 import PurchaseOrder from "@/features/materialRequisition/components/PurchaseOrder";
 import GRN from "@/features/materialRequisition/components/GRN/GRN";
 import type { CloseMaterialRequisitionRequest, FilterMaterialRequisitionOverview, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
@@ -215,7 +215,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     <HeaderActionBar
                         subTitleText={systemGeneratedCode ?? "-"}
                         subSubTitleText={matrialRequisitionData?.ProjectName ?? "-"}
-                        subSubSubTitleText={listState?.approvalStatus ?? "-"}
+                        subSubSubTitleText={listState?.materialRequisitionStatus ?? "-"}
                         cancelText="Cancel"
                         onCancel={() => handleBackToListMaterialRequisition()}
                         EditText="Edit"

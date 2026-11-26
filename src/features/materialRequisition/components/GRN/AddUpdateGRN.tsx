@@ -575,7 +575,7 @@ export const AddUpdateGRN = () => {
                     <HeaderActionBar
                         subTitleText={`Goods Received Notes (GRN) Details : ${listState.systemGeneratedCode ?? "-"}`}
                         subSubTitleText={listState?.projectName ?? "-"}
-                        subSubSubTitleText={listState?.approvalStatus ?? "-"}
+                        subSubSubTitleText={listState?.materialRequisitionStatus ?? "-"}
                         cancelText="Cancel"
                         onCancel={() => navigate(-1)}
                         EditText="Edit"

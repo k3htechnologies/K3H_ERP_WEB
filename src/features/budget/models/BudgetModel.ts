@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse";
 export interface FilterWithPaginationBudgetRequest {
     PageSize: number;
     PageNumber: number;
+    IsCheckPermission?: boolean;
     ProjectId?: number;
     InventoryFlatFloorBasementPodiumWingId?: number;
     BudgetId?: number

@@ -608,7 +608,7 @@ const ViewTermSheet: React.FC = () => {
 
             }
 
-            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+            if (item.Type?.toUpperCase() !=="CONSTRUCTION FINANCE (CF)" && (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0)) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
                 return { isValid: false, errors: newErrors };
 
@@ -861,7 +861,7 @@ const ViewTermSheet: React.FC = () => {
 
             }
 
-            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+            if (item.Type.toUpperCase() !=="CONSTRUCTION FINANCE (CF)" && (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0)) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
                 return { isValid: false, errors: newErrors };
 
@@ -1136,7 +1136,7 @@ const ViewTermSheet: React.FC = () => {
 
             }
 
-            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+            if (item.Type.toUpperCase() !=="CONSTRUCTION FINANCE (CF)" && (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0)) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
                 return { isValid: false, errors: newErrors };
 
@@ -1372,7 +1372,7 @@ const ViewTermSheet: React.FC = () => {
 
             }
 
-            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+            if (item.Type.toUpperCase() !=="CONSTRUCTION FINANCE (CF)" && (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0)) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
                 return { isValid: false, errors: newErrors };
 
@@ -1633,7 +1633,7 @@ const ViewTermSheet: React.FC = () => {
 
             }
 
-            if (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0) {
+            if (item.Type.toUpperCase() !=="CONSTRUCTION FINANCE (CF)" && (item.EMIAmount === undefined || item.EMIAmount === null || Number(item.EMIAmount) <= 0)) {
                 addToast({ type: "error", title: `${item.NameOfInstitutionBankNBFC ?? "Institution"}: EMI is required.` });
                 return { isValid: false, errors: newErrors };
 

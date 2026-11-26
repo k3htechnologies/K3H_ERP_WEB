@@ -260,7 +260,7 @@ export const MaterialRequisition: React.FC = () => {
         },
         {
             key: "ApprovalStatus",
-            label: "Approval Status",
+            label: "MR Approval Status",
             width: "18",
             sortable: false,
             align: "center",
@@ -357,6 +357,21 @@ export const MaterialRequisition: React.FC = () => {
             render: (value) => formatCurrency(value) || 0
         },
         {
+            key: 'PendingPOAmount',
+            label: 'Pending PO Amount (₹)',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (_, row) => {
+
+                const pendingPOAmount =
+                    Number(row.TotalPoAmount || 0) -
+                    Number(row.TotalInvoiceAmount || 0);
+
+                return formatCurrency(pendingPOAmount) || 0;
+            }
+        },
+        {
             key: 'TotalInvoiceAmount',
             label: 'Total Invoice Amount (₹)',
             width: '15',
@@ -381,8 +396,26 @@ export const MaterialRequisition: React.FC = () => {
             render: (value) => formatCurrency(value) || 0
         },
         {
+            key: 'PendingInvoiceAmount',
+            label: 'Pending Invoice Amount (₹)',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (_, row) => {
+
+                const pendingInvoiceAmount =
+                    Number(row.TotalInvoiceAmount || 0) -
+                    (
+                        Number(row.PaidAmount || 0) +
+                        Number(row.TDSPaidAmount || 0)
+                    );
+
+                return formatCurrency(pendingInvoiceAmount) || 0;
+            }
+        },
+        {
             key: 'TotalInvoice',
-            label: 'Total Invoice',
+            label: 'No of Invoice',
             width: '15',
             sortable: false,
             align: 'left',

@@ -519,7 +519,7 @@ export const GRN: React.FC<GRNProps> = ({ matrialRequisitionDetailData, onload }
                 isShowAddButton={canAction && !materialRequisitionStatus && !isAllQuantityReceived && hasPurchaseOrder}
                 addTitle="Add"
                 onAdd={handleAddGRN}
-                isShowAddExtraButton={true}
+                isShowAddExtraButton={filteredGRN.length > 0}
                 addExtraTitle='Summary'
                 onAddExtra={() => {
                     setIsViewGRNSummaryModalOpen(true);

@@ -727,7 +727,7 @@ export const Invoice: React.FC<FinalizedVendorProps> = ({ onApprovalSuccess }) =
 
                                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                                     <FieldItem label="Invoice" urls={row.UploadInvoiceURL} isSetValue={false} isIcon />
-                                                                    <FieldItem label="Performance Report" urls={row.PerformaInvoiceURL} isSetValue={false} isIcon />
+                                                                    <FieldItem label="Proforma Report" urls={row.PerformaInvoiceURL} isSetValue={false} isIcon />
                                                                     <FieldItem label="Measurement Report" urls={row.MeasurementReportURL} isSetValue={false} isIcon />
                                                                 </div>
                                                             </div>

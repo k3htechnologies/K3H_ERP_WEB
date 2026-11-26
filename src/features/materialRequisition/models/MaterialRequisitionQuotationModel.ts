@@ -55,6 +55,7 @@ export interface MaterialRequisitionQuotationData {
     TGST:number;
     IsFinalized: boolean;
     ApprovalStatus: string | null;
+    IsFinalizedByOtherVendor: boolean;
 }
 
 export interface AddUpdateMaterialRequestQuotation {

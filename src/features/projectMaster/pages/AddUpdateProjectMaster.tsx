@@ -22,7 +22,6 @@ import { IndianRupee, Phone } from "lucide-react";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
-import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -630,16 +629,6 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="Is This Project a Redevelopment Project?"
                                     checked={formData.IsRedevelopment === 1}
                                     onChange={(e) => handleFieldChange('IsRedevelopment', e.target.checked ? 1 : 0)}
-                                />
-                            </div>
-                            <div className="space-y-4">
-                                <ToggleSwitch
-                                    label="Is Lock and Key"
-                                    name="IsRedevelopment"
-                                    value={formData.IsLockAndKey}
-                                    onChange={(_, value) =>
-                                        handleFieldChange('IsLockAndKey', value)
-                                    }
                                 />
                             </div>
                         </div>

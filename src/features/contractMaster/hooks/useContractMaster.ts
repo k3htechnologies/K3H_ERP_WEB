@@ -5,25 +5,25 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import usePagination from "@/core/hooks/usePagination";
 import useToast from "@/core/hooks/useToast";
 import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
-import type { AddUpdateContractMasterRequest, ContractMasterData, DeleteContractMasterRequest, FilterWithPaginationContractMaster } from "../models/ContractMasterModel";
 import { getContractMasterColumns, getInitialFormState, REQUIRED_COLUMN_KEYS } from "@/features/contractMaster/constants/contractMasterConstants";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { runApiWithLoader } from "@/core/utils";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { contractMasterService } from "@/features/contractMaster/services/ContractMasterService";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { handleExportFile } from "@/core/utils/exportFile";
+import type { AddUpdateSpecificationMaster, DeleteSpecificationMasterRequest, filterwithPaginationSpecificationMasterRequest, SpecificationMasterData } from "@/features/specificationMaster/models/SpecificationMasterModel";
+import { specificationMasterService } from "@/features/specificationMaster/services/SpecificationMasterService";
 
 export const useContractMaster = () => {
-  const [contractMasterList, setContractMasterList] = useState<ContractMasterData[]>([]);
+  const [contractMasterList, setContractMasterList] = useState<SpecificationMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('')
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const [viewContractMasterDetailsData, setViewContractMasterDetailsData] = useState<ContractMasterData | null>(null)
+  const [viewContractMasterDetailsData, setViewContractMasterDetailsData] = useState<SpecificationMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -37,13 +37,13 @@ export const useContractMaster = () => {
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  const [editingContractMasterData, setEditingContractMasterData] = useState<ContractMasterData | null>(null);
+  const [editingContractMasterData, setEditingContractMasterData] = useState<SpecificationMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  const [formData, setFormData] = useState<AddUpdateContractMasterRequest>(() => getInitialFormState());
+  const [formData, setFormData] = useState<AddUpdateSpecificationMaster>(() => getInitialFormState());
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteContractMasterDetailsData, setDeleteContractMasterDetailsData] = useState<ContractMasterData | null>(null)
+  const [deleteContractMasterDetailsData, setDeleteContractMasterDetailsData] = useState<SpecificationMasterData | null>(null)
 
   const [isShowCustomizeContractMasterColumnsModal, setIsShowCustomizeContractMasterColumnsModal] = useState(false);
 
@@ -69,10 +69,15 @@ export const useContractMaster = () => {
     if (isAddUpdateModalOpen) {
       if (editingContractMasterData) {
         setFormData({
-          ContractMasterId: editingContractMasterData.ContractMasterId,
-          Uniquekey: editingContractMasterData.Uniquekey || getInitialFormState().Uniquekey,
-          ContractCode: editingContractMasterData.ContractCode?.toString() || '',
-          ContractName: editingContractMasterData.ContractName || ''
+          SpecificationMasterId: editingContractMasterData.SpecificationMasterId,
+          Uniquekey: editingContractMasterData.UniqueKey || getInitialFormState().Uniquekey,
+          CategoryName: editingContractMasterData.CategoryName || '',
+          LevelId1: editingContractMasterData.LevelId1,
+          LevelId2: editingContractMasterData.LevelId2,
+          LevelId3: editingContractMasterData.LevelId3,
+          UomMasterId: editingContractMasterData.UomMasterId,
+          Quantity: editingContractMasterData.Quantity,
+          SubMaterialMasterId: editingContractMasterData.SubMaterialMasterId,
         });
       } else {
         setFormData(getInitialFormState());
@@ -96,16 +101,18 @@ export const useContractMaster = () => {
       setLoadingMessage,
       async () => {
 
-        const params: FilterWithPaginationContractMaster = {
+        const params: filterwithPaginationSpecificationMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          IsCheckPermission: true,
-          ContractMasterId: filterParams.ContractMasterId ? Number(filterParams.ContractMasterId) : 0,
-          ContractName: searchtext ?? filterParams.ContractName ?? undefined,
-          SortBy: getSortByParam(sortInfo ?? null, contractMasterColumns)
-        }
+          LevelType: "L1",
+          CategoryName: searchtext ?? filterParams.CategoryName,
+          IsSourceTypeContract: true,
+          SpecificationMasterId: filterParams.SpecificationMasterId
+            ? Number(filterParams.SpecificationMasterId) : undefined,
+          SortBy: getSortByParam(sortInfo ?? null, contractMasterColumns),
+        };
 
-        const response = await contractMasterService.apiCallPullContractMaster(params);
+        const response = await specificationMasterService.apiCallPullSpecificationMaster(params);
 
         if (E.isRight(response)) {
           setContractMasterList(response.right.Data);
@@ -152,16 +159,17 @@ export const useContractMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const params: FilterWithPaginationContractMaster = {
+        const params: filterwithPaginationSpecificationMasterRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          IsCheckPermission: true,
-          ContractName: filters.ContractName?.trim() || undefined,
+          LevelType: "L1",
+          IsExpandChild: true,
           SortBy: getSortByParam(sortInfo ?? null, contractMasterColumns),
           ExportType: exportType
         }
 
-        const response = await contractMasterService.apiCallPullContractMaster(params);
+        const response = await specificationMasterService.apiCallPullSpecificationMaster(params);
+
         handleExportFile(response, exportType, 'Contract Master', addToast)
         return response;
       },
@@ -214,21 +222,20 @@ export const useContractMaster = () => {
     [contractMasterColumns, selectedContractMasterColumnKeys]
   )
 
-  const handleViewContractDetails = useCallback((row: ContractMasterData) => {
+  const handleViewContractDetails = useCallback((row: SpecificationMasterData) => {
     setViewContractMasterDetailsData(row)
     setIsViewModalOpen(true)
   }, [])
 
-  const handleEditContractMaster = useCallback((row: ContractMasterData) => {
+  const handleEditContractMaster = useCallback((row: SpecificationMasterData) => {
     setEditingContractMasterData({
       ...row,
-      ContractCode: row.ContractCode || '',
-      ContractName: row.ContractName || ''
+      CategoryName: row.CategoryName || ''
     })
     setIsAddUpdateModalOpen(true);
   }, [])
 
-  const handleConfirmationDialogBoxOpen = useCallback((row: ContractMasterData) => {
+  const handleConfirmationDialogBoxOpen = useCallback((row: SpecificationMasterData) => {
     setDeleteContractMasterDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
@@ -250,7 +257,7 @@ export const useContractMaster = () => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
 
-  const handleFieldChange = (field: keyof AddUpdateContractMasterRequest, value: any) => {
+  const handleFieldChange = (field: keyof AddUpdateSpecificationMaster, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -270,15 +277,11 @@ export const useContractMaster = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.ContractName.trim() === "") {
-      newErrors.ContractName = "Contract Name is required"
+    if (!formData.CategoryName?.trim()) {
+      newErrors.CategoryName = "Category Name is required"
     }
-    else if (formData.ContractName.length < 3) {
-      newErrors.ContractName = "Contract Name must be at least 3 characters long"
-    }
-
-    if (formData.ContractCode.trim() === "") {
-      newErrors.ContractCode = "Contract Code is required";
+    else if (formData.CategoryName.length < 3) {
+      newErrors.ContractName = "Category Name must be at least 3 characters long"
     }
 
     return {
@@ -287,13 +290,19 @@ export const useContractMaster = () => {
     }
   }
 
-  const PushContractMasterFormData = (): AddUpdateContractMasterRequest => {
+  const PushContractMasterFormData = (): AddUpdateSpecificationMaster => {
     return {
-      ContractMasterId: formData.ContractMasterId,
+      SpecificationMasterId: formData.SpecificationMasterId,
       Uniquekey: formData.Uniquekey,
-      ContractCode: formData.ContractCode,
-      ContractName: formData.ContractName
-    };
+      CategoryName: formData.CategoryName,
+      LevelId1: formData.LevelId1,
+      LevelId2: formData.LevelId2,
+      LevelId3: formData.LevelId3,
+      UomMasterId: formData.UomMasterId,
+      Quantity: formData.Quantity,
+      SubMaterialMasterId: formData.SubMaterialMasterId,
+      IsSourceTypeContract: true
+    }
   };
 
   const handleAddUpdateContractMaster = async (e: React.FormEvent) => {
@@ -313,33 +322,15 @@ export const useContractMaster = () => {
       setLoadingMessage,
       async () => {
         const payload = PushContractMasterFormData();
-        const response = await contractMasterService.apiCallToAddUpdateContractMaster(payload);
+        const response = await specificationMasterService.apiCallAddUpdateSpecificationMaster(payload);
+
 
         if (E.isRight(response)) {
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.ContractMasterId === 0;
+          await loadContracts(pagination.currentPage, {}, sortInfo, searchTerm);
 
-          if (isAdd) {
-            const newRecord = response.right.Data[0] as ContractMasterData
-            setContractMasterList(prevData => [newRecord, ...prevData]);
-            setPagination({
-              currentPage: pagination.currentPage,
-              totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-            });
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          } else {
-            const updatedRecord = response.right.Data[0] as ContractMasterData;
-            setContractMasterList(prevData =>
-              prevData.map(item =>
-                item.ContractMasterId === formData.ContractMasterId
-                  ? updatedRecord
-                  : item
-              )
-            )
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-          }
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           setEditingContractMasterData(null);
         } else {
@@ -352,7 +343,7 @@ export const useContractMaster = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      Number(formData.ContractMasterId) === 0 ? 'Add Contract' : 'Update Contract'
+      Number(formData.SpecificationMasterId) === 0 ? 'Add Contract' : 'Update Contract'
     )
   };
 
@@ -417,12 +408,12 @@ export const useContractMaster = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const params: DeleteContractMasterRequest = {
-          ContractMasterId: deleteContractMasterDetailsData.ContractMasterId,
-          Uniquekey: deleteContractMasterDetailsData.Uniquekey
+        const params: DeleteSpecificationMasterRequest = {
+          SpecificationMasterId: deleteContractMasterDetailsData.SpecificationMasterId,
+          UniqueKey: deleteContractMasterDetailsData.UniqueKey
         }
 
-        const response = await contractMasterService.apiCallDeleteContractMaster(params);
+        const response = await specificationMasterService.apiCallDeleteSpecificationMaster(params);
 
         if (E.isRight(response)) {
 
@@ -468,7 +459,7 @@ export const useContractMaster = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Delete Material'
+      'Delete Contract'
     )
   }
 

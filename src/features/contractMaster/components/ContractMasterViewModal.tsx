@@ -3,15 +3,15 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Button } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import type { ContractMasterData } from '@/features/contractMaster/models/ContractMasterModel';
+import type { SpecificationMasterData } from '@/features/specificationMaster/models/SpecificationMasterModel';
 
 interface ContractMasterViewModalProps {
     isOpen: boolean;
     onClose: () => void;
-    data: ContractMasterData | null;
+    data: SpecificationMasterData | null;
     canAction: boolean;
-    onEdit: (data: ContractMasterData) => void;
-    onDelete: (data: ContractMasterData) => void;
+    onEdit: (data: SpecificationMasterData) => void;
+    onDelete: (data: SpecificationMasterData) => void;
 }
 
 export const ContractMasterViewModal: React.FC<ContractMasterViewModalProps> = ({
@@ -52,8 +52,7 @@ export const ContractMasterViewModal: React.FC<ContractMasterViewModalProps> = (
             size='xl'
         >
             <div className="space-y-6">
-                <FieldItem label="Contract Code" value={data.ContractCode?.toString()} isRow withBorder={true} />
-                <FieldItem label="Contract Name" value={data.ContractName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+                <FieldItem label="Contract Name" value={data.CategoryName} isRow withBorder={true} className='font-medium text-blue-900 ' />
 
                 <h4 className="text-lg font-semibold">
                     Action Details

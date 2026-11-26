@@ -19,7 +19,6 @@ export const ContractMaster: React.FC = () => {
     isLoading,
     loadingMessage,
     pagination,
-    sortInfo,
     searchTerm,
     viewContractMasterDetailsData,
     isViewModalOpen,
@@ -56,7 +55,6 @@ export const ContractMaster: React.FC = () => {
     setSelectedContractMasterColumnKeys,
 
     handlePageChange,
-    handleSortColumn,
     handleViewContractDetails,
     handleEditContractMaster,
     handleConfirmationDialogBoxOpen,
@@ -69,7 +67,6 @@ export const ContractMaster: React.FC = () => {
     handleDeleteContractMaster,
     handleExportContractExcel,
     handleExportContractPdf,
-    handleDownloadExcelSampleContractMaster,
     uploadExcel,
     debouncedSearch,
     clearsearchContracts,
@@ -131,10 +128,6 @@ export const ContractMaster: React.FC = () => {
         isShowAddButton={canAction}
         addTitle="Add"
         onAdd={handleAddContractModal}
-        // IMPORT
-        isShowImportButton={canAction}
-        onUploadExcel={() => setShowImportModal(true)}
-        onDownloadSampleExcel={handleDownloadExcelSampleContractMaster}
         // EXPORT
         isShowExportButton={canExport && contractlListForTable.length > 0}
         onExportExcel={handleExportContractExcel}
@@ -146,8 +139,6 @@ export const ContractMaster: React.FC = () => {
         data={contractlListForTable}
         columns={visibleContractMasterColumns}
         pagination={contractMasterPaginationInfo}
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
         onView={handleViewContractDetails}
         onEdit={handleEditContractMaster}
         onDelete={handleConfirmationDialogBoxOpen}

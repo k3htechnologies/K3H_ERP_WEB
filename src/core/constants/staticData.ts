@@ -766,12 +766,12 @@ export const MASTER_DATA = {
 
   priorityOptions: ['Critical', 'Non - Critical'],
 
-  contractRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Work Order', 'Add Invoice', 'Make Payments'],
-  
-  contractRequisitionTypes: [ "direct" , "indirect" , "lock and key"],
-  
+  contractRequisitionStages: ['Create BOQ', 'Get Quotation', 'Finalized Vendor', 'Get Compare', 'Generate Work Order', 'Add Invoice', 'Make Payments'],
+
+  contractRequisitionTypes: ["Direct", "Indirect", "Lock and Key"],
+
   contractRequisitionStatus: ['Closed', 'Completed', 'Ongoing'],
-  
+
   applicableFor: ['Sale', 'Tenant'],
 
   employeeLetterType: [

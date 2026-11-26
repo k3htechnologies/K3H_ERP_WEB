@@ -1,20 +1,18 @@
 import React, { useMemo } from 'react';
 import { Trash2 } from 'lucide-react';
 
-import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { DataTable, type PaginationInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Button } from '@/ui/components/forms';
-import type { ContractMasterData } from '@/features/contractMaster/models/ContractMasterModel';
+import type { SpecificationMasterData } from '@/features/specificationMaster/models/SpecificationMasterModel';
 
 interface ContractMasterTableProps {
-    data: ContractMasterData[];
+    data: SpecificationMasterData[];
     columns: TableColumn[];
     pagination: PaginationInfo;
-    sortInfo?: SortInfo;
-    onSort: (sort: SortInfo) => void;
-    onView: (row: ContractMasterData) => void;
-    onEdit: (row: ContractMasterData) => void;
-    onDelete: (row: ContractMasterData) => void;
+    onView: (row: SpecificationMasterData) => void;
+    onEdit: (row: SpecificationMasterData) => void;
+    onDelete: (row: SpecificationMasterData) => void;
     canAction: boolean;
     loading: boolean;
 }
@@ -23,8 +21,6 @@ export const ContractMasterTable: React.FC<ContractMasterTableProps> = ({
     data,
     columns,
     pagination,
-    sortInfo,
-    onSort,
     onView,
     onDelete,
     canAction,
@@ -35,7 +31,7 @@ export const ContractMasterTable: React.FC<ContractMasterTableProps> = ({
             if (col.key === 'Actions') {
                 return {
                     ...col,
-                    render: (_value, row: ContractMasterData) => (
+                    render: (_value, row: SpecificationMasterData) => (
 
                         <div className="flex items-center justify-center gap-2">
                             <Button
@@ -64,10 +60,10 @@ export const ContractMasterTable: React.FC<ContractMasterTableProps> = ({
                     )
                 };
             }
-            if (col.key === 'ContractName') {
+            if (col.key === 'CategoryName') {
                 return {
                     ...col,
-                    render: (value, row: ContractMasterData) => (
+                    render: (value, row: SpecificationMasterData) => (
                         <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
                             <TooltipText
                                 text={value || '-'}
@@ -92,8 +88,6 @@ export const ContractMasterTable: React.FC<ContractMasterTableProps> = ({
             fixedHeight={true}
             recordsPerPage={20}
             className="flex-1"
-            sortInfo={sortInfo}
-            onSort={onSort}
             loading={loading}
         />
     );

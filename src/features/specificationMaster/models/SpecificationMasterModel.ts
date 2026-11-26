@@ -7,6 +7,7 @@ export interface filterwithPaginationSpecificationMasterRequest {
     LevelType?: string
     CategoryName?: string
     IsCheckPermission?: boolean
+    IsSourceTypeContract?: boolean;
     IsExpandChild?: boolean
     SortBy?: string
     ExportType?: "PDF" | "Excel"
@@ -27,9 +28,9 @@ export interface SpecificationMasterData {
     LevelId3: number | 0
     SubMaterialMasterId: number | 0;
     SubMaterialName: string | null;
-    MaterialName:string| null;
-    SubMaterialUomCode:string| null;
-    SubMaterialUom:string| null;
+    MaterialName: string | null;
+    SubMaterialUomCode: string | null;
+    SubMaterialUom: string | null;
     LeadTimeInDays: number | 0,
     IsTolerant?: boolean,
     Quantity: number;
@@ -51,6 +52,7 @@ export interface AddUpdateSpecificationMaster {
     LevelId3: number | 0;
     SubMaterialMasterId: number | 0;
     Quantity: number;
+    IsSourceTypeContract?: boolean;
 }
 
 export interface DeleteSpecificationMasterRequest {

@@ -27,6 +27,7 @@ export class SpecificationMasterDatasourceImpl implements SpecificationMasterDat
             if (params.IsExpandChild) queryParams.append('IsExpandChild', params.IsExpandChild.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
+            if (params.IsSourceTypeContract) queryParams.append("IsSourceTypeContract", params.IsSourceTypeContract.toString());
 
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

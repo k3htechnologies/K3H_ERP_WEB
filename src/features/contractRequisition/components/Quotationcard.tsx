@@ -1,12 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  AlertCircle, Check, ChevronDown, ChevronRight, Info
+  AlertCircle, Check, ChevronDown, ChevronRight, Info, Building2,
 } from 'lucide-react'
 
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
 import { useHorizontalScroll } from '@/ui/components/DataTable/useHorizontalScroll'
 import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton'
+import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker'
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer'
+import { parseDocumentUrls } from '@/core/utils/documentUtils'
+import type { ContractRequisitionQuotationData, ContractRequisitionQuotationDetailsTermsData, SelectedVendorData } from '@/features/contractRequisition/models/ContractVendorFinalizeModel'
+import { formatCurrency } from '@/core/utils/comman'
 
 /*                        API field mapping (edit here only)                  */
 export const LINE_FIELDS = {
@@ -48,89 +53,35 @@ export const QUOTATION_FIELDS = {
 } as const
 
 export const VENDOR_SUMMARY_FIELDS = {
-  total: 'Total',
+  total: 'TotalAmountWithoutTax',
+  totalTax: 'TotalTax',
   budget: 'BudgetAmount',
   completionDays: 'ExpectedCompletionInDays'
 } as const
 
 export const TERM_FIELDS = {
   completion: 'ExpectedCompletionInDays',
-  payment: 'ExpectedPaymentInDays'
+  payment: 'ExpectedPaymentInDays',
+  quotationUrl: 'QuotationURL'
 } as const
 
-export interface QuotationLineLike {
-  BudgetId?: number | null
-  ContractRequisitionBOQId?: number | null
-  LevelType?: string | null
-  LevelId1?: number | null
-  LevelId2?: number | null
-  LevelId3?: number | null
-  LevelId4?: number | null
-  OrderBy?: number | null
-  Rate?: number | null
-  Amount?: number | null
-  WBSCode?: string | null
-  CategoryName?: string | null
-  Level1Name?: string | null
-  Level2Name?: string | null
-  Level3Name?: string | null
-  Level4Name?: string | null
-  Level4MaterialName?: string | null
-  Uom?: string | null
-  Quantity?: number | null
-  LabourCost?: number | null
-  MaterialCost?: number | null
-  PMCost?: number | null
-  TotalRate?: number | null
-  BudgetAmount?: number | null
-  Remark?: string | null
-  CGST?: number | null
-  SGST?: number | null
-  IGST?: number | null
-  IsSelected?: boolean
-}
-
-export interface QuotationTermsLike {
-  ContractRequisitionQuotationTermsId?: number
-  Uniquekey?: string
-  VendorId?: number
-  Total?: number | null
-  ExpectedCompletionInDays?: number | null
-  ExpectedPaymentInDays?: number | null
-  ContractRequisitionQuotationData?: QuotationLineLike[] | null
-}
-
-export interface VendorQuotationLike {
-  VendorId?: number | string
-  UniqueKey?: string
-  SystemGeneratedCode?: string
-  VendorName?: string
-  CompanyName?: string
-  GSTNumber?: string | null
-  Total?: number | null
-  BudgetAmount?: number | null
-  ExpectedCompletionInDays?: number | null
-  VerifiedNonVerified?: string
-  IsApproval?: boolean
-  IsFinalized?: boolean
-  VendorFinalizationApproval?: string | null
-  ContractRequisitionQuotationTermsData?: QuotationTermsLike[] | null
-  QuotationStatus?: string
-  ValidTill?: string | null
-  GSTPercentage?: number | null
-}
+const QUOTATION_FILE_TYPES = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf']
+const MAX_QUOTATION_FILES = 10
 
 export interface QuotationSavePatch {
   ContractRequisitionQuotationTermsId: number
   hasQuotedItem: boolean
-  ContractRequisitionQuotationData: QuotationLineLike[]
+  ContractRequisitionQuotationData: ContractRequisitionQuotationData[]
   Total: number
   ExpectedCompletionInDays: number
   ExpectedPaymentInDays: number
+  QuotationFiles: File[]
+  RemoveQuotationURL: string
+  taxMode?: QuotationTaxMode
   summary: { taxable: number; cgst: number; sgst: number; igst: number; grandTotal: number }
 }
 
-export function applyQuotationPatch<V extends VendorQuotationLike>(vendor: V, patch: QuotationSavePatch): V {
+export function applyQuotationPatch<V extends SelectedVendorData>(vendor: V, patch: QuotationSavePatch): V {
   const [first, ...rest] = vendor.ContractRequisitionQuotationTermsData ?? []
   return {
     ...vendor,
@@ -155,7 +106,7 @@ const rd = (l: Record<string, unknown>, f: keyof typeof LINE_FIELDS): unknown =>
   return undefined
 }
 
-function enrichLines(lines: QuotationLineLike[], boq?: QuotationLineLike[] | null): QuotationLineLike[] {
+function enrichLines(lines: ContractRequisitionQuotationData[], boq?: ContractRequisitionQuotationData[] | null): ContractRequisitionQuotationData[] {
   if (!boq || boq.length === 0) return lines
   const byBudget = new Map<string, Record<string, unknown>>()
   boq.forEach(b => {
@@ -169,14 +120,14 @@ function enrichLines(lines: QuotationLineLike[], boq?: QuotationLineLike[] | nul
       const cur = out[k]
       if ((cur === undefined || cur === null || cur === '') && src[k] !== undefined) out[k] = src[k]
     })
-    return out as QuotationLineLike
+    return out as ContractRequisitionQuotationData
   })
 }
 
 function getQuotationLines(
-  terms: QuotationTermsLike[] | null | undefined,
-  fallback?: QuotationLineLike[] | null
-): QuotationLineLike[] {
+  terms: ContractRequisitionQuotationDetailsTermsData[] | null | undefined,
+  fallback?: ContractRequisitionQuotationData[] | null
+): ContractRequisitionQuotationData[] {
   const saved = terms?.[0]?.ContractRequisitionQuotationData
   return (saved && saved.length > 0 ? saved : fallback ?? []).filter(r => r.IsSelected !== false)
 }
@@ -190,23 +141,23 @@ type Draft = Record<EditableField, string>
 type LeafValues = Record<EditableField, number | null>
 
 interface QuotationCardProps {
-  vendor: VendorQuotationLike
+  vendor: SelectedVendorData
   checked?: boolean
   checkDisabled?: boolean
   canApprove?: boolean
   taxMode?: QuotationTaxMode
   contractType?: string | null
-  onApprove?: (vendor: VendorQuotationLike) => void
-  onReject?: (vendor: VendorQuotationLike) => void
-  onApprovalHistory?: (vendor: VendorQuotationLike) => void
-  onCheckedChange?: (checked: boolean, vendor: VendorQuotationLike) => void
+  onApprove?: (vendor: SelectedVendorData) => void
+  onReject?: (vendor: SelectedVendorData) => void
+  onApprovalHistory?: (vendor: SelectedVendorData) => void
+  onCheckedChange?: (checked: boolean, vendor: SelectedVendorData) => void
   expanded?: boolean
   defaultExpanded?: boolean
   onExpandedChange?: (expanded: boolean) => void
   onSave?: (patch: QuotationSavePatch) => void | Promise<void>
-  loadTerms?: (vendor: VendorQuotationLike) => Promise<QuotationTermsLike[] | QuotationTermsLike | null | undefined>
-  boqLineItems?: QuotationLineLike[] | null
-  fallbackLines?: QuotationLineLike[] | null
+  loadTerms?: (vendor: SelectedVendorData) => Promise<ContractRequisitionQuotationDetailsTermsData[] | ContractRequisitionQuotationDetailsTermsData | null | undefined>
+  boqLineItems?: ContractRequisitionQuotationData[] | null
+  fallbackLines?: ContractRequisitionQuotationData[] | null
   loading?: boolean
   readOnly?: boolean
   editableStatuses?: string[]
@@ -296,26 +247,8 @@ const pos = (v: unknown): number | null => {
   return n !== null && n > 0 ? n : null
 }
 
-const formatCurrency = (v: number | null | undefined) =>
-  isNum(v)
-    ? `₹${v.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-    : '—'
-
-const formatMoney = (v: number | null | undefined) =>
-  isNum(v)
-    ? `₹${v.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
-    : '—'
-
 const formatQty = (v: number | null | undefined) => (isNum(v) ? v.toLocaleString('en-IN') : '—')
 const formatPct = (v: number | null | undefined) => (isNum(v) ? `${parseFloat(v.toFixed(2))}%` : '—')
-
-const formatDate = (iso?: string | null) => {
-  if (!iso) return '—'
-  const d = new Date(iso)
-  return Number.isNaN(d.getTime())
-    ? '—'
-    : d.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
-}
 
 const variance = (boq: number, contract: number): number | null =>
   boq > 0 ? Math.round(((contract - boq) / boq) * 1000) / 10 : null
@@ -365,7 +298,7 @@ const naturalCompare = (a: string, b: string) => {
 }
 
 function buildTree(
-  lines: QuotationLineLike[],
+  lines: ContractRequisitionQuotationData[],
   gstPct: number | null,
   taxMode?: QuotationTaxMode,
   everyLeafIsItem = false
@@ -595,6 +528,10 @@ function validateLeaf(d: Draft, qtyEditable = false): FieldErrors {
   if (!errors.igst && igst > 0 && (cgst > 0 || sgst > 0)) {
     errors.igst = 'IGST cannot be combined with CGST/SGST'
   }
+  // CGST and SGST are charged together, so they must be the same rate
+  if (!errors.cgst && !errors.sgst && igst === 0 && cgst !== sgst) {
+    errors.sgst = 'SGST must be equal to CGST'
+  }
   return errors
 }
 
@@ -680,7 +617,7 @@ const TaxSummary: React.FC<TaxSummaryProps> = ({ taxable, cgst, sgst, igst, gran
             <div key={c.label} className={`${i > 0 ? 'sm:border-l sm:border-gray-200 sm:pl-4' : ''} min-w-0`}>
               <p className="text-xs text-gray-400">{c.label}</p>
               <p className="mt-1 truncate text-sm font-semibold tabular-nums text-gray-900">
-                {c.always || c.value > 0 ? formatMoney(c.value) : '—'}
+                {c.always || c.value > 0 ? formatCurrency(c.value) : '—'}
               </p>
             </div>
           ))}
@@ -691,7 +628,7 @@ const TaxSummary: React.FC<TaxSummaryProps> = ({ taxable, cgst, sgst, igst, gran
         <span className="whitespace-nowrap text-sm font-medium text-gray-800">Grand Contract Value</span>
         <span className="text-gray-500">:</span>
         <span className="whitespace-nowrap text-xl font-semibold tabular-nums text-blue-600">
-          {formatMoney(grandTotal)}
+          {formatCurrency(grandTotal)}
         </span>
       </div>
     </div>
@@ -819,7 +756,7 @@ const DAY_ROWS: { key: DayField; label: string; bg: string }[] = [
   { key: 'payment', label: 'Expected Payment (Days)', bg: 'bg-gray-100' }
 ]
 
-const readDays = (terms: QuotationTermsLike[] | null | undefined): DayValues => {
+const readDays = (terms: ContractRequisitionQuotationDetailsTermsData[] | null | undefined): DayValues => {
   const t = (terms?.[0] ?? {}) as Record<string, unknown>
   return { completion: pos(t[TERM_FIELDS.completion]), payment: pos(t[TERM_FIELDS.payment]) }
 }
@@ -897,6 +834,46 @@ const TermsDaysSkeleton: React.FC = () => (
         <Bar className="h-3.5 w-14 bg-white/70!" />
       </div>
     ))}
+    <div className="flex min-h-12 items-center justify-between gap-4 bg-amber-50 px-6 py-2">
+      <Bar className="h-3.5 w-32 bg-white/70!" />
+      <Bar className="h-8 w-28 bg-white/70!" />
+    </div>
+  </div>
+)
+
+interface TermsQuotationFileProps {
+  url: string
+  editing: boolean
+  files: (File | string)[]
+  disabled?: boolean
+  onFilesChange: (files: (File | string)[]) => void
+  onRemoveExisting: (url: string) => void
+}
+
+const TermsQuotationFile: React.FC<TermsQuotationFileProps> = ({
+  url, editing, files, disabled, onFilesChange, onRemoveExisting
+}) => (
+  <div className="flex min-h-12 items-center justify-between gap-4 bg-amber-50 px-6 py-2">
+    <span className="text-sm text-gray-600">{editing ? 'Upload Quotation' : 'View Quotation'}</span>
+    {editing ? (
+      <div className="w-[250px]">
+        <MultiFilePicker
+          placeholder="Upload Quotation"
+          value={files}
+          onChange={onFilesChange}
+          availableFilesURL={url}
+          disabled={disabled}
+          allowedTypes={QUOTATION_FILE_TYPES}
+          maxFiles={MAX_QUOTATION_FILES}
+          onRemoveExisting={onRemoveExisting}
+        />
+      </div>
+    ) : (
+      <div className="inline-flex cursor-pointer items-end gap-1 rounded border border-amber-500 px-2 py-2.5 text-sm font-medium text-amber-600 transition">
+        <p>Quotation</p>
+        <MultiImageViewer images={parseDocumentUrls(url)} title="Quotation" isIcon={false} triggerLabel="-" />
+      </div>
+    )}
   </div>
 )
 
@@ -906,7 +883,6 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   checkDisabled = false,
   canApprove = false,
   taxMode,
-  contractType,
   onApprove,
   onReject,
   onApprovalHistory,
@@ -951,7 +927,7 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
 
   const vendorTerms = vendor.ContractRequisitionQuotationTermsData
   const vendorHasTerms = (vendorTerms?.length ?? 0) > 0
-  const [fetchedTerms, setFetchedTerms] = useState<QuotationTermsLike[] | null>(null)
+  const [fetchedTerms, setFetchedTerms] = useState<ContractRequisitionQuotationDetailsTermsData[] | null>(null)
   const [fetching, setFetching] = useState(false)
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [stale, setStale] = useState(false)
@@ -991,16 +967,19 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
 
   const isTableLoading = loading || fetching || (needsFetch && isExpanded && !fetchError)
 
-  const gstPct = vendor.GSTPercentage ?? null
-  const [lines, setLines] = useState<QuotationLineLike[]>(() => getQuotationLines(activeTerms, fallbackLines))
+  const gstPct = null
+  const [lines, setLines] = useState<ContractRequisitionQuotationData[]>(() => getQuotationLines(activeTerms, fallbackLines))
   const [isEditing, setIsEditing] = useState(false)
   const [drafts, setDrafts] = useState<Record<string, Draft>>({})
   const [baseline, setBaseline] = useState<Record<string, Draft>>({})
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [showErrors, setShowErrors] = useState(false)
+  const quotationUrl = String((activeTerms?.[0] as Record<string, unknown> | undefined)?.[TERM_FIELDS.quotationUrl] ?? '')
   const [savedDays, setSavedDays] = useState<DayValues>(() => readDays(activeTerms))
   const [dayDrafts, setDayDrafts] = useState<DayDraft>({ completion: '', payment: '' })
+  const [quotationFiles, setQuotationFiles] = useState<(File | string)[]>([])
+  const [removedQuotationUrls, setRemovedQuotationUrls] = useState<string[]>([])
   const [dayBaseline, setDayBaseline] = useState<DayDraft>({ completion: '', payment: '' })
 
   const syncedSource = useRef({ terms: activeTerms, fallback: fallbackLines })
@@ -1014,21 +993,18 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   }, [activeTerms, fallbackLines, isEditing])
 
   const viewLines = useMemo(() => enrichLines(lines, boqLineItems), [lines, boqLineItems])
-  const qtyEditable = (contractType ?? '').toLowerCase().replace(/[^a-z]/g, '') === 'indirect'
+  const qtyEditable = false;
   const tree = useMemo(
     () => buildTree(viewLines, gstPct, taxMode, qtyEditable),
     [viewLines, gstPct, taxMode, qtyEditable]
   )
 
   const status =
-    vendor.QuotationStatus ??
     (vendor.IsFinalized
       ? 'Finalized'
-      : needsFetch || fetching || fetchError
-        ? ''
-        : tree.leafKeys.some(k => n0(tree.byKey.get(k)?.values.contractRate) > 0)
-          ? 'Submitted'
-          : 'Pending')
+      : (vendor.Total && vendor.Total > 0)
+        ? 'Submitted'
+        : 'Pending')
 
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
   const seenGroups = useRef<Set<string>>(new Set())
@@ -1081,8 +1057,10 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
   const isDirty = useMemo(
     () =>
       Object.keys(drafts).some(isChanged) ||
-      (['completion', 'payment'] as DayField[]).some(f => dayDrafts[f] !== dayBaseline[f]),
-    [drafts, isChanged, dayDrafts, dayBaseline]
+      (['completion', 'payment'] as DayField[]).some(f => dayDrafts[f] !== dayBaseline[f]) ||
+      quotationFiles.length > 0 ||
+      removedQuotationUrls.length > 0,
+    [drafts, isChanged, dayDrafts, dayBaseline, quotationFiles, removedQuotationUrls]
   )
 
   const hasItems = tree.roots.length > 0
@@ -1114,6 +1092,8 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     const days: DayDraft = { completion: dayToDraft(savedDays.completion), payment: dayToDraft(savedDays.payment) }
     setDayDrafts(days)
     setDayBaseline(days)
+    setQuotationFiles([])
+    setRemovedQuotationUrls([])
     setSaveError(null)
     setShowErrors(false)
     setIsEditing(true)
@@ -1125,6 +1105,8 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     setBaseline({})
     setDayDrafts({ completion: '', payment: '' })
     setDayBaseline({ completion: '', payment: '' })
+    setQuotationFiles([])
+    setRemovedQuotationUrls([])
     setSaveError(null)
     setShowErrors(false)
   }
@@ -1164,10 +1146,13 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     return {
       ContractRequisitionQuotationTermsId: n0(activeTerms?.[0]?.ContractRequisitionQuotationTermsId),
       hasQuotedItem: tree.leafKeys.some(k => n0(totals.get(k)?.contractRate) > 0),
-      ContractRequisitionQuotationData: updated as unknown as QuotationLineLike[],
+      ContractRequisitionQuotationData: updated as unknown as ContractRequisitionQuotationData[],
       Total: grand.contract,
       ExpectedCompletionInDays: draftToDays(dayDrafts.completion) ?? 0,
       ExpectedPaymentInDays: draftToDays(dayDrafts.payment) ?? 0,
+      QuotationFiles: quotationFiles.filter((f): f is File => f instanceof File),
+      RemoveQuotationURL: Array.from(new Set(removedQuotationUrls)).join(','),
+      taxMode,
       summary: {
         taxable: grand.contractBase, cgst: grand.cgst, sgst: grand.sgst,
         igst: grand.igst, grandTotal: grand.contract
@@ -1204,6 +1189,13 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
     if (!isAllowedInput(field, value)) return
     setDrafts(prev => {
       const next: Draft = { ...prev[key], [field]: value }
+      if (
+        (field === 'cgst' || field === 'sgst') &&
+        isTaxApplicable('cgst', taxMode) && isTaxApplicable('sgst', taxMode) &&
+        !(Number(next.igst) > 0)
+      ) {
+        next[field === 'cgst' ? 'sgst' : 'cgst'] = value
+      }
       if (BREAKUP_FIELDS.includes(field)) {
         const sum = round2(BREAKUP_FIELDS.reduce((s, f) => {
           const n = Number(next[f])
@@ -1242,44 +1234,49 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
 
   const fromApi = (key: keyof typeof VENDOR_SUMMARY_FIELDS): number | null | undefined => {
     const raw = (vendor as unknown as Record<string, unknown>)[VENDOR_SUMMARY_FIELDS[key]]
-    return raw === undefined ? undefined : pos(raw) 
+    return raw === undefined ? undefined : pos(raw)
   }
   const apiTotal = fromApi('total')
+  const apiTotalTax = fromApi('totalTax')
   const apiBudget = fromApi('budget')
   const apiDays = fromApi('completionDays')
   const headerContract = apiTotal !== undefined ? apiTotal : dash ? null : grand.contract
+  const headerTotalTax = apiTotalTax !== undefined ? apiTotalTax : dash ? null : (taxMode === "CGST_SGST" ? grand.cgst + grand.sgst : grand.igst)
   const headerBudget = apiBudget !== undefined ? apiBudget : dash ? null : grand.boq
   const headerDays = apiDays !== undefined ? apiDays : savedDays.completion
   const headerVar = headerContract !== null && headerBudget !== null ? variance(headerBudget, headerContract) : null
 
   const headerStats = [
     {
-      label: 'Contract Value',
+      label: 'Contract Value (Without Tax)',
       value: headerContract !== null ? formatCurrency(headerContract) : '—',
       cls: 'text-blue-600',
       loading: apiTotal === undefined && isTableLoading
     },
     {
+      label: 'Tax Amount',
+      value: headerTotalTax !== null ? formatCurrency(headerTotalTax) : '—',
+      cls: 'text-blue-600 mt-8',
+      loading: apiTotal === undefined && isTableLoading
+    },
+    {
       label: 'BOQ Base Value',
       value: headerBudget !== null ? formatCurrency(headerBudget) : '—',
-      cls: 'text-amber-600',
+      cls: 'text-amber-600 mt-8',
       loading: apiBudget === undefined && isTableLoading
     },
     {
       label: 'VAR. VS BOQ',
       value: varianceText(headerVar),
-      cls: headerVar === null ? 'text-gray-500' : varianceClass(headerVar),
+      cls: headerVar === null ? 'text-gray-500 mt-8' : `${varianceClass(headerVar)} mt-8`,
       loading: (apiTotal === undefined || apiBudget === undefined) && isTableLoading
     },
     {
       label: 'EST. Delivery',
       value: formatDays(headerDays),
-      cls: 'text-green-700',
+      cls: 'text-green-700 mt-8',
       loading: apiDays === undefined && isTableLoading
     },
-    ...(vendor.ValidTill
-      ? [{ label: 'Valid Till', value: formatDate(vendor.ValidTill), cls: 'text-green-700', loading: false }]
-      : [])
   ]
   const showApprovalActions = canApprove && !!vendor.IsFinalized
 
@@ -1455,78 +1452,90 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
 
   return (
     <div className={`rounded-lg border border-gray-200 bg-white shadow-sm ${className}`}>
-      <div
-        className="flex cursor-pointer flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3"
-      >
-        <div className="flex w-[280px] shrink-0 items-start gap-3" onClick={(e) => e.stopPropagation()}>
-          <span className="relative mt-1 inline-flex h-4 w-4 shrink-0">
-            <input
-              type="checkbox"
-              checked={isChecked}
-              disabled={checkDisabled}
-              onChange={(e) => handleChecked(e.target.checked)}
-              aria-label={`Select ${vendor.VendorName ?? 'vendor'}`}
-              className={`h-4 w-4 appearance-none rounded border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-400
+      <div className="flex flex-col w-full p-3" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-start justify-between w-full pb-4 px-1 border-b border-gray-200">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-3">
+              <span className="relative mt-1 inline-flex h-4 w-4 shrink-0">
+                <input
+                  type="checkbox"
+                  checked={isChecked}
+                  disabled={checkDisabled}
+                  onChange={(e) => handleChecked(e.target.checked)}
+                  aria-label={`Select ${vendor.VendorName ?? 'vendor'}`}
+                  className={`h-4 w-4 appearance-none rounded border outline-none transition-colors focus-visible:ring-2 focus-visible:ring-blue-400
                 ${isChecked ? 'border-blue-600 bg-blue-600' : 'border-gray-300 bg-white'}
                 ${checkDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}
                 ${checkDisabled && !isChecked ? 'opacity-50' : ''}`}
-            />
-            {isChecked && (
-              <Check className="pointer-events-none absolute inset-0 h-4 w-4 p-0.5 text-white" strokeWidth={3} />
-            )}
-          </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5">
-              <span className="truncate text-base font-medium text-gray-900" title={vendor.VendorName}>{vendor.VendorName || '—'}</span>
-            </div>
-            <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-              {vendor.CompanyName && <span className="truncate text-xs text-gray-600">{vendor.CompanyName}</span>}
-            </div>
-            <p className="mt-0.5 truncate text-xs text-gray-500" title={vendor.GSTNumber ?? undefined}>
-              GST: {vendor.GSTNumber?.trim() || '—'}
-            </p>
-            {status && (
-              <span className={`rounded border px-1.5 text-[10px] font-medium leading-4 ${STATUS_STYLE[status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}>
-                {status}
+                />
+                {isChecked && (
+                  <Check className="pointer-events-none absolute inset-0 h-4 w-4 p-0.5 text-white" strokeWidth={3} />
+                )}
               </span>
-            )}
+              <div className="font-medium text-gray-900 text-base">
+                {vendor.VendorName || "-"}
+              </div>
+              <div className="px-3 py-1.5 rounded-md bg-blue-50 text-blue-700 text-sm font-medium whitespace-nowrap">
+                {vendor.GSTNumber || "-"}
+              </div>
+              {status && (
+                <span className={`rounded border px-3 py-1.5 text-sm font-medium leading-4 ${STATUS_STYLE[status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}>
+                  {status}
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 mt-3  flex-wrap">
+              <div className="px-3 py-1.5 rounded-md bg-gray-50 text-gray-700 text-sm flex justify-center items-center gap-2 font-medium wrap-break-word">
+                <Building2 />{vendor.CompanyName || "-"}
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {
+              showApprovalActions && (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <ApprovalActions
+                    approvalStatus={vendor.VendorFinalizationApproval ?? undefined}
+                    onApprove={() => onApprove?.(vendor)}
+                    onReject={() => onReject?.(vendor)}
+                    showApproval={vendor.IsApproval === true}
+                    isIcons={true}
+                    onHistory={() => onApprovalHistory?.(vendor)}
+                  />
+                </div>
+              )
+            }
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); toggleExpanded() }}
+              aria-expanded={isExpanded}
+              aria-label={isExpanded ? 'Collapse quotation' : 'Expand quotation'}
+              className="rounded-md bg-gray-100 p-1 text-gray-700 transition-colors hover:bg-gray-200"
+            >
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
+            </button>
           </div>
         </div>
+        <div className="grid grid-cols-5 mt-4 px-1">
+          {headerStats.map(stat => (
+            <div key={stat.label} className="px-5 first:pl-0 border-r border-gray-200">
+              <div className="text-sm uppercase tracking-wide text-gray-400">
+                {stat.label}
+              </div>
+              {
+                stat.loading ?
+                  <div className="mt-3 h-4 w-20 animate-pulse rounded bg-gray-200" />
+                  : <div className={`mt-3 text-sm font-semibold tabular-nums ${stat.cls}`}>
+                    {stat.value}
+                  </div>
+              }
 
-        {headerStats.map(stat => (
-          <div key={stat.label} className="w-[150px] shrink-0 border-l border-gray-100 pl-4">
-            <p className="text-xs text-gray-400">{stat.label}</p>
-            {stat.loading
-              ? <div className="mt-1 h-4 w-20 animate-pulse rounded bg-gray-200" />
-              : <p className={`mt-1 text-sm font-semibold tabular-nums ${stat.cls}`}>{stat.value}</p>}
-          </div>
-        ))}
-
-        <div className="ml-auto flex items-center gap-2">
-          {showApprovalActions && (
-            <div onClick={(e) => e.stopPropagation()}>
-              <ApprovalActions
-                approvalStatus={vendor.VendorFinalizationApproval ?? undefined}
-                onApprove={() => onApprove?.(vendor)}
-                onReject={() => onReject?.(vendor)}
-                showApproval={vendor.IsApproval === true}
-                isIcons={true}
-                onHistory={() => onApprovalHistory?.(vendor)}
-              />
             </div>
-          )}
-          <button
-            type="button"
-            onClick={(e) => { e.stopPropagation(); toggleExpanded() }}
-            aria-expanded={isExpanded}
-            aria-label={isExpanded ? 'Collapse quotation' : 'Expand quotation'}
-            className="rounded-md bg-gray-100 p-1 text-gray-700 transition-colors hover:bg-gray-200"
-          >
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} />
-          </button>
+
+          ))}
+
         </div>
       </div>
-
       {isExpanded && (
         <div className="border-t border-gray-100">
           {/* Toolbar */}
@@ -1719,6 +1728,16 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
               onBlur={handleDayBlur}
             />
           )}
+          {!isTableLoading && hasItems && (
+            <TermsQuotationFile
+              url={quotationUrl}
+              editing={isEditing}
+              files={quotationFiles}
+              disabled={saving}
+              onFilesChange={setQuotationFiles}
+              onRemoveExisting={(url) => setRemovedQuotationUrls(prev => [...prev, url])}
+            />
+          )}
 
           {isTableLoading && <TaxSummarySkeleton />}
           {!isTableLoading && hasItems && (
@@ -1737,13 +1756,13 @@ export const QuotationCard: React.FC<QuotationCardProps> = ({
 }
 
 interface QuotationCardListProps {
-  vendors: VendorQuotationLike[]
-  onSave?: (vendor: VendorQuotationLike, patch: QuotationSavePatch) => void | Promise<void>
-  onSelectionChange?: (selected: VendorQuotationLike[]) => void
+  vendors: SelectedVendorData[]
+  onSave?: (vendor: SelectedVendorData, patch: QuotationSavePatch) => void | Promise<void>
+  onSelectionChange?: (selected: SelectedVendorData[]) => void
   className?: string
 }
 
-const vendorKey = (v: VendorQuotationLike, i: number) => String(v.UniqueKey ?? v.VendorId ?? i)
+const vendorKey = (v: SelectedVendorData, i: number) => String(v.UniqueKey ?? v.VendorId ?? i)
 
 export const QuotationCardList: React.FC<QuotationCardListProps> = ({
   vendors, onSave, onSelectionChange, className = ''

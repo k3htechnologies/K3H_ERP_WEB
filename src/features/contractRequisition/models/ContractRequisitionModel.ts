@@ -101,7 +101,7 @@ export interface ContractRequisitionData {
   IsVendorFinalizationApproved?: boolean;
   IsWorkOrderAvailable?: boolean;
   WorkOrderCreatedDate?: string;
-  ContractRequisitionWorkOrderURL: String;
+  ContractRequisitionWorkOrderURL: string;
   CloseCompletionRemark?: string;
   FinalVendor: string;
   FinalVendorCompanyName: string;
@@ -182,6 +182,8 @@ export interface ContractRequisitionOverview {
   IsRequisitionAction: boolean;
   VendorFinalizationApprovalStatus: string;
   InvoiceApprovalStatus: string;
+  BOQCategories: number;
+  BOQTotalValue: number;
   CreatedById: number;
   CreatedBy: string;
   CreatedDate: string;

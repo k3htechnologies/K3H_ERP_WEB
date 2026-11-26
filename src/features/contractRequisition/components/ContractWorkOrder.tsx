@@ -22,6 +22,7 @@ import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useViewportHeight } from "@/core/utils/useViewportHeight";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialGenerateFormState = (): GenerateContractRequisitionWorkOrderPdfData => ({
   ContractRequisitionId: 0,
@@ -209,7 +210,35 @@ export const ContractWorkOrder: React.FC<ContractWorkOrderProps> = ({ onUploadOr
     )
   };
 
-  const handleUploadWorkOrder = async () => {
+  const validateUploadWorkOrderForm = (): {
+
+    isValid: boolean
+    errors: { [key: string]: string }
+  } => {
+
+    const newErrors: { [key: string]: string } = {}
+
+    if (!hasAnyDocumentFile(workOrderFiles, workOrderURL, removedWorkOrderUrls)) {
+      newErrors.WorkOrderURL = "Upload Work Order Document";
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
+  }
+
+  const handleUploadWorkOrder = async (e: React.FormEvent) => {
+
+    e.preventDefault();
+
+    setErrors({})
+    const validation = validateUploadWorkOrderForm();
+
+    if (!validation.isValid) {
+      setErrors(validation.errors)
+      return
+    }
 
     const fd = new FormData();
     fd.append("ContractRequisitionWorkOrderId", uploadData.ContractRequisitionWorkOrderId.toString());
@@ -308,7 +337,7 @@ export const ContractWorkOrder: React.FC<ContractWorkOrderProps> = ({ onUploadOr
   const isPdf = (url: string) => url.toLowerCase().includes(".pdf") || url.startsWith("blob:");
 
   return (
-    <div className="bg-white p-1 h-[500px]">
+    <div className="bg-white p-1">
       <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
       <div className="flex justify-end gap-2">
@@ -361,7 +390,7 @@ export const ContractWorkOrder: React.FC<ContractWorkOrderProps> = ({ onUploadOr
               Work Order
             </h2>
             <div className="flex gap-2">
-              <h2 className="text-lg font-semibold">Total Amount : {contractRequisitionWorkOrder?.TotalAmount}</h2>
+              <h2 className="text-lg font-semibold">Total Amount : ₹{contractRequisitionWorkOrder?.TotalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
               <button
                 onClick={() => setIsMaximized(true)}
                 className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
@@ -422,7 +451,7 @@ export const ContractWorkOrder: React.FC<ContractWorkOrderProps> = ({ onUploadOr
 
               <h2 className="font-semibold">Work Order File</h2>
               <div className="flex justify-end gap-1">
-                <h2 className="text-lg font-semibold">Total Amount : {contractRequisitionWorkOrder?.TotalAmount}</h2>
+                <h2 className="text-lg font-semibold">Total Amount : ₹{contractRequisitionWorkOrder?.TotalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
                 <button
                   onClick={() => setIsMaximized(false)}
                   className="px-2 py-2 hover:bg-gray-100 rounded" >
@@ -456,7 +485,7 @@ export const ContractWorkOrder: React.FC<ContractWorkOrderProps> = ({ onUploadOr
         onSubmit={(e) => {
           e.preventDefault();
           if (isUploadWO) {
-            handleUploadWorkOrder();
+            handleUploadWorkOrder(e);
           } else {
             handleGenerateWorkOrder(e);
           }

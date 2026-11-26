@@ -26,19 +26,4 @@ export interface ContractMasterData {
     ModifiedDate: string | null,
 }
 
-export interface AddUpdateContractMasterRequest {
-    ContractMasterId: number | 0,
-    Uniquekey: string | null
-
-    ContractCode: string,
-    ContractName: string,
-}
-
-export interface DeleteContractMasterRequest {
-    ContractMasterId: number,
-    Uniquekey: string | null,
-}
-
 export type ContractMasterListResponse = ApiResponse<ContractMasterData[]>;
-export type ContractMasterSaveReponse = ApiResponse<ContractMasterData[]>;
-export type ContractMasterDeleteResponse = ApiResponse<number>;

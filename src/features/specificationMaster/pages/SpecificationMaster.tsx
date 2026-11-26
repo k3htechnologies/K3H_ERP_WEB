@@ -195,6 +195,7 @@ export const SpecificationMaster: React.FC = () => {
             UomMasterId: formData.UomMasterId,
             Quantity: formData.Quantity,
             SubMaterialMasterId: formData.SubMaterialMasterId,
+            IsSourceTypeContract: false
         }
     }
 

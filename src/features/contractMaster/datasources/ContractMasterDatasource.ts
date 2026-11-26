@@ -1,12 +1,10 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddUpdateContractMasterRequest, ContractMasterDeleteResponse, ContractMasterListResponse, ContractMasterSaveReponse, DeleteContractMasterRequest, FilterWithPaginationContractMaster } from "@/features/contractMaster/models/ContractMasterModel";
+import type { ContractMasterListResponse, FilterWithPaginationContractMaster } from "@/features/contractMaster/models/ContractMasterModel";
 import { ContractMasterApi } from "@/features/contractMaster/api/ContractMasterApi";
 
 export abstract class ContractMasterDatasource {
     abstract pullContractMaster(params: FilterWithPaginationContractMaster, signal?: AbortSignal): Promise<ContractMasterListResponse>;
-    abstract addUpdateContractMaster(payload: AddUpdateContractMasterRequest): Promise<ContractMasterSaveReponse>;
-    abstract deleteContractMaster(params: DeleteContractMasterRequest): Promise<ContractMasterDeleteResponse>;
 }
 
 export class ContractMasterDatasourceImpl implements ContractMasterDatasource {
@@ -39,53 +37,6 @@ export class ContractMasterDatasourceImpl implements ContractMasterDatasource {
             if (error instanceof TokenExpiredException) {
 
                 return await this.pullContractMaster(params);
-            }
-
-            throw error
-        }
-    }
-    async addUpdateContractMaster(params: AddUpdateContractMasterRequest): Promise<ContractMasterSaveReponse> {
-        try {
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                ContractMasterApi.ADD_UPDATE,
-                params
-            )
-
-            return response
-        } catch (error) {
-
-            console.error('ERROR: ADD UPDATE Contract MASTER :', error)
-
-            if (error instanceof TokenExpiredException) {
-
-                return await this.addUpdateContractMaster(params);
-            }
-            throw error
-        }
-    }
-
-    async deleteContractMaster(params: DeleteContractMasterRequest): Promise<ContractMasterDeleteResponse> {
-        try {
-            const queryParams = new URLSearchParams({
-                ContractMasterId: (params.ContractMasterId ?? 0).toString(),
-                Uniquekey: params.Uniquekey ?? '',
-            })
-
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ContractMasterApi.DELETE}?${queryParams.toString()}`
-            )
-
-            return response
-
-        } catch (error) {
-
-            console.error('ERROR: DELETE Contract MASTER :', error)
-
-            if (error instanceof TokenExpiredException) {
-
-                return await this.deleteContractMaster(params);
-
             }
 
             throw error

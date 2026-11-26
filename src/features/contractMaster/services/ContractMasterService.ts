@@ -1,7 +1,7 @@
 import * as E from 'fp-ts/Either';
 
 import type { Failure } from "@/core/api/FailureResponse";
-import type { AddUpdateContractMasterRequest, ContractMasterDeleteResponse, ContractMasterListResponse, ContractMasterSaveReponse, DeleteContractMasterRequest, FilterWithPaginationContractMaster } from '@/features/contractMaster/models/ContractMasterModel';
+import type { ContractMasterListResponse, FilterWithPaginationContractMaster } from '@/features/contractMaster/models/ContractMasterModel';
 import { ContractMasterDatasourceImpl } from '@/features/contractMaster/datasources/ContractMasterDatasource';
 
 
@@ -22,27 +22,4 @@ export const contractMasterService = {
     }
   },
 
-  apiCallToAddUpdateContractMaster: async (params: AddUpdateContractMasterRequest): Promise<E.Either<Failure, ContractMasterSaveReponse>> => {
-    try {
-
-      return E.right(await contractMasterDatasource.addUpdateContractMaster(params));
-
-    } catch (error: any) {
-
-      return E.left({ message: error.message, code: error.code });
-
-    }
-  },
-
-  apiCallDeleteContractMaster: async (params: DeleteContractMasterRequest): Promise<E.Either<Failure, ContractMasterDeleteResponse>> => {
-    try {
-
-      return E.right(await contractMasterDatasource.deleteContractMaster(params));
-
-    } catch (error: any) {
-
-      return E.left({ message: error.message, code: error.code });
-
-    }
-  },
 }

@@ -1,15 +1,15 @@
 import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms';
-import type { AddUpdateContractMasterRequest } from '@/features/contractMaster/models/ContractMasterModel';
+import type { AddUpdateSpecificationMaster } from '@/features/specificationMaster/models/SpecificationMasterModel';
 
 interface ContractMasterFormModalProps {
     isOpen: boolean;
     onClose: () => void;
     onCancel: () => void;
     onSubmit: (e: React.FormEvent) => void;
-    formData: AddUpdateContractMasterRequest;
-    onFieldChange: (field: keyof AddUpdateContractMasterRequest, value: any) => void;
+    formData: AddUpdateSpecificationMaster;
+    onFieldChange: (field: keyof AddUpdateSpecificationMaster, value: any) => void;
     errors: { [k: string]: string };
     editingData: any;
     loading: boolean;
@@ -41,25 +41,13 @@ export const ContractMasterFormModal: React.FC<ContractMasterFormModalProps> = (
                 <div className="space-y-4" >
                     <div>
                         <Input
-                            label='Contract Code'
-                            required
-                            error={errors.ContractCode}
-                            type="text"
-                            value={formData.ContractCode.toUpperCase()}
-                            maxLength={4}
-                            onChange={(e) => onFieldChange('ContractCode', e.target.value)}
-                            placeholder="Enter Contract Code"
-                        />
-                    </div>
-                    <div>
-                        <Input
                             label='Contract Name'
                             required
-                            error={errors.ContractName}
+                            error={errors.CategoryName}
                             type="text"
-                            value={formData.ContractName}
+                            value={formData.CategoryName ?? ""}
                             maxLength={500}
-                            onChange={(e) => onFieldChange('ContractName', e.target.value)}
+                            onChange={(e) => onFieldChange('CategoryName', e.target.value)}
                             placeholder="Enter Contract Name"
                         />
                     </div>

@@ -47,7 +47,7 @@ const ViewContractInvoicePayment: React.FC = () => {
     const amountPaid = contractInvoiceData?.InvoiceAmountPaidTillDate ? Number(contractInvoiceData.InvoiceAmountPaidTillDate) : 0;
     const tdsPaid = contractInvoiceData?.InvoiceTDSPaidTillDate ? Number(contractInvoiceData.InvoiceTDSPaidTillDate) : 0;
 
-    return Math.max(InvoiceAmount - amountPaid - tdsPaid);
+    return Math.max(InvoiceAmount - (amountPaid + tdsPaid));
   }, [contractInvoiceData]);
 
   const loadInvoiceData = async () => {

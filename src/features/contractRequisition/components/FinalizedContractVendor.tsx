@@ -56,7 +56,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
   const { addToast } = useToast();
   const { canAction: cangetCompare } = useMenuPermissions('Contract - Get Compare');
   const { canAction: cangetQuotation } = useMenuPermissions('Contract - Get Quotation');
-  const { canAction: canFinalizeVendor, canView : canViewFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
+  const { canAction: canFinalizeVendor, canView: canViewFinalizedVendor } = useMenuPermissions('Contract - Finalized Vendor');
 
   useEffect(() => {
     if (!projectId) return;
@@ -91,22 +91,32 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
   };
 
   const loadSelectedVendorForEnquiry = async () => {
-    await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
-      const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
-        ContractRequisitionId: Number(ContractRequisitionId),
-        UniqueKey: Uniquekey ?? "",
-        ProjectId: Number(projectId),
-      };
-      const response = await contractVendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
-      if (E.isRight(response)) {
-        const selectedVendors = response.right.Data;
-        selectedVendors.forEach(vendor => {
-          delete vendor["ContractRequisitionQuotationTermsData"];
-        });
-        setContractRequisitionVendorSelectedList(selectedVendors);
-      }
-      return response;
-    });
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
+          ContractRequisitionId: Number(ContractRequisitionId),
+          UniqueKey: Uniquekey ?? "",
+          ProjectId: Number(projectId),
+        };
+        const response = await contractVendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
+        if (E.isRight(response)) {
+          const selectedVendors = response.right.Data;
+          selectedVendors.forEach(vendor => {
+            delete vendor["ContractRequisitionQuotationTermsData"];
+          });
+          setContractRequisitionVendorSelectedList(selectedVendors);
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+        return response;
+      },
+      undefined,
+      (error: any) => addToast({ type: "error", title: error.message }),
+      undefined,
+      "Loading Vendor"
+    );
   };
 
   const toggleVendor = (id: number) => {
@@ -212,7 +222,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
     );
   };
 
-  const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART') => {
+  const handleCompareVendor = async (exportType: 'Excel' | 'PDF' | 'CONTRACT VENDOR COMPARISON CHART') => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -256,7 +266,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
     setIsApprovalActionModalOpen(true);
   };
 
-  const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART');
+  const handleExportCompareVendorExcel = () => handleCompareVendor('CONTRACT VENDOR COMPARISON CHART');
 
   const handleConfirmFinalizeVendor = async () => {
 
@@ -284,6 +294,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
 
           loadSelectedVendorForEnquiry();
 
+          await onApprovalSuccess?.();
         } else {
           addToast({ type: "error", title: response.left.message })
         }
@@ -304,8 +315,22 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
     fd.append('ExpectedCompletionInDays', String(patch.ExpectedCompletionInDays));
     fd.append('ExpectedPaymentInDays', String(patch.ExpectedPaymentInDays));
     fd.append('Total', String(patch.Total));
+    let totalTax = 0;
+    if (patch.taxMode === "CGST_SGST") {
+      totalTax = patch.summary.cgst + patch.summary.sgst
+    } else if (patch.taxMode === "IGST") {
+      totalTax = patch.summary.igst
+    }
+    fd.append('TotalAmountWithoutTax', String(patch.summary.taxable));
+    fd.append('TotalTax', String(totalTax));
     fd.append('ContractRequisitionQuotationJSON', JSON.stringify(patch.ContractRequisitionQuotationData));
+    patch.QuotationFiles.forEach(file => {
+      if (file instanceof File) {
+        fd.append('QuotationURL', file);
+      }
+    });
 
+    fd.append('RemoveQuotationURL', patch.RemoveQuotationURL);
     return fd;
   };
 
@@ -357,7 +382,7 @@ export const FinalizedContractVendor: React.FC<FinalizedContractVendorProps> = (
       )}
 
       {
-        (ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "CLOSED") ?
+        (ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "Closed") ?
           <div className="flex justify-end gap-2">
             <button
               type="button"

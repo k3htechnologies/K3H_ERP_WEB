@@ -19,6 +19,7 @@ import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 
 const initialFormState = (): AddUpdateContractRequisitionInvoiceRequest => ({
   ProjectId: 0,
@@ -60,9 +61,10 @@ const AddUpdateContractInvoice = () => {
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   const navigate = useNavigate();
+
   const { canAction } = useMenuPermissions("Contract - Add Invoice");
   const { listState } = useContractRequisitionListState();
-  const { ContractRequisitionId, WorkOrderCreatedDate } = listState;
+  const { ContractRequisitionId, WorkOrderCreatedDate, ContractRequisitionStatus, SystemGeneratedCode, VendorName } = listState;
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { ContractInvoiceId } = useParams<{ ContractInvoiceId?: string }>();
@@ -336,6 +338,18 @@ const AddUpdateContractInvoice = () => {
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
+      <HeaderActionBar
+        titleText={'Make Payment :'}
+        subTitleText={SystemGeneratedCode ?? "-"}
+        subSubTitleText={ContractRequisitionStatus ?? ''}
+        subSubSubTitleText={VendorName ?? ""}
+        cancelText="Cancel"
+        onCancel={() =>
+          navigate("/contractRequisition/view", {
+            state: { activeTab: "Invoice" }
+          })}
+      />
+
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 my-4">
           <div className="lg:col-span-5 pb-3">
@@ -379,7 +393,7 @@ const AddUpdateContractInvoice = () => {
 
         <form onSubmit={handleAddUpdateContractInvoice}>
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">{isAddMode ? "Add Invoice" : "Update Invoice / Edit Invoice"}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">{isAddMode ? "Add Invoice" : "Update Invoice"}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
               <div>

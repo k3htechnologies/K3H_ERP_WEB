@@ -338,7 +338,7 @@ export const ContractRequisition: React.FC = () => {
         sortable: true,
         fixed: "left",
         align: "left",
-        render: (value, row) => (
+        render: (value, row: ContractRequisitionData) => (
           <TooltipText text={value || "-"} maxWidth="250px" tooltipThreshold={25} onClick={() => handleNavigateToView(row)} />
         ),
       },
@@ -348,7 +348,7 @@ export const ContractRequisition: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value) => value.toUpperCase() || "-",
+        render: (value) => value,
       },
       {
         key: "ContractStatus",
@@ -356,7 +356,7 @@ export const ContractRequisition: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value, row) => {
+        render: (value, row: ContractRequisitionData) => {
           const { bg, text } = getContractRequisitionStatusColor(value);
 
           return (
@@ -400,7 +400,7 @@ export const ContractRequisition: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value: string, row: any) => {
+        render: (value: string, row: ContractRequisitionData) => {
           return (
             <MultiImageViewer
               images={parseDocumentUrls(row.ContractRequisitionWorkOrderURL)}
@@ -429,7 +429,6 @@ export const ContractRequisition: React.FC = () => {
 
           <ApprovalActions
             approvalStatus={value || "-"}
-            showApproval={row.IsApproval}
             isIcons={true}
 
             onHistory={
@@ -444,13 +443,13 @@ export const ContractRequisition: React.FC = () => {
         )
       },
       {
-        key: "WorkOrderURL",
+        key: "ContractRequisitionWorkOrderURL",
         label: "Work Order",
         width: "15",
         sortable: false,
         align: "left",
-        render: (_value: string, row: any) => {
-          const urls = parseDocumentUrls(row.PurchaseOrderURL);
+        render: (value: string) => {
+          const urls = parseDocumentUrls(value);
 
           if (!urls || urls.length === 0) {
             return <span>-</span>;
@@ -461,7 +460,8 @@ export const ContractRequisition: React.FC = () => {
               <MultiImageViewer
                 images={urls}
                 title="Document"
-                triggerLabel={<TooltipText text="View" maxWidth="250px" tooltipThreshold={25} />}
+                triggerLabel={value || '-'}
+                isIcon={false}
               />
             </div>
           );
@@ -473,7 +473,10 @@ export const ContractRequisition: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => formatCurrency(value) || 0
+        render: (value, row: ContractRequisitionData) => {
+          if (!row.ContractRequisitionWorkOrderURL) return "-";
+          return formatCurrency(value) || 0
+        }
       },
       {
         key: 'InvoiceAmount',
@@ -492,7 +495,7 @@ export const ContractRequisition: React.FC = () => {
         render: (_value, row) => {
           const isLockAndKeyContract = row.ContractType === "lock and key";
           const canActionStage = canAction &&
-            !row.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
+            row.ContractRequisitionStage.toUpperCase().includes("CREATE BOQ") &&
             !["COMPLETED", "CLOSED"].includes(row.ContractStatus?.toUpperCase())
 
           return (

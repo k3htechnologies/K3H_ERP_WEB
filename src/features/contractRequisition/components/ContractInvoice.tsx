@@ -26,6 +26,8 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
+import { formatCurrency } from "@/core/utils/comman";
 
 export const ContractInvoice: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -355,10 +357,9 @@ export const ContractInvoice: React.FC = () => {
         sortable: false,
         align: "right",
         render: (_, row: ContractRequisitionInvoiceData) => {
-          const invoice = Number(row.InvoiceAmount || 0);
-          // const tds = Number(row. || 0)
-          const paid = Number(row.InvoiceAmountPaidTillDate || 0) + Number(row.InvoiceTDSPaidTillDate || 0);
-          const pending = invoice - paid;
+          const invoiceAmount = Number(row.InvoiceAmount || 0);
+          const paidAmount = Number(row.InvoiceAmountPaidTillDate || 0) + Number(row.InvoiceTDSPaidTillDate || 0);
+          const pending = Number((invoiceAmount - paidAmount).toFixed(2));
 
           return pending >= 0 ? pending : 0;
         }
@@ -371,11 +372,7 @@ export const ContractInvoice: React.FC = () => {
         align: 'left',
         render: (value: string) => {
           return (
-            <TooltipText
-              text={value || '-'}
-              maxWidth="200px"
-              tooltipThreshold={25}
-            />
+            <FieldInfoTooltip value={value} />
           );
         }
       },
@@ -408,7 +405,7 @@ export const ContractInvoice: React.FC = () => {
 
           const status = row.InvoiceStatus?.toUpperCase() || "";
           const isApproved = status === "APPROVED";
-          const isLocked = !canAction || isApproved;
+          const isLocked = !canAction || isApproved || ContractRequisitionStatus === "Closed";
           const isFullyPaid = row.InvoiceAmount === row.InvoiceAmountPaidTillDate + row.InvoiceTDSPaidTillDate;
 
           return (
@@ -464,7 +461,7 @@ export const ContractInvoice: React.FC = () => {
                         >
                           Fully Paid
                         </Button>
-                        : (canMakePaymentAction &&  !["COMPLETED", "CLOSED"].includes(listState.ContractRequisitionStatus?.toUpperCase()) ? <Button
+                        : (canMakePaymentAction && !["COMPLETED", "CLOSED"].includes(ContractRequisitionStatus?.toUpperCase()) ? <Button
                           color="green"
                           size="sm"
                           onClick={() => {
@@ -539,7 +536,7 @@ export const ContractInvoice: React.FC = () => {
       <div className="flex justify-end gap-2">
         {
           canAction && invoiceSummaryData?.TotalRequisitionAmount !== invoiceSummaryData?.TotalInvoiceAmount && IsWorkOrderAvailable
-            && ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "CLOSED"
+            && ContractRequisitionStatus !== "Completed" && ContractRequisitionStatus !== "Closed"
             ?
             <Button
               color="blue"
@@ -573,9 +570,9 @@ export const ContractInvoice: React.FC = () => {
               Work Order Details (₹)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <FieldItem label="Total (₹)" value={`₹ ${invoiceSummaryData?.TotalRequisitionAmount?.toFixed(2) ?? ''}`} />
-              <FieldItem label="Paid (₹)" value={`₹ ${invoiceSummaryData?.PaidRequisitionAmount?.toFixed(2) ?? ''}`} />
-              <FieldItem label="Pending (₹)" value={`₹ ${invoiceSummaryData?.PendingRequisitionAmount?.toFixed(2) ?? ''}`} />
+              <FieldItem label="Total (₹)" value={formatCurrency(invoiceSummaryData?.TotalRequisitionAmount)} />
+              <FieldItem label="Paid (₹)" value={formatCurrency(invoiceSummaryData?.PaidRequisitionAmount)} />
+              <FieldItem label="Pending (₹)" value={formatCurrency(invoiceSummaryData?.PendingRequisitionAmount)} />
             </div>
           </div>
 
@@ -584,10 +581,10 @@ export const ContractInvoice: React.FC = () => {
               Invoice Details (₹)
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <FieldItem label="Total (₹)" value={`₹ ${invoiceSummaryData?.TotalInvoiceAmount?.toFixed(2) ?? ''}`} />
-              <FieldItem label="Paid (₹)" value={`₹ ${invoiceSummaryData?.TotalAmountPaid?.toFixed(2) ?? ''}`} />
-              <FieldItem label="TDS Paid (₹)" value={`₹ ${invoiceSummaryData?.TotalTDSAmountPaid?.toFixed(2) ?? ''}`} />
-              <FieldItem label="Pending (₹)" value={`₹ ${invoiceSummaryData?.RemainingInvoiceAmount?.toFixed(2) ?? ''}`} />
+              <FieldItem label="Total (₹)" value={formatCurrency(invoiceSummaryData?.TotalInvoiceAmount)} />
+              <FieldItem label="Paid (₹)" value={formatCurrency(invoiceSummaryData?.TotalAmountPaid)} />
+              <FieldItem label="TDS Paid (₹)" value={formatCurrency(invoiceSummaryData?.TotalTDSAmountPaid)} />
+              <FieldItem label="Pending (₹)" value={formatCurrency(invoiceSummaryData?.RemainingInvoiceAmount)} />
             </div>
           </div>
         </div>

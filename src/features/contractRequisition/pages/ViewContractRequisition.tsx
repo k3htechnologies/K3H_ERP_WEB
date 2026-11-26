@@ -220,7 +220,7 @@ export const ViewContractRequisition: React.FC = () => {
               canActionContractRequisition &&
               !listState.VendorFinalizationApprovalStatus.toUpperCase().includes("APPROVED") &&
               !["COMPLETED", "CLOSED"].includes(listState?.ContractRequisitionStage?.toUpperCase() ?? "") &&
-              ["GET QUOTATION"].includes(listState?.ContractRequisitionStage?.toUpperCase())}
+              ["CREATE BOQ"].includes(listState?.ContractRequisitionStage?.toUpperCase())}
             onEdit={() => {
               if (activeTab === "Overview") {
                 if (contractRequisitionData) handleContractRequisitionEdit(contractRequisitionData);
@@ -230,7 +230,7 @@ export const ViewContractRequisition: React.FC = () => {
         </div>
         <div className="flex justify-end gap-2 pl-2">
           {
-            (contractRequisitionData?.IsVendorFinalizationApproved && !contractRequisitionData.IsWorkOrderAvailable) && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ?
+            (contractRequisitionData?.IsVendorFinalizationApproved && !contractRequisitionData.IsWorkOrderAvailable) && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "Closed" ?
               <Button
                 size="sm"
                 style={{
@@ -245,7 +245,7 @@ export const ViewContractRequisition: React.FC = () => {
                 Revoke Finalization
               </Button> : <></>
           }
-          {canActionContractRequisition && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "CLOSED" ? (
+          {canActionContractRequisition && contractRequisitionData?.ContractStatus !== "Completed" && contractRequisitionData?.ContractStatus !== "Closed" ? (
             <div className="flex justify-end pb-2 gap-2">
               <Button
                 size="sm"

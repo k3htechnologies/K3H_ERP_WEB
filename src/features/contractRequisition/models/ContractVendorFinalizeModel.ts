@@ -12,7 +12,7 @@ export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
   VendorId?: number;
   ClientRegistrationId?: string;
   ProjectId: number | 0;
-  ExportType?: 'Excel' | 'PDF' | 'VENDOR COMPARISON CHART';
+  ExportType?: 'Excel' | 'PDF' | 'CONTRACT VENDOR COMPARISON CHART';
 }
 
 export interface SelectedVendorData {
@@ -63,16 +63,46 @@ export interface SelectedVendorData {
 
 export interface ContractRequisitionQuotationDetailsTermsData {
   ContractRequisitionQuotationTermsId?: number,
-  Uniquekey?: string,
+  UniqueKey?: string,
   ContractRequisitionId?: number,
   VendorId?: number,
   QuotationURL?: string,
-  Total?: number,
-  ContractRequisitionQuotationData?: ContractRequisitionQuotationData[]
+  ExpectedCompletionInDays?: number | null;
+  ExpectedPaymentInDays?: number | null;
+  Total?: number | null,
+  ContractRequisitionQuotationData?: ContractRequisitionQuotationData[] | null
 }
 
 export interface ContractRequisitionQuotationData {
-
+  BudgetId?: number | null
+  ContractRequisitionBOQId?: number | null
+  LevelType?: string | null
+  LevelId1?: number | null
+  LevelId2?: number | null
+  LevelId3?: number | null
+  LevelId4?: number | null
+  OrderBy?: number | null
+  Rate?: number | null
+  Amount?: number | null
+  WBSCode?: string | null
+  CategoryName?: string | null
+  Level1Name?: string | null
+  Level2Name?: string | null
+  Level3Name?: string | null
+  Level4Name?: string | null
+  Level4MaterialName?: string | null
+  Uom?: string | null
+  Quantity?: number | null
+  LabourCost?: number | null
+  MaterialCost?: number | null
+  PMCost?: number | null
+  TotalRate?: number | null
+  BudgetAmount?: number | null
+  Remark?: string | null
+  CGST?: number | null
+  SGST?: number | null
+  IGST?: number | null
+  IsSelected?: boolean
 }
 
 //used for Contract quotation

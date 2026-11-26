@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ChevronDown, FileX2, Inbox } from "lucide-react";
+import { ChevronDown, FileX2 } from "lucide-react";
 import * as E from "fp-ts/Either";
 
 import type { ContractRequisitionOverview, PullContractOverviewRequest } from "@/features/contractRequisition/models/ContractRequisitionModel";
@@ -13,6 +13,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { formatCurrency } from "@/core/utils/comman";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 interface LevelTwoItem {
   id?: string | number;
@@ -49,7 +50,7 @@ const statusStyles = (status?: string | null) => {
   if (s === "ongoing") return "bg-blue-50 text-blue-600 border-blue-100";
   if (s === "completed" || s === "approved") return "bg-emerald-50 text-emerald-700 border-emerald-100";
   if (s === "pending") return "bg-amber-50 text-amber-700 border-amber-100";
-  if (s === "cancelled" || s === "rejected") return "bg-red-50 text-red-600 border-red-100";
+  if (s === "cancelled" || s === "closed") return "bg-red-50 text-red-600 border-red-100";
   return "bg-slate-100 text-slate-600 border-slate-200";
 };
 
@@ -87,11 +88,8 @@ const SectionCard: React.FC<{
   </section>
 );
 
-const EmptyState: React.FC<{ message: string; icon?: React.ReactNode }> = ({ message, icon }) => (
-  <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center">
-    <span className="text-slate-400">{icon ?? <Inbox className="h-5 w-5" aria-hidden />}</span>
-    <p className="text-sm text-slate-500">{message}</p>
-  </div>
+const EmptyState: React.FC<{ message: string; icon?: React.ReactNode }> = ({ message }) => (
+  <NoDataView message={message}/>
 );
 
 const Stat: React.FC<{ label: string; value: string; className?: string; valueClass?: string; labelClass?: string }> = ({
@@ -263,8 +261,8 @@ export const ContractOverview: React.FC = () => {
         titleClass="text-[#1D4ED8]"
         right={
           contractRequisitionOverview.ContractType ? (
-            <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-[11px] font-medium text-blue-700">
-              {contractRequisitionOverview.ContractType}
+            <span className="rounded-full bg-[#ADD3FF] px-2.5 py-0.5 text-[11px] font-bold text-[#0053DB]">
+              {contractRequisitionOverview.ContractType.charAt(0).toUpperCase() + contractRequisitionOverview.ContractType.slice(1)}
             </span>
           ) : null
         }
@@ -283,14 +281,12 @@ export const ContractOverview: React.FC = () => {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,3fr)]">
         <div className="space-y-4">
           <SectionCard title="BOQ Summary" headerClass="bg-[#FFFFE4]" titleClass="text-[#7B6B28]">
-            {(contractRequisitionOverview as any)?.boq ? (
-              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                <Stat label="Categories" value={formatNumber((contractRequisitionOverview as any).boq.categories)} />
-                <Stat label="Items" value={formatNumber((contractRequisitionOverview as any).boq.items)} />
-                <Stat label="Total Qty" value={formatNumber((contractRequisitionOverview as any).boq.totalQty)} />
+            {contractRequisitionOverview ? (
+              <div className="flex gap-3">
+                <Stat label="Categories" value={formatNumber(contractRequisitionOverview.BOQCategories)} />
                 <Stat
                   label="Total BOQ Value"
-                  value={formatCurrency((contractRequisitionOverview as any).boq.totalValue)}
+                  value={formatCurrency(contractRequisitionOverview.BOQTotalValue)}
                   className="border-amber-300 bg-amber-50"
                   labelClass="text-amber-800"
                   valueClass="text-slate-900"
@@ -324,7 +320,7 @@ export const ContractOverview: React.FC = () => {
         </div>
 
         <div className="space-y-4">
-          <SectionCard title="Finalized Vendor" headerClass="bg-[#F3F0FE]" titleClass="text-[finalized vendor]">
+          <SectionCard title="Finalized Vendor" headerClass="bg-[#F3F0FE]" titleClass="text-[#6D28D9]">
             {contractRequisitionOverview.FinalVendorCompanyName && contractRequisitionOverview.FinalizedVendor ? (
               <div className="space-y-4">
                 <div className="flex items-center gap-3 border-b border-slate-100 pb-4">

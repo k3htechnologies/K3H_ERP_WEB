@@ -38,6 +38,7 @@ import { projectMasterService } from "@/features/projectMaster/services/ProjectM
 import { getBudgetL1Dropdown, getBudgetL2Dropdown } from "@/features/budget/budgetDropdown";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { fetchIndirectContractDropdown } from "@/features/contractRequisition/indirectContractDropdown";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 const initialFormStateContractRequisition = (): AddUpdateContractRequisitionRequest => ({
   ContractRequisitionId: 0,
@@ -362,7 +363,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       newErrors.ContractType = "Contract Type is required";
     }
     if (!formData.EstimatedDate || formData.EstimatedDate === "") {
-      newErrors.EstimatedDate = "Estimated Date is required";
+      newErrors.EstimatedDate = "Estimated Start Date is required";
     }
     if (!formData.Remark) {
       newErrors.Remark = " Remark is required.";
@@ -401,31 +402,44 @@ export const AddUpdateContractRequisition: React.FC = () => {
     setShowAddLevelPopup(true);
   }
 
-  const canAddDirectContract = (levelFormData: AddUpdateContractLevelRequest) => {
-    const toIds = (value: string) =>
-      value.split(",")
-        .map((id) => id.trim())
-        .filter(Boolean);
-
-    const newIds = toIds(levelFormData.SubLevelId ?? "");
-
-    if (newIds && newIds.length === 0) return false;
-    const usedIds = new Set(
-      levelDetailsList
-        .filter((c) => c.ContractMasterId === levelFormData.ContractMasterId)
-        .flatMap((c) => toIds(c.SubLevelId ?? ""))
+  const parseIds = (value?: string | null): string[] =>
+    Array.from(
+      new Set(
+        (value ?? "")
+          .split(",")
+          .map((id) => id.trim())
+          .filter(Boolean)
+      )
     );
 
-    const hasDuplicate = newIds.some((id) => usedIds.has(id));
+  const getOtherRows = () =>
+    levelDetailsList.filter((_, index) => index !== editIndex);
 
-    return !hasDuplicate;
-  }
+  const isSameContract = (a: unknown, b: unknown) =>
+    a !== null && a !== undefined && String(a) === String(b);
+
+  const canAddDirectContract = (levelFormData: AddUpdateContractLevelRequest) => {
+    if (!levelFormData.ContractMasterId) return false;
+
+    const newIds = parseIds(levelFormData.SubLevelId);
+    if (newIds.length === 0) return false;
+
+    const usedIds = new Set(
+      getOtherRows()
+        .filter((row) => isSameContract(row.ContractMasterId, levelFormData.ContractMasterId))
+        .flatMap((row) => parseIds(row.SubLevelId))
+    );
+
+    return !newIds.some((id) => usedIds.has(id));
+  };
 
   const canAddIndirectContract = (levelFormData: AddUpdateContractLevelRequest) => {
-    const hasDuplicate = levelDetailsList.some(levelDetail => levelDetail.ContractMasterId === levelFormData.ContractMasterId);
+    if (!levelFormData.ContractMasterId) return false;
 
-    return !hasDuplicate;
-  }
+    return !getOtherRows().some((row) =>
+      isSameContract(row.ContractMasterId, levelFormData.ContractMasterId)
+    );
+  };
 
   const saveLevels = () => {
     setErrors({});
@@ -441,7 +455,12 @@ export const AddUpdateContractRequisition: React.FC = () => {
       canAdd = canAddIndirectContract(levelFormData);
     }
     if (!canAdd) {
-      showError("already added");
+      const isDirect = formData.ContractType === "direct" || formData.ContractType === "lock and key";
+      showError(
+        isDirect
+          ? "Selected L2 already added in requisition"
+          : "Selected contract already added in requisition"
+      );
       return;
     }
     if (editIndex !== null) {
@@ -578,27 +597,31 @@ export const AddUpdateContractRequisition: React.FC = () => {
         />
       ),
     },
-    {
-      key: "SubLevelId",
-      label: "Work",
-      align: "left",
-      width: "30",
-      render: (value) => {
-        const labels = String(value ?? "")
-          .split(",")
-          .map((id) => id.trim())
-          .filter(Boolean)
-          .map((id) => level2LabelMap.get(id) ?? id);
+    ...(formData.ContractType === "direct"
+      ? [
+        {
+          key: "SubLevelId",
+          label: "Work",
+          align: "left",
+          width: "30",
+          render: (value: unknown) => {
+            const labels = String(value ?? "")
+              .split(",")
+              .map((id) => id.trim())
+              .filter(Boolean)
+              .map((id) => level2LabelMap.get(id) ?? id);
 
-        return (
-          <TooltipText
-            text={labels.length ? labels.join(", ") : "-"}
-            maxWidth="250px"
-            tooltipThreshold={25}
-          />
-        );
-      },
-    },
+            return (
+              <TooltipText
+                text={labels.length ? labels.join(", ") : "-"}
+                maxWidth="250px"
+                tooltipThreshold={25}
+              />
+            );
+          },
+        } satisfies TableColumn,
+      ]
+      : []),
     {
       key: "ContractType",
       label: "Contract Type",
@@ -616,11 +639,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       label: "Remark",
       align: "left",
       render: (value) => (
-        <TooltipText
-          text={value || "-"}
-          maxWidth="250px"
-          tooltipThreshold={25}
-        />
+        <FieldInfoTooltip value={value} />
       ),
     },
     ...((!isLockAndKeyContractCreating
@@ -628,7 +647,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
         {
           key: "action",
           label: "Action",
-          align: "left",
+          align: "center",
           render: (_value: unknown, row: typeof levelDetailsList[number], index: number) => {
             if (!canAction) return null;
 
@@ -677,7 +696,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
       ]
       : []) as TableColumn[]),
   ], [
-    canAction, isLockAndKeyContractCreating, levelDetailsList, handleConfirmationDialogBoxOpen, level2LabelMap
+    canAction, isLockAndKeyContractCreating, levelDetailsList, handleConfirmationDialogBoxOpen, level2LabelMap, formData.ContractType
   ]);
 
   const BudgetDetailsColumns = useMemo<TableColumn[]>(() => [
@@ -760,7 +779,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
                 Add Contract
               </Button>
             </div>
-            {levelDetailsList.length > 0 ? (
+            {levelDetailsList.length > 0 && (
               <div className="pb-2">
                 <DataTable
                   data={levelDetailsList}
@@ -771,11 +790,14 @@ export const AddUpdateContractRequisition: React.FC = () => {
                   className="flex-1"
                 />
               </div>
-            ) : (
+            )}
+            {
+              (levelDetailsList.length === 0 && !formData.IsLockAndKey) &&
               <div className="flex items-center justify-center">
                 <span className="text-gray-500 text-sm font-medium">No Contract Details Found</span>
               </div>
-            )}
+            }
+
             {
               formData.IsLockAndKey &&
               <div className="pb-2">
@@ -817,11 +839,7 @@ export const AddUpdateContractRequisition: React.FC = () => {
                   "image/jpeg",
                   "image/png",
                   "image/jpg",
-                  "application/pdf",
-                  "application/vnd.ms-excel",
-                  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                  "application/msword",
-                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                  "application/pdf"
                 ]}
                 required
                 maxFiles={5}

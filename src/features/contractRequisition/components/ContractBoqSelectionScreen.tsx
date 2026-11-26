@@ -10,6 +10,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { contractRequisitionBoqService } from "@/features/contractRequisition/services/ContractRequisitionBoqService";
 import { useContractRequisitionListState } from "@/features/contractRequisition/context/ContractRequisitionListStateContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 const budgetConfig = {
   idKey: "BudgetId",
@@ -129,7 +130,13 @@ export const ContractBOQSelectionScreen: React.FC<ContractBOQSelectionScreenProp
       {
         key: "CategoryName",
         label: "Category Name",
-        render: (value) => value || "—",
+        render: (value) => (
+          <TooltipText
+            text={value || ""}
+            tooltipThreshold={25}
+            maxWidth="350px"
+          />
+        ),
       },
       {
         key: "Uom",

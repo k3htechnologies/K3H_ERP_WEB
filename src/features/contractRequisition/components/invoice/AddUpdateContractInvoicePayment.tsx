@@ -265,8 +265,7 @@ const AddUpdateContractInvoicePayment = () => {
               const paidAmt = toNumber(invoice.InvoiceAmountPaidTillDate);
 
               const tdsAmt = toNumber(invoice.InvoiceTDSPaidTillDate);
-
-              const pendingAmt = Math.max(invoiceAmt - paidAmt - tdsAmt, 0);
+              const pendingAmt = Number(Math.max(invoiceAmt - paidAmt - tdsAmt, 0).toFixed(2));
 
               setRemainingInvoiceAmount(pendingAmt);
 
@@ -506,7 +505,9 @@ const AddUpdateContractInvoicePayment = () => {
       <BottomActionBar
         cancelText="Cancel"
         saveText="Save"
-        onCancel={() => navigate(-1)}
+        onCancel={() => navigate("/contractRequisition/view", {
+          state: { activeTab: "Invoice" }
+        })}
         onSave={handleAddUpdateContractInvoicePayment}
         isLoading={isLoading}
         canAction={canMakePayments}

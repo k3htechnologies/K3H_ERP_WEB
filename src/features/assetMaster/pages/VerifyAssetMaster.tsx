@@ -9,6 +9,7 @@ import { Loader } from "@/core/utils/loader";
 import { Box, Check, Info, MessageCircleMore, User, Users } from "lucide-react";
 import ImageCarousel from "@/ui/components/ImageViewer/ImageCarousel";
 import { useParams } from "react-router-dom";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 export const VerifyAssetMaster: React.FC = () => {
     const [VerifyAssetMasterData, setVerifyAssetMasterData] = useState<VerifyAssetMasterData | null>(null);
@@ -27,7 +28,7 @@ export const VerifyAssetMaster: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationVerifyAssetMasterRequest = {
-                    AssetMasterId: Number(assetMasterId),
+                    AssetMasterId: Number(assetMasterId) || 0,
                     Uniquekey: uniqueKey ?? ""
                 };
 
@@ -61,7 +62,7 @@ export const VerifyAssetMaster: React.FC = () => {
                     <Box className="w-5 h-5 text-blue-500" />
                 </div>
 
-                <h2 className="text-[15px] font-semibold text-slate-800">
+                <h2 className="text-[16px] font-semibold text-slate-800">
                     Asset Details
                 </h2>
             </div>
@@ -74,12 +75,12 @@ export const VerifyAssetMaster: React.FC = () => {
                     <div className="w-full lg:w-[220px] shrink-0">
                         <div className="relative w-full lg:w-[220px] h-[160px] lg:h-[150px] rounded-lg overflow-hidden bg-gray-100">
                             <ImageCarousel
-                                images={VerifyAssetMasterData?.AssetPhotoURL ?? ""}
+                                images={VerifyAssetMasterData?.AssetImageURL ?? ""}
                                 thumbHeight="h-full"
                             />
 
                             <div className="absolute top-2 right-2 z-20">
-                                <FieldItem label="" urls={VerifyAssetMasterData?.AssetPhotoURL} isIcon isSetValue={false} />
+                                <FieldItem label="" urls={VerifyAssetMasterData?.AssetImageURL} isIcon isSetValue={false} />
                             </div>
 
                         </div>
@@ -87,26 +88,30 @@ export const VerifyAssetMaster: React.FC = () => {
 
                     <div className="flex-1 min-w-0">
                         <div className="flex flex-col xl:flex-row gap-4 xl:gap-8">
+
                             <div className="flex-1 min-w-0 space-y-2">
 
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <span className="text-lg font-semibold text-gray-800">
                                         {VerifyAssetMasterData?.AssetBrand ?? "-"} {VerifyAssetMasterData?.AssetModel ?? "-"}
                                     </span>
+                                </div>
 
-                                    <span>
-                                        {VerifyAssetMasterData?.AssetModel || "-"}
+                                <div className="flex items-center gap-2 rounded-lg bg-[#EEF3FA] px-2 py-1 w-fit">
+                                    <span className="text-sm font-semibold text-gray-800">
+                                        {VerifyAssetMasterData?.AssetCode || "-"}
                                     </span>
                                 </div>
 
-                                <span className="text-sm text-slate-500">
-                                    {VerifyAssetMasterData?.AssetName ?? "-"} {VerifyAssetMasterData?.AssetBrand ?? "-"}
+                                <span className="text-sm font-semibold text-slate-500">
+                                    {VerifyAssetMasterData?.AssetName ?? "-"} . {VerifyAssetMasterData?.AssetBrand ?? "-"}
                                 </span>
 
                             </div>
 
                         </div>
                     </div>
+
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-4">
@@ -117,7 +122,7 @@ export const VerifyAssetMaster: React.FC = () => {
                         </div>
 
                         <div>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-sm text-slate-500">
                                 Current Holder
                             </p>
 
@@ -129,7 +134,6 @@ export const VerifyAssetMaster: React.FC = () => {
                                 {(VerifyAssetMasterData?.EmployeeCode) ?? "-"}
                             </span>
                         </div>
-
                     </div>
 
                     <div className="flex items-center gap-3 bg-[#F2F7FC] rounded-lg p-3 ">
@@ -139,7 +143,7 @@ export const VerifyAssetMaster: React.FC = () => {
                         </div>
 
                         <div>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-sm text-slate-500">
                                 Condition
                             </p>
 
@@ -149,7 +153,6 @@ export const VerifyAssetMaster: React.FC = () => {
                         </div>
 
                     </div>
-
                 </div>
             </div>
 
@@ -163,22 +166,21 @@ export const VerifyAssetMaster: React.FC = () => {
                             <Info className="w-5 h-5 text-white" />
                         </div>
 
-                        <h2 className="text-[15px] font-semibold text-slate-800">
+                        <h2 className="text-[16px] font-semibold text-slate-800">
                             Asset Information
                         </h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                        <FieldItem label="Asset Category" value={VerifyAssetMasterData?.AssetCategory ?? "-"} isRow />
                         <FieldItem label="Brand" value={VerifyAssetMasterData?.AssetBrand ?? "-"} isRow />
                         <FieldItem label="Model" value={VerifyAssetMasterData?.AssetModel ?? "-"} isRow />
+                        <FieldItem label="Code" value={VerifyAssetMasterData?.AssetCode ?? "-"} isRow />
                         <FieldItem label="Serial Number" value={VerifyAssetMasterData?.SerialNumber ?? "-"} isRow />
-                        <FieldItem label="Purchase Date" value={VerifyAssetMasterData?.PurchaseDate ?? "-"} isRow />
-                        <FieldItem label="Warranty Until" value={VerifyAssetMasterData?.WarrantyExpiryDate ?? "-"} isRow />
-                        <FieldItem label="Location" value={VerifyAssetMasterData?.Location ?? "-"} isRow />
+                        <FieldItem label="Purchase Date" value={formatDate_dd_MonthName_yy(VerifyAssetMasterData?.PurchaseDate ?? "-")} isRow />
+                        <FieldItem label="Warranty Until" value={formatDate_dd_MonthName_yy(VerifyAssetMasterData?.WarrantyExpiryDate ?? "-")} isRow />
+                        <FieldItem label="Location" value={VerifyAssetMasterData?.Branch ?? "-"} isRow />
                         <FieldItem label="Department" value={VerifyAssetMasterData?.Department ?? "-"} isRow />
                     </div>
-
                 </div>
             </div>
 
@@ -192,7 +194,7 @@ export const VerifyAssetMaster: React.FC = () => {
                             <MessageCircleMore className="w-5 h-5 text-white" />
                         </div>
 
-                        <h2 className="text-[15px] font-semibold text-slate-800">
+                        <h2 className="text-[16px] font-semibold text-slate-800">
                             Recent Remark
                         </h2>
                     </div>
@@ -201,8 +203,8 @@ export const VerifyAssetMaster: React.FC = () => {
                         {VerifyAssetMasterData?.Remark ?? "-"}
                     </p>
 
-                    <span className="block text-xs text-slate-500 mt-2">
-                        Added By {VerifyAssetMasterData?.AssignedBy ?? "-"} · {VerifyAssetMasterData?.AssignedDate ?? "-"}
+                    <span className="block text-sm text-slate-500 mt-2">
+                        Added By {VerifyAssetMasterData?.AssignedBy ?? "-"} · {formatDate_dd_MonthName_yy(VerifyAssetMasterData?.AssignedDate ?? "-")}
                     </span>
 
                 </div>
@@ -217,7 +219,7 @@ export const VerifyAssetMaster: React.FC = () => {
                         <div className="flex items-center gap-2">
                             <Users className="w-5 h-5 text-indigo-600" />
 
-                            <h2 className="text-[15px] font-semibold text-slate-800">
+                            <h2 className="text-[16px] font-semibold text-slate-800">
                                 Currently Assigned To
                             </h2>
                         </div>
@@ -232,20 +234,19 @@ export const VerifyAssetMaster: React.FC = () => {
                             {VerifyAssetMasterData?.EmployeeName ?? "-"}
                         </p>
 
-                        <span className="text-xs text-slate-500">
-                            {VerifyAssetMasterData?.EmployeeCode ?? "-"}.{VerifyAssetMasterData?.Designation ?? "-"}
+                        <span className="text-sm text-slate-500">
+                            {VerifyAssetMasterData?.EmployeeCode ?? "-"} . {VerifyAssetMasterData?.Designation ?? "-"}
                         </span>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 pt-3">
                         <FieldItem label="Assigned By" value={VerifyAssetMasterData?.AssignedBy ?? "-"} />
-                        <FieldItem label="Assigned Date" value={VerifyAssetMasterData?.AssignedDate ?? "-"} />
+                        <FieldItem label="Assigned Date" value={formatDate_dd_MonthName_yy(VerifyAssetMasterData?.AssignedDate ?? "-")} />
                         <FieldItem label="Handover Condition" value={VerifyAssetMasterData?.HandoverCondition ?? "-"} />
                     </div>
 
                 </div>
             </div>
-
         </div>
     )
 }

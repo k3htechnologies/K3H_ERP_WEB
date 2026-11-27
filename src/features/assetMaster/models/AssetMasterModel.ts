@@ -82,21 +82,30 @@ export interface VerifyAssetMasterData {
     AssetModel: string | null
     AssetBrand: string | null
     SerialNumber: string | null
+    AssetInvoiceURL: string | null
     PurchaseDate: string | null
     WarrantyExpiryDate: string | null
     AssetCost: number | null
     SupplierName: string | null
-    AssetCategory: string | null
-    Location: string | null
+    Status: string | null
+    EmployeeName: string | null
     Department: string | null
     Designation: string | null
+    Branch: string | null
+    AssignedDate: string | null
+    AssetImageURL: string | null
+    AssetQRCodeURL: string | null
     Remark: string | null
-    EmployeeName: string | null
     EmployeeCode: string | null
     HandoverCondition: string | null
     AssignedBy: string | null
-    AssignedDate: string | null
-    AssetPhotoURL: string | null
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    AssetInactiveDetailsData: string | []
 }
 
 export type AssetMasterListResponse = ApiResponse<AssetMasterData[]>;

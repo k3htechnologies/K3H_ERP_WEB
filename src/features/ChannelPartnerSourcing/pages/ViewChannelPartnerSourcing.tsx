@@ -43,7 +43,7 @@ const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
 const ViewChannelPartnerSourcing: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const { canAction } = useMenuPermissions('sourcing');
+  const { canAction } = useMenuPermissions('/sourcing');
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -668,7 +668,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       )}
 
       {channelPartnerSourcingActiveTab === "CallLogs" && (
-        <CallMonitoring pageName='Channel Partner Sourcing' id={listState.channelPartnerId} />
+        <CallMonitoring pageName='Channel Partner Sourcing' id={listState.channelPartnerId} permissionPath="sourcing" />
       )}
 
       {/* Add/Edit Remark Modal */}

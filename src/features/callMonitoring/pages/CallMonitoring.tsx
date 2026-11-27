@@ -42,9 +42,10 @@ const initialFormState = (): UpdateCallMonitoring => ({
 type CallMonitoringsProps = {
     pageName: string;
     id: number
+    permissionPath: string
 };
 
-export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id }) => {
+export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id, permissionPath }) => {
 
     const [callMonitoringList, setCallMonitoringList] = useState<CallMonitoringData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +69,7 @@ export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id })
 
     const [isShowCustomizeCallMonitoringsColumnsModal, setIsShowCustomizeCallMonitoringsColumnsModal] = useState(false);
 
-    const { canExport, canAction } = useMenuPermissions();
+    const { canExport, canAction } = useMenuPermissions(permissionPath);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     useEffect(() => {
@@ -385,54 +386,54 @@ export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id })
             align: 'center',
             render: (_value, row) => {
 
-                const isEditDelete = !!row.CallStatus?.trim();
+                const isEditDelete = !canAction || !!row.CallStatus?.trim();
 
                 return (
                     <div className="flex items-center justify-center">
+                        <>
+                            <Button
+                                color="transparent"
+                                size="sm"
+                                disabled={isEditDelete}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (isEditDelete) return;
+                                    handleEditCallMonitoring(row);
+                                }}
+                                style={{
+                                    color: isEditDelete ? '#9CA3AF' : 'blue',
+                                    padding: '4px 8px',
+                                    cursor: isEditDelete ? 'not-allowed' : 'pointer',
+                                    opacity: isEditDelete ? 0.5 : 1
+                                }}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                            />
 
-                        <Button
-                            color="transparent"
-                            size="sm"
-                            disabled={isEditDelete}
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                if (isEditDelete) return;
-                                handleEditCallMonitoring(row)
-                            }}
-                            style={{
-                                color: isEditDelete ? '#9CA3AF' : '',
-                                padding: '4px 8px',
-                                cursor: isEditDelete ? 'not-allowed' : 'pointer',
-                                opacity: isEditDelete ? 0.5 : 1
-                            }}
-                            leftIcon={<Edit className="h-4 w-4" />}
-                        />
-
-                        <Button
-                            color="transparent"
-                            size="sm"
-                            disabled={isEditDelete}
-                            style={{
-                                color: isEditDelete ? '#9CA3AF' : 'red',
-                                padding: '4px 8px',
-                                cursor: isEditDelete ? 'not-allowed' : 'pointer',
-                                opacity: isEditDelete ? 0.5 : 1
-                            }}
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                if (isEditDelete) return;
-                                handleConfirmationDialogBoxOpen(row)
-                            }}
-                            leftIcon={<Trash2 className="h-4 w-4" />}
-                        />
+                            <Button
+                                color="transparent"
+                                size="sm"
+                                disabled={isEditDelete}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    if (isEditDelete) return;
+                                    handleConfirmationDialogBoxOpen(row);
+                                }}
+                                style={{
+                                    color: isEditDelete ? '#9CA3AF' : 'red',
+                                    padding: '4px 8px',
+                                    cursor: isEditDelete ? 'not-allowed' : 'pointer',
+                                    opacity: isEditDelete ? 0.5 : 1
+                                }}
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                            />
+                        </>
 
                     </div>
-                )
+                );
             }
         },
-
     ], [canAction, handleEditCallMonitoring, handleConfirmationDialogBoxOpen])
 
     const requiredCallMonitoringColumnKeys: string[] = ['Name', 'Actions'];

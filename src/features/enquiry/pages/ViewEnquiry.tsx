@@ -787,7 +787,7 @@ const ViewEnquiry: React.FC = () => {
             }
 
             {enquiryActiveTab === "CallLogs" && (
-                <CallMonitoring pageName='Enquiry' id={currentEnquiryId} />
+                <CallMonitoring pageName='Enquiry' id={currentEnquiryId} permissionPath="enquiry" />
             )}
 
             <Modal

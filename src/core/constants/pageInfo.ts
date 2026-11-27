@@ -77,14 +77,14 @@ export const getPageInfo = (path: string) => {
         title: "UOM Master",
         description: "Standardized Units for Accurate Property Management.",
       };
-      
-      case "vendorManagementDashboard":
+
+    case "vendorManagementDashboard":
       return {
         title: "Vendor Management Dashboard",
         description: "Centralized dashboard for vendor management operations",
       };
 
-      
+
     case "vendor":
       return {
         title: "Vendor Management",
@@ -546,7 +546,7 @@ export const getPageInfo = (path: string) => {
         title: "AOP Achievement",
         description: "Recognize and Reward Top Performers",
       };
-      case "darAllocation":
+    case "darAllocation":
       return {
         title: "DAR Allocation",
         description: "Recognize and Reward Top Performers",
@@ -609,7 +609,7 @@ export const getPageInfo = (path: string) => {
         description: "Comprehensive report for collection management with real-time insights and actionable data",
       };
 
-      case "clientLoanReport":
+    case "clientLoanReport":
       return {
         title: "Client Loan Report",
         description: "Comprehensive report for client loan management with real-time insights and actionable data",
@@ -762,6 +762,11 @@ export const getPageInfo = (path: string) => {
         description: "Overview of your system and key metrics",
       };
 
+    case "customerInfo":
+      return {
+        title: "Pre-Sale Enquiry",
+        description: "Overview of your system and key metrics",
+      };
 
     default:
       return {

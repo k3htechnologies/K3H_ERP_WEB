@@ -251,6 +251,11 @@ import { ViewEmployeeMaster } from '@/features/employeeMaster/pages/ViewEmployee
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import AttendanceReport from '@/features/attendanceReport/pages/AttendanceReport';
 import VerifyAssetMaster from '@/features/assetMaster/pages/VerifyAssetMaster';
+import PreSaleEnquiry from '@/features/preSaleEnquiry/pages/PreSaleEnquiry';
+import ViewPreSaleEnquiry from '@/features/preSaleEnquiry/pages/ViewPreSaleEnquiry';
+import { PreSaleEnquiryListStateProvider } from '@/features/preSaleEnquiry/context/PreSaleEnquiryListStateContext';
+import AddUpdatePreSaleEnquiry from '@/features/preSaleEnquiry/pages/AddUpdatePreSaleEnquiry';
+import ModuleApprovalReport from '@/features/moduleApprovalReport/pages/ModuleApprovalReport';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -626,18 +631,24 @@ function App() {
             <Route path="materialRequisitionReports" element={<ViewMaterialRequisitionReport />} />
 
             <Route path="purchaseMasterReport" element={<PurchaseMasterReport />} />
-
++
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
 
             <Route path="attendanceReport" element={<AttendanceReport />} />
 
+            <Route path='customerInfo' element={<PreSaleEnquiryListStateProvider><PreSaleEnquiry /></PreSaleEnquiryListStateProvider>} />
+            <Route path='customerInfo/view/:PreSaleEnquiryId?' element={<PreSaleEnquiryListStateProvider><ViewPreSaleEnquiry /></PreSaleEnquiryListStateProvider>} />
+            <Route path='customerInfo/add/:PreSaleEnquiryId?' element={<PreSaleEnquiryListStateProvider><AddUpdatePreSaleEnquiry /></PreSaleEnquiryListStateProvider>} />
+
+            <Route path='moduleApprovalReport' element={<ModuleApprovalReport />} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
-          <Route path="/:assetMasterId/:uniqueKey" element={<VerifyAssetMaster />} />
+          <Route path="/verifyAsset/:assetMasterId/:uniqueKey" element={<VerifyAssetMaster />} />
           <Route path='privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 

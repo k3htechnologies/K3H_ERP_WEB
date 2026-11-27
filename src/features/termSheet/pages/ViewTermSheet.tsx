@@ -1675,23 +1675,6 @@ const ViewTermSheet: React.FC = () => {
                 newErrors.RateOfInterestInPercentage = "Rate Of Interest is required.";
             }
 
-            if (
-                debtServiceReserveAccountFormData.RedemptionValue === undefined ||
-                debtServiceReserveAccountFormData.RedemptionValue === null ||
-                Number(debtServiceReserveAccountFormData.RedemptionValue) <= 0
-            ) {
-                newErrors.RedemptionValue =
-                    "Redemption Value is required.";
-            }
-
-            if (
-                debtServiceReserveAccountFormData.MaturityPeriod === undefined ||
-                debtServiceReserveAccountFormData.MaturityPeriod === null ||
-                Number(debtServiceReserveAccountFormData.MaturityPeriod) <= 0
-            ) {
-                newErrors.MaturityPeriod =
-                    "Maturity Period is required.";
-            }
         }
 
         const date = convert_date_yy_mm_dd_To_dd_mm_yyyy(debtServiceReserveAccountFormData.Date ? new Date(debtServiceReserveAccountFormData.Date) : undefined);
@@ -1700,8 +1683,6 @@ const ViewTermSheet: React.FC = () => {
         if (debtServiceReserveAccountFormData?.Date && debtServiceReserveAccountFormData.WithdrawDate && !isToDateGreaterOrEqualFromDate(date, withdrawDate)) {
             newErrors.WithdrawDate = "Withdraw Date must be greater than or equal to Date";
         }
-
-
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -3529,7 +3510,6 @@ const ViewTermSheet: React.FC = () => {
                             <Input
                                 label="Redemption Value (₹)"
                                 value={debtServiceReserveAccountFormData.RedemptionValue ?? ""}
-                                required
                                 error={errorsDebtServiceReserveAccount.RedemptionValue}
                                 placeholder="Enter Redemption Value"
                                 onChange={(e) =>
@@ -3542,7 +3522,6 @@ const ViewTermSheet: React.FC = () => {
                             <Input
                                 label="Maturity Period"
                                 value={debtServiceReserveAccountFormData.MaturityPeriod ?? ""}
-                                required
                                 error={errorsDebtServiceReserveAccount.MaturityPeriod}
                                 placeholder="Enter Maturity Period"
                                 onChange={(e) =>

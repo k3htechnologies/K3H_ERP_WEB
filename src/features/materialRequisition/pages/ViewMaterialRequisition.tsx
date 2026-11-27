@@ -49,7 +49,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     const { canView: canGetEnquiryView } = useMenuPermissions('Get Enquiry');
     const { canView: canGetQuotationView } = useMenuPermissions('Get Quotation');
     const { canView: canFinalizedVendorView } = useMenuPermissions('Finalize Vendor');
-    const { canView: canGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
+    const { canView: canGeneratePurchaseOrder,canAction:canActionGeneratePurchaseOrder } = useMenuPermissions('Generate Purchase Order');
     const { canView: canAddInvoice } = useMenuPermissions('Add Invoice');
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
@@ -235,7 +235,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                     />
 
                 </div>
-                {canCloseOrComplete && (
+                {canCloseOrComplete && canActionGeneratePurchaseOrder && (
+
                     <div className="flex justify-end gap-2">
 
 

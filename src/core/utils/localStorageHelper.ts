@@ -1771,6 +1771,27 @@ export const LocalStorageHelper = {
     }
     return null;
   },
+  //PRE- SALE
+  storePreSaleEnquiryTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PRE_SALE_ENQUIRY_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Pre Sale Enquiry Columns Details:", error);
+    }
+  },
+
+  getPreSaleEnquiryTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PRE_SALE_ENQUIRY_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PRE_SALE_ENQUIRY_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Pre Sale Enquiry Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
 
   clearLocalStorageData: (): void => {
     try {
@@ -1882,6 +1903,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.AGENDA_TASK_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.COST_TO_COMPANY_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_MONITORING_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PRE_SALE_ENQUIRY_SELECTED_COLUMNS);
+
 
 
 
@@ -1921,6 +1944,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MEETING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COST_TO_COMPANY);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROCESS_SALARY);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PRE_SALE_ENQUIRY);
+
 
 
 

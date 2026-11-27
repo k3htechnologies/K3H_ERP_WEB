@@ -23,6 +23,12 @@ export interface FilterMaterialRequisitionOverview {
     MaterialRequisitionId?: number | 0
     ExportType?: "PDF" | "Excel" | "MATERIAL REQUISITION PDF"
 }
+export interface FilterMaterialRequisitionStagesSummary {
+    ProjectId: number
+    MaterialRequisitionId?: number | 0
+    MaterialSubMaterial?:string
+    ExportType?: "PDF" | "Excel" | "MATERIAL REQUISITION PDF"
+}
 export interface FilterMaterialRequisitionDetails {
     ProjectId: number
     MaterialRequisitionId?: number | 0
@@ -57,6 +63,7 @@ export interface MaterialRequisitionData {
     CompanyPANNumber: string | null
     IsApproval: boolean;
     ApprovalStatus: string | null;
+    RequisitionApprovedDate: string | null;
     PaidAmount: number;
     TDSPaidAmount: number;
     TotalPoAmount: number;
@@ -103,6 +110,7 @@ export interface MaterialRequisitionDetailData {
     VendorName: string;
     VendorId: number;
     Amount: number;
+    TotalVendorServicesExtraCharges: number;
     PurchaseOrderURL: string;
     POSystemGeneratedCode: string;
     MaterialRequisitionPurchaseOrderId:number
@@ -160,9 +168,120 @@ export interface CloseMaterialRequisitionRequest {
     CloseCompletionRemark: string | null,
 }
 
+export interface MaterialRequisitionStagesSummary {
+
+    // ================= REQUISITION DETAILS =================
+
+    MaterialRequisitionId: number;
+    SystemGeneratedCode: string;
+    ProjectId: number;
+    MaterialRequisitionStatus: string;
+    RequisitionApprovalStatus: string;
+
+    // ================= MATERIAL DETAILS =================
+
+    MaterialRequisitionDetailId: number;
+    Uniquekey: string | null;
+    MaterialRequisitionType: string;
+
+    Level1Name: string | null;
+    Level2Name: string | null;
+    Level3Name: string | null;
+    Level4Name: string | null;
+
+    Level4SubMaterialUomCode: string | null;
+    Level4SubMaterialUom: string | null;
+
+    MaterialMasterId: number | null;
+    MaterialName: string | null;
+    MaterialCode: string | null;
+
+    SubMaterialName: string | null;
+    SubMaterialMasterId: number | null;
+
+    MaterialQuantity: number | null;
+
+    UomMasterId: number | null;
+    UomCode: string | null;
+    Uom: string | null;
+
+    RequiredDate: string | null;
+    Remark: string | null;
+    MaterialApprovalStatus: string | null;
+
+    // ================= REQUISITION STAGE =================
+
+    RequisitionAppliedDate: string | null;
+    RequisitionApprovedDate: string | null;
+    RequisitionStageStatus: string;
+
+    // ================= ENQUIRY STAGE =================
+
+    EnquiryFloatDate: string | null;
+    TotalEnquiryCount: number;
+    EnquiryStageStatus: string;
+
+    // ================= QUOTATION STAGE =================
+
+    QuotationReceivedDate: string | null;
+    LastQuotationReceivedDate: string | null;
+    TotalQuotationReceivedCount: number;
+    QuotationStageStatus: string;
+
+    // ================= FINALIZED VENDOR STAGE =================
+
+    MaterialRequisitionDetailEnquiryId: number | null;
+    FinalizedVendorId: number | null;
+
+    VendorName: string | null;
+    VendorCompanyName: string | null;
+    VendorSystemGeneratedCode: string | null;
+
+    FinalizedVendorApprovalStatus: string | null;
+    FinalizedVendorApprovedDate: string | null;
+    FinalizedVendorStageStatus: string;
+
+    // ================= PURCHASE ORDER STAGE =================
+
+    MaterialRequisitionPurchaseOrderId: number | null;
+    POSystemGeneratedCode: string;
+    PurchaseOrderGeneratedDate: string | null;
+    PurchaseOrderURL: string;
+    POStageStatus: string;
+
+    // ================= GRN STAGE =================
+
+    FirstMaterialReceivedDate: string | null;
+    LastMaterialReceivedDate: string | null;
+    TotalGRNCount: number;
+
+    TotalReceivedMaterialQuantity: number;
+    PendingMaterialQuantity: number;
+
+    MaterialReceivedCompletedDate: string | null;
+    GRNStageStatus: string;
+
+    // ================= INVOICE STAGE =================
+
+    InvoiceReceivedDate: string | null;
+    LastInvoiceReceivedDate: string | null;
+    TotalInvoiceCount: number;
+    ApprovedInvoiceCount: number;
+    InvoiceStageStatus: string;
+
+    // ================= CURRENT STAGE =================
+
+    CurrentStage: string;
+
+    // ================= CLIENT REGISTRATION =================
+
+    ClientRegistrationId: number;
+}
+
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionOverviewResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionDetailsResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionSaveReponse = ApiResponse<MaterialRequisitionData>;
 export type MaterialRequisitionDeleteResponse = ApiResponse<number>;
 export type MaterialRequisitionCloseResponse = ApiResponse<number>;
+export type MaterialRequisitionStagesSummaryResponse = ApiResponse<MaterialRequisitionStagesSummary[]>;

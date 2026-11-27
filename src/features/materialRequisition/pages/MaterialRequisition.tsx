@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { handleExportFile } from "@/core/utils/exportFile";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Button } from "@/ui/components/forms/Button";
-import { Copy, Edit, Trash2 } from "lucide-react";
+import { Copy, Edit, ListChecks, Trash2 } from "lucide-react";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
@@ -148,6 +148,24 @@ export const MaterialRequisition: React.FC = () => {
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
 
+    const handleNavigateToMaterialRequsitionStagesSummary = useCallback((row: MaterialRequisitionData) => {
+
+        updateListState({
+            materialRequisitionId: row.MaterialRequisitionId ?? 0,
+            systemGeneratedCode: row.SystemGeneratedCode ?? "",
+            uniquekey: row.Uniquekey ?? "",
+            projectId: row.ProjectId ?? 0,
+            projectName: row.ProjectName ?? "",
+            materialRequisitionStatus: row.MaterialRequisitionStatus ?? "",
+            approvalStatus: row.ApprovalStatus ?? ""
+        });
+
+        navigate("/materialRequisition/stagesSummary");
+
+    },
+        [navigate, updateListState]
+    );
+
     const handlePageChange = (page: number) => {
         updateListState({ page });
     };
@@ -276,6 +294,15 @@ export const MaterialRequisition: React.FC = () => {
                 />
 
             )
+        },
+        {
+            key: "RequisitionApprovedDate",
+            label: "MR Approved Date",
+            width: "15",
+            sortable: false,
+            align: "left",
+            render: (value) =>
+                value ? formatDate_dd_MonthName_yy_hh_mm(value) : "-"
         },
         {
             key: 'MaterialRequisitionStatus',
@@ -474,6 +501,27 @@ export const MaterialRequisition: React.FC = () => {
                                     }}
                                     leftIcon={<Trash2 className="h-4 w-4" />}
                                 />
+
+                                <Button
+                                    type="button"
+                                    color="transparent"
+                                    size="sm"
+                                    title="View Material Requisition Stages"
+                                    style={{
+                                        color: "#2563eb",
+                                        padding: "4px 8px",
+                                        cursor: "pointer"
+                                    }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+
+                                        handleNavigateToMaterialRequsitionStagesSummary(row);
+                                    }}
+                                    leftIcon={<ListChecks className="h-4 w-4" />}
+                                />
+
+
                             </>
                         )}
                     </div>
@@ -482,7 +530,7 @@ export const MaterialRequisition: React.FC = () => {
             }
         },
 
-    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction, handleApprovalLog, handleApproveRejectMaterialRequisition]);
+    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction, handleApprovalLog, handleApproveRejectMaterialRequisition, handleNavigateToMaterialRequsitionStagesSummary]);
 
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 

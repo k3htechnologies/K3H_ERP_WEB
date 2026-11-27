@@ -72,6 +72,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'vendorManagementDashboard'
         ,'processSalary'
         ,'materialRequisition'
+        ,'customerInfo'
 
     ];
 

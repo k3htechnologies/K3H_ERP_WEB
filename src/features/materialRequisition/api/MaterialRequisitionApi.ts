@@ -5,7 +5,8 @@ export const MaterialRequisitionApi = {
     PULL_MATERIAL_REQUISITION_DETAILS : "/MaterialRequisition/PullMaterialRequisitionDetails",
     ADD_UPDATE : "/MaterialRequisition/AddUpdateMaterialRequisition",
     DELETE: "/MaterialRequisition/DeleteMaterialRequisition",
-    CLOSE_REQUISITION: "/MaterialRequisition/CloseMaterialRequisition"
+    CLOSE_REQUISITION: "/MaterialRequisition/CloseMaterialRequisition",
+    PULL_MATERIAL_REQUISITION_STAGES_SUMMARY:"/MaterialRequisition/PullMaterialRequisitionStagesSummary"
     
 } as const
 

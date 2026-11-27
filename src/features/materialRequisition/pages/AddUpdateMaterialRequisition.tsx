@@ -18,7 +18,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { BudgetData } from "@/features/budget/models/BudgetModel";
 import {
@@ -824,7 +824,7 @@ export const AddUpdateMaterialRequisition = () => {
 
     const existingRequisitionQuantity = Number(materialData.MaterialRequisitionDetailId ?? 0) > 0 ? originalMaterialQuantity : 0;
 
-    const maxQuantity = budgetQuantity - orderQuantity + existingRequisitionQuantity;
+    const maxQuantity = Math.max(0, Number((budgetQuantity - orderQuantity + existingRequisitionQuantity).toFixed(2)));
 
     const isProjectSetupComplete =
         Number(formData.ProjectId) > 0 &&
@@ -894,7 +894,7 @@ export const AddUpdateMaterialRequisition = () => {
                                         isDone: projectSetupStatus?.IsGSTNumber
                                     },
                                     {
-                                        label: "bank account details are configured",
+                                        label: "Bank account details are configured",
                                         isDone: projectSetupStatus?.IsBank
                                     },
                                     {
@@ -1346,39 +1346,28 @@ export const AddUpdateMaterialRequisition = () => {
                                     <Input
                                         label="Quantity"
                                         required
-                                        value={materialData.MaterialQuantity || ""}
+                                        value={quantityInput}
                                         onChange={(e) => {
-                                            const value = filterNumbers(e.target.value);
 
-                                            if (value === "") {
-                                                setMaterialData(prev => ({
-                                                    ...prev,
-                                                    MaterialQuantity: 0
-                                                }));
+                                            const value = filterNumbersWithDecimal(e.target.value);
 
-                                                setErrors(prev => ({
-                                                    ...prev,
-                                                    MaterialQuantity: ""
-                                                }));
-
-                                                return;
-                                            }
-
-                                            const quantity = Number(value);
+                                            const quantity = Number(value || 0);
 
                                             if (Number.isNaN(quantity)) {
                                                 return;
                                             }
 
-
-
                                             if (quantity > maxQuantity) {
+
                                                 setErrors(prev => ({
                                                     ...prev,
                                                     MaterialQuantity: `Quantity cannot be greater than ${maxQuantity}`
                                                 }));
+
                                                 return;
                                             }
+
+                                            setQuantityInput(value);
 
                                             setMaterialData(prev => ({
                                                 ...prev,

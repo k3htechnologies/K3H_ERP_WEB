@@ -42,9 +42,11 @@ const initialFormState = (): UpdateCallMonitoring => ({
 type CallMonitoringsProps = {
     pageName: string;
     id: number
+    permissionPath: string
+
 };
 
-export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id }) => {
+export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id, permissionPath }) => {
 
     const [callMonitoringList, setCallMonitoringList] = useState<CallMonitoringData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -68,8 +70,9 @@ export const CallMonitoring: React.FC<CallMonitoringsProps> = ({ pageName, id })
 
     const [isShowCustomizeCallMonitoringsColumnsModal, setIsShowCustomizeCallMonitoringsColumnsModal] = useState(false);
 
-    const { canExport, canAction } = useMenuPermissions();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+    const { canExport, canAction } = useMenuPermissions(permissionPath);
+
 
     useEffect(() => {
         if (!projectId) return

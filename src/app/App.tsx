@@ -270,6 +270,11 @@ import ProcessSalary from '@/features/processSalary/pages/ProcessSalary';
 import ViewProcessSalaryDetails from '@/features/processSalary/pages/ViewProcessSalaryDetails';
 import AddUpdateInvoice from '@/features/materialRequisition/components/Invoice/AddUpdateInvoice';
 import VerifyAssetMaster from '@/features/assetMaster/pages/VerifyAssetMaster';
+import MaterialRequisitionStagesSummary from '@/features/materialRequisition/pages/MaterialRequisitionStagesSummary';
+import { PreSaleEnquiryListStateProvider } from '@/features/preSaleEnquiry/context/PreSaleEnquiryListStateContext';
+import PreSaleEnquiry from '@/features/preSaleEnquiry/pages/PreSaleEnquiry';
+import ViewPreSaleEnquiry from '@/features/preSaleEnquiry/pages/ViewPreSaleEnquiry';
+import AddUpdatePreSaleEnquiry from '@/features/preSaleEnquiry/pages/AddUpdatePreSaleEnquiry';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -645,6 +650,7 @@ function App() {
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/stagesSummary" element={<MaterialRequisitionListStateProvider><MaterialRequisitionStagesSummary /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
@@ -658,6 +664,11 @@ function App() {
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
+
+            {/* PRE - SALE */}
+            <Route path='customerInfo' element={<PreSaleEnquiryListStateProvider><PreSaleEnquiry /></PreSaleEnquiryListStateProvider>} />
+            <Route path='customerInfo/view/:PreSaleEnquiryId?' element={<PreSaleEnquiryListStateProvider><ViewPreSaleEnquiry /></PreSaleEnquiryListStateProvider>} />
+            <Route path='customerInfo/add/:PreSaleEnquiryId?' element={<PreSaleEnquiryListStateProvider><AddUpdatePreSaleEnquiry /></PreSaleEnquiryListStateProvider>} />
 
 
 

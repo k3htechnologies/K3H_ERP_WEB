@@ -241,6 +241,7 @@ export const MASTER_DATA = {
     "SMS",
     "Site Branding",
     "Reference",
+    "WhatsApp",
     "Other",
   ],
 

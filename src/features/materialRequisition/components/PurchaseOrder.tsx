@@ -454,8 +454,20 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                         width: "30",
                         render: (value) => formatCurrency(value) || 0
                     },
+                    {
+                        key: "TotalVendorServicesExtraCharges",
+                        label: "Services Charges (₹)",
+                        align: "left",
+                        width: "30",
+                        render: (value) => {
+                            return formatCurrency(value) || 0
+                        },
+                        rowSpan: (_row, index, data) => getRowSpan(data, index, ['POSystemGeneratedCode'])
+                    },
+
                 ]
             },
+
             {
                 key: 'POSystemGeneratedCode',
                 label: 'PO Code',
@@ -701,7 +713,7 @@ export const PurchaseOrder: React.FC<PurchaseOrderProps> = ({ onload, materialRe
                     setErrors({});
                     setPurchaseOrderFiles([]);
                 }}
-                
+
                 title={isUploadPO ? "Upload Purchase Order" : "Generate Purchase Order"}
 
                 onSubmit={(e) => {

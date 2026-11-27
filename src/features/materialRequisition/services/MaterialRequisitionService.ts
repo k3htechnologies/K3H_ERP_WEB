@@ -1,6 +1,6 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import type { CloseMaterialRequisitionRequest, DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterWithPaginationMaterialRequisition, MaterialRequisitionCloseResponse, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { CloseMaterialRequisitionRequest, DeleteMaterialRequisitionRequest, FilterMaterialRequisitionDetails, FilterMaterialRequisitionOverview, FilterMaterialRequisitionStagesSummary, FilterWithPaginationMaterialRequisition, MaterialRequisitionCloseResponse, MaterialRequisitionDeleteResponse, MaterialRequisitionDetailsResponse, MaterialRequisitionListResponse, MaterialRequisitionOverviewResponse, MaterialRequisitionSaveReponse, MaterialRequisitionStagesSummaryResponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { MaterialRequisitionDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionDataSource";
 
 const materialRequisitionDatasource = new MaterialRequisitionDatasourceImpl
@@ -23,6 +23,18 @@ export const materialRequisitionService = {
         try {
     
             return E.right(await materialRequisitionDatasource.pullMaterialRequisitionOverview(params, options?.signal));
+    
+        } catch (error: any) {
+    
+            return E.left({ message: error.message, code: error.code });
+    
+        }
+    },
+
+    apiCallPullMaterialRequisitionStagesSummary: async (params: FilterMaterialRequisitionStagesSummary, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionStagesSummaryResponse>> => {
+        try {
+    
+            return E.right(await materialRequisitionDatasource.pullMaterialRequisitionStagesSummary(params, options?.signal));
     
         } catch (error: any) {
     

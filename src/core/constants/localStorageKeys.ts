@@ -128,7 +128,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     //PURCHASE  MATERIAL REQUISITION
     MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
-    
+
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
 
@@ -138,8 +138,11 @@ export const LOCAL_STORAGE_KEYS = {
 
     //COST TO COMPANY
     COST_TO_COMPANY_SELECTED_COLUMNS: 'costToCompany.selectedColumns',
-    
-    CALL_MONITORING_SELECTED_COLUMNS: 'callMonitoring.selectedColumns'
+
+    CALL_MONITORING_SELECTED_COLUMNS: 'callMonitoring.selectedColumns',
+
+    //PRE - SALE
+    PRE_SALE_ENQUIRY_SELECTED_COLUMNS: 'customerInfo.selectedColumns',
 
 
 
@@ -183,7 +186,9 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     AGENDA_TASK: 'agendaTask.listState',
     MEETING: 'meeting.listState',
     COST_TO_COMPANY: 'costToCompany.listState',
-    PROCESS_SALARY: 'processSalary.listState'
+    PROCESS_SALARY: 'processSalary.listState',
+    PRE_SALE_ENQUIRY: 'customerInfo.listState',
+
 
 
 

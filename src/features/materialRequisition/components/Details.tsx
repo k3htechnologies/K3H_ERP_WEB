@@ -440,6 +440,16 @@ export const Details: React.FC<OverviewProps> = ({ matrialRequisitionData, matri
                         render: (value) => formatCurrency(value) || 0
                     },
                     {
+                        key: "TotalVendorServicesExtraCharges",
+                        label: "Services Charges (₹)",
+                        align: "left",
+                        width: "30",
+                        render: (value) => {
+                            return formatCurrency(value) || 0
+                        },
+                        rowSpan: (_row, index, data) => getRowSpan(data, index, ['POSystemGeneratedCode'])
+                    },
+                    {
                         key: "PurchaseOrderCreatedBy",
                         label: "PO Created By / Date",
                         sortable: false,
